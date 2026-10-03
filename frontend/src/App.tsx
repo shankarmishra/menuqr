@@ -4,6 +4,7 @@ import { HashRouter, Routes, Route, Navigate, useLocation, useMatch } from 'reac
 import HomePage from './pages/HomePage';
 import MenuPage from './pages/customer/MenuPage';
 import AdminLayout from './layouts/AdminLayout';
+import AppLayout from './layouts/AppLayout';
 import AdminLogin from './pages/admin/AdminLogin';
 import Dashboard from './pages/admin/Dashboard';
 import ClientList from './pages/admin/ClientList';
@@ -11,6 +12,13 @@ import QrGenerator from './pages/admin/QrGenerator';
 import Settings from './pages/admin/Settings';
 import ClientForm from './pages/admin/ClientForm';
 import { getAdminSession, getClientByMenuSlug } from './pages/admin/clientStore';
+import { useAuth } from './contexts/AuthContext';
+import AppDashboard from './pages/app/Dashboard';
+import AppMenu from './pages/app/Menu';
+import AppAppearance from './pages/app/Appearance';
+import AppQrCenter from './pages/app/QrCenter';
+import AppSubscription from './pages/app/Subscription';
+import AppSettings from './pages/app/Settings';
 
 function ProtectedAdminLayout() {
   const location = useLocation();
@@ -36,6 +44,21 @@ function ProtectedAdminLayout() {
   if (sessionState === 'error') return <div className="grid min-h-screen place-items-center bg-[#151c19] px-5 text-center text-sm text-rose-300"><div><p>Could not connect to the admin API.</p><button type="button" onClick={() => { setSessionState('checking'); setRetry((current) => current + 1); }} className="mt-4 rounded-lg bg-[#e8783c] px-4 py-2 font-semibold text-white">Retry</button></div></div>;
   if (sessionState === 'unauthenticated') return <Navigate to="/admin/login" replace state={{ from: location }} />;
   return <AdminLayout />;
+}
+
+function ProtectedAppLayout() {
+  const { user, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <div className="grid min-h-screen place-items-center bg-[#151c19] text-sm text-[#aab7b2]">Loading...</div>;
+  }
+
+  if (!user || (user.role !== 'RESTAURANT_OWNER' && user.role !== 'SUPER_ADMIN')) {
+    return <Navigate to="/admin/login" replace state={{ from: location }} />;
+  }
+
+  return <AppLayout />;
 }
 
 function AppRoutes() {
@@ -88,6 +111,17 @@ function AppRoutes() {
           <Route path="cafes" element={<ClientList />} />
           <Route path="qr" element={<QrGenerator />} />
           <Route path="settings" element={<Settings />} />
+        </Route>
+
+        {/* App Dashboard Routes */}
+        <Route path="/app" element={<ProtectedAppLayout />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<AppDashboard />} />
+          <Route path="menu" element={<AppMenu />} />
+          <Route path="appearance" element={<AppAppearance />} />
+          <Route path="qr" element={<AppQrCenter />} />
+          <Route path="subscription" element={<AppSubscription />} />
+          <Route path="settings" element={<AppSettings />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -181,7 +181,7 @@ export default function AdminLayout() {
                 {apiStatus === 'online' && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-50 motion-reduce:animate-none"></span>}
                 <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${apiStatus === 'online' ? 'bg-emerald-400' : apiStatus === 'offline' ? 'bg-rose-400' : 'bg-amber-300'}`}></span>
               </div>
-              <span className="text-xs font-semibold text-white">{apiStatus === 'online' ? 'MongoDB connected' : apiStatus === 'offline' ? 'API unavailable' : 'Checking connection'}</span>
+              <span className="text-xs font-semibold text-white">{apiStatus === 'online' ? 'Database connected' : apiStatus === 'offline' ? 'API unavailable' : 'Checking connection'}</span>
            </div>
               </div>
       </motion.aside>

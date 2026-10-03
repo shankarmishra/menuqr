@@ -22,13 +22,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuth = async () => {
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
-      const token = localStorage.getItem('menuqr.adminToken');
       const response = await fetch(`${apiBaseUrl}/api/auth/session`, {
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        credentials: 'include',
       });
       if (response.ok) {
         const data = await response.json();
@@ -49,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
-      await fetch(`${apiBaseUrl}/api/auth/logout`, { method: 'POST' });
+      await fetch(`${apiBaseUrl}/api/auth/logout`, { method: 'POST', credentials: 'include' });
       setUser(null);
     } catch (e) {
       console.error(e);

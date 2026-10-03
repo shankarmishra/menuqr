@@ -82,20 +82,18 @@ export interface AdminSession {
 const storageKey = 'menuqr.clients';
 const draftStorageKey = 'menuqr.clientDrafts';
 const migrationStorageKey = 'menuqr.apiMigration.v1';
-const adminTokenKey = 'menuqr.adminToken';
+
 
 type ClientDraft = Omit<ClientRecord, 'id' | 'createdAt'>;
 let migrationPromise: Promise<void> | undefined;
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = localStorage.getItem(adminTokenKey);
   const response = await fetch(`${apiBaseUrl}/api${path}`, {
     ...init,
-    credentials: 'omit',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...init?.headers,
     },
   });
@@ -173,21 +171,16 @@ export function getAdminSession(): Promise<AdminSession> {
   return request<AdminSession>('/auth/session');
 }
 
-export async function loginAdmin(password: string): Promise<AdminSession> {
-  const session = await request<AdminSession & { token: string }>('/auth/login', {
+export async function loginAdmin(password: string, email?: string): Promise<AdminSession> {
+  const session = await request<AdminSession>('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ password, email }),
   });
-  localStorage.setItem(adminTokenKey, session.token);
   return { authenticated: session.authenticated };
 }
 
 export async function logoutAdmin(): Promise<AdminSession> {
-  try {
-    return await request<AdminSession>('/auth/logout', { method: 'POST', body: '{}' });
-  } finally {
-    localStorage.removeItem(adminTokenKey);
-  }
+  return await request<AdminSession>('/auth/logout', { method: 'POST', body: '{}' });
 }
 
 export async function getClient(id: string): Promise<ClientRecord | undefined> {
