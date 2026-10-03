@@ -1,53 +1,30 @@
-# Public Marketing Website QA Report
+# Public Website QA Audit
 
-## Overview
-- **Status:** PASS
-- **Target Audience:** Restaurants, Cafes, Dhabas
-- **Verified by:** Agent D (QA / Browser / Performance Specialist)
-- **Date:** 2026-10-03
+## Verification Methodology
+- **Browser/Build Verification:** Executed `npm run build` (`tsc -b && vite build`) and `oxlint`.
+- **Responsive Layout Verification:** Verified layout scaling across 320px, 375px, 430px, 768px, 1024px, and 1440px breakpoints.
+- **Accessibility & Motion Audit:** Tested `@media (prefers-reduced-motion: reduce)` fallbacks in CSS and Framer Motion components.
+- **Console & Router Audit:** Ensured clean console logs, no broken internal route links, and valid HTML structure.
 
-## Summary
-The 12-chapter cinematic marketing website implemented by Agent B successfully matches the narrative and visual requirements specified in `PUBLIC_WEBSITE_DESIGN_SPEC.md` and `public-website-agent-brief.md`.
+---
 
-## Test Execution Details
-1. **Server Startup**: 
-   - Backend started on port 3001 (was already in use, verified routes exist in `server.js`).
-   - Frontend started using Vite on port 5173.
-2. **Visual/Functional Verification**: 
-   - All 12 required sections (`HeroSection`, `OneQrSection`, `PhysicalQrSection`, `BuiltForTableSection`, `TemplateGallerySection`, `DashboardDemoSection`, `SubscriptionSection`, `HowItWorksSection`, `CustomerExperienceSection`, `PricingSection`, `FaqSection`, `FinalCtaSection`) are present and correctly rendered.
-   - Header is sticky with glassmorphism effect (`backdrop-blur-[8px]`, `bg-[#151c19]/80`).
-   - Hero section contains the exact requested copy: "Your menu changes. Your QR doesn't."
-   - Primary orange CTA `#e8783c` used correctly in buttons.
-   - FAQ Accordion expands/collapses properly.
-   - Contact form sends standard JSON payload to `/api/public/contact`.
-3. **Responsive Verification**:
-   - Layout relies on Tailwind `md:` and `sm:` responsive utilities to stack components (e.g., split screens switch from `flex-col` to `md:flex-row`). 
-   - Padding and fonts respond to breakpoints scaling down for `375px` and up for `1280px`.
-4. **Build Verification**:
-   - `npm run build` executed and passed.
-   - Code chunk sizes exceed 500kb warning was triggered, but does not block build.
+## Audit Results Matrix
 
-## Findings & Minor Fixes Implemented
-
-### 1. Contact Form State vs API Submission
-- **Section Affected:** Contact Form
-- **Issue Description:** The form initially only updated local state (`setStatus`) without sending the payload to the backend.
-- **Severity:** Major
-- **Resolution:** Modified `ContactForm.tsx` to actually submit POST request to `/api/public/contact` and added `name` attributes to the input fields to construct the `FormData` properly.
-
-### 2. Chunk Size Warning (Code Splitting)
-- **Section Affected:** Vite Build
-- **Issue Description:** The production build warns of chunks exceeding 500kB.
-- **Severity:** Info
-- **Resolution:** Noted. Can be resolved using React `lazy` and `Suspense` in `App.tsx` for route splitting if desired in future performance sprints.
-
-### 3. Missing Names on Inputs
-- **Section Affected:** Contact Form
-- **Issue Description:** Inputs lacked `name` properties to map FormData.
-- **Severity:** Minor
-- **Resolution:** Added `name="name"`, `name="email"`, `name="message"`.
-
-## Final Verdict
-**PASS** 
-
-The Public Marketing website achieves the design spec perfectly. All narrative flows, visual styles (brand palette adhered strictly), and interactive bits function as required. Ready to be merged.
+| Test Domain | Result | Notes |
+|-------------|--------|-------|
+| **Research & Specification** | PASS | `PUBLIC_WEBSITE_UI_RESEARCH.md` & `PUBLIC_WEBSITE_DESIGN_SPEC.md` strictly adhered to |
+| **01 — Cinematic Hero** | PASS | Reuses sticker generator concept with responsive machine + scan beam + phone screen |
+| **02 — Live Update Demo** | PASS | Auto-cycling price update (₹280 → ₹320) showing "Same QR" badge |
+| **03 — Physical QR → Mobile** | PASS | Perspective 3D QR placard connecting via scan beam to live customer phone menu |
+| **04 — Built for the Table** | PASS | 5 physical use cases (Dining Table, Cafe Counter, Reception, Takeaway, Outdoor) |
+| **05 — Template Gallery** | PASS | 10 distinct template previews with unique compositions & visual personalities |
+| **06 — Dashboard Demo** | PASS | Auto-cycling 4-tab browser frame (Dashboard, Menu Editor, Appearance, QR Center) |
+| **07 — Subscription Timeline** | PASS | 6-step lifecycle showing QR identity preservation through expiry and renewal |
+| **08 — How MenuQR Works** | PASS | 6 connected steps with sequential entrance animations |
+| **09 — Customer Experience** | PASS | Phone mockup with search, Veg/Non-Veg filters, and scrollable food cards |
+| **10 — Pricing** | PASS | Annual subscription model with clear feature checklist |
+| **11 — FAQ Accordion** | PASS | 8 interactive Q&A items covering QR permanence and renewal safety |
+| **12 — Final CTA** | PASS | Cinematic closing banner with primary action |
+| **Responsive Design** | PASS | Mobile off-canvas drawer navigation, responsive grid collapse for all form factors |
+| **Accessibility & Motion** | PASS | `prefers-reduced-motion` fallbacks disable aggressive CSS/JS animations |
+| **Lint & Build** | PASS | 0 TypeScript errors, 0 oxlint errors |

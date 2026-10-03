@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
-  ChefHat, QrCode, ArrowRight, ArrowUpRight, ChevronDown,
-  Smartphone, Utensils, CreditCard, Settings, Palette, LayoutDashboard,
-  Menu as MenuIcon, X, Search, Leaf, Coffee, UtensilsCrossed,
-  Store, ConciergeBell, ShoppingBag, Check, RefreshCw, Shield,
-  AlertTriangle, XCircle, Clock, Send, Eye, type LucideIcon,
+  ChefHat, QrCode, ArrowRight, ChevronDown,
+  Smartphone, Utensils, Settings, Palette,
+  Menu as MenuIcon, X, Search, Coffee, UtensilsCrossed,
+  Store, ConciergeBell, ShoppingBag, Check, RefreshCw,
+  Send, Eye, type LucideIcon,
 } from 'lucide-react';
 import './MarketingPage.css';
 
@@ -153,12 +153,11 @@ function HeroSection() {
   );
 }
 
-/* ── 02: ONE QR, COUNTLESS UPDATES ───────────────────────────── */
 function UpdateDemoSection() {
   const prices = ['₹280', '₹320', '₹350'];
   const [priceIdx, setPriceIdx] = useState(0);
   const [published, setPublished] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   useEffect(() => {
     timerRef.current = setInterval(() => {
