@@ -378,8 +378,8 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === 'DELETE' && url.pathname === '/api/admin/notifications') {
-      await pool.query('DELETE FROM notifications');
-      sendJson(response, 200, { deletedCount: result.deletedCount });
+      const result = await pool.query('DELETE FROM notifications');
+      sendJson(response, 200, { deletedCount: result.rowCount });
       return;
     }
 
@@ -387,8 +387,9 @@ const server = createServer(async (request, response) => {
       /^\/api\/admin\/notifications\/([^/]+)\/read$/
     );
     if (request.method === 'PATCH' && notificationReadMatch) {
-      await pool.query('UPDATE notifications SET is_read = $1 WHERE id = $2', [input.isRead, notificationId]);
-      if (result.matchedCount === 0) throw apiError(404, 'Notification not found.');
+      const notificationId = decodeURIComponent(notificationReadMatch[1]);
+      const result = await pool.query('UPDATE notifications SET is_read = true WHERE id = $1', [notificationId]);
+      if (result.rowCount === 0) throw apiError(404, 'Notification not found.');
       sendJson(response, 200, { status: 'read' });
       return;
     }
@@ -488,9 +489,6 @@ const server = createServer(async (request, response) => {
       if (request.method === 'DELETE') {
         const result = await pool.query('DELETE FROM clients WHERE id = $1', [id]);
         if (result.rowCount === 0) throw apiError(404, 'Client not found.');
-        if (result.deletedCount === 0) {
-          throw apiError(404, 'Client not found.');
-        }
         response.writeHead(204);
         response.end();
         return;
@@ -631,10 +629,10 @@ const server = createServer(async (request, response) => {
     throw apiError(404, 'API route not found.');
   } catch (error) {
     console.error(`[api] \({request.method}\){url.pathname}:`, error.message);
-    const status = error.status || (error.code === 11000 ? 409 : 500);
+    const status = error.status || (error.code === '23505' ? 409 : 500);
     sendJson(response, status, {
       error:
-        error.status || error.code === 11000
+        error.status || error.code === '23505'
           ? error.message
           : 'The server could not complete this request.',
     });

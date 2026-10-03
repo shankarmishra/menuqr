@@ -230,7 +230,7 @@ export async function sendClientWelcomeEmail(client) {
       '- Dedicated Support',
       '- Premium Quality',
       '',
-      'What\\'s Next?',
+      "What's Next?",
       'Humari team jaldi hi aapse contact karegi. Aap bas apna menu ready rakhiye, hum sab setup kar denge!',
       '',
       'If you have questions about your subscription, reply to this email.',
