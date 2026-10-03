@@ -117,28 +117,82 @@ function AcrylicQRPlacard({ title = 'TABLE 04', name = 'GreenBite Cafe', tagline
   );
 }
 
-/* ── HEADER ──────────────────────────────────────────────────── */
+/* ── IPHONE DYNAMIC ISLAND FLOATING PILL HEADER ─────────────── */
 function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="mkt-header">
-      <Link className="mkt-logo" to="/" aria-label="MenuQR home">
-        <span className="mkt-logo-mark"><ChefHat size={18} strokeWidth={1.9} /></span>
-        Menu<span>QR</span>
-      </Link>
-      <nav className={`mkt-nav${open ? ' open' : ''}`}>
-        <a href="#how-it-works" onClick={() => setOpen(false)}>How It Works</a>
-        <a href="#templates" onClick={() => setOpen(false)}>Templates</a>
-        <a href="#pricing" onClick={() => setOpen(false)}>Pricing</a>
-        <Link to="/admin/login" onClick={() => setOpen(false)}>Login</Link>
-        <Link to="/admin/login" className="mkt-nav-cta" onClick={() => setOpen(false)}>Get Started</Link>
-      </nav>
-      {open && <div className="mkt-nav-overlay" onClick={() => setOpen(false)} />}
-      <button className="mkt-mobile-toggle" onClick={() => setOpen(!open)} aria-label="Menu">
-        {open ? <X size={24} /> : <MenuIcon size={24} />}
-      </button>
-    </header>
+    <div className="iphone-navbar-wrapper">
+      <div className="iphone-navbar-pill">
+        {/* Brand Mark & Title */}
+        <Link className="iphone-nav-logo" to="/" aria-label="MenuQR home">
+          <span className="iphone-nav-logo-mark"><ChefHat size={18} strokeWidth={2} /></span>
+          Menu<span style={{ color: '#e8783c' }}>QR</span>
+        </Link>
+
+        {/* Dynamic Island Status Badge */}
+        <div className="iphone-dynamic-island-badge">
+          <span className="iphone-dynamic-dot" />
+          <span>Menu Live</span>
+        </div>
+
+        {/* Desktop Navigation Links */}
+        <nav className="iphone-nav-links iphone-nav-links-desktop">
+          <a href="#how-it-works" className="iphone-nav-link">How It Works</a>
+          <a href="#templates" className="iphone-nav-link">Templates</a>
+          <a href="#pricing" className="iphone-nav-link">Pricing</a>
+          <Link to="/admin/login" className="iphone-nav-link">Login</Link>
+          <Link to="/admin/login" className="iphone-nav-cta">Get Started</Link>
+        </nav>
+
+        {/* Mobile Hamburger / Toggle */}
+        <button
+          className="iphone-mobile-toggle-btn"
+          onClick={() => setOpen(!open)}
+          aria-label="Toggle Navigation"
+        >
+          {open ? <X size={18} /> : <MenuIcon size={18} />}
+        </button>
+      </div>
+
+      {/* Mobile Dynamic Island Expansion Card */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="iphone-mobile-menu-card"
+            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+          >
+            <a href="#how-it-works" className="iphone-mobile-menu-item" onClick={() => setOpen(false)}>
+              <span>How It Works</span>
+              <ArrowRight size={16} color="#e8783c" />
+            </a>
+            <a href="#templates" className="iphone-mobile-menu-item" onClick={() => setOpen(false)}>
+              <span>Templates</span>
+              <ArrowRight size={16} color="#e8783c" />
+            </a>
+            <a href="#pricing" className="iphone-mobile-menu-item" onClick={() => setOpen(false)}>
+              <span>Pricing</span>
+              <ArrowRight size={16} color="#e8783c" />
+            </a>
+            <Link to="/admin/login" className="iphone-mobile-menu-item" onClick={() => setOpen(false)}>
+              <span>Login</span>
+              <ArrowRight size={16} color="#e8783c" />
+            </Link>
+            <Link
+              to="/admin/login"
+              className="iphone-nav-cta"
+              style={{ width: '100%', textAlign: 'center', display: 'block', marginTop: 6 }}
+              onClick={() => setOpen(false)}
+            >
+              Get Started
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
