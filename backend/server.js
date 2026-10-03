@@ -21,6 +21,7 @@ const loginLockDurationMs = 60 * 1000;
 const frontendOrigin = process.env.FRONTEND_ORIGIN?.trim().replace(/\/$/, '');
 const categories = new Set(['restaurants', 'dhabas', 'cafes']);
 const loginAttempts = new Map();
+const contactRateLimits = new Map();
 
 function apiError(status, message) {
   const error = new Error(message);
@@ -623,6 +624,47 @@ const server = createServer(async (request, response) => {
         throw apiError(404, 'This menu is unavailable.');
       }
       sendJson(response, 200, toPublicMenu(client));
+      return;
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/public/contact') {
+      const address = request.socket.remoteAddress ?? 'unknown';
+      const now = Date.now();
+      const hourAgo = now - 3600 * 1000;
+      let limitData = contactRateLimits.get(address) || { count: 0, firstRequest: now };
+      
+      if (limitData.firstRequest < hourAgo) {
+        limitData = { count: 0, firstRequest: now };
+      }
+      if (limitData.count >= 3) {
+        throw apiError(429, 'Too many requests. Try again later.');
+      }
+      
+      const input = await readJson(request);
+      
+      const name = String(input.name || '').trim();
+      const email = String(input.email || '').trim();
+      const phone = String(input.phone || '').trim();
+      const message = String(input.message || '').trim();
+      
+      if (!name || !email || !message) {
+        throw apiError(400, 'Name, email, and message are required.');
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw apiError(400, 'Invalid email format.');
+      }
+      
+      await pool.query(
+        'INSERT INTO contact_leads (name, email, phone, message, ip_address) VALUES ($1, $2, $3, $4, $5)',
+        [name, email, phone, message, address]
+      );
+      
+      limitData.count++;
+      contactRateLimits.set(address, limitData);
+      
+      sendJson(response, 200, { success: true });
       return;
     }
 

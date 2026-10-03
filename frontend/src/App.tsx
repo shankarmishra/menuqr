@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ChefHat } from 'lucide-react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useMatch } from 'react-router-dom';
-import HomePage from './pages/HomePage';
+import PublicHomePage from './pages/public/PublicHomePage';
 import MenuPage from './pages/customer/MenuPage';
 import AdminLayout from './layouts/AdminLayout';
 import AppLayout from './layouts/AppLayout';
@@ -93,7 +93,7 @@ function AppRoutes() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<PublicHomePage />} />
 
         {/* Customer Menu Route */}
         <Route path="/menu/:slug" element={<MenuPage key={menuSlug} />} />
