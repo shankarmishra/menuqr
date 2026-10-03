@@ -1,10 +1,10 @@
 # MenuQR API
 
-The API stores client profiles and embedded menu items in MongoDB. Admin sessions are also stored in MongoDB and expire automatically after eight hours. On an empty database, the API imports non-seed records from `backend/data/clients.json` once if that file exists; otherwise the collection starts empty. It never overwrites a non-empty collection. Existing browser `menuqr.clients` data is imported once when the admin first loads clients.
+The API stores client profiles and embedded menu items in PostgreSQL. Admin sessions are also authenticated via database records and expire automatically after eight hours. 
 
 ## Run locally
 
-Install backend dependencies and configure MongoDB once:
+Install backend dependencies and configure PostgreSQL once:
 
 ```powershell
 Push-Location .\backend
@@ -12,7 +12,7 @@ npm install
 Copy-Item .env.example .env
 ```
 
-Edit `backend/.env` and set `MONGODB_URI` to your local MongoDB URI or MongoDB Atlas connection string. In Atlas, create a database user and allow your IP address in Network Access. Keep `.env` private; it is git-ignored.
+Edit `backend/.env` and set `DATABASE_URL` to your local PostgreSQL connection string (e.g. `postgres://postgres:password@localhost:5432/menuqr`). Keep `.env` private; it is git-ignored.
 
 For email, set `RESEND_API_KEY` from your Resend dashboard and `ADMIN_EMAIL` to the admin's destination address. `RESEND_FROM_EMAIL` defaults to Resend's `onboarding@resend.dev` testing sender; this sender can only deliver to the Resend account's verified email address. To send welcome emails to arbitrary customers in production, verify a domain in Resend and set `RESEND_FROM_EMAIL` to an address on that domain. New registrations send an admin alert and a customer welcome email containing the selected plan, billing cycle, and price. Email delivery is best-effort and does not delay client creation. Set these variables in both local `backend/.env` and the Render backend service environment.
 
@@ -29,7 +29,7 @@ npm run dev
 ```
 
 Vite forwards `/api` requests to `http://127.0.0.1:3001`. The backend binds to loopback and is intended for local development.
-The built-in admin password is `MenuQR@2026!`. Set `ADMIN_PASSWORD` in `backend/.env` to override it. Successful logins use an HttpOnly, eight-hour MongoDB session; failed login attempts are temporarily rate-limited.
+The built-in admin password is `MenuQR@2026!`. Set `ADMIN_PASSWORD` in `backend/.env` to override it. Successful logins use an HttpOnly, eight-hour session; failed login attempts are temporarily rate-limited.
 
 ## Routes
 
@@ -46,4 +46,4 @@ The built-in admin password is `MenuQR@2026!`. Set `ADMIN_PASSWORD` in `backend/
 - `DELETE /api/admin/clients/:id` removes a client.
 - `GET /api/public/menus/:slug` returns active customer-facing menu data without owner contact or billing details.
 
-All `/api/admin/*` routes require a valid admin session. The built-in password is for local development; set a private `ADMIN_PASSWORD` and use HTTPS before deployment. Use a restricted MongoDB user and an IP allowlist for Atlas. Production deployments should additionally use a managed identity provider and review session-secret/password policies.
+All `/api/admin/*` routes require a valid admin session. The built-in password is for local development; set a private `ADMIN_PASSWORD` and use HTTPS before deployment. Production deployments should additionally use a managed identity provider and review session-secret/password policies.

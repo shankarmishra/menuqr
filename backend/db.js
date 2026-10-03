@@ -1,67 +1,52 @@
-import { MongoClient } from 'mongodb';
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import pg from 'pg';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-export const collections = {
-  users: null,
-  clients: null,
-  subscriptions: null,
-  menuItems: null,
-  qrCodes: null,
-  auditLogs: null,
-  sessions: null, // Legacy & active session tracking
-  notifications: null,
-};
+const { Pool } = pg;
 
-let mongoClient = null;
-export let database = null;
+export let pool = null;
 
 export async function connectDB(uri) {
-  if (mongoClient) return database;
+  if (pool) return pool;
   
   if (!uri) {
-    throw new Error('MONGODB_URI is required.');
+    throw new Error('DATABASE_URL is required.');
   }
 
-  mongoClient = new MongoClient(uri);
-  await mongoClient.connect();
-  database = mongoClient.db(process.env.MONGODB_DATABASE || 'menuqr');
+  // Handle postgres:// or postgresql:// protocols
+  if (!uri.startsWith('postgres')) {
+    console.warn('URI does not look like a postgres string, it might fail.');
+  }
 
-  collections.users = database.collection('users');
-  collections.clients = database.collection('clients');
-  collections.subscriptions = database.collection('subscriptions');
-  collections.menuItems = database.collection('menu_items');
-  collections.qrCodes = database.collection('qr_codes');
-  collections.auditLogs = database.collection('audit_logs');
-  collections.sessions = database.collection('admin_sessions');
-  collections.notifications = database.collection('notifications');
+  pool = new Pool({
+    connectionString: uri,
+  });
 
-  // Initialize Indexes
-  await Promise.all([
-    collections.users.createIndex({ email: 1 }, { unique: true }),
-    collections.users.createIndex({ tenantId: 1 }),
+  // Test connection
+  const client = await pool.connect();
+  try {
+    const res = await client.query('SELECT NOW()');
+    console.log('Connected to PostgreSQL:', res.rows[0].now);
+    await initializeSchema(client);
+  } finally {
+    client.release();
+  }
 
-    collections.clients.createIndex({ id: 1 }, { unique: true }), // Legacy ID
-    collections.clients.createIndex({ publicId: 1 }, { unique: true, sparse: true }),
-    collections.clients.createIndex({ menuSlug: 1 }, { unique: true }),
+  return pool;
+}
 
-    collections.subscriptions.createIndex({ tenantId: 1 }, { unique: true }),
-    collections.subscriptions.createIndex({ status: 1 }),
-
-    collections.menuItems.createIndex({ tenantId: 1 }),
-    collections.menuItems.createIndex({ id: 1 }, { unique: true }), // Item ID
-
-    collections.qrCodes.createIndex({ qrId: 1 }, { unique: true }),
-    collections.qrCodes.createIndex({ tenantId: 1 }, { unique: true }),
-
-    collections.sessions.createIndex({ token: 1 }, { unique: true }),
-    collections.sessions.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
-    
-    collections.notifications.createIndex({ id: 1 }, { unique: true }),
-    collections.notifications.createIndex({ createdAt: -1 }),
-  ]);
-
-  console.log(`Connected to MongoDB database "${database.databaseName}".`);
-  return database;
+async function initializeSchema(client) {
+  try {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const schemaPath = path.join(__dirname, 'schema.sql');
+    if (fs.existsSync(schemaPath)) {
+      const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+      await client.query(schemaSql);
+      console.log('Executed schema.sql');
+    }
+  } catch (error) {
+    console.error('Error executing schema.sql:', error);
+    throw error;
+  }
 }

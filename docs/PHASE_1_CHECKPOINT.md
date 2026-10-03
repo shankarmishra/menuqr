@@ -27,7 +27,7 @@
 - Automatic default generation of 1-year `Subscriptions` and stable `QRCodes` for legacy clients works flawlessly.
 
 ## Validation Status
-- **MongoDB Startup:** ✅ VERIFIED
+- **PostgreSQL Startup:** ✅ VERIFIED
 - **API Smoke Tests:** ✅ VERIFIED
 - **Cookie Security:** ✅ VERIFIED
 - **Frontend Build (`tsc` & `vite build`):** ✅ VERIFIED
@@ -35,4 +35,4 @@
 
 ## Known Limitations
 1. **Password Scaffolding:** Existing migrated legacy clients are mapped in the database, but they do NOT have passwords automatically created. Phase 2 must expose a secure email-based setup workflow for these accounts so owners can log in natively.
-2. **MongoDB Deployment:** Testing utilized a local environment (`mongodb-memory-server`), so a live MongoDB host must be provisioned and connected via `MONGODB_URI` before deploying to staging/production.
+2. **PostgreSQL Deployment (historically MongoDB):** Testing utilized a local environment (`local-pg`), so a live PostgreSQL host must be provisioned and connected via `DATABASE_URL` before deploying to staging/production.

@@ -128,7 +128,7 @@ Professionally designed layouts injected via the Theme System.
 * Tracked asynchronously to avoid blocking the customer menu load time.
 
 ## 23. Notifications
-* **System**: Centralized notification queue (MongoDB `notifications` collection).
+* **System**: Centralized notification queue (PostgreSQL `notifications` table).
 * **Delivery**: Resend API for email delivery.
 * **Logic**: Automated CRON job checks `expiryDate - 10 days` to inject `WARNING` alerts into the Restaurant Panel.
 
@@ -136,7 +136,7 @@ Professionally designed layouts injected via the Theme System.
 * **No Sensitive Data in QR**: QR code only contains `https://menuqr.in/m/CLIENT_PUBLIC_ID`.
 * **IDOR Prevention**: All tenant routes must validate ownership.
 * **Rate Limiting**: Apply strict limits to login endpoints and public menu endpoints to prevent scraping.
-* **Secrets**: `MONGODB_URI`, `JWT_SECRET`, and `RESEND_API_KEY` stored securely in environment variables.
+* **Secrets**: `DATABASE_URL`, `JWT_SECRET`, and `RESEND_API_KEY` stored securely in environment variables.
 
 ## 25. SEO
 * **Marketing Site**: Full semantic HTML, OpenGraph tags, high lighthouse score.

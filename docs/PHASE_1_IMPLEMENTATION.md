@@ -4,7 +4,7 @@
 Successfully transformed the backend into a robust multi-tenant foundation without breaking backward compatibility for the legacy public menu system. The backend was modularized to isolate database handling and authentication cleanly.
 
 ## Database & Collections
-* Extracted all MongoDB initialization logic into `backend/db.js`.
+* Extracted all PostgreSQL initialization logic into `backend/db.js`.
 * Initialized 8 distinct collections: `users`, `clients`, `subscriptions`, `menuItems`, `qrCodes`, `auditLogs`, `sessions`, `notifications`.
 * Applied strict indexes for high performance (`publicId`, `tenantId`, `qrId`, and unique email constraints).
 
@@ -28,7 +28,7 @@ Successfully transformed the backend into a robust multi-tenant foundation witho
   4. Generates missing `publicId`, default `Subscription`, and `QRCode` records.
 
 ## Known Limitations / Issues
-* **Database Offline**: Local testing of the backend (`node server.js`) is currently throwing a `MongoServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017` because a local MongoDB instance is not actively running on port 27017. You must start your MongoDB service to fully run the migrated backend.
+* **Database Offline**: Local testing of the backend (`node server.js`) is currently throwing a `MongoServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017` because a local PostgreSQL instance is not actively running on port 27017. You must start your PostgreSQL service to fully run the migrated backend.
 * **Passwords**: Legacy clients migrated do not have passwords initialized. They will require a reset flow or manual credential assignment in Phase 2.
 
 ## Next Recommended Phase

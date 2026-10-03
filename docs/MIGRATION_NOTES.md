@@ -40,7 +40,7 @@ Legacy clients have business profiles but **do not possess Restaurant Owner (Use
   1. The Super Admin panel will expose a new "Send Invite" button next to legacy clients.
   2. Clicking this generates a secure, single-use activation link.
   3. The restaurant owner receives an email (via Resend), clicks the link, and establishes their own password.
-  4. Only then is the `User` record created in MongoDB, bound safely to the existing `tenantId`.
+  4. Only then is the `User` record created in PostgreSQL (historically MongoDB), bound safely to the existing `tenantId`.
 
 ## Rollback Considerations
 * The migration script (`migrate-v1.js`) does **not** `delete` the legacy `client.menuItems` array from the `clients` collection.
@@ -49,4 +49,6 @@ Legacy clients have business profiles but **do not possess Restaurant Owner (Use
 
 ## Migration Result Status
 * **IMPLEMENTED**: Migration script logic built.
-* **NOT VERIFIED**: Real-world execution count pending local MongoDB availability testing.
+* **NOT VERIFIED**: Real-world execution count pending local PostgreSQL availability testing.
+
+

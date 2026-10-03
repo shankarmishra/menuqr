@@ -8,7 +8,7 @@
 * **Menu Items Editor**: React-based form to add/edit menu items with prices, categories, and diet types.
 * **QR Code Generator**: Generates a standard QR code pointing to `/menu/:slug`.
 * **Backend API**: Node.js + Express/HTTP API functioning with basic CRUD for clients.
-* **Database**: MongoDB integration works; clients are stored as documents.
+* **Database**: PostgreSQL integration works; clients are stored as relational tables. (Historically MongoDB)
 * **Authentication**: Basic Super Admin login using a single global password and session token.
 
 ## 2. WHAT PARTIALLY WORKS
@@ -23,7 +23,7 @@
 * **Analytics**: No tracking of QR scans or menu views.
 
 ## 4. WHAT SHOULD REMAIN
-* **Tech Stack**: React 19, Vite, Tailwind CSS, Framer Motion, Node.js, MongoDB.
+* **Tech Stack**: React 19, Vite, Tailwind CSS, Framer Motion, Node.js, PostgreSQL.
 * **Public Menu Foundation**: The fast, mobile-optimized approach to the customer menu is good and should be expanded upon.
 * **Admin Layout Foundation**: The sidebar and basic structure of the admin panel are solid.
 
@@ -50,7 +50,8 @@
 * **Infinite Scroll / Rendering**: Customer menu renders all items at once; a restaurant with 500 items will experience DOM lag.
 
 ## 10. ARCHITECTURE RISKS
-* **Monolithic Client Record**: Storing all menu items directly inside the `Client` document (`input.menuItems` array up to 300 items) will lead to massive document sizes and update conflicts. Menu items should ideally be a separate collection or strictly bounded.
+* **Monolithic Client Record**: Storing all menu items directly inside the `Client` document (`input.menuItems` array up to 300 items) will lead to massive document sizes and update conflicts. Menu items should be separate relational tables.
 
 ## 11. PERFORMANCE RISKS
 * **Image Loading**: Raw image URLs are used without a CDN, lazy loading, or resizing pipeline, which will severely impact the customer menu load time on mobile networks.
+
