@@ -1372,3 +1372,94 @@
   background: rgba(232, 120, 60, 0.2);
   color: var(--accent-orange);
 }
+
+/* ── PHOTOREALISTIC 3D ANGLED IPHONE 17 PRO MOCKUP (IMAGE 6 inspired) ── */
+.iphone-17-angled {
+  position: relative;
+  width: 310px;
+  height: 620px;
+  background: #090b0a;
+  border-radius: 46px;
+  border: 4px solid #4a4d52;
+  box-shadow: 
+    -20px 30px 60px rgba(0, 0, 0, 0.4),
+    inset 0 0 12px rgba(255, 255, 255, 0.2),
+    inset 0 0 24px rgba(0, 0, 0, 0.9);
+  transform: perspective(1200px) rotateY(-14deg) rotateX(8deg);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s;
+}
+
+.iphone-17-angled:hover {
+  transform: perspective(1200px) rotateY(-4deg) rotateX(2deg) scale(1.02);
+  box-shadow: -10px 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+/* ── 10 TEMPLATE RENDER STYLES IN PREVIEW STUDIO ───────────── */
+.template-studio-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 40px;
+  align-items: center;
+  margin-top: 40px;
+}
+
+@media (max-width: 900px) {
+  .template-studio-wrapper {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}
+
+.template-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.template-selector-card {
+  background: var(--bg-surface);
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.template-selector-card:hover {
+  border-color: var(--accent-orange);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(232, 120, 60, 0.15);
+}
+
+.template-selector-card.active {
+  border-color: var(--accent-orange);
+  background: rgba(232, 120, 60, 0.08);
+  box-shadow: 0 0 0 3px rgba(232, 120, 60, 0.2);
+}
+
+.template-card-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.template-card-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.template-card-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}

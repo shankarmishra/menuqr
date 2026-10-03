@@ -517,60 +517,397 @@ function BuiltForTableSection() {
   );
 }
 
-/* ── 05: TEMPLATE GALLERY (10 DISTINCT STRUCTURAL LAYOUTS) ────── */
-const templates = [
-  { name: '1. Minimal', bg: '#151c19', accent: '#e8783c', text: '#fff', style: 'Serif elegance, high whitespace' },
-  { name: '2. Luxury', bg: '#0d0d0d', accent: '#ffc928', text: '#f5e6d0', style: 'Gold foil accents, script font' },
-  { name: '3. Modern', bg: '#0f1923', accent: '#3b82f6', text: '#e2e8f0', style: 'Bold sans, special chef badges' },
-  { name: '4. Cafe', bg: '#f5f0e8', accent: '#8b6914', text: '#3d2e1a', style: 'Parchment dual-column drinks' },
-  { name: '5. Indian', bg: '#1c0f0a', accent: '#e85d3c', text: '#fde8d0', style: 'Royal crimson, veg indicators' },
-  { name: '6. Fine Dining', bg: '#0a0a0a', accent: '#d4af37', text: '#f0ead6', style: 'Tasting course sequence' },
-  { name: '7. Bakery', bg: '#faf4ee', accent: '#b5651d', text: '#3d2e1a', style: 'Grid cards, pastry tags' },
-  { name: '8. Premium Dark', bg: '#1e293b', accent: '#34b56a', text: '#f8fafc', style: 'Slate charcoal high-density' },
-  { name: '9. Classic', bg: '#f8f6f0', accent: '#2d5016', text: '#1a1a1a', style: 'Bistro double-line borders' },
-  { name: '10. Image-Heavy', bg: '#1a0520', accent: '#e040fb', text: '#f3e5f5', style: 'Craving photography emphasis' },
+/* ── 05: TEMPLATE GALLERY (INTERACTIVE STUDIO & LIVE PREVIEW) ── */
+interface TemplateDef {
+  id: string;
+  name: string;
+  badge: string;
+  desc: string;
+  bg: string;
+  text: string;
+  accent: string;
+  font: string;
+  renderType: 'gold-stars' | 'yellow-brush' | 'wavy-badge' | 'bifold-wood' | 'larana-wave' | 'teal-starburst' | 'minimal-white' | 'street-food' | 'royal-crimson' | 'craving-grid';
+}
+
+const TEMPLATES: TemplateDef[] = [
+  {
+    id: 'gold-stars',
+    name: '1. Golden Star Luxury',
+    badge: 'Fine Dining',
+    desc: 'Dark obsidian, gold stardust border, centered luxury course layout',
+    bg: '#0d0d0d',
+    text: '#f5e6d0',
+    accent: '#ffc928',
+    font: 'serif',
+    renderType: 'gold-stars',
+  },
+  {
+    id: 'yellow-brush',
+    name: '2. Yellow Brush Chalkboard',
+    badge: 'Chalkboard',
+    desc: 'Chalkboard texture, yellow brush badge, top dish photo',
+    bg: '#1a1d20',
+    text: '#ffffff',
+    accent: '#ffc928',
+    font: 'sans-serif',
+    renderType: 'yellow-brush',
+  },
+  {
+    id: 'wavy-badge',
+    name: '3. Wavy Graphic Badges',
+    badge: 'Poster Layout',
+    desc: 'Yellow wavy header badges, section category division cards',
+    bg: '#121418',
+    text: '#ffffff',
+    accent: '#ffc928',
+    font: 'sans-serif',
+    renderType: 'wavy-badge',
+  },
+  {
+    id: 'bifold-wood',
+    name: '4. Bifold Wood Master',
+    badge: 'Grill & Bar',
+    desc: 'Dark wood texture, yellow paint headers, food dish thumbnails',
+    bg: '#161412',
+    text: '#f8fafc',
+    accent: '#e8783c',
+    font: 'sans-serif',
+    renderType: 'bifold-wood',
+  },
+  {
+    id: 'larana-wave',
+    name: '5. Larana Wave Bistro',
+    badge: 'Modern Bistro',
+    desc: 'Top wave graphic, clean 2-column text list, bottom photo gallery',
+    bg: '#151b1e',
+    text: '#ffffff',
+    accent: '#e8783c',
+    font: 'sans-serif',
+    renderType: 'larana-wave',
+  },
+  {
+    id: 'teal-starburst',
+    name: '6. Teal Card & Starburst',
+    badge: 'Best Seller',
+    desc: 'Deep teal slate backdrop, rounded cards, starburst badge',
+    bg: '#0a1d24',
+    text: '#e2f1f8',
+    accent: '#ffc928',
+    font: 'sans-serif',
+    renderType: 'teal-starburst',
+  },
+  {
+    id: 'minimal-white',
+    name: '7. Minimalist Linen',
+    badge: 'Minimal White',
+    desc: 'Crisp white background, hairline dividers, elegant serif typography',
+    bg: '#ffffff',
+    text: '#111827',
+    accent: '#e8783c',
+    font: 'serif',
+    renderType: 'minimal-white',
+  },
+  {
+    id: 'street-food',
+    name: '8. Vibrant Street Food',
+    badge: 'Cafe & QSR',
+    desc: 'Vibrant orange pills, Veg/Non-Veg badge indicators',
+    bg: '#faf8f4',
+    text: '#111827',
+    accent: '#e8783c',
+    font: 'sans-serif',
+    renderType: 'street-food',
+  },
+  {
+    id: 'royal-crimson',
+    name: '9. Royal Indian Spice',
+    badge: 'Indian Cuisine',
+    desc: 'Deep crimson & gold border framing, intricate Indian dish cards',
+    bg: '#1c0f0a',
+    text: '#fde8d0',
+    accent: '#ffc928',
+    font: 'serif',
+    renderType: 'royal-crimson',
+  },
+  {
+    id: 'craving-grid',
+    name: '10. Image Craving Grid',
+    badge: 'Photo Focused',
+    desc: 'Large food photography cards with floating price overlays',
+    bg: '#0f172a',
+    text: '#f8fafc',
+    accent: '#38bdf8',
+    font: 'sans-serif',
+    renderType: 'craving-grid',
+  },
 ];
 
 function TemplateGallerySection() {
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const selectedTemplate = TEMPLATES[selectedIdx];
+
+  const sampleDishes = [
+    { name: 'Smoked Salmon Tartare', category: 'Starters', price: '₹420', desc: 'Avocado & goat cheese', veg: false, emoji: '🥩' },
+    { name: 'Grilled Filet Mignon', category: 'Main Course', price: '₹780', desc: 'Red wine reduction', veg: false, emoji: '🍖' },
+    { name: 'Wild Mushroom Risotto', category: 'Main Course', price: '₹520', desc: 'Truffle oil & parmesan', veg: true, emoji: '🍄' },
+    { name: 'Chocolate Fondant', category: 'Dessert', price: '₹340', desc: 'Vanilla bean ice cream', veg: true, emoji: '🍫' },
+  ];
+
   return (
     <Section id="templates">
       <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={stagger} style={{ textAlign: 'center' }}>
-        <motion.p variants={fadeUp} className="mkt-kicker">10 Unique Templates</motion.p>
-        <motion.h2 variants={fadeUp} className="mkt-h2">Your menu. Your style.</motion.h2>
+        <motion.p variants={fadeUp} className="mkt-kicker">10 Live Menu Templates</motion.p>
+        <motion.h2 variants={fadeUp} className="mkt-h2">Select a template. See your menu instant-preview.</motion.h2>
         <motion.p variants={fadeUp} className="mkt-body" style={{ margin: '0 auto' }}>
-          Every template has its own structure, typography, and character — not just different colors.
+          Select any template below to test how your restaurant menu dynamically formats inside our photorealistic 3D iPhone 17 Pro mockup.
         </motion.p>
       </motion.div>
-      <div className="mkt-templates-scroll" style={{ marginTop: 40 }}>
-        {templates.map((t, i) => (
-          <motion.div
-            key={t.name}
-            className="mkt-template-card"
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: i * 0.08 }}
-          >
-            <div
-              className="mkt-template-preview"
-              style={{ background: t.bg, color: t.text }}
+
+      <div className="template-studio-wrapper">
+        {/* Left: 10 Template Selector Grid */}
+        <div className="template-selector-grid">
+          {TEMPLATES.map((t, idx) => (
+            <motion.div
+              key={t.id}
+              className={`template-selector-card${selectedIdx === idx ? ' active' : ''}`}
+              onClick={() => setSelectedIdx(idx)}
+              whileTap={{ scale: 0.97 }}
             >
-              <div style={{ fontSize: 10, fontWeight: 700, color: t.accent, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                {t.style}
-              </div>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Restaurant Menu</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-                {['Starters', 'Main Course', 'Desserts'].map((cat) => (
-                  <div key={cat} style={{ padding: '8px 10px', background: `${t.accent}18`, borderRadius: 6, fontSize: 11 }}>
-                    <div style={{ fontWeight: 600, marginBottom: 2 }}>{cat}</div>
-                    <div style={{ opacity: 0.7, fontSize: 10 }}>₹199 – ₹499</div>
-                  </div>
-                ))}
-              </div>
+              <span className="template-card-badge" style={{ background: `${t.accent}25`, color: t.accent }}>
+                {t.badge}
+              </span>
+              <div className="template-card-title">{t.name}</div>
+              <div className="template-card-desc">{t.desc}</div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Right: Photorealistic 3D Angled iPhone 17 Pro Mockup (Image 6 Inspired) */}
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div className="iphone-17-angled">
+            <div className="iphone-notch">
+              <div className="iphone-lens" />
             </div>
-            <div className="mkt-template-label">{t.name}</div>
-          </motion.div>
-        ))}
+            <div className="iphone-glare" />
+            <div
+              className="iphone-screen"
+              style={{
+                background: selectedTemplate.bg,
+                color: selectedTemplate.text,
+                fontFamily: selectedTemplate.font === 'serif' ? 'Georgia, serif' : 'system-ui, sans-serif',
+                padding: '44px 14px 16px',
+                transition: 'all 0.4s ease',
+              }}
+            >
+              {/* Dynamic Live Menu Content Renderer */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedTemplate.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                  style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                >
+                  {/* Render 1: Golden Star Luxury */}
+                  {selectedTemplate.renderType === 'gold-stars' && (
+                    <div style={{ textTransform: 'uppercase', textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <div style={{ fontSize: 10, letterSpacing: '0.2em', color: selectedTemplate.accent }}>✦ MENU ✦</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.15em', marginBottom: 4 }}>HANNAH & TAYLOR</div>
+                      <div style={{ fontSize: 9, opacity: 0.7, marginBottom: 12 }}>FINE DINING EXPERIENCE</div>
+
+                      {['STARTER', 'MAIN COURSE', 'DESSERT'].map((cat) => (
+                        <div key={cat} style={{ borderBottom: `1px solid ${selectedTemplate.accent}40`, paddingBottom: 8 }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: selectedTemplate.accent, letterSpacing: '0.1em' }}>{cat}</div>
+                          {sampleDishes.filter(d => cat.includes('MAIN') ? d.category === 'Main Course' : d.category.toUpperCase().includes(cat)).slice(0, 1).map(d => (
+                            <div key={d.name} style={{ marginTop: 4 }}>
+                              <div style={{ fontSize: 10, fontWeight: 600 }}>{d.name}</div>
+                              <div style={{ fontSize: 9, color: selectedTemplate.accent }}>{d.price}</div>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Render 2: Yellow Brush Chalkboard */}
+                  {selectedTemplate.renderType === 'yellow-brush' && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ background: '#ffc928', color: '#000', padding: '6px 12px', fontWeight: 900, fontSize: 14, textTransform: 'uppercase', borderRadius: 4, textAlign: 'center' }}>
+                        FOOD MENU
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#25292e', padding: 8, borderRadius: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 11, fontWeight: 700 }}>Chef Special Steak</div>
+                          <div style={{ fontSize: 9, color: '#ffc928' }}>₹780</div>
+                        </div>
+                        <span style={{ fontSize: 24 }}>🥩</span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {sampleDishes.map(d => (
+                          <div key={d.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, borderBottom: '1px dashed #ffffff30', paddingBottom: 4 }}>
+                            <span>{d.name}</span>
+                            <span style={{ color: '#ffc928', fontWeight: 700 }}>{d.price}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Render 3: Wavy Graphic Badges */}
+                  {selectedTemplate.renderType === 'wavy-badge' && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ background: '#ffc928', color: '#000', padding: '6px 10px', borderRadius: 12, fontWeight: 800, fontSize: 12, textAlign: 'center' }}>
+                        SNACK & FOOD MENU
+                      </div>
+                      {['FOOD MENU', 'APPETIZER MENU'].map(cat => (
+                        <div key={cat} style={{ background: '#1e2228', padding: 8, borderRadius: 8 }}>
+                          <div style={{ fontSize: 9, fontWeight: 800, color: '#ffc928', marginBottom: 4 }}>{cat}</div>
+                          {sampleDishes.slice(0, 2).map(d => (
+                            <div key={d.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, marginBottom: 2 }}>
+                              <span>{d.name}</span>
+                              <span style={{ color: '#ffc928' }}>{d.price}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Render 4: Bifold Wood Master */}
+                  {selectedTemplate.renderType === 'bifold-wood' && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ fontSize: 13, fontWeight: 900, color: '#e8783c', textAlign: 'center', textTransform: 'uppercase' }}>
+                        GRILL & BAR MENU
+                      </div>
+                      <div style={{ background: '#e8783c', color: '#fff', fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 4 }}>
+                        BURGERS & MAINS
+                      </div>
+                      {sampleDishes.map(d => (
+                        <div key={d.name} style={{ display: 'flex', gap: 8, alignItems: 'center', background: '#221e1a', padding: 6, borderRadius: 6 }}>
+                          <span style={{ fontSize: 16 }}>{d.emoji}</span>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 9, fontWeight: 700 }}>{d.name}</div>
+                            <div style={{ fontSize: 8, color: '#e8783c' }}>{d.price}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Render 5: Larana Wave Bistro */}
+                  {selectedTemplate.renderType === 'larana-wave' && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ background: 'linear-gradient(135deg, #e8783c, #ffc928)', padding: 10, borderRadius: 10, textAlign: 'center', color: '#000' }}>
+                        <div style={{ fontSize: 13, fontWeight: 900 }}>LARANA BISTRO</div>
+                        <div style={{ fontSize: 8, opacity: 0.8 }}>FOOD MENU</div>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                        {sampleDishes.map(d => (
+                          <div key={d.name} style={{ background: '#20282c', padding: 6, borderRadius: 6 }}>
+                            <div style={{ fontSize: 9, fontWeight: 700 }}>{d.name}</div>
+                            <div style={{ fontSize: 8, color: '#e8783c' }}>{d.price}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Render 6: Teal Card & Starburst */}
+                  {selectedTemplate.renderType === 'teal-starburst' && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: 0, right: 0, background: '#ffc928', color: '#000', fontSize: 7, fontWeight: 900, padding: '3px 6px', borderRadius: 4 }}>
+                        BEST SELLER
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 900, color: '#ffc928' }}>FOOD MENU</div>
+                      {sampleDishes.map(d => (
+                        <div key={d.name} style={{ background: '#112a34', padding: 8, borderRadius: 10, border: '1px solid #1c3c4a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <div style={{ fontSize: 10, fontWeight: 700 }}>{d.name}</div>
+                            <div style={{ fontSize: 8, opacity: 0.7 }}>{d.desc}</div>
+                          </div>
+                          <span style={{ fontSize: 10, color: '#ffc928', fontWeight: 800 }}>{d.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Render 7: Minimalist White */}
+                  {selectedTemplate.renderType === 'minimal-white' && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ textAlign: 'center', borderBottom: '1px solid #111827', paddingBottom: 8 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700 }}>THE LINEN BISTRO</div>
+                        <div style={{ fontSize: 8, letterSpacing: '0.15em', opacity: 0.6 }}>AUTUMN MENU</div>
+                      </div>
+                      {sampleDishes.map(d => (
+                        <div key={d.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, borderBottom: '1px solid #e5e7eb', paddingBottom: 6 }}>
+                          <div>
+                            <div style={{ fontWeight: 600 }}>{d.name}</div>
+                            <div style={{ fontSize: 8, opacity: 0.6 }}>{d.desc}</div>
+                          </div>
+                          <span style={{ fontWeight: 700 }}>{d.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Render 8: Street Food & Cafe */}
+                  {selectedTemplate.renderType === 'street-food' && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: '#e8783c' }}>STREET BISTRO</div>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <span style={{ background: '#e8783c', color: '#fff', fontSize: 8, padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>All</span>
+                        <span style={{ background: '#16a34a15', color: '#16a34a', fontSize: 8, padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>🟢 Veg</span>
+                        <span style={{ background: '#dc262615', color: '#dc2626', fontSize: 8, padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>🔴 Non-Veg</span>
+                      </div>
+                      {sampleDishes.map(d => (
+                        <div key={d.name} style={{ background: '#ffffff', padding: 8, borderRadius: 8, border: '1px solid #e5e2d9', display: 'flex', justifyContent: 'space-between' }}>
+                          <div>
+                            <div style={{ fontSize: 10, fontWeight: 700 }}>{d.name}</div>
+                            <div style={{ fontSize: 8, color: d.veg ? '#16a34a' : '#dc2626' }}>{d.veg ? '🟢 Veg' : '🔴 Non-Veg'}</div>
+                          </div>
+                          <span style={{ fontSize: 10, fontWeight: 800, color: '#e8783c' }}>{d.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Render 9: Royal Crimson */}
+                  {selectedTemplate.renderType === 'royal-crimson' && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, border: '1px solid #ffc92880', padding: 8, borderRadius: 6 }}>
+                      <div style={{ textAlign: 'center', color: '#ffc928', fontSize: 12, fontWeight: 700, letterSpacing: '0.1em' }}>
+                        ROYAL SPICE
+                      </div>
+                      {sampleDishes.map(d => (
+                        <div key={d.name} style={{ background: '#2a1610', padding: 6, borderRadius: 4, borderLeft: '2px solid #ffc928' }}>
+                          <div style={{ fontSize: 9, fontWeight: 700, color: '#fde8d0' }}>{d.name}</div>
+                          <div style={{ fontSize: 8, color: '#ffc928' }}>{d.price}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Render 10: Craving Grid */}
+                  {selectedTemplate.renderType === 'craving-grid' && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#38bdf8' }}>CRAVING GRID</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                        {sampleDishes.map(d => (
+                          <div key={d.name} style={{ background: '#1e293b', padding: 8, borderRadius: 8, textAlign: 'center' }}>
+                            <span style={{ fontSize: 20 }}>{d.emoji}</span>
+                            <div style={{ fontSize: 8, fontWeight: 700, marginTop: 4 }}>{d.name}</div>
+                            <div style={{ fontSize: 8, color: '#38bdf8', fontWeight: 800, marginTop: 2 }}>{d.price}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
       </div>
     </Section>
   );
