@@ -6,7 +6,7 @@ import {
   Smartphone, Utensils, Settings, Palette,
   Menu as MenuIcon, X, Search, Coffee, UtensilsCrossed,
   Store, ConciergeBell, ShoppingBag, Check, RefreshCw,
-  Send, Eye, type LucideIcon,
+  Send, Eye, Sun, Moon, type LucideIcon,
 } from 'lucide-react';
 import './MarketingPage.css';
 
@@ -118,7 +118,7 @@ function AcrylicQRPlacard({ title = 'TABLE 04', name = 'GreenBite Cafe', tagline
 }
 
 /* ── IPHONE DYNAMIC ISLAND FLOATING PILL HEADER ─────────────── */
-function Header() {
+function Header({ theme, onToggleTheme }: { theme: 'light' | 'dark'; onToggleTheme: () => void }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -142,17 +142,37 @@ function Header() {
           <a href="#templates" className="iphone-nav-link">Templates</a>
           <a href="#pricing" className="iphone-nav-link">Pricing</a>
           <Link to="/admin/login" className="iphone-nav-link">Login</Link>
+
+          {/* Theme Toggle Button */}
+          <button
+            className="iphone-theme-toggle-btn"
+            onClick={onToggleTheme}
+            aria-label="Toggle Theme"
+            title={`Switch to ${theme === 'light' ? 'Dark Emerald' : 'Creamy Light'} theme`}
+          >
+            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
+
           <Link to="/admin/login" className="iphone-nav-cta">Get Started</Link>
         </nav>
 
-        {/* Mobile Hamburger / Toggle */}
-        <button
-          className="iphone-mobile-toggle-btn"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle Navigation"
-        >
-          {open ? <X size={18} /> : <MenuIcon size={18} />}
-        </button>
+        {/* Mobile Hamburger & Theme Toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            className="iphone-theme-toggle-btn"
+            onClick={onToggleTheme}
+            aria-label="Toggle Theme"
+          >
+            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
+          <button
+            className="iphone-mobile-toggle-btn"
+            onClick={() => setOpen(!open)}
+            aria-label="Toggle Navigation"
+          >
+            {open ? <X size={18} /> : <MenuIcon size={18} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Dynamic Island Expansion Card */}
@@ -929,9 +949,15 @@ function Footer() {
 
 /* ── PAGE EXPORT ─────────────────────────────────────────────── */
 export default function MarketingPage() {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  const toggleTheme = () => {
+    setTheme((t) => (t === 'light' ? 'dark' : 'light'));
+  };
+
   return (
-    <main className="marketing-page">
-      <Header />
+    <main className={`marketing-page theme-${theme}`}>
+      <Header theme={theme} onToggleTheme={toggleTheme} />
       <HeroSection />
       <UpdateDemoSection />
       <PhysicalQRSection />

@@ -3,7 +3,34 @@
    Brand: Dark Emerald #151c19 | Orange #e8783c | Gold #ffc928
    ═══════════════════════════════════════════════════════════════ */
 
-.marketing-page {
+.marketing-page,
+.marketing-page.theme-light {
+  --bg-deep: #f3efe6;        /* Soft warm parchment backdrop */
+  --bg-primary: #faf8f4;     /* Creamy ivory background */
+  --bg-surface: #ffffff;     /* Pure white card surfaces */
+  --bg-elevated: #eae5d9;    /* Cream hover fill / pill highlights */
+  --accent-orange: #e8783c;  /* Signature MenuQR Orange */
+  --accent-orange-hover: #d96227;
+  --accent-gold: #d97706;    /* Warm rich amber */
+  --accent-green: #16a34a;   /* Fresh Veg Green */
+  --accent-red: #dc2626;     /* Non-Veg Red */
+  --text-primary: #111827;   /* Rich deep obsidian headings */
+  --text-secondary: #374151; /* Refined charcoal body copy */
+  --text-muted: #6b7280;     /* Muted grey captions */
+  --border-color: #e5e2d9;   /* Delicate warm border */
+  --card-shadow: 0 12px 32px rgba(0, 0, 0, 0.05);
+  --max-width: 1280px;
+  --section-pad-y: 120px;
+  --section-pad-x: 48px;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  overflow-x: hidden;
+  transition: background 0.3s, color 0.3s;
+}
+
+.marketing-page.theme-dark {
   --bg-deep: #0d1412;
   --bg-primary: #151c19;
   --bg-surface: #1d2723;
@@ -17,14 +44,7 @@
   --text-secondary: #c5d0ca;
   --text-muted: #7a8a82;
   --border-color: #2a3832;
-  --max-width: 1280px;
-  --section-pad-y: 120px;
-  --section-pad-x: 48px;
-
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  overflow-x: hidden;
+  --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 @media (max-width: 768px) {
@@ -313,10 +333,15 @@
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding-top: 72px;
-  background: radial-gradient(ellipse at 70% 50%, #1a2e26 0%, var(--bg-deep) 75%);
+  padding-top: 100px;
+  background: radial-gradient(ellipse at 70% 50%, #f3efe6 0%, var(--bg-primary) 75%);
   position: relative;
   overflow: hidden;
+  transition: background 0.3s;
+}
+
+.marketing-page.theme-dark .mkt-hero {
+  background: radial-gradient(ellipse at 70% 50%, #1a2e26 0%, var(--bg-deep) 75%);
 }
 
 .mkt-hero-inner {
@@ -1321,4 +1346,29 @@
 @media (min-width: 769px) {
   .iphone-mobile-toggle-btn { display: none !important; }
   .iphone-mobile-menu-card { display: none !important; }
+}
+
+/* ── THEME TOGGLE BUTTON IN NAVBAR ─────────────────────────── */
+.iphone-theme-toggle-btn {
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.marketing-page.theme-dark .iphone-theme-toggle-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.iphone-theme-toggle-btn:hover {
+  background: rgba(232, 120, 60, 0.2);
+  color: var(--accent-orange);
 }
