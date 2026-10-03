@@ -10,10 +10,10 @@ import {
 } from 'lucide-react';
 import './MarketingPage.css';
 
-/* ── Animation Helpers ───────────────────────────────────────── */
+/* ── Animation Curve Constants ───────────────────────────────── */
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' as const } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const } },
 };
 const stagger = {
   hidden: { opacity: 0 },
@@ -29,6 +29,43 @@ function Section({
         {children}
       </div>
     </section>
+  );
+}
+
+/* ── REUSABLE PHOTOREALISTIC IPHONE 16 PRO COMPONENT ─────────── */
+function IPhone16ProFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="iphone-frame">
+      <div className="iphone-notch">
+        <div className="iphone-lens" />
+      </div>
+      <div className="iphone-glare" />
+      <div className="iphone-screen">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ── REUSABLE 3D ACRYLIC PLACARD COMPONENT ───────────────────── */
+function AcrylicQRPlacard({ title = 'TABLE 04', name = 'GreenBite Cafe', tagline = 'Scan for Digital Menu' }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className="mkt-qr-placard-3d">
+        <div className="mkt-qr-placard-header">
+          <ChefHat size={16} />
+          <span>{title}</span>
+        </div>
+        <div className="mkt-qr-placard-code">
+          <QrCode size={94} color="#151c19" strokeWidth={1.5} />
+        </div>
+        <div className="mkt-qr-placard-footer">
+          <div className="mkt-qr-placard-name">{name}</div>
+          <div className="mkt-qr-placard-tagline">{tagline}</div>
+        </div>
+      </div>
+      <div className="mkt-qr-stand-base" />
+    </div>
   );
 }
 
@@ -80,79 +117,68 @@ function HeroSection() {
         </motion.div>
 
         <motion.div
-          className="mkt-hero-visual"
+          className="mkt-hero-composite"
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          {/* Machine */}
-          <div className="mkt-machine">
-            <div className="mkt-machine-display">
-              <motion.div
-                className="mkt-machine-display-dot"
-                animate={prefersReduced ? {} : { opacity: [1, 0.4, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              <span className="mkt-machine-display-text">MenuQR Ready</span>
-            </div>
-            <div className="mkt-machine-sticker-area">
-              <motion.div
-                className="mkt-machine-sticker"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.6, type: 'spring' }}
-              >
-                <div className="mkt-machine-sticker-logo"><ChefHat size={22} /></div>
-                <span className="mkt-machine-sticker-name">Your Restaurant</span>
-                <div className="mkt-machine-sticker-qr"><QrCode size={40} strokeWidth={1.2} /></div>
-                <span className="mkt-machine-sticker-label">Scan for Menu</span>
-              </motion.div>
-            </div>
-            <div className="mkt-machine-slot">
-              <motion.div
-                className="mkt-machine-slot-inner"
-                style={{ background: 'linear-gradient(90deg, #e8783c, #ffc928)' }}
-                animate={prefersReduced ? {} : { x: ['-100%', '100%'] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              />
-            </div>
-          </div>
-
-          {/* Scan beam */}
+          {/* Acrylic QR Stand */}
           <motion.div
-            className="mkt-scan-beam"
-            animate={prefersReduced ? {} : { opacity: [0, 0.8, 0], scaleX: [0.5, 1.2, 0.5] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            animate={prefersReduced ? {} : { y: [0, -8, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <AcrylicQRPlacard name="GreenBite Bistro" tagline="Table 04 · Scan Menu" />
+          </motion.div>
+
+          {/* Animated Laser Scan Beam */}
+          <motion.div
+            className="mkt-scan-beam-laser"
+            animate={prefersReduced ? {} : { top: ['20%', '80%', '20%'] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           />
 
-          {/* Phone */}
-          <div className="mkt-hero-phone">
-            <div className="mkt-hero-phone-notch" />
-            <div className="mkt-hero-phone-screen">
+          {/* Photorealistic iPhone 16 Pro */}
+          <motion.div
+            style={{ position: 'absolute', right: '-10px', bottom: '-10px' }}
+            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.8, type: 'spring' }}
+          >
+            <IPhone16ProFrame>
               <div className="mkt-phone-menu-header">
                 <div className="mkt-phone-menu-avatar"><ChefHat size={14} /></div>
-                <span className="mkt-phone-menu-name">Your Menu</span>
+                <span className="mkt-phone-menu-name">GreenBite Bistro</span>
+              </div>
+              <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+                <span style={{ fontSize: 9, padding: '2px 6px', background: '#e8783c', color: '#fff', borderRadius: 10, fontWeight: 600 }}>All</span>
+                <span style={{ fontSize: 9, padding: '2px 6px', background: '#1d2723', color: '#7a8a82', borderRadius: 10 }}>Starters</span>
+                <span style={{ fontSize: 9, padding: '2px 6px', background: '#1d2723', color: '#7a8a82', borderRadius: 10 }}>Mains</span>
               </div>
               <div className="mkt-phone-menu-items">
                 {[
-                  { name: 'Classic Burger', price: '₹199' },
-                  { name: 'Farmhouse Pizza', price: '₹299' },
-                  { name: 'Cold Coffee', price: '₹149' },
+                  { name: 'Paneer Tikka', price: '₹280', tag: '🟢 Veg' },
+                  { name: 'Butter Chicken', price: '₹380', tag: '🔴 Non-Veg' },
+                  { name: 'Dal Makhani', price: '₹220', tag: '🟢 Veg' },
+                  { name: 'Garlic Naan', price: '₹60', tag: '🟢 Veg' },
                 ].map((item) => (
                   <div className="mkt-phone-menu-item" key={item.name}>
-                    <span className="mkt-phone-menu-item-name">{item.name}</span>
+                    <div>
+                      <div className="mkt-phone-menu-item-name">{item.name}</div>
+                      <div style={{ fontSize: 8, color: '#7a8a82' }}>{item.tag}</div>
+                    </div>
                     <span className="mkt-phone-menu-item-price">{item.price}</span>
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
+            </IPhone16ProFrame>
+          </motion.div>
         </motion.div>
       </div>
     </section>
   );
 }
 
+/* ── 02: ONE QR, COUNTLESS UPDATES ───────────────────────────── */
 function UpdateDemoSection() {
   const prices = ['₹280', '₹320', '₹350'];
   const [priceIdx, setPriceIdx] = useState(0);
@@ -186,15 +212,18 @@ function UpdateDemoSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 0.6, delay: 0.2 }}
+        style={{ marginTop: 40 }}
       >
-        {/* Editor */}
+        {/* Dashboard Editor */}
         <div className="mkt-editor-panel">
           <div className="mkt-editor-panel-header">
-            <Settings size={16} color="#e8783c" />
-            <span className="mkt-editor-panel-title">Restaurant Panel</span>
+            <span className="mkt-editor-panel-title">
+              <Settings size={18} color="#e8783c" /> Restaurant Panel Editor
+            </span>
+            <span style={{ fontSize: 11, background: '#e8783c20', color: '#e8783c', padding: '4px 8px', borderRadius: 4, fontWeight: 600 }}>LIVE DEMO</span>
           </div>
           <div className="mkt-editor-row">
-            <span className="mkt-editor-label">Paneer Tikka</span>
+            <span className="mkt-editor-label">Paneer Tikka Special</span>
             <AnimatePresence mode="wait">
               <motion.span
                 key={prices[priceIdx]}
@@ -209,7 +238,7 @@ function UpdateDemoSection() {
             </AnimatePresence>
           </div>
           <div className="mkt-editor-row">
-            <span className="mkt-editor-label">Butter Chicken</span>
+            <span className="mkt-editor-label">Butter Chicken Curry</span>
             <span className="mkt-editor-value">₹380</span>
           </div>
           <motion.div
@@ -217,46 +246,47 @@ function UpdateDemoSection() {
             animate={published ? { scale: [1, 1.03, 1] } : {}}
             transition={{ duration: 0.3 }}
           >
-            <Send size={14} /> {published ? 'Published ✓' : 'Publish Changes'}
+            <Send size={15} /> {published ? 'Published to Menu ✓' : 'Updating Price...'}
           </motion.div>
         </div>
 
-        {/* Phone */}
-        <div>
-          <div className="mkt-demo-phone" style={{ margin: '0 auto' }}>
-            <div className="mkt-demo-phone-screen">
-              <div className="mkt-phone-menu-header">
-                <div className="mkt-phone-menu-avatar"><ChefHat size={14} /></div>
-                <span className="mkt-phone-menu-name">Customer View</span>
+        {/* Live Phone Screen */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <IPhone16ProFrame>
+            <div className="mkt-phone-menu-header">
+              <div className="mkt-phone-menu-avatar"><ChefHat size={14} /></div>
+              <span className="mkt-phone-menu-name">Live Customer View</span>
+            </div>
+            <div className="mkt-phone-menu-items">
+              <div className="mkt-phone-menu-item">
+                <div>
+                  <span className="mkt-phone-menu-item-name">Paneer Tikka Special</span>
+                  <div style={{ fontSize: 8, color: '#34b56a' }}>🟢 Chef's Recommendation</div>
+                </div>
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={published ? prices[priceIdx] : 'old'}
+                    className="mkt-phone-menu-item-price"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {published ? prices[priceIdx] : prices[(priceIdx + prices.length - 1) % prices.length]}
+                  </motion.span>
+                </AnimatePresence>
               </div>
-              <div className="mkt-phone-menu-items">
-                <div className="mkt-phone-menu-item">
-                  <span className="mkt-phone-menu-item-name">Paneer Tikka</span>
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={published ? prices[priceIdx] : 'old'}
-                      className="mkt-phone-menu-item-price"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {published ? prices[priceIdx] : prices[(priceIdx + prices.length - 1) % prices.length]}
-                    </motion.span>
-                  </AnimatePresence>
-                </div>
-                <div className="mkt-phone-menu-item">
-                  <span className="mkt-phone-menu-item-name">Butter Chicken</span>
-                  <span className="mkt-phone-menu-item-price">₹380</span>
-                </div>
+              <div className="mkt-phone-menu-item">
+                <span className="mkt-phone-menu-item-name">Butter Chicken Curry</span>
+                <span className="mkt-phone-menu-item-price">₹380</span>
               </div>
             </div>
-          </div>
+          </IPhone16ProFrame>
           <div className="mkt-qr-badge">
-            <div className="mkt-qr-badge-icon"><QrCode size={22} /></div>
+            <div className="mkt-qr-badge-icon"><QrCode size={24} /></div>
             <div>
-              <div className="mkt-qr-badge-label">✓ Same QR — No Reprint</div>
-              <div className="mkt-qr-badge-sublabel">QR identity unchanged after publish</div>
+              <div className="mkt-qr-badge-label">✓ SAME QR — NO REPRINT</div>
+              <div className="mkt-qr-badge-sublabel">QR identity remains 100% stable after menu edit</div>
             </div>
           </div>
         </div>
@@ -277,56 +307,50 @@ function PhysicalQRSection() {
         </motion.p>
       </motion.div>
       <motion.div
-        className="mkt-physical-demo"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 48, flexWrap: 'wrap' }}
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 0.7, delay: 0.2 }}
       >
-        {/* QR Stand */}
-        <div className="mkt-qr-stand">
-          <span className="mkt-qr-stand-title">TABLE 04</span>
-          <div className="mkt-qr-stand-code"><QrCode size={52} strokeWidth={1.2} /></div>
-          <span className="mkt-qr-stand-label">Scan for Menu</span>
-        </div>
+        {/* Acrylic Stand */}
+        <AcrylicQRPlacard name="Royal Dine" tagline="Table 12 · Scan Menu" />
 
-        {/* Arrow */}
-        <div className="mkt-scan-arrow">
+        {/* Scan Arrow */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: '#e8783c' }}>
           <motion.div
-            className="mkt-scan-arrow-line"
+            style={{ width: 80, height: 2, background: 'linear-gradient(90deg, #e8783c, #ffc928)' }}
             animate={{ scaleX: [0.6, 1, 0.6], opacity: [0.4, 1, 0.4] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
-          <span className="mkt-scan-arrow-label">SCAN</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#7a8a82' }}>INSTANT SCAN</span>
         </div>
 
-        {/* Phone */}
-        <div className="mkt-demo-phone">
-          <div className="mkt-demo-phone-screen">
-            <div className="mkt-phone-menu-header">
-              <div className="mkt-phone-menu-avatar"><ChefHat size={14} /></div>
-              <span className="mkt-phone-menu-name">Live Menu</span>
-            </div>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-              <span className="mkt-customer-filter active" style={{ fontSize: 10, padding: '4px 10px' }}>All</span>
-              <span className="mkt-customer-filter" style={{ fontSize: 10, padding: '4px 10px' }}>Starters</span>
-              <span className="mkt-customer-filter" style={{ fontSize: 10, padding: '4px 10px' }}>Main</span>
-            </div>
-            <div className="mkt-phone-menu-items">
-              {[
-                { n: 'Paneer Tikka', p: '₹280' },
-                { n: 'Butter Naan', p: '₹60' },
-                { n: 'Dal Makhani', p: '₹220' },
-                { n: 'Gulab Jamun', p: '₹120' },
-              ].map((i) => (
-                <div className="mkt-phone-menu-item" key={i.n}>
-                  <span className="mkt-phone-menu-item-name" style={{ fontSize: 9 }}>{i.n}</span>
-                  <span className="mkt-phone-menu-item-price" style={{ fontSize: 9 }}>{i.p}</span>
-                </div>
-              ))}
-            </div>
+        {/* iPhone Viewport */}
+        <IPhone16ProFrame>
+          <div className="mkt-phone-menu-header">
+            <div className="mkt-phone-menu-avatar"><ChefHat size={14} /></div>
+            <span className="mkt-phone-menu-name">Royal Dine</span>
           </div>
-        </div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+            <span className="mkt-customer-filter active" style={{ fontSize: 10, padding: '4px 10px' }}>All</span>
+            <span className="mkt-customer-filter" style={{ fontSize: 10, padding: '4px 10px' }}>Starters</span>
+            <span className="mkt-customer-filter" style={{ fontSize: 10, padding: '4px 10px' }}>Main</span>
+          </div>
+          <div className="mkt-phone-menu-items">
+            {[
+              { n: 'Paneer Tikka', p: '₹280' },
+              { n: 'Butter Naan', p: '₹60' },
+              { n: 'Dal Makhani', p: '₹220' },
+              { n: 'Gulab Jamun', p: '₹120' },
+            ].map((i) => (
+              <div className="mkt-phone-menu-item" key={i.n}>
+                <span className="mkt-phone-menu-item-name" style={{ fontSize: 9 }}>{i.n}</span>
+                <span className="mkt-phone-menu-item-price" style={{ fontSize: 9 }}>{i.p}</span>
+              </div>
+            ))}
+          </div>
+        </IPhone16ProFrame>
       </motion.div>
     </Section>
   );
@@ -334,7 +358,7 @@ function PhysicalQRSection() {
 
 /* ── 04: BUILT FOR THE TABLE ─────────────────────────────────── */
 const contexts: { icon: LucideIcon; title: string; desc: string }[] = [
-  { icon: UtensilsCrossed, title: 'Dining Table', desc: 'QR placard at every table. Guests scan and browse before ordering.' },
+  { icon: UtensilsCrossed, title: 'Dining Table', desc: 'Acrylic QR placard at every table. Guests scan and browse before ordering.' },
   { icon: Coffee, title: 'Cafe Counter', desc: 'Display your QR at the counter for quick mobile browsing while waiting.' },
   { icon: ConciergeBell, title: 'Reception', desc: 'Let guests explore the menu while waiting for their table.' },
   { icon: ShoppingBag, title: 'Takeaway Area', desc: 'Customers scan and decide their order before reaching the counter.' },
@@ -371,18 +395,18 @@ function BuiltForTableSection() {
   );
 }
 
-/* ── 05: TEMPLATE GALLERY ────────────────────────────────────── */
+/* ── 05: TEMPLATE GALLERY (10 DISTINCT STRUCTURAL LAYOUTS) ────── */
 const templates = [
-  { name: 'Minimal', bg: '#151c19', accent: '#e8783c', text: '#fff' },
-  { name: 'Luxury', bg: '#1a1014', accent: '#c4956a', text: '#f5e6d0' },
-  { name: 'Modern', bg: '#0f1923', accent: '#3b82f6', text: '#e2e8f0' },
-  { name: 'Cafe', bg: '#f5f0e8', accent: '#8b6914', text: '#3d2e1a' },
-  { name: 'Indian', bg: '#1c0f0a', accent: '#e85d3c', text: '#fde8d0' },
-  { name: 'Fine Dining', bg: '#0a0a0a', accent: '#d4af37', text: '#f0ead6' },
-  { name: 'Bakery', bg: '#faf4ee', accent: '#b5651d', text: '#3d2e1a' },
-  { name: 'Premium Dark', bg: '#0d1117', accent: '#58a6ff', text: '#c9d1d9' },
-  { name: 'Classic', bg: '#f8f6f0', accent: '#2d5016', text: '#1a1a1a' },
-  { name: 'Visual', bg: '#1a0520', accent: '#e040fb', text: '#f3e5f5' },
+  { name: '1. Minimal', bg: '#151c19', accent: '#e8783c', text: '#fff', style: 'Serif elegance, high whitespace' },
+  { name: '2. Luxury', bg: '#0d0d0d', accent: '#ffc928', text: '#f5e6d0', style: 'Gold foil accents, script font' },
+  { name: '3. Modern', bg: '#0f1923', accent: '#3b82f6', text: '#e2e8f0', style: 'Bold sans, special chef badges' },
+  { name: '4. Cafe', bg: '#f5f0e8', accent: '#8b6914', text: '#3d2e1a', style: 'Parchment dual-column drinks' },
+  { name: '5. Indian', bg: '#1c0f0a', accent: '#e85d3c', text: '#fde8d0', style: 'Royal crimson, veg indicators' },
+  { name: '6. Fine Dining', bg: '#0a0a0a', accent: '#d4af37', text: '#f0ead6', style: 'Tasting course sequence' },
+  { name: '7. Bakery', bg: '#faf4ee', accent: '#b5651d', text: '#3d2e1a', style: 'Grid cards, pastry tags' },
+  { name: '8. Premium Dark', bg: '#1e293b', accent: '#34b56a', text: '#f8fafc', style: 'Slate charcoal high-density' },
+  { name: '9. Classic', bg: '#f8f6f0', accent: '#2d5016', text: '#1a1a1a', style: 'Bistro double-line borders' },
+  { name: '10. Image-Heavy', bg: '#1a0520', accent: '#e040fb', text: '#f3e5f5', style: 'Craving photography emphasis' },
 ];
 
 function TemplateGallerySection() {
@@ -409,15 +433,15 @@ function TemplateGallerySection() {
               className="mkt-template-preview"
               style={{ background: t.bg, color: t.text }}
             >
-              <div style={{ fontSize: 11, fontWeight: 600, color: t.accent, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Menu
+              <div style={{ fontSize: 10, fontWeight: 700, color: t.accent, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                {t.style}
               </div>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Restaurant Name</div>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Restaurant Menu</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-                {['Starter', 'Main Course', 'Dessert'].map((cat) => (
-                  <div key={cat} style={{ padding: '8px 10px', background: `${t.accent}15`, borderRadius: 6, fontSize: 11 }}>
+                {['Starters', 'Main Course', 'Desserts'].map((cat) => (
+                  <div key={cat} style={{ padding: '8px 10px', background: `${t.accent}18`, borderRadius: 6, fontSize: 11 }}>
                     <div style={{ fontWeight: 600, marginBottom: 2 }}>{cat}</div>
-                    <div style={{ opacity: 0.6, fontSize: 10 }}>₹199 – ₹499</div>
+                    <div style={{ opacity: 0.7, fontSize: 10 }}>₹199 – ₹499</div>
                   </div>
                 ))}
               </div>
@@ -476,7 +500,7 @@ function DashboardDemoSection() {
                 <div className="mkt-dash-stats">
                   <div className="mkt-dash-stat"><div className="mkt-dash-stat-label">Menu Items</div><div className="mkt-dash-stat-value">24</div></div>
                   <div className="mkt-dash-stat"><div className="mkt-dash-stat-label">Categories</div><div className="mkt-dash-stat-value">6</div></div>
-                  <div className="mkt-dash-stat"><div className="mkt-dash-stat-label">QR Scans (Demo)</div><div className="mkt-dash-stat-value">—</div></div>
+                  <div className="mkt-dash-stat"><div className="mkt-dash-stat-label">Active Plan</div><div className="mkt-dash-stat-value" style={{ color: '#34b56a', fontSize: 22 }}>MenuQR Pro</div></div>
                 </div>
               )}
               {activeTab === 1 && (
@@ -491,7 +515,7 @@ function DashboardDemoSection() {
               )}
               {activeTab === 2 && (
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                  {['Dark Emerald', 'Warm Cream', 'Midnight'].map((theme) => (
+                  {['Dark Emerald', 'Warm Cream', 'Midnight Slate'].map((theme) => (
                     <div key={theme} className="mkt-dash-stat" style={{ flex: '1 1 140px', textAlign: 'center' }}>
                       <Palette size={20} color="#e8783c" style={{ marginBottom: 8 }} />
                       <div style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>{theme}</div>
@@ -503,7 +527,7 @@ function DashboardDemoSection() {
                 <div className="mkt-dash-stat" style={{ textAlign: 'center', padding: 32 }}>
                   <QrCode size={48} color="#e8783c" style={{ marginBottom: 12 }} />
                   <div style={{ color: '#fff', fontSize: 16, fontWeight: 600, marginBottom: 4 }}>Your Permanent QR</div>
-                  <div style={{ color: '#7a8a82', fontSize: 13 }}>menuqr.in/m/your-restaurant</div>
+                  <div style={{ color: '#7a8a82', fontSize: 13 }}>menuqr.in/m/greenbite-bistro</div>
                 </div>
               )}
             </motion.div>
@@ -516,12 +540,12 @@ function DashboardDemoSection() {
 
 /* ── 07: SUBSCRIPTION + QR PROTECTION ────────────────────────── */
 const timelineSteps: { dot: string; title: string; desc: string }[] = [
-  { dot: 'active', title: 'Subscription Active', desc: 'Your menu is live. Customers can scan and browse freely.' },
-  { dot: 'warning', title: '10-Day Warning', desc: 'A persistent alert reminds you to renew before expiry.' },
-  { dot: 'danger', title: 'Subscription Expired', desc: 'Menu becomes temporarily unavailable to scanners.' },
-  { dot: 'danger', title: 'Menu Unavailable', desc: 'Customers see "This menu is currently unavailable."' },
-  { dot: 'success', title: 'Renew Subscription', desc: 'Pay for another year. Your QR remains the same.' },
-  { dot: 'active', title: 'Same QR — Menu Live Again', desc: 'No reprint. Same QR code, same permanent URL.' },
+  { dot: 'active', title: '1. Subscription Active', desc: 'Your menu is live. Customers can scan and browse freely.' },
+  { dot: 'warning', title: '2. 10-Day Expiry Warning', desc: 'A persistent alert reminds you in the panel to renew.' },
+  { dot: 'danger', title: '3. Subscription Expired', desc: 'Menu becomes temporarily unavailable to scanners.' },
+  { dot: 'danger', title: '4. Menu Unavailable Screen', desc: 'Customers see "This menu is currently unavailable."' },
+  { dot: 'success', title: '5. Renew Subscription', desc: 'Pay for another year. Your QR remains identical.' },
+  { dot: 'active', title: '6. Same QR — Menu Live Again', desc: 'No reprint required. Same physical QR code resumes.' },
 ];
 
 function SubscriptionSection() {
@@ -604,54 +628,49 @@ function CustomerExperienceSection() {
       <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={stagger} style={{ textAlign: 'center' }}>
         <motion.p variants={fadeUp} className="mkt-kicker">Customer View</motion.p>
         <motion.h2 variants={fadeUp} className="mkt-h2">A menu your guests will love.</motion.h2>
-        <motion.p variants={fadeUp} className="mkt-body" style={{ margin: '0 auto' }}>
+        <motion.p variants={fadeUp} className="mkt-body" style={{ margin: '0 auto 40px' }}>
           Fast, beautiful, and designed for phones. No app download required.
         </motion.p>
       </motion.div>
       <motion.div
-        className="mkt-customer-phone"
+        style={{ display: 'flex', justifyContent: 'center' }}
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 0.7, delay: 0.2 }}
       >
-        <div className="mkt-customer-phone-screen">
-          <div className="mkt-customer-phone-content">
-            <div className="mkt-phone-menu-header" style={{ marginBottom: 12 }}>
-              <div className="mkt-phone-menu-avatar"><ChefHat size={16} /></div>
-              <div>
-                <div className="mkt-phone-menu-name" style={{ fontSize: 14 }}>Green Bistro</div>
-                <div style={{ fontSize: 10, color: '#7a8a82' }}>Cafe & Restaurant</div>
-              </div>
-            </div>
-            <div className="mkt-customer-search">
-              <Search size={14} /> Search menu...
-            </div>
-            <div className="mkt-customer-filters">
-              <span className="mkt-customer-filter active">All</span>
-              <span className="mkt-customer-filter">🟢 Veg</span>
-              <span className="mkt-customer-filter">🔴 Non-Veg</span>
-              <span className="mkt-customer-filter">Starters</span>
-            </div>
-            <div className="mkt-customer-items">
-              {[
-                { emoji: '🍔', name: 'Classic Burger', desc: 'Juicy patty, fresh veggies', price: '₹199' },
-                { emoji: '🍕', name: 'Margherita Pizza', desc: 'Hand-tossed, mozzarella', price: '₹349' },
-                { emoji: '🥗', name: 'Caesar Salad', desc: 'Romaine, croutons, parmesan', price: '₹179' },
-                { emoji: '☕', name: 'Cappuccino', desc: 'Double shot espresso', price: '₹149' },
-              ].map((item) => (
-                <div className="mkt-customer-item" key={item.name}>
-                  <div className="mkt-customer-item-img">{item.emoji}</div>
-                  <div className="mkt-customer-item-info">
-                    <div className="mkt-customer-item-name">{item.name}</div>
-                    <div className="mkt-customer-item-desc">{item.desc}</div>
-                  </div>
-                  <span className="mkt-customer-item-price">{item.price}</span>
-                </div>
-              ))}
+        <IPhone16ProFrame>
+          <div className="mkt-phone-menu-header" style={{ marginBottom: 12 }}>
+            <div className="mkt-phone-menu-avatar"><ChefHat size={16} /></div>
+            <div>
+              <div className="mkt-phone-menu-name" style={{ fontSize: 14 }}>GreenBite Bistro</div>
+              <div style={{ fontSize: 10, color: '#7a8a82' }}>Cafe & Restaurant</div>
             </div>
           </div>
-        </div>
+          <div style={{ background: '#1d2723', border: '1px solid #2a3832', borderRadius: 10, padding: '8px 12px', fontSize: 12, color: '#7a8a82', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Search size={14} /> Search menu...
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 14, overflowX: 'auto' }}>
+            <span style={{ padding: '4px 12px', borderRadius: 14, fontSize: 11, fontWeight: 600, background: '#e8783c', color: '#fff' }}>All</span>
+            <span style={{ padding: '4px 12px', borderRadius: 14, fontSize: 11, fontWeight: 600, background: '#1d2723', color: '#34b56a', border: '1px solid #34b56a' }}>🟢 Veg</span>
+            <span style={{ padding: '4px 12px', borderRadius: 14, fontSize: 11, fontWeight: 600, background: '#1d2723', color: '#ff5e4d', border: '1px solid #ff5e4d' }}>🔴 Non-Veg</span>
+          </div>
+          <div className="mkt-phone-menu-items">
+            {[
+              { name: 'Classic Burger', price: '₹199', desc: 'Juicy patty, fresh lettuce' },
+              { name: 'Farmhouse Pizza', price: '₹349', desc: 'Mozzarella, bell peppers' },
+              { name: 'Cold Coffee', price: '₹149', desc: 'Espresso with rich cream' },
+            ].map((item) => (
+              <div className="mkt-phone-menu-item" key={item.name}>
+                <div>
+                  <div className="mkt-phone-menu-item-name">{item.name}</div>
+                  <div style={{ fontSize: 8, color: '#7a8a82' }}>{item.desc}</div>
+                </div>
+                <span className="mkt-phone-menu-item-price">{item.price}</span>
+              </div>
+            ))}
+          </div>
+        </IPhone16ProFrame>
       </motion.div>
     </Section>
   );
@@ -674,20 +693,20 @@ function PricingSection() {
           transition={{ duration: 0.5 }}
         >
           <div className="mkt-pricing-plan">MenuQR Pro</div>
-          <div className="mkt-pricing-price">Yearly</div>
-          <div className="mkt-pricing-period">Annual subscription — contact for pricing</div>
+          <div className="mkt-pricing-price">Yearly Plan</div>
+          <div className="mkt-pricing-period">Annual subscription — contact for custom volume</div>
           <ul className="mkt-pricing-features">
             {[
               'Unlimited menu items',
-              'Permanent QR code',
-              '10 unique templates',
-              'Restaurant branding',
-              'Real-time menu updates',
-              'Mobile-optimized menu',
-              'Category management',
-              'Veg / Non-Veg filters',
-              'Subscription protection',
-              'Priority support',
+              'Permanent QR code identity',
+              '10 distinct visual templates',
+              'Restaurant branding & logos',
+              'Real-time price & menu updates',
+              'Mobile-optimized customer view',
+              'Category & Dietary filters',
+              'Veg / Non-Veg badge indicators',
+              'Subscription protection (No QR change)',
+              'Priority technical support',
             ].map((f) => (
               <li key={f}><Check size={16} className="mkt-pricing-check" /> {f}</li>
             ))}

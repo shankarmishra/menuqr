@@ -1,9 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════
-   MENUQR PUBLIC MARKETING WEBSITE — Master Stylesheet
+   MENUQR PUBLIC MARKETING WEBSITE VISUAL V2 — Master Stylesheet
    Brand: Dark Emerald #151c19 | Orange #e8783c | Gold #ffc928
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── CSS Custom Properties ───────────────────────────────────── */
 .marketing-page {
   --bg-deep: #0d1412;
   --bg-primary: #151c19;
@@ -13,6 +12,7 @@
   --accent-orange-hover: #f08b55;
   --accent-gold: #ffc928;
   --accent-green: #34b56a;
+  --accent-red: #ff5e4d;
   --text-primary: #ffffff;
   --text-secondary: #c5d0ca;
   --text-muted: #7a8a82;
@@ -85,7 +85,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--section-pad-x);
-  background: #151c19cc;
+  background: rgba(21, 28, 25, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   z-index: 1000;
@@ -177,13 +177,144 @@
   }
 }
 
+/* ── PHOTOREALISTIC IPHONE 16 PRO FRAME ───────────────────────── */
+.iphone-frame {
+  position: relative;
+  width: 300px;
+  height: 600px;
+  background: #000;
+  border-radius: 48px;
+  border: 4px solid #3c3e42;
+  box-shadow: 
+    inset 0 0 10px rgba(255, 255, 255, 0.15),
+    inset 0 0 20px rgba(0, 0, 0, 0.8),
+    0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.iphone-notch {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 26px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+}
+
+.iphone-lens {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #333, #050505 80%);
+  border: 1px solid #222;
+}
+
+.iphone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  border-radius: 44px;
+  overflow: hidden;
+  padding: 44px 14px 16px;
+}
+
+.iphone-glare {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 45%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+  z-index: 40;
+}
+
+/* ── 3D PHYSICAL QR STICKER & PLACARD ────────────────────────── */
+.mkt-qr-placard-3d {
+  width: 210px;
+  height: 280px;
+  background: linear-gradient(145deg, #1d2723, #151c19);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  box-shadow: 
+    0 20px 40px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.2),
+    inset 0 -1px 0 rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px;
+  position: relative;
+  transform: perspective(800px) rotateY(-8deg) rotateX(6deg);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mkt-qr-placard-3d:hover {
+  transform: perspective(800px) rotateY(0deg) rotateX(0deg) scale(1.02);
+}
+
+.mkt-qr-placard-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-gold);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mkt-qr-placard-code {
+  width: 110px;
+  height: 110px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  display: grid;
+  place-items: center;
+}
+
+.mkt-qr-placard-footer {
+  text-align: center;
+}
+
+.mkt-qr-placard-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.mkt-qr-placard-tagline {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.mkt-qr-stand-base {
+  width: 140px;
+  height: 16px;
+  background: linear-gradient(180deg, #2a2521, #141210);
+  border-radius: 4px;
+  margin-top: -6px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+}
+
 /* ── 01: HERO ────────────────────────────────────────────────── */
 .mkt-hero {
   min-height: 100vh;
   display: flex;
   align-items: center;
   padding-top: 72px;
-  background: radial-gradient(ellipse at 70% 50%, #1a2e26 0%, var(--bg-deep) 70%);
+  background: radial-gradient(ellipse at 70% 50%, #1a2e26 0%, var(--bg-deep) 75%);
   position: relative;
   overflow: hidden;
 }
@@ -265,7 +396,7 @@
 
 .mkt-btn-primary:hover {
   background: var(--accent-orange-hover);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .mkt-btn-ghost {
@@ -289,234 +420,25 @@
   color: var(--text-primary);
 }
 
-/* Hero Visual — Machine/Phone composite */
-.mkt-hero-visual {
+/* Hero Composite Visual */
+.mkt-hero-composite {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 420px;
+  min-height: 520px;
 }
 
-.mkt-machine {
-  width: 320px;
-  height: 420px;
-  background: linear-gradient(180deg, #1a2e26 0%, var(--bg-surface) 100%);
-  border-radius: 20px;
-  border: 1px solid var(--border-color);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px;
-}
-
-.mkt-machine-display {
-  width: 100%;
-  height: 48px;
-  background: var(--bg-deep);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  border: 1px solid var(--border-color);
-}
-
-.mkt-machine-display-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-green);
-}
-
-.mkt-machine-display-text {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--accent-green);
-}
-
-.mkt-machine-sticker-area {
-  flex: 1;
-  width: 100%;
-  background: var(--bg-deep);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.mkt-machine-sticker {
-  width: 180px;
-  height: 220px;
-  background: linear-gradient(135deg, #faf8f0, #f0ede2);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-
-.mkt-machine-sticker-logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent-orange), #d4622f);
-  display: grid;
-  place-items: center;
-  color: white;
-}
-
-.mkt-machine-sticker-name {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: #1a1a1a;
-}
-
-.mkt-machine-sticker-qr {
-  width: 80px;
-  height: 80px;
-  background: #1a1a1a;
-  border-radius: 4px;
-  position: relative;
-  display: grid;
-  place-items: center;
-}
-
-.mkt-machine-sticker-qr svg { color: white; }
-
-.mkt-machine-sticker-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #666;
-  font-weight: 600;
-}
-
-.mkt-machine-slot {
+.mkt-scan-beam-laser {
+  position: absolute;
+  top: 30%;
+  left: 10%;
   width: 80%;
-  height: 8px;
-  background: var(--bg-deep);
-  border-radius: 4px;
-  margin-top: 16px;
-  position: relative;
-  overflow: hidden;
-}
-
-.mkt-machine-slot-inner {
-  width: 100%;
-  height: 100%;
-  border-radius: 4px;
-}
-
-/* Hero phone that receives the scan */
-.mkt-hero-phone {
-  position: absolute;
-  right: -20px;
-  bottom: 20px;
-  width: 160px;
-  height: 300px;
-  background: #000;
-  border-radius: 24px;
-  border: 2px solid #333;
-  overflow: hidden;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
-}
-
-.mkt-hero-phone-notch {
-  width: 60px;
-  height: 6px;
-  background: #333;
-  border-radius: 3px;
-  margin: 8px auto 4px;
-}
-
-.mkt-hero-phone-screen {
-  background: var(--bg-primary);
-  margin: 0 4px 4px;
-  border-radius: 0 0 20px 20px;
-  height: calc(100% - 22px);
-  padding: 12px;
-  overflow: hidden;
-}
-
-.mkt-phone-menu-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.mkt-phone-menu-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent-orange), #d4622f);
-  display: grid;
-  place-items: center;
-}
-
-.mkt-phone-menu-name {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.mkt-phone-menu-items {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.mkt-phone-menu-item {
-  background: var(--bg-surface);
-  border-radius: 8px;
-  padding: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.mkt-phone-menu-item-name {
-  font-size: 10px;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.mkt-phone-menu-item-price {
-  font-size: 10px;
-  color: var(--accent-orange);
-  font-weight: 700;
-}
-
-/* Scan beam between machine and phone */
-.mkt-scan-beam {
-  position: absolute;
-  right: 120px;
-  bottom: 150px;
-  width: 60px;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-orange), transparent);
-  transform-origin: left;
-}
-
-@media (max-width: 768px) {
-  .mkt-hero-visual { min-height: 320px; }
-  .mkt-machine { width: 240px; height: 320px; padding: 16px; }
-  .mkt-hero-phone { width: 120px; height: 220px; right: -10px; bottom: 10px; }
-  .mkt-machine-sticker { width: 140px; height: 170px; }
-  .mkt-machine-sticker-qr { width: 60px; height: 60px; }
-  .mkt-scan-beam { display: none; }
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(232, 120, 60, 0.9), transparent);
+  box-shadow: 0 0 12px rgba(232, 120, 60, 0.8);
+  z-index: 30;
+  pointer-events: none;
 }
 
 /* ── 02: ONE QR COUNTLESS UPDATES ────────────────────────────── */
@@ -533,32 +455,35 @@
 
 .mkt-editor-panel {
   background: var(--bg-deep);
-  border-radius: 16px;
+  border-radius: 20px;
   border: 1px solid var(--border-color);
-  padding: 24px;
-  min-height: 320px;
+  padding: 28px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
 .mkt-editor-panel-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .mkt-editor-panel-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .mkt-editor-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0;
+  padding: 14px 0;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -568,7 +493,7 @@
 }
 
 .mkt-editor-value {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--accent-orange);
   font-family: 'DM Sans', sans-serif;
@@ -578,194 +503,109 @@
 
 .mkt-editor-publish-btn {
   width: 100%;
-  margin-top: 20px;
-  padding: 12px;
+  margin-top: 24px;
+  padding: 14px;
   background: var(--accent-orange);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  transition: background 0.2s;
 }
 
 .mkt-qr-badge {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   background: var(--bg-deep);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 16px 24px;
+  border: 1px solid var(--accent-green);
+  border-radius: 14px;
+  padding: 18px 24px;
   margin-top: 24px;
+  box-shadow: 0 10px 30px rgba(52, 181, 106, 0.1);
 }
 
 .mkt-qr-badge-icon {
-  width: 48px;
-  height: 48px;
-  background: var(--bg-surface);
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  background: rgba(52, 181, 106, 0.15);
+  border-radius: 10px;
   display: grid;
   place-items: center;
-  color: var(--accent-orange);
+  color: var(--accent-green);
 }
 
 .mkt-qr-badge-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--accent-green);
 }
 
 .mkt-qr-badge-sublabel {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-/* ── 03: PHYSICAL QR → DIGITAL ───────────────────────────────── */
-.mkt-physical-demo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 48px;
-  flex-wrap: wrap;
-}
-
-.mkt-qr-stand {
-  width: 200px;
-  height: 260px;
-  background: linear-gradient(180deg, #faf8f0, #ede9dc);
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
-  transform: perspective(600px) rotateY(-5deg);
-  position: relative;
-}
-
-.mkt-qr-stand-title {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  color: #1a1a1a;
-}
-
-.mkt-qr-stand-code {
-  width: 100px;
-  height: 100px;
-  background: #1a1a1a;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  color: white;
-}
-
-.mkt-qr-stand-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #888;
-  font-weight: 600;
-}
-
-.mkt-scan-arrow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  color: var(--accent-orange);
-}
-
-.mkt-scan-arrow-line {
-  width: 80px;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-orange), var(--accent-gold));
-}
-
-.mkt-scan-arrow-label {
   font-size: 12px;
-  font-weight: 600;
   color: var(--text-muted);
-}
-
-.mkt-demo-phone {
-  width: 200px;
-  height: 380px;
-  background: #000;
-  border-radius: 32px;
-  border: 3px solid #333;
-  padding: 12px;
-  overflow: hidden;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
-}
-
-.mkt-demo-phone-screen {
-  width: 100%;
-  height: 100%;
-  background: var(--bg-primary);
-  border-radius: 22px;
-  padding: 16px;
-  overflow: hidden;
 }
 
 /* ── 04: BUILT FOR THE TABLE ─────────────────────────────────── */
 .mkt-contexts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
+  gap: 24px;
 }
 
 .mkt-context-card {
-  background: var(--bg-deep);
+  background: linear-gradient(160deg, #1d2723, #151c19);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 32px 24px;
   text-align: center;
-  transition: border-color 0.3s, transform 0.2s;
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
 }
 
 .mkt-context-card:hover {
   border-color: var(--accent-orange);
-  transform: translateY(-4px);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.5);
 }
 
 .mkt-context-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
   background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   display: grid;
   place-items: center;
-  margin: 0 auto 16px;
+  margin: 0 auto 20px;
   color: var(--accent-orange);
 }
 
 .mkt-context-title {
   font-family: 'DM Sans', sans-serif;
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .mkt-context-desc {
   font-size: 14px;
   color: var(--text-muted);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 /* ── 05: TEMPLATE GALLERY ────────────────────────────────────── */
 .mkt-templates-scroll {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   overflow-x: auto;
-  padding: 16px 0 32px;
+  padding: 20px 0 40px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -774,21 +614,22 @@
 .mkt-templates-scroll::-webkit-scrollbar { display: none; }
 
 .mkt-template-card {
-  min-width: 220px;
-  height: 340px;
-  border-radius: 16px;
+  min-width: 240px;
+  height: 380px;
+  border-radius: 20px;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
   scroll-snap-align: start;
   border: 1px solid var(--border-color);
-  transition: border-color 0.3s, transform 0.2s;
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
   cursor: pointer;
 }
 
 .mkt-template-card:hover {
   border-color: var(--accent-orange);
-  transform: translateY(-4px);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
 }
 
 .mkt-template-preview {
@@ -796,7 +637,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 24px 20px;
 }
 
 .mkt-template-label {
@@ -804,28 +645,29 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  padding: 18px 20px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
   color: white;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 /* ── 06: DASHBOARD DEMO ──────────────────────────────────────── */
 .mkt-browser-frame {
   background: var(--bg-deep);
-  border-radius: 16px;
+  border-radius: 20px;
   border: 1px solid var(--border-color);
   overflow: hidden;
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
 }
 
 .mkt-browser-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 16px;
+  padding: 14px 20px;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-color);
 }
@@ -840,31 +682,31 @@
   flex: 1;
   background: var(--bg-deep);
   border-radius: 6px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   font-size: 12px;
   color: var(--text-muted);
-  margin-left: 8px;
+  margin-left: 12px;
 }
 
 .mkt-browser-content {
-  padding: 24px;
-  min-height: 360px;
+  padding: 28px;
+  min-height: 380px;
 }
 
 .mkt-dash-tabs {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   margin-bottom: 24px;
   background: var(--bg-surface);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 4px;
 }
 
 .mkt-dash-tab {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
   border: none;
@@ -880,7 +722,7 @@
 .mkt-dash-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 20px;
 }
 
 @media (max-width: 640px) {
@@ -889,8 +731,8 @@
 
 .mkt-dash-stat {
   background: var(--bg-surface);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 14px;
+  padding: 24px;
   border: 1px solid var(--border-color);
 }
 
@@ -899,12 +741,12 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .mkt-dash-stat-value {
   font-family: 'DM Sans', sans-serif;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -927,13 +769,13 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  max-width: 600px;
-  margin: 32px auto 0;
+  max-width: 640px;
+  margin: 40px auto 0;
 }
 
 .mkt-timeline-step {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   position: relative;
 }
 
@@ -946,8 +788,8 @@
 }
 
 .mkt-timeline-dot {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--bg-surface);
   border: 2px solid var(--border-color);
@@ -957,38 +799,39 @@
 
 .mkt-timeline-dot.active { background: var(--accent-green); border-color: var(--accent-green); }
 .mkt-timeline-dot.warning { background: var(--accent-gold); border-color: var(--accent-gold); }
-.mkt-timeline-dot.danger { background: #ff5e4d; border-color: #ff5e4d; }
+.mkt-timeline-dot.danger { background: var(--accent-red); border-color: var(--accent-red); }
 .mkt-timeline-dot.success { background: var(--accent-orange); border-color: var(--accent-orange); }
 
 .mkt-timeline-line {
   width: 2px;
   flex: 1;
-  min-height: 32px;
+  min-height: 36px;
   background: var(--border-color);
 }
 
 .mkt-timeline-content {
-  padding: 0 0 32px;
+  padding: 0 0 36px;
 }
 
 .mkt-timeline-title {
   font-family: 'DM Sans', sans-serif;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .mkt-timeline-desc {
   font-size: 14px;
   color: var(--text-muted);
+  line-height: 1.5;
 }
 
 /* ── 08: HOW IT WORKS ────────────────────────────────────────── */
 .mkt-steps {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  gap: 36px;
 }
 
 @media (max-width: 768px) {
@@ -1002,185 +845,57 @@
 
 .mkt-step-number {
   font-family: 'DM Sans', sans-serif;
-  font-size: 48px;
+  font-size: 56px;
   font-weight: 700;
   color: var(--bg-elevated);
   line-height: 1;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .mkt-step-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
   background: var(--bg-deep);
   border: 1px solid var(--border-color);
   display: grid;
   place-items: center;
-  margin: 0 auto 16px;
+  margin: 0 auto 20px;
   color: var(--accent-orange);
 }
 
 .mkt-step-title {
   font-family: 'DM Sans', sans-serif;
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .mkt-step-desc {
   font-size: 14px;
   color: var(--text-muted);
-  line-height: 1.5;
-}
-
-/* Step connector arrows (desktop only) */
-.mkt-step::after {
-  content: '→';
-  position: absolute;
-  right: -24px;
-  top: 50%;
-  font-size: 24px;
-  color: var(--border-color);
-}
-
-.mkt-step:last-child::after { display: none; }
-
-@media (max-width: 768px) {
-  .mkt-step::after { display: none; }
-}
-
-/* ── 09: CUSTOMER EXPERIENCE ─────────────────────────────────── */
-.mkt-customer-phone {
-  width: 280px;
-  height: 560px;
-  background: #000;
-  border-radius: 40px;
-  border: 3px solid #333;
-  padding: 16px;
-  margin: 32px auto 0;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
-  position: relative;
-  overflow: hidden;
-}
-
-.mkt-customer-phone-screen {
-  width: 100%;
-  height: 100%;
-  background: var(--bg-primary);
-  border-radius: 28px;
-  overflow: hidden;
-}
-
-.mkt-customer-phone-content {
-  padding: 20px 16px;
-}
-
-.mkt-customer-search {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mkt-customer-filters {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  overflow-x: auto;
-}
-
-.mkt-customer-filter {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  background: transparent;
-}
-
-.mkt-customer-filter.active {
-  background: var(--accent-orange);
-  color: white;
-  border-color: var(--accent-orange);
-}
-
-.mkt-customer-items {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.mkt-customer-item {
-  background: var(--bg-surface);
-  border-radius: 12px;
-  padding: 12px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  border: 1px solid var(--border-color);
-}
-
-.mkt-customer-item-img {
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  background: var(--bg-elevated);
-  display: grid;
-  place-items: center;
-  font-size: 24px;
-  flex-shrink: 0;
-}
-
-.mkt-customer-item-info {
-  flex: 1;
-}
-
-.mkt-customer-item-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
-
-.mkt-customer-item-desc {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.mkt-customer-item-price {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--accent-orange);
+  line-height: 1.6;
 }
 
 /* ── 10: PRICING ─────────────────────────────────────────────── */
 .mkt-pricing-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 28px;
   max-width: 800px;
-  margin: 32px auto 0;
+  margin: 40px auto 0;
 }
 
 .mkt-pricing-card {
   background: var(--bg-deep);
   border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 36px;
+  border-radius: 24px;
+  padding: 40px;
   text-align: center;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
 .mkt-pricing-card.featured {
@@ -1199,41 +914,41 @@
 
 .mkt-pricing-plan {
   font-family: 'DM Sans', sans-serif;
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .mkt-pricing-price {
   font-family: 'DM Sans', sans-serif;
-  font-size: 48px;
+  font-size: 52px;
   font-weight: 700;
   color: var(--accent-gold);
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .mkt-pricing-period {
   font-size: 14px;
   color: var(--text-muted);
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .mkt-pricing-features {
   list-style: none;
   padding: 0;
-  margin: 0 0 28px;
+  margin: 0 0 32px;
   text-align: left;
 }
 
 .mkt-pricing-features li {
-  padding: 8px 0;
+  padding: 10px 0;
   font-size: 14px;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -1248,8 +963,8 @@
 
 /* ── 11: FAQ ─────────────────────────────────────────────────── */
 .mkt-faq-list {
-  max-width: 720px;
-  margin: 32px auto 0;
+  max-width: 760px;
+  margin: 40px auto 0;
 }
 
 .mkt-faq-item {
@@ -1261,12 +976,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 0;
+  padding: 22px 0;
   background: none;
   border: none;
   color: var(--text-primary);
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 17px;
+  font-weight: 600;
   cursor: pointer;
   text-align: left;
 }
@@ -1282,7 +997,7 @@
 .mkt-faq-chevron.open { transform: rotate(180deg); }
 
 .mkt-faq-answer {
-  padding: 0 0 20px;
+  padding: 0 0 24px;
   font-size: 15px;
   color: var(--text-muted);
   line-height: 1.7;
@@ -1292,26 +1007,21 @@
 .mkt-final-cta {
   text-align: center;
   padding: var(--section-pad-y) var(--section-pad-x);
-  background: radial-gradient(ellipse at 50% 50%, #1a2e26 0%, var(--bg-deep) 70%);
+  background: radial-gradient(ellipse at 50% 50%, #1a2e26 0%, var(--bg-deep) 75%);
   position: relative;
 }
 
 .mkt-final-cta h2 {
   font-family: 'DM Sans', sans-serif;
-  font-size: 52px;
+  font-size: 56px;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.1;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 @media (max-width: 768px) {
-  .mkt-final-cta h2 { font-size: 32px; }
-}
-
-.mkt-final-cta .mkt-btn-primary {
-  font-size: 18px;
-  padding: 18px 36px;
+  .mkt-final-cta h2 { font-size: 34px; }
 }
 
 /* ── FOOTER ──────────────────────────────────────────────────── */
@@ -1336,7 +1046,7 @@
 .mkt-footer-brand {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .mkt-footer-brand p {
@@ -1351,7 +1061,7 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-primary);
-  margin: 0 0 16px;
+  margin: 0 0 18px;
 }
 
 .mkt-footer-col a {
@@ -1359,7 +1069,7 @@
   font-size: 14px;
   color: var(--text-muted);
   text-decoration: none;
-  padding: 4px 0;
+  padding: 5px 0;
   transition: color 0.2s;
 }
 
@@ -1367,7 +1077,7 @@
 
 .mkt-footer-bottom {
   max-width: var(--max-width);
-  margin: 32px auto 0;
+  margin: 36px auto 0;
   padding-top: 24px;
   border-top: 1px solid var(--border-color);
   text-align: center;
@@ -1375,7 +1085,7 @@
   color: var(--text-muted);
 }
 
-/* ── Utility ─────────────────────────────────────────────────── */
+/* ── Utility & Reduced Motion ────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .marketing-page * {
     animation-duration: 0.01s !important;

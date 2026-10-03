@@ -1,5 +1,7 @@
 import { ChefHat } from 'lucide-react';
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 export default function SiteFooter() {
   return (
     <footer className="bg-[#151c19] border-t border-[#1d2723] pt-20 pb-10 px-6">
@@ -26,7 +28,7 @@ export default function SiteFooter() {
         </div>
       </div>
       <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center pt-8 border-t border-[#1d2723] text-sm">
-        <p>&copy; {new Date().getFullYear()} MENUQR. All rights reserved.</p>
+        <p>&copy; {CURRENT_YEAR} MENUQR. All rights reserved.</p>
       </div>
     </footer>
   );
