@@ -47,6 +47,56 @@ function IPhone16ProFrame({ children }: { children: React.ReactNode }) {
   );
 }
 
+/* ── LOTTIE-STYLE ANIMATED QR SCANNER COMPONENT ───────────────── */
+function LottieStyleQRScanner() {
+  const prefersReduced = useReducedMotion();
+
+  return (
+    <div className="lottie-qr-container">
+      {/* 4 Animated Viewfinder Corner Brackets */}
+      <div className="lottie-qr-viewfinder">
+        <motion.div
+          className="lottie-qr-corner lottie-qr-corner-tl"
+          animate={prefersReduced ? {} : { scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="lottie-qr-corner lottie-qr-corner-tr"
+          animate={prefersReduced ? {} : { scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
+        />
+        <motion.div
+          className="lottie-qr-corner lottie-qr-corner-bl"
+          animate={prefersReduced ? {} : { scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+        />
+        <motion.div
+          className="lottie-qr-corner lottie-qr-corner-br"
+          animate={prefersReduced ? {} : { scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
+        />
+      </div>
+
+      {/* Laser Scanning Line */}
+      <motion.div
+        className="lottie-scan-laser-line"
+        animate={prefersReduced ? {} : { top: ['5%', '92%', '5%'] }}
+        transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      {/* Radar Expansion Wave */}
+      <motion.div
+        className="lottie-radar-pulse"
+        animate={prefersReduced ? {} : { scale: [0.3, 1.4], opacity: [0.8, 0] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeOut' }}
+      />
+
+      {/* Center High-Contrast QR Code */}
+      <QrCode size={90} color="#151c19" strokeWidth={1.5} />
+    </div>
+  );
+}
+
 /* ── REUSABLE 3D ACRYLIC PLACARD COMPONENT ───────────────────── */
 function AcrylicQRPlacard({ title = 'TABLE 04', name = 'GreenBite Cafe', tagline = 'Scan for Digital Menu' }) {
   return (
@@ -56,9 +106,7 @@ function AcrylicQRPlacard({ title = 'TABLE 04', name = 'GreenBite Cafe', tagline
           <ChefHat size={16} />
           <span>{title}</span>
         </div>
-        <div className="mkt-qr-placard-code">
-          <QrCode size={94} color="#151c19" strokeWidth={1.5} />
-        </div>
+        <LottieStyleQRScanner />
         <div className="mkt-qr-placard-footer">
           <div className="mkt-qr-placard-name">{name}</div>
           <div className="mkt-qr-placard-tagline">{tagline}</div>

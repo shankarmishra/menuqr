@@ -1092,3 +1092,58 @@
     transition-duration: 0.1s !important;
   }
 }
+
+/* ── LOTTIE-STYLE ANIMATED QR SCANNER COMPONENT ─────────────── */
+.lottie-qr-container {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.lottie-qr-viewfinder {
+  position: absolute;
+  inset: 6px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.lottie-qr-corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: var(--accent-orange);
+  border-style: solid;
+}
+
+.lottie-qr-corner-tl { top: 0; left: 0; border-width: 3px 0 0 3px; border-top-left-radius: 8px; }
+.lottie-qr-corner-tr { top: 0; right: 0; border-width: 3px 3px 0 0; border-top-right-radius: 8px; }
+.lottie-qr-corner-bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; border-bottom-left-radius: 8px; }
+.lottie-qr-corner-br { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-bottom-right-radius: 8px; }
+
+.lottie-scan-laser-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 5%, var(--accent-orange) 50%, transparent 95%);
+  box-shadow: 0 0 14px var(--accent-orange), 0 0 4px var(--accent-orange);
+  z-index: 15;
+  pointer-events: none;
+}
+
+.lottie-radar-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--accent-orange);
+  pointer-events: none;
+  z-index: 10;
+}
