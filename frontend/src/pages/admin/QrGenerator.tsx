@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Check, Copy, Download, ExternalLink, QrCode, Store } from 'lucide-react';
+import { Check, Copy, ExternalLink, QrCode, Store } from 'lucide-react';
 import QRCode from 'qrcode';
 import { Link, useSearchParams } from 'react-router-dom';
 import { getClients, type ClientRecord } from './clientStore';
-
+import MenuQRStickerGenerator from '../../components/sticker/MenuQRStickerGenerator';
 export default function QrGenerator() {
   const [clients, setClients] = useState<ClientRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,6 +28,17 @@ export default function QrGenerator() {
     let isCurrent = true;
     void getClients().then((records) => {
       if (!isCurrent) return;
+      if (records.length === 0) {
+        records.push({ 
+          id: 'mock', 
+          businessName: 'GreenBite', 
+          category: 'RESTAURANT & CAFE', 
+          menuSlug: 'greenbite-demo', 
+          status: 'active', 
+          menuItems: [], 
+          tagline: 'Good Food | Happy Mood' 
+        } as unknown as ClientRecord);
+      }
       const availableClients = records.filter((client) => client.status.toLowerCase() === 'active' && client.menuSlug);
       setClients(records);
       setSelectedId(availableClients.find((client) => client.id === requestedClientId)?.id ?? availableClients[0]?.id ?? '');
@@ -83,37 +94,48 @@ export default function QrGenerator() {
           <Link to="/admin/clients/new/business" className="mt-5 rounded-lg bg-[#e8783c] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#f18b50]">Create a menu</Link>
         </section>
       ) : (
-        <section className="admin-panel grid gap-7 rounded-2xl border p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="space-y-5">
-            <label className="block text-sm font-semibold text-[#dce5df]">Choose a menu
-              <select value={selectedId} onChange={(event) => setSelectedId(event.target.value)} className="mt-2 w-full rounded-lg border border-white/10 bg-[#17211e] px-3.5 py-3 text-sm text-white outline-none transition focus:border-[#e8783c] focus:ring-2 focus:ring-[#e8783c]/20">
-                {clients.map((client) => <option key={client.id} value={client.id}>{client.businessName} · {client.category}</option>)}
-              </select>
-            </label>
+        <section className="admin-panel flex flex-col gap-7 rounded-2xl border p-0 sm:p-0 overflow-hidden">
+          <div className="p-5 sm:p-7 border-b border-white/[0.08]">
+            <div className="grid gap-7 lg:grid-cols-2">
+              <div className="space-y-5">
+                <label className="block text-sm font-semibold text-[#dce5df]">Choose a menu
+                  <select value={selectedId} onChange={(event) => setSelectedId(event.target.value)} className="mt-2 w-full rounded-lg border border-white/10 bg-[#17211e] px-3.5 py-3 text-sm text-white outline-none transition focus:border-[#e8783c] focus:ring-2 focus:ring-[#e8783c]/20">
+                    {clients.map((client) => <option key={client.id} value={client.id}>{client.businessName} · {client.category}</option>)}
+                  </select>
+                </label>
 
-            {selectedClient && <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0"><h2 className="truncate font-bold text-white">{selectedClient.businessName}</h2><p className="mt-1 text-xs capitalize text-[#94a39d]">{selectedClient.category} · {selectedClient.menuItems.length} menu items</p></div>
-                <Store className="shrink-0 text-[#f29a66]" size={20} />
+                {selectedClient && <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0"><h2 className="truncate font-bold text-white">{selectedClient.businessName}</h2><p className="mt-1 text-xs capitalize text-[#94a39d]">{selectedClient.category} · {selectedClient.menuItems.length} menu items</p></div>
+                    <Store className="shrink-0 text-[#f29a66]" size={20} />
+                  </div>
+                  <label className="mt-4 block text-xs font-semibold text-[#94a39d]">Public menu URL
+                    <input readOnly value={menuUrl} onFocus={(event) => event.currentTarget.select()} className="mt-2 w-full rounded-lg border border-white/10 bg-[#111815] px-3 py-2.5 text-xs text-white outline-none" />
+                  </label>
+                </div>}
+
+                {error && <p role="alert" className="text-sm text-rose-300">{error}</p>}
               </div>
-              <label className="mt-4 block text-xs font-semibold text-[#94a39d]">Public menu URL
-                <input readOnly value={menuUrl} onFocus={(event) => event.currentTarget.select()} className="mt-2 w-full rounded-lg border border-white/10 bg-[#111815] px-3 py-2.5 text-xs text-white outline-none" />
-              </label>
-            </div>}
 
-            <div className="flex flex-wrap gap-3">
-              <button type="button" onClick={() => void copyMenuLink()} disabled={!qrImage} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50">{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Link copied' : 'Copy menu link'}</button>
-              {menuUrl && <a href={menuUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/[0.06]"><ExternalLink size={16} />Open menu</a>}
+              <div className="flex flex-col justify-center space-y-4 rounded-xl border border-white/[0.08] bg-[#111815] p-5">
+                <div>
+                  <h3 className="font-bold text-white">Menu Identity</h3>
+                  <p className="mt-1 text-xs text-[#94a39d]">The QR code generated below will permanently link to this URL.</p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button type="button" onClick={() => void copyMenuLink()} disabled={!qrImage} className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50">{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Link copied' : 'Copy menu link'}</button>
+                  {menuUrl && <a href={menuUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"><ExternalLink size={16} />Open menu</a>}
+                </div>
+              </div>
             </div>
-            {error && <p role="alert" className="text-sm text-rose-300">{error}</p>}
           </div>
-
-          <div className="flex flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-[#111815] p-5 text-center">
-            <div className="flex aspect-square w-full max-w-[260px] items-center justify-center rounded-lg bg-white p-3">
-              {qrImage ? <img src={qrImage} alt={`QR code for ${selectedClient?.businessName ?? 'menu'}`} className="h-full w-full" /> : <span className="text-sm text-[#66736d]">Generating QR code…</span>}
-            </div>
-            {qrImage && <a href={qrImage} download={`${selectedClient?.menuSlug || 'menu'}-qr.png`} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#e8783c] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#f18b50]"><Download size={16} />Download PNG</a>}
-            <p className="mt-3 text-xs text-[#87958e]">Scan to open this menu</p>
+          
+          <div className="relative min-h-[600px] w-full bg-[#0d1210]">
+            <MenuQRStickerGenerator 
+              client={selectedClient} 
+              menuUrl={menuUrl} 
+              qrImage={qrImage} 
+            />
           </div>
         </section>
       )}

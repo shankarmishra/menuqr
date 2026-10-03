@@ -5,7 +5,8 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config as loadEnv } from 'dotenv';
-import { MongoClient } from 'mongodb';
+import { connectDB, collections, database } from './db.js';
+import { enforceAuth, enforceSuperAdmin, enforceTenant, generateAuthCookie, clearAuthCookie, getAuthenticatedUser } from './auth.js';
 import { createNewUserNotification } from './notifications.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
@@ -51,16 +52,6 @@ function getSessionToken(request) {
     : undefined;
 }
 
-async function hasAdminSession(request) {
-  const token = getSessionToken(request);
-  if (!token) return false;
-  return Boolean(
-    await adminSessions.findOne(
-      { token, expiresAt: { $gt: new Date() } },
-      { projection: { _id: 1 } }
-    )
-  );
-}
 
 function hasCorrectAdminPassword(password) {
   if (typeof password !== 'string' || password.length > 256) return false;
@@ -172,42 +163,22 @@ function toPublicMenu(client) {
   };
 }
 
-let mongoClient;
 let clientCollection;
 let adminSessions;
 let notificationCollection;
 
 async function initializeStore() {
-  const uri = process.env.MONGODB_URI;
-  if (!uri) {
-    throw new Error(
-      'MONGODB_URI is required. Configure your MongoDB connection string before starting the API.'
-    );
-  }
-
-  mongoClient = new MongoClient(uri);
-  await mongoClient.connect();
-  const database = mongoClient.db(process.env.MONGODB_DATABASE || 'menuqr');
-  clientCollection = database.collection('clients');
-  adminSessions = database.collection('admin_sessions');
-  notificationCollection = database.collection('notifications');
-  await Promise.all([
-    clientCollection.createIndex({ id: 1 }, { unique: true }),
-    clientCollection.createIndex({ menuSlug: 1 }, { unique: true }),
-    adminSessions.createIndex({ token: 1 }, { unique: true }),
-    adminSessions.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
-    notificationCollection.createIndex({ id: 1 }, { unique: true }),
-    notificationCollection.createIndex({ createdAt: -1 }),
-  ]);
-
+  await connectDB(process.env.MONGODB_URI);
+  clientCollection = collections.clients;
+  adminSessions = collections.sessions;
+  notificationCollection = collections.notifications;
+  
   if ((await clientCollection.estimatedDocumentCount()) === 0) {
     let importedClients = [];
     try {
       const saved = JSON.parse(await readFile(legacyDataFile, 'utf8'));
       if (Array.isArray(saved)) {
-        importedClients = saved.filter(
-          (client) => !String(client.id).startsWith('seed-')
-        );
+        importedClients = saved.filter((client) => !String(client.id).startsWith('seed-'));
       }
     } catch (error) {
       if (error.code !== 'ENOENT') throw error;
@@ -215,10 +186,7 @@ async function initializeStore() {
     if (importedClients.length > 0) {
       await clientCollection.insertMany(importedClients);
     }
-    console.log(`Imported ${importedClients.length} client records into MongoDB.`);
   }
-
-  console.log(`Connected to MongoDB database "${database.databaseName}".`);
 }
 
 const server = createServer(async (request, response) => {
@@ -263,8 +231,10 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === 'GET' && url.pathname === '/api/auth/session') {
+      const user = getAuthenticatedUser(request);
       sendJson(response, 200, {
-        authenticated: await hasAdminSession(request),
+        authenticated: !!user,
+        user: user || null,
       });
       return;
     }
@@ -273,49 +243,49 @@ const server = createServer(async (request, response) => {
       const address = request.socket.remoteAddress ?? 'unknown';
       const now = Date.now();
       const attempt = loginAttempts.get(address);
-      if (attempt?.lockedUntil > now) {
-        throw apiError(429, 'Too many login attempts. Try again in 1 minute.');
-      }
-
+      if (attempt?.lockedUntil > now) throw apiError(429, 'Too many login attempts. Try again in 1 minute.');
+      
       const input = await readJson(request);
-      if (!hasCorrectAdminPassword(input?.password)) {
-        const currentAttempt =
-          attempt && now - attempt.windowStartedAt < 15 * 60 * 1000
-            ? attempt
-            : { count: 0, windowStartedAt: now, lockedUntil: 0 };
-        currentAttempt.count += 1;
-        if (currentAttempt.count >= 5) {
-          currentAttempt.lockedUntil = now + loginLockDurationMs;
+      let user = null;
+
+      if (input?.email) {
+        // Restaurant Owner Login
+        const dbUser = await collections.users.findOne({ email: input.email });
+        
+        if (dbUser && (await import('./auth.js')).verifyPassword(input.password, dbUser.passwordHash)) {
+          user = { id: dbUser._id.toString(), role: dbUser.role, tenantId: dbUser.tenantId };
         }
-        loginAttempts.set(address, currentAttempt);
-        throw apiError(401, 'Incorrect admin password.');
+      } else {
+        // Legacy Super Admin Login
+        if (hasCorrectAdminPassword(input?.password)) {
+          user = { id: 'super-admin', role: 'SUPER_ADMIN' };
+        }
       }
 
+      if (!user) {
+        const currentAttempt = attempt && now - attempt.windowStartedAt < 15 * 60 * 1000 ? attempt : { count: 0, windowStartedAt: now, lockedUntil: 0 };
+        currentAttempt.count += 1;
+        if (currentAttempt.count >= 5) currentAttempt.lockedUntil = now + loginLockDurationMs;
+        loginAttempts.set(address, currentAttempt);
+        throw apiError(401, 'Incorrect credentials.');
+      }
+      
       loginAttempts.delete(address);
-      const token = randomUUID();
-      const expiresAt = new Date(now + sessionDurationSeconds * 1000);
-      await adminSessions.insertOne({ token, expiresAt });
-
-      sendJson(
-        response,
-        200,
-        { authenticated: true, token }
-      );
+      const cookie = generateAuthCookie(user);
+      response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
+      response.end(JSON.stringify({ authenticated: true, role: user.role }));
       return;
     }
 
     if (request.method === 'POST' && url.pathname === '/api/auth/logout') {
-      const token = getSessionToken(request);
-      if (token) await adminSessions.deleteOne({ token });
-      sendJson(response, 200, { authenticated: false });
+      const cookie = clearAuthCookie();
+      response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
+      response.end(JSON.stringify({ authenticated: false }));
       return;
     }
 
-    if (
-      url.pathname.startsWith('/api/admin/') &&
-      !(await hasAdminSession(request))
-    ) {
-      throw apiError(401, 'Admin login required.');
+    if (url.pathname.startsWith('/api/admin/')) {
+      enforceSuperAdmin(request);
     }
 
     if (request.method === 'GET' && url.pathname === '/api/admin/clients') {
