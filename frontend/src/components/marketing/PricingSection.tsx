@@ -1,106 +1,95 @@
-import { Check, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Check, Sparkles, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function PricingSection() {
+
   return (
-    <section className="py-24 md:py-36 px-6 bg-[#151c19] border-b border-white/5 relative overflow-hidden" id="pricing">
-      <div className="max-w-[1240px] mx-auto text-center mb-16">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1d2723] text-[#ffc928] text-xs font-semibold uppercase tracking-wider border border-[#ffc928]/30 mb-4">
-          <Sparkles size={14} />
-          <span>Transparent Yearly Subscriptions</span>
-        </div>
-        <h2 className="text-[2.25rem] sm:text-[3.25rem] font-extrabold text-white tracking-tight">
-          Simple, Predictable Pricing
-        </h2>
-        <p className="text-base sm:text-lg text-[#aab7b2] max-w-2xl mx-auto mt-3">
-          Designed for independent restaurants, cafes, and hospitality businesses. No hidden fees per scan.
-        </p>
+    <section className="py-24 md:py-36 px-6 bg-menusqr-secondary relative overflow-hidden" id="pricing">
+      <div className="absolute top-0 inset-x-0 h-px bg-menusqr-emerald/5" />
+      <div className="texture-paper-grain z-0" />
+      
+      <div className="max-w-[1240px] mx-auto text-center mb-16 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-menusqr-white text-menusqr-orange text-xs font-semibold uppercase tracking-wider border border-menusqr-emerald/10 mb-4 shadow-sm">
+            <Sparkles size={14} />
+            <span>Transparent Pricing</span>
+          </div>
+          <h2 className="text-[2.25rem] sm:text-[3.25rem] font-extrabold text-menusqr-emerald tracking-tight">
+            One powerful plan.
+          </h2>
+          <p className="text-base sm:text-lg text-menusqr-neutral-muted max-w-2xl mx-auto mt-3">
+            Everything you need for a fully self-managed interactive ordering system.
+          </p>
+        </motion.div>
       </div>
 
-      <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 items-center">
-        {/* Starter Plan - Dark Card */}
-        <div className="bg-[#1d2723] p-8 rounded-3xl border border-white/10 text-left space-y-6 shadow-xl">
-          <div>
-            <span className="text-xs font-mono text-[#aab7b2] uppercase tracking-wider">
-              Essential
-            </span>
-            <h3 className="text-2xl font-bold text-white mt-1">Starter Tier</h3>
-            <p className="text-xs text-[#aab7b2] mt-1">
-              For small cafes and single-table locations.
+      <div className="max-w-2xl mx-auto relative z-10 px-4 sm:px-0">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="bg-menusqr-white rounded-[2.5rem] shadow-[0_32px_80px_-12px_rgba(21,28,25,0.12)] p-10 sm:p-12 relative flex flex-col border border-menusqr-emerald/5"
+        >
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-menusqr-orange text-white text-xs font-black uppercase tracking-widest py-2 px-6 rounded-full shadow-lg shadow-menusqr-orange/20">
+            Premium Access
+          </div>
+          
+          <div className="text-center mb-10 mt-4">
+            <h3 className="text-3xl font-black tracking-tight text-menusqr-emerald mb-3">
+              MenusQR Pro
+            </h3>
+            <p className="text-base text-menusqr-neutral-sec leading-relaxed max-w-md mx-auto">
+              Full interactive menu with live table ordering and permanent QR identity.
             </p>
           </div>
-
-          <div className="text-4xl font-extrabold text-white">
-            ₹4,999 <span className="text-sm font-normal text-[#aab7b2]">/ year</span>
+          
+          <div className="flex justify-center items-end gap-2 mb-12">
+            <span className="text-6xl font-black text-menusqr-emerald tracking-tighter">₹2,999</span>
+            <span className="text-lg font-bold text-menusqr-neutral-muted mb-2">/ year</span>
           </div>
 
-          <ul className="space-y-3 text-xs text-[#aab7b2]">
-            <li className="flex items-center gap-2">
-              <Check size={16} className="text-[#34b56a]" /> Unlimited QR Scans
-            </li>
-            <li className="flex items-center gap-2">
-              <Check size={16} className="text-[#34b56a]" /> 1 Live Digital Menu
-            </li>
-            <li className="flex items-center gap-2">
-              <Check size={16} className="text-[#34b56a]" /> 3 Standard Menu Themes
-            </li>
-            <li className="flex items-center gap-2">
-              <Check size={16} className="text-[#34b56a]" /> Permanent QR Guarantee
-            </li>
-          </ul>
-
-          <a
-            href="#/admin/login"
-            className="block text-center w-full bg-[#151c19] hover:bg-white/10 text-white border border-white/15 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors"
+          <div className="bg-menusqr-secondary rounded-3xl p-8 mb-10 border border-menusqr-emerald/5">
+            <h4 className="text-sm font-black text-menusqr-emerald uppercase tracking-widest mb-6 flex items-center justify-center gap-2">
+              <ShieldCheck size={18} className="text-menusqr-orange" />
+              Everything Included
+            </h4>
+            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-5">
+              {[
+                "Permanent QR Code Identity",
+                "Unlimited Live Updates",
+                "Live Customer Table Ordering",
+                "Premium Layout Templates",
+                "Order Reception Dashboard",
+                "Variant & Dietary Tagging",
+                "Real-time Availability Toggles",
+                "Detailed Analytics"
+              ].map((feat, fIdx) => (
+                <div key={fIdx} className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-menusqr-emerald/5 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check size={12} className="text-menusqr-orange" strokeWidth={3} />
+                  </div>
+                  <span className="text-sm font-bold text-menusqr-neutral-sec leading-snug">
+                    {feat}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <Link
+            to="/purchase"
+            className="w-full py-5 px-8 rounded-2xl font-black text-base uppercase tracking-widest transition-all shadow-xl text-menusqr-white bg-menusqr-orange hover:bg-[#d9672d] shadow-menusqr-orange/25 text-center flex justify-center items-center gap-2"
           >
-            Get Started
-          </a>
-        </div>
-
-        {/* Pro Recommended Plan - High Contrast Crisp White Card */}
-        <div className="bg-white text-[#151c19] p-8 rounded-3xl border-2 border-white relative text-left space-y-6 shadow-2xl shadow-white/15 scale-[1.03]">
-          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#e8783c] text-white px-4 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider shadow-lg">
-            ★ Most Popular Choice
-          </div>
-
-          <div>
-            <span className="text-xs font-mono text-[#e8783c] uppercase tracking-wider font-bold">
-              Full SaaS Suite
-            </span>
-            <h3 className="text-2xl font-bold text-[#151c19] mt-1">Pro Restaurant Plan</h3>
-            <p className="text-xs text-[#475569] mt-1">
-              For active restaurants, lounges, and busy dining rooms.
-            </p>
-          </div>
-
-          <div className="text-4xl font-extrabold text-[#151c19]">
-            ₹8,999 <span className="text-sm font-normal text-[#475569]">/ year</span>
-          </div>
-
-          <ul className="space-y-3 text-xs text-[#334155] font-medium">
-            <li className="flex items-center gap-2">
-              <Check size={16} className="text-[#e8783c]" /> Everything in Starter
-            </li>
-            <li className="flex items-center gap-2">
-              <Check size={16} className="text-[#e8783c]" /> 10 Distinct Premium Menu Themes
-            </li>
-            <li className="flex items-center gap-2">
-              <Check size={16} className="text-[#e8783c]" /> Instant Price & Availability Sync
-            </li>
-            <li className="flex items-center gap-2">
-              <Check size={16} className="text-[#e8783c]" /> Veg / Non-Veg & Allergen Filters
-            </li>
-            <li className="flex items-center gap-2">
-              <Check size={16} className="text-[#e8783c]" /> 10-Day Expiry Protection Engine
-            </li>
-          </ul>
-
-          <a
-            href="#/admin/login"
-            className="block text-center w-full bg-[#e8783c] hover:bg-[#151c19] text-white hover:text-white py-3.5 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg shadow-[#e8783c]/30"
-          >
-            Start Free Trial
-          </a>
-        </div>
+            Start Your Subscription <Sparkles size={18} />
+          </Link>
+        </motion.div>
       </div>
     </section>
   );

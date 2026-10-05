@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Utensils, Store, Coffee, QrCode, Settings, Menu, X, ChefHat, Sparkles, Bell, ClipboardPlus, LogOut, Trash2 } from 'lucide-react';
+import { LayoutDashboard, Utensils, Store, Coffee, QrCode, Settings, Menu, X, Bell, ClipboardPlus, LogOut, Trash2, Receipt, CreditCard } from 'lucide-react';
 import { clearNotifications, getApiHealth, getNotifications, logoutAdmin, markNotificationRead, type AdminNotification } from '../pages/admin/clientStore';
+import { MenusQRBrand } from '../components/brand/MenusQRBrand';
 import '../App.css';
 
 const navItems = [
@@ -11,6 +12,8 @@ const navItems = [
   { path: '/admin/restaurants', icon: Utensils, label: 'Restaurants' },
   { path: '/admin/dhabas', icon: Store, label: 'Dhabas' },
   { path: '/admin/cafes', icon: Coffee, label: 'Cafes' },
+  { path: '/admin/orders', icon: Receipt, label: 'Orders' },
+  { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
   { path: '/admin/qr', icon: QrCode, label: 'QR Generator' },
   { path: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
@@ -128,16 +131,12 @@ export default function AdminLayout() {
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        <div className="relative flex items-center gap-3 border-b border-white/10 px-6 py-6">
-          <div className="relative rounded-xl bg-[#e8783c] p-2.5">
-            <Sparkles size={13} className="absolute -right-1 -top-1 text-[#ffe5ce]" />
-            <ChefHat size={25} className="text-white" />
+        <div className="relative flex items-center justify-between border-b border-white/10 px-6 py-6">
+          <div className="flex-1">
+            <MenusQRBrand size="md" variant="light" />
+            <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#aab7b2]">Super Admin</p>
           </div>
-          <div>
-            <h2 className="text-xl font-extrabold tracking-tight text-white">Menu<span className="text-[#f29a66]">QR</span></h2>
-            <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#aab7b2]">Super Admin</p>
-          </div>
-          <button onClick={toggleSidebar} aria-label="Close navigation" className="ml-auto rounded-lg p-2 text-[#aab7b2] transition-colors hover:bg-white/10 hover:text-white lg:hidden">
+          <button onClick={toggleSidebar} aria-label="Close navigation" className="rounded-lg p-2 text-[#aab7b2] transition-colors hover:bg-white/10 hover:text-white lg:hidden">
             <X size={20} />
           </button>
         </div>
@@ -197,7 +196,7 @@ export default function AdminLayout() {
                  <Menu size={22} />
                </button>
                <div>
-                 <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#87958e]">MenuQR / Admin</p>
+                 <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#87958e]">MenusQR / Admin</p>
                  <h1 className="mt-0.5 text-lg font-bold text-[#edf2ef]">{pageTitle}</h1>
                </div>
             </div>

@@ -1,0 +1,746 @@
+{
+  "users": [
+    {
+      "id": "3847b4e5-da0c-4741-81b3-8e5a8486089f",
+      "email": "regression-cafe@menusqr.local",
+      "password_hash": "a8cec14c319d5794a3dc0f1fcb9c9f03:a82591ae937cacbeb382bf7b8d6da210ea313575e88fdbe54cc33b077827056bb273771017b72a2d19bb79f793b32c3a90aeb68f50c79706c7ff36ceb0673dd9",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "1ce5d167-8dc2-489b-a033-cdc9a2033e05",
+      "created_at": "2026-10-03T06:18:33.038Z",
+      "updated_at": "2026-10-03T06:18:33.038Z"
+    },
+    {
+      "id": "6f7f625a-047b-43de-bffd-bce4e2a48abe",
+      "email": "owner1791008477038@menusqr.local",
+      "password_hash": "8677dce6fa7ea2b8e8a6c15f89f81c88:08a96b7c5401c3eefbf02b3a3979feb50db983540dbfc6a1a7761f1ca1111f422d132cc4c268526587201e24d1b590d03630cfc323109264d7a1c2aa5b79b962",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "test-client-1791008477038",
+      "created_at": "2026-10-03T06:21:17.090Z",
+      "updated_at": "2026-10-03T06:21:17.090Z"
+    },
+    {
+      "id": "admin-1",
+      "email": "admin@menusqr.com",
+      "password_hash": "8068028212d46c2643efc886fed54d96:535c6f860a521a2ff0db483a2d766dfcd05b7fe722bae3cfa1b843b0608d7b62e141b58b2e72dd1f360a8a00f08aada9b2e7a53c56c88404572c47e4c859fc59",
+      "role": "SUPER_ADMIN",
+      "tenant_id": null,
+      "created_at": "2026-10-04T14:27:54.053Z",
+      "updated_at": "2026-10-04T14:27:54.053Z"
+    },
+    {
+      "id": "user-1",
+      "email": "artisan@test.com",
+      "password_hash": "ff47e522e02d9e3e01eb79bbefb69567:629f0134065dbdd88fe74799c98c41e27c66de69fe84725b2a296b8448f9af024d409af8459ce54320e8143b53cd74ca193bddb596cd268e321df517a6f028d9",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "client-1",
+      "created_at": "2026-10-04T14:28:08.603Z",
+      "updated_at": "2026-10-04T14:28:08.603Z"
+    },
+    {
+      "id": "user-2",
+      "email": "royal@test.com",
+      "password_hash": "ff47e522e02d9e3e01eb79bbefb69567:629f0134065dbdd88fe74799c98c41e27c66de69fe84725b2a296b8448f9af024d409af8459ce54320e8143b53cd74ca193bddb596cd268e321df517a6f028d9",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "client-2",
+      "created_at": "2026-10-04T14:28:08.617Z",
+      "updated_at": "2026-10-04T14:28:08.617Z"
+    },
+    {
+      "id": "user-3",
+      "email": "grill@test.com",
+      "password_hash": "ff47e522e02d9e3e01eb79bbefb69567:629f0134065dbdd88fe74799c98c41e27c66de69fe84725b2a296b8448f9af024d409af8459ce54320e8143b53cd74ca193bddb596cd268e321df517a6f028d9",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "client-3",
+      "created_at": "2026-10-04T14:28:08.621Z",
+      "updated_at": "2026-10-04T14:28:08.621Z"
+    },
+    {
+      "id": "d7d718d8-7033-4264-bcf0-d2ac174b5ee3",
+      "email": "testowner_1791194032583@example.com",
+      "password_hash": "ed972a10022bac134862b01efbee432f:8e699cc1dd007f35cd3d592d3fdaf1dedf06f17fcb6c49a5e8347e0a370139db95828452e2d856c017c66d72b74ada96f9bf51243ab17eff61423d98037438e2",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "6ecb2bf0-af65-4215-afec-bd1a400eff00",
+      "created_at": "2026-10-05T09:53:52.863Z",
+      "updated_at": "2026-10-05T09:53:52.863Z"
+    },
+    {
+      "id": "b1a82af9-99e7-4253-899b-9eb7073e790f",
+      "email": "testowner_1791194244292@example.com",
+      "password_hash": "61043dbbb4ba7605277f7caee27d6067:f5836ab2b8c141a424c6aa45e2e027270f63125b94ae3870fb40724de458fb7794e536e154726b880d10831c93b65ab09435f8565192aeab6f85f22516a14927",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "be36f675-b471-4561-b0f0-fef859b71091",
+      "created_at": "2026-10-05T09:57:24.439Z",
+      "updated_at": "2026-10-05T09:57:24.439Z"
+    },
+    {
+      "id": "5577bd01-3dc2-4bb9-b278-60b6491f528c",
+      "email": "testowner_1791194436835@example.com",
+      "password_hash": "f528b5cf27185f16c8079256c4ac0a4c:35ab2221eb5933b16af1efc8f6564124391487daf7b88f889a150f104b0c8e01e8532d3102dfa83190dccbfbef109c3a80498db1a2e1e0ca8a638b24434b67e2",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "1e0a232c-8333-4d3e-a031-2f00fe58d709",
+      "created_at": "2026-10-05T10:00:36.976Z",
+      "updated_at": "2026-10-05T10:00:36.976Z"
+    },
+    {
+      "id": "1b080d32-5adb-425d-ae51-214adb459c09",
+      "email": "testowner_1791194582470@example.com",
+      "password_hash": "75ba56e9700986bb4ec763bf037714a9:9c0a6d72db5912e91bd1c567164be406ef89271b88dc4c04e18ec61680f856f4dca1c829df26f6bb1d4afedf2f39a2ca302a8a912612251cfab23a7b2d192a3e",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "82a837bb-a449-4585-9c09-202bd494edfc",
+      "created_at": "2026-10-05T10:03:02.596Z",
+      "updated_at": "2026-10-05T10:03:02.596Z"
+    },
+    {
+      "id": "b013c3f8-8adf-4a31-931c-84c5474cd107",
+      "email": "testowner_1791194742161@example.com",
+      "password_hash": "65f373be36081e7f2fad1a8a487b17d8:231ccc198bf2ab5394592ff290956b640fafcc06684ba6c0a7c332ab1d24c04889f2f2fceb60039433e10e63267605f732ec964ea8a87944b1a98003427b2e87",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "2d9116f7-aec0-453c-acfa-8504088af32c",
+      "created_at": "2026-10-05T10:05:42.257Z",
+      "updated_at": "2026-10-05T10:05:42.257Z"
+    },
+    {
+      "id": "b5ad3057-4628-41bc-8fdb-ecb477c8d7ef",
+      "email": "tenantB_1791194742603@example.com",
+      "password_hash": "ba32397a41905961bd42e9fcf963fbaf:6c2519755893709724fe8950d61236a91ac384a11cf0f18cbc8951461ac9c4b0b68d98091faeceecb3734bd4f1f5c24f820e4d933b122b5d85d8e5738f3d061e",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "56442879-be01-4a25-8760-9a22a08c6d15",
+      "created_at": "2026-10-05T10:05:42.609Z",
+      "updated_at": "2026-10-05T10:05:42.609Z"
+    },
+    {
+      "id": "8cf29d87-5e00-42f8-a7c2-9fe41dfdcfda",
+      "email": "testowner_1791195066645@example.com",
+      "password_hash": "c075e39a0a5014d274d0b91c7fdac245:53d99c9e5526758386b0b31d32118c510772f90bcf9681d18e9813f39344b9f1555414b375ec4123a80a1f4055ab980f64ac66dc6e7c58bd60ad6be1dfc74022",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "15cc6103-e155-4b61-89c1-abe291affc84",
+      "created_at": "2026-10-05T10:11:07.096Z",
+      "updated_at": "2026-10-05T10:11:07.096Z"
+    },
+    {
+      "id": "3e2a8cc3-9088-4e04-8592-9a87361f2ea2",
+      "email": "tenantB_1791195067604@example.com",
+      "password_hash": "e7fd1a677f34ba34544fdfd13f444f95:92a4a45b3d99cc6471bfa01c515030c5088d689d86f408ba69bccd556f76443e9b08de7a9a73b4bfd5a300383ec8ea046e5c6af7609f58596f186242b1ef65ba",
+      "role": "RESTAURANT_OWNER",
+      "tenant_id": "e3b6bd2d-d55c-458c-98fd-10c430eb71ac",
+      "created_at": "2026-10-05T10:11:07.621Z",
+      "updated_at": "2026-10-05T10:11:07.621Z"
+    }
+  ],
+  "clients": [
+    {
+      "id": "1ce5d167-8dc2-489b-a033-cdc9a2033e05",
+      "public_id": "1ce5d167-8dc2-489b-a033-cdc9a2033e05",
+      "business_name": "Regression Cafe",
+      "menu_slug": "regression-cafe",
+      "category": "cafes",
+      "tagline": null,
+      "status": "Active",
+      "created_at": "2026-10-03T06:18:33.027Z",
+      "updated_at": "2026-10-03T06:18:33.027Z"
+    },
+    {
+      "id": "test-client-1791008477038",
+      "public_id": "test-client-1791008477038",
+      "business_name": "Test Business",
+      "menu_slug": "test-business-1791008477038",
+      "category": "cafes",
+      "tagline": null,
+      "status": "Active",
+      "created_at": "2026-10-03T06:21:17.080Z",
+      "updated_at": "2026-10-03T06:21:17.080Z"
+    },
+    {
+      "id": "client-1",
+      "public_id": "client-pub-1",
+      "business_name": "The Artisan",
+      "menu_slug": "the-artisan",
+      "category": "restaurants",
+      "tagline": "French Fine Dining",
+      "status": "active",
+      "created_at": "2026-10-04T14:28:08.589Z",
+      "updated_at": "2026-10-04T14:28:08.589Z"
+    },
+    {
+      "id": "client-2",
+      "public_id": "client-pub-2",
+      "business_name": "Royal Spice",
+      "menu_slug": "royal-spice",
+      "category": "restaurants",
+      "tagline": "Indian Luxury",
+      "status": "active",
+      "created_at": "2026-10-04T14:28:08.616Z",
+      "updated_at": "2026-10-04T14:28:08.616Z"
+    },
+    {
+      "id": "client-3",
+      "public_id": "client-pub-3",
+      "business_name": "Midnight Grill",
+      "menu_slug": "midnight-grill",
+      "category": "restaurants",
+      "tagline": "Steakhouse",
+      "status": "active",
+      "created_at": "2026-10-04T14:28:08.620Z",
+      "updated_at": "2026-10-04T14:28:08.620Z"
+    },
+    {
+      "id": "6ecb2bf0-af65-4215-afec-bd1a400eff00",
+      "public_id": "22e94de9",
+      "business_name": "The Grand Garden 1791194032583",
+      "menu_slug": "the-grand-garden-1791194032583",
+      "category": null,
+      "tagline": "Authentic Fine Dining & Charcoal Grills",
+      "status": "active",
+      "created_at": "2026-10-05T09:53:52.863Z",
+      "updated_at": "2026-10-05T09:53:53.115Z"
+    },
+    {
+      "id": "be36f675-b471-4561-b0f0-fef859b71091",
+      "public_id": "20927365",
+      "business_name": "The Grand Garden 1791194244292",
+      "menu_slug": "the-grand-garden-1791194244292",
+      "category": null,
+      "tagline": "Authentic Fine Dining & Charcoal Grills",
+      "status": "active",
+      "created_at": "2026-10-05T09:57:24.439Z",
+      "updated_at": "2026-10-05T09:57:24.557Z"
+    },
+    {
+      "id": "1e0a232c-8333-4d3e-a031-2f00fe58d709",
+      "public_id": "2d1872b3",
+      "business_name": "The Grand Garden 1791194436835",
+      "menu_slug": "the-grand-garden-1791194436835",
+      "category": null,
+      "tagline": "Authentic Fine Dining & Charcoal Grills",
+      "status": "active",
+      "created_at": "2026-10-05T10:00:36.976Z",
+      "updated_at": "2026-10-05T10:00:37.073Z"
+    },
+    {
+      "id": "82a837bb-a449-4585-9c09-202bd494edfc",
+      "public_id": "9238822a",
+      "business_name": "The Grand Garden 1791194582470",
+      "menu_slug": "the-grand-garden-1791194582470",
+      "category": null,
+      "tagline": "Authentic Fine Dining & Charcoal Grills",
+      "status": "active",
+      "created_at": "2026-10-05T10:03:02.596Z",
+      "updated_at": "2026-10-05T10:03:02.731Z"
+    },
+    {
+      "id": "2d9116f7-aec0-453c-acfa-8504088af32c",
+      "public_id": "cede9621",
+      "business_name": "The Grand Garden 1791194742161",
+      "menu_slug": "the-grand-garden-1791194742161",
+      "category": null,
+      "tagline": "Authentic Fine Dining & Charcoal Grills",
+      "status": "active",
+      "created_at": "2026-10-05T10:05:42.257Z",
+      "updated_at": "2026-10-05T10:05:42.354Z"
+    },
+    {
+      "id": "56442879-be01-4a25-8760-9a22a08c6d15",
+      "public_id": "8c78e25d",
+      "business_name": "Restaurant B 1791194742603",
+      "menu_slug": "restaurant-b-1791194742603",
+      "category": null,
+      "tagline": null,
+      "status": "active",
+      "created_at": "2026-10-05T10:05:42.609Z",
+      "updated_at": "2026-10-05T10:05:42.609Z"
+    },
+    {
+      "id": "15cc6103-e155-4b61-89c1-abe291affc84",
+      "public_id": "8a86679e",
+      "business_name": "The Grand Garden 1791195066645",
+      "menu_slug": "the-grand-garden-1791195066645",
+      "category": null,
+      "tagline": "Authentic Fine Dining & Charcoal Grills",
+      "status": "active",
+      "created_at": "2026-10-05T10:11:07.096Z",
+      "updated_at": "2026-10-05T10:11:07.186Z"
+    },
+    {
+      "id": "e3b6bd2d-d55c-458c-98fd-10c430eb71ac",
+      "public_id": "6ba8d6b1",
+      "business_name": "Restaurant B 1791195067604",
+      "menu_slug": "restaurant-b-1791195067604",
+      "category": null,
+      "tagline": null,
+      "status": "active",
+      "created_at": "2026-10-05T10:11:07.621Z",
+      "updated_at": "2026-10-05T10:11:07.621Z"
+    }
+  ],
+  "subscriptions": [
+    {
+      "id": "sub-1",
+      "tenant_id": "client-1",
+      "plan_id": "PREMIUM",
+      "status": "active",
+      "started_at": null,
+      "expires_at": null,
+      "created_at": "2026-10-04T14:28:08.612Z",
+      "updated_at": "2026-10-04T14:28:08.612Z"
+    },
+    {
+      "id": "sub-2",
+      "tenant_id": "client-2",
+      "plan_id": "ESSENTIAL",
+      "status": "active",
+      "started_at": null,
+      "expires_at": null,
+      "created_at": "2026-10-04T14:28:08.619Z",
+      "updated_at": "2026-10-04T14:28:08.619Z"
+    },
+    {
+      "id": "sub-3",
+      "tenant_id": "client-3",
+      "plan_id": "PREMIUM",
+      "status": "active",
+      "started_at": null,
+      "expires_at": null,
+      "created_at": "2026-10-04T14:28:08.623Z",
+      "updated_at": "2026-10-04T14:28:08.623Z"
+    },
+    {
+      "id": "894b4a1a-e02f-4bbf-85dd-6710f4b27d73",
+      "tenant_id": "6ecb2bf0-af65-4215-afec-bd1a400eff00",
+      "plan_id": "PREMIUM",
+      "status": "ACTIVE",
+      "started_at": "2026-10-05T09:53:52.863Z",
+      "expires_at": "2027-10-05T09:53:52.863Z",
+      "created_at": "2026-10-05T09:53:52.863Z",
+      "updated_at": "2026-10-05T09:53:52.863Z"
+    },
+    {
+      "id": "35b9069e-fb41-450b-9d34-65dfd9544bd5",
+      "tenant_id": "be36f675-b471-4561-b0f0-fef859b71091",
+      "plan_id": "PREMIUM",
+      "status": "ACTIVE",
+      "started_at": "2026-10-05T09:57:24.440Z",
+      "expires_at": "2027-10-05T09:57:24.440Z",
+      "created_at": "2026-10-05T09:57:24.439Z",
+      "updated_at": "2026-10-05T09:57:24.439Z"
+    },
+    {
+      "id": "c9ec8115-8e54-4104-92bd-64f302edf0ec",
+      "tenant_id": "1e0a232c-8333-4d3e-a031-2f00fe58d709",
+      "plan_id": "PREMIUM",
+      "status": "ACTIVE",
+      "started_at": "2026-10-05T10:00:36.978Z",
+      "expires_at": "2027-10-05T10:00:37.445Z",
+      "created_at": "2026-10-05T10:00:36.976Z",
+      "updated_at": "2026-10-05T10:00:37.447Z"
+    },
+    {
+      "id": "b3ec5b91-148c-4b47-b4be-dbb354c8eef3",
+      "tenant_id": "82a837bb-a449-4585-9c09-202bd494edfc",
+      "plan_id": "PREMIUM",
+      "status": "ACTIVE",
+      "started_at": "2026-10-05T10:03:02.597Z",
+      "expires_at": "2027-10-05T10:03:02.932Z",
+      "created_at": "2026-10-05T10:03:02.596Z",
+      "updated_at": "2026-10-05T10:03:02.933Z"
+    },
+    {
+      "id": "606076ea-03b2-4feb-b622-6978e795ec5f",
+      "tenant_id": "2d9116f7-aec0-453c-acfa-8504088af32c",
+      "plan_id": "PREMIUM",
+      "status": "ACTIVE",
+      "started_at": "2026-10-05T10:05:42.258Z",
+      "expires_at": "2027-10-05T10:05:42.526Z",
+      "created_at": "2026-10-05T10:05:42.257Z",
+      "updated_at": "2026-10-05T10:05:42.527Z"
+    },
+    {
+      "id": "54ce2097-14e2-4bef-a335-2724af6c9bd5",
+      "tenant_id": "56442879-be01-4a25-8760-9a22a08c6d15",
+      "plan_id": "PREMIUM",
+      "status": "ACTIVE",
+      "started_at": "2026-10-05T10:05:42.609Z",
+      "expires_at": "2027-10-05T10:05:42.609Z",
+      "created_at": "2026-10-05T10:05:42.609Z",
+      "updated_at": "2026-10-05T10:05:42.609Z"
+    },
+    {
+      "id": "ed2c1c59-b9ba-4df2-91e6-fbe7cabfbd2b",
+      "tenant_id": "15cc6103-e155-4b61-89c1-abe291affc84",
+      "plan_id": "PREMIUM",
+      "status": "ACTIVE",
+      "started_at": "2026-10-05T10:11:07.098Z",
+      "expires_at": "2027-10-05T10:11:07.373Z",
+      "created_at": "2026-10-05T10:11:07.096Z",
+      "updated_at": "2026-10-05T10:11:07.374Z"
+    },
+    {
+      "id": "0570052e-f161-4347-94aa-31ad2530df71",
+      "tenant_id": "e3b6bd2d-d55c-458c-98fd-10c430eb71ac",
+      "plan_id": "PREMIUM",
+      "status": "ACTIVE",
+      "started_at": "2026-10-05T10:11:07.622Z",
+      "expires_at": "2027-10-05T10:11:07.622Z",
+      "created_at": "2026-10-05T10:11:07.621Z",
+      "updated_at": "2026-10-05T10:11:07.621Z"
+    }
+  ],
+  "menus": [
+    {
+      "id": "menu-1ce5d167-8dc2-489b-a033-cdc9a2033e05",
+      "tenant_id": "1ce5d167-8dc2-489b-a033-cdc9a2033e05",
+      "name": "Main Menu",
+      "status": "PUBLISHED",
+      "version": 1,
+      "published_at": "2026-10-03T06:18:33.042Z",
+      "created_at": "2026-10-03T06:18:33.042Z",
+      "updated_at": "2026-10-03T06:18:33.042Z"
+    },
+    {
+      "id": "caadab68-a112-4c8b-bb09-8e9f13e6e233",
+      "tenant_id": "6ecb2bf0-af65-4215-afec-bd1a400eff00",
+      "name": "Main Menu",
+      "status": "PUBLISHED",
+      "version": 1,
+      "published_at": "2026-10-05T09:53:53.132Z",
+      "created_at": "2026-10-05T09:53:53.132Z",
+      "updated_at": "2026-10-05T09:53:53.132Z"
+    },
+    {
+      "id": "f4f00f82-18ab-4581-ab25-6a7422cb45fe",
+      "tenant_id": "be36f675-b471-4561-b0f0-fef859b71091",
+      "name": "Main Menu",
+      "status": "PUBLISHED",
+      "version": 1,
+      "published_at": "2026-10-05T09:57:24.582Z",
+      "created_at": "2026-10-05T09:57:24.582Z",
+      "updated_at": "2026-10-05T09:57:24.582Z"
+    },
+    {
+      "id": "524eb073-b9a4-43ea-b0ff-b93daefe5c93",
+      "tenant_id": "1e0a232c-8333-4d3e-a031-2f00fe58d709",
+      "name": "Main Menu",
+      "status": "PUBLISHED",
+      "version": 1,
+      "published_at": "2026-10-05T10:00:36.976Z",
+      "created_at": "2026-10-05T10:00:36.976Z",
+      "updated_at": "2026-10-05T10:00:36.976Z"
+    },
+    {
+      "id": "5ec24f88-9a7d-4b0c-9005-43aa55da6f44",
+      "tenant_id": "82a837bb-a449-4585-9c09-202bd494edfc",
+      "name": "Main Menu",
+      "status": "PUBLISHED",
+      "version": 1,
+      "published_at": "2026-10-05T10:03:02.596Z",
+      "created_at": "2026-10-05T10:03:02.596Z",
+      "updated_at": "2026-10-05T10:03:02.596Z"
+    },
+    {
+      "id": "56ff8237-cc75-48ad-9cb3-d75f0fe07c67",
+      "tenant_id": "2d9116f7-aec0-453c-acfa-8504088af32c",
+      "name": "Main Menu",
+      "status": "PUBLISHED",
+      "version": 1,
+      "published_at": "2026-10-05T10:05:42.257Z",
+      "created_at": "2026-10-05T10:05:42.257Z",
+      "updated_at": "2026-10-05T10:05:42.257Z"
+    },
+    {
+      "id": "144724f3-4063-41e1-83e7-16667bc4b898",
+      "tenant_id": "56442879-be01-4a25-8760-9a22a08c6d15",
+      "name": "Main Menu",
+      "status": "PUBLISHED",
+      "version": 1,
+      "published_at": "2026-10-05T10:05:42.609Z",
+      "created_at": "2026-10-05T10:05:42.609Z",
+      "updated_at": "2026-10-05T10:05:42.609Z"
+    },
+    {
+      "id": "39fc00a2-79d4-448b-a34c-5d040214d231",
+      "tenant_id": "15cc6103-e155-4b61-89c1-abe291affc84",
+      "name": "Main Menu",
+      "status": "PUBLISHED",
+      "version": 1,
+      "published_at": "2026-10-05T10:11:07.096Z",
+      "created_at": "2026-10-05T10:11:07.096Z",
+      "updated_at": "2026-10-05T10:11:07.096Z"
+    },
+    {
+      "id": "30901a23-8601-4814-b009-dd6cdba9c883",
+      "tenant_id": "e3b6bd2d-d55c-458c-98fd-10c430eb71ac",
+      "name": "Main Menu",
+      "status": "PUBLISHED",
+      "version": 1,
+      "published_at": "2026-10-05T10:11:07.621Z",
+      "created_at": "2026-10-05T10:11:07.621Z",
+      "updated_at": "2026-10-05T10:11:07.621Z"
+    }
+  ],
+  "menu_categories": [
+    {
+      "id": "e6bd1ac7-dc71-4c46-b253-5c80829d6ab5",
+      "menu_id": "menu-1ce5d167-8dc2-489b-a033-cdc9a2033e05",
+      "tenant_id": "1ce5d167-8dc2-489b-a033-cdc9a2033e05",
+      "name": "Food",
+      "description": null,
+      "sort_order": 0,
+      "is_visible": true,
+      "created_at": "2026-10-03T06:18:33.045Z",
+      "updated_at": "2026-10-03T06:18:33.045Z"
+    },
+    {
+      "id": "e1dc9191-708a-4428-9ed5-bb4c0916f2a5",
+      "menu_id": "5ec24f88-9a7d-4b0c-9005-43aa55da6f44",
+      "tenant_id": "82a837bb-a449-4585-9c09-202bd494edfc",
+      "name": "Charcoal Starters",
+      "description": "Freshly grilled items",
+      "sort_order": 1,
+      "is_visible": true,
+      "created_at": "2026-10-05T10:03:02.788Z",
+      "updated_at": "2026-10-05T10:03:02.788Z"
+    },
+    {
+      "id": "460b9d77-f4a0-448e-aa38-9bd3384e2b4b",
+      "menu_id": "56ff8237-cc75-48ad-9cb3-d75f0fe07c67",
+      "tenant_id": "2d9116f7-aec0-453c-acfa-8504088af32c",
+      "name": "Charcoal Starters",
+      "description": "Freshly grilled items",
+      "sort_order": 1,
+      "is_visible": true,
+      "created_at": "2026-10-05T10:05:42.385Z",
+      "updated_at": "2026-10-05T10:05:42.385Z"
+    },
+    {
+      "id": "e97aefc6-cbeb-43ee-a18b-6a064b50f350",
+      "menu_id": "39fc00a2-79d4-448b-a34c-5d040214d231",
+      "tenant_id": "15cc6103-e155-4b61-89c1-abe291affc84",
+      "name": "Charcoal Starters",
+      "description": "Freshly grilled items",
+      "sort_order": 1,
+      "is_visible": true,
+      "created_at": "2026-10-05T10:11:07.218Z",
+      "updated_at": "2026-10-05T10:11:07.218Z"
+    }
+  ],
+  "menu_items": [
+    {
+      "id": "m1",
+      "menu_id": "menu-1ce5d167-8dc2-489b-a033-cdc9a2033e05",
+      "tenant_id": "1ce5d167-8dc2-489b-a033-cdc9a2033e05",
+      "category_id": "e6bd1ac7-dc71-4c46-b253-5c80829d6ab5",
+      "name": "Regress Burger",
+      "description": "",
+      "price": "9.99",
+      "half_price": null,
+      "full_price": null,
+      "image_url": null,
+      "diet_type": "veg",
+      "is_available": true,
+      "sort_order": 0,
+      "metadata": null,
+      "created_at": "2026-10-03T06:18:33.046Z",
+      "updated_at": "2026-10-03T06:18:33.046Z"
+    },
+    {
+      "id": "bb1024f0-2d92-4aef-84e9-573f17dda48b",
+      "menu_id": "5ec24f88-9a7d-4b0c-9005-43aa55da6f44",
+      "tenant_id": "82a837bb-a449-4585-9c09-202bd494edfc",
+      "category_id": "e1dc9191-708a-4428-9ed5-bb4c0916f2a5",
+      "name": "Paneer Tikka Angara",
+      "description": "Cottage cheese marinated in spices",
+      "price": "350.00",
+      "half_price": null,
+      "full_price": null,
+      "image_url": null,
+      "diet_type": "veg",
+      "is_available": true,
+      "sort_order": 1,
+      "metadata": null,
+      "created_at": "2026-10-05T10:03:02.796Z",
+      "updated_at": "2026-10-05T10:03:02.865Z"
+    },
+    {
+      "id": "69aa6542-a343-4a01-8e0d-d36a4364ce3c",
+      "menu_id": "56ff8237-cc75-48ad-9cb3-d75f0fe07c67",
+      "tenant_id": "2d9116f7-aec0-453c-acfa-8504088af32c",
+      "category_id": "460b9d77-f4a0-448e-aa38-9bd3384e2b4b",
+      "name": "Paneer Tikka Angara",
+      "description": "Cottage cheese marinated in spices",
+      "price": "350.00",
+      "half_price": null,
+      "full_price": null,
+      "image_url": null,
+      "diet_type": "veg",
+      "is_available": true,
+      "sort_order": 1,
+      "metadata": null,
+      "created_at": "2026-10-05T10:05:42.392Z",
+      "updated_at": "2026-10-05T10:05:42.448Z"
+    },
+    {
+      "id": "faf9669b-e058-4d70-8009-c7f2259f1519",
+      "menu_id": "39fc00a2-79d4-448b-a34c-5d040214d231",
+      "tenant_id": "15cc6103-e155-4b61-89c1-abe291affc84",
+      "category_id": "e97aefc6-cbeb-43ee-a18b-6a064b50f350",
+      "name": "Paneer Tikka Angara",
+      "description": "Cottage cheese marinated in spices",
+      "price": "350.00",
+      "half_price": null,
+      "full_price": null,
+      "image_url": null,
+      "diet_type": "veg",
+      "is_available": true,
+      "sort_order": 1,
+      "metadata": null,
+      "created_at": "2026-10-05T10:11:07.229Z",
+      "updated_at": "2026-10-05T10:11:07.297Z"
+    }
+  ],
+  "appearance_settings": [
+    {
+      "id": "06a20778-5d08-4f02-acf9-b1d91f7074c1",
+      "tenant_id": "1e0a232c-8333-4d3e-a031-2f00fe58d709",
+      "template_id": "royal-maharaja",
+      "logo": null,
+      "cover_image": null,
+      "restaurant_display_name": "The Grand Garden 1791194436835",
+      "tagline": null,
+      "accent_configuration": null,
+      "updated_at": "2026-10-05T10:00:36.976Z"
+    },
+    {
+      "id": "853350b5-9a02-4c59-87f6-2d96c8561e5f",
+      "tenant_id": "82a837bb-a449-4585-9c09-202bd494edfc",
+      "template_id": "modern-india",
+      "logo": null,
+      "cover_image": null,
+      "restaurant_display_name": "The Grand Garden 1791194582470",
+      "tagline": "Authentic Fine Dining",
+      "accent_configuration": null,
+      "updated_at": "2026-10-05T10:03:02.888Z"
+    },
+    {
+      "id": "0a88c5f0-11d4-49e6-9240-bdb224aba4c1",
+      "tenant_id": "2d9116f7-aec0-453c-acfa-8504088af32c",
+      "template_id": "modern-india",
+      "logo": null,
+      "cover_image": null,
+      "restaurant_display_name": "The Grand Garden 1791194742161",
+      "tagline": "Authentic Fine Dining",
+      "accent_configuration": null,
+      "updated_at": "2026-10-05T10:05:42.479Z"
+    },
+    {
+      "id": "deb8eaff-ec23-4ea4-bac5-a44c4b3ae553",
+      "tenant_id": "56442879-be01-4a25-8760-9a22a08c6d15",
+      "template_id": "royal-maharaja",
+      "logo": null,
+      "cover_image": null,
+      "restaurant_display_name": "Restaurant B 1791194742603",
+      "tagline": null,
+      "accent_configuration": null,
+      "updated_at": "2026-10-05T10:05:42.609Z"
+    },
+    {
+      "id": "976558fa-8cfc-4331-934a-3881d2c42b6b",
+      "tenant_id": "15cc6103-e155-4b61-89c1-abe291affc84",
+      "template_id": "modern-india",
+      "logo": null,
+      "cover_image": null,
+      "restaurant_display_name": "The Grand Garden 1791195066645",
+      "tagline": "Authentic Fine Dining",
+      "accent_configuration": null,
+      "updated_at": "2026-10-05T10:11:07.325Z"
+    },
+    {
+      "id": "fef2e085-a29f-4892-bec2-399eb595802b",
+      "tenant_id": "e3b6bd2d-d55c-458c-98fd-10c430eb71ac",
+      "template_id": "royal-maharaja",
+      "logo": null,
+      "cover_image": null,
+      "restaurant_display_name": "Restaurant B 1791195067604",
+      "tagline": null,
+      "accent_configuration": null,
+      "updated_at": "2026-10-05T10:11:07.621Z"
+    }
+  ],
+  "qr_codes": [
+    {
+      "id": "6527a30a-a43f-4136-9826-b8ed429efef1",
+      "tenant_id": "1e0a232c-8333-4d3e-a031-2f00fe58d709",
+      "public_id": "2d1872b3",
+      "qr_id": "7fd88aa6-465e-490c-b1b8-8a2e3000d840",
+      "destination_type": "menu",
+      "is_active": true,
+      "created_at": "2026-10-05T10:00:37.300Z",
+      "updated_at": "2026-10-05T10:00:37.300Z"
+    },
+    {
+      "id": "c482b2a0-3a63-4805-a03e-ab5e84e2732e",
+      "tenant_id": "82a837bb-a449-4585-9c09-202bd494edfc",
+      "public_id": "9238822a",
+      "qr_id": "bc077513-f48b-4bc7-abd2-775b62c02e2f",
+      "destination_type": "menu",
+      "is_active": true,
+      "created_at": "2026-10-05T10:03:02.852Z",
+      "updated_at": "2026-10-05T10:03:02.852Z"
+    },
+    {
+      "id": "0b6886bd-4187-467b-9ee8-5ab2aba253a3",
+      "tenant_id": "2d9116f7-aec0-453c-acfa-8504088af32c",
+      "public_id": "cede9621",
+      "qr_id": "c7b4cd8b-7a2c-4819-b4ce-ee2c71a86b0b",
+      "destination_type": "menu",
+      "is_active": true,
+      "created_at": "2026-10-05T10:05:42.431Z",
+      "updated_at": "2026-10-05T10:05:42.431Z"
+    },
+    {
+      "id": "a13225f9-b1b5-4fcb-b1da-d57f72d3656b",
+      "tenant_id": "15cc6103-e155-4b61-89c1-abe291affc84",
+      "public_id": "8a86679e",
+      "qr_id": "311ae04b-6963-47d2-aac4-280c85ef07c1",
+      "destination_type": "menu",
+      "is_active": true,
+      "created_at": "2026-10-05T10:11:07.283Z",
+      "updated_at": "2026-10-05T10:11:07.283Z"
+    }
+  ],
+  "activity_logs": [],
+  "notifications": [
+    {
+      "id": "86f8c548-be0d-420d-8f94-8d8770fa121f",
+      "tenant_id": null,
+      "message": "New user Regression Cafe has been added via Menu QR",
+      "is_read": null,
+      "created_at": "2026-10-03T00:48:33.021Z"
+    },
+    {
+      "id": "13f5e7ae-43ec-46cd-a188-d7c23f85d807",
+      "tenant_id": null,
+      "message": "New user Test Business has been added via Menu QR",
+      "is_read": null,
+      "created_at": "2026-10-03T00:51:17.041Z"
+    }
+  ],
+  "contact_leads": [
+    {
+      "id": "d5b34f70-7b81-43b7-88cd-6e7d6b298fb5",
+      "name": "Test User",
+      "email": "test@example.com",
+      "phone": "9876543210",
+      "message": "Testing contact form rerun",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-03T06:49:59.185Z"
+    },
+    {
+      "id": "5de16c8a-0207-48e4-ad49-517304069fcb",
+      "name": "Rebuild Test",
+      "email": "rebuild@menusqr.com",
+      "phone": "9998887770",
+      "message": "Rebuild and run confirmation",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-03T07:25:02.560Z"
+    }
+  ]
+}

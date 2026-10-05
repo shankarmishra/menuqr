@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id SERIAL PRIMARY KEY,
+  tenant_id VARCHAR(255) REFERENCES clients(id) ON DELETE CASCADE,
+  user_id VARCHAR(255) REFERENCES users(id) ON DELETE SET NULL,
+  action VARCHAR(255) NOT NULL,
+  description TEXT,
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

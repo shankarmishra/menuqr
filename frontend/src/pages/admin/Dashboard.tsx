@@ -140,7 +140,7 @@ export default function Dashboard() {
           <div className="absolute -top-32 -right-32 w-64 h-64 bg-orange-600 rounded-full mix-blend-screen filter blur-[100px] opacity-40 pointer-events-none" />
           
           <h2 className="text-xl font-bold text-white mb-2">System Resources</h2>
-          <p className="text-slate-400 text-sm font-medium mb-10">Live connection to the MenuQR API and saved records.</p>
+          <p className="text-slate-400 text-sm font-medium mb-10">Live connection to the MenusQR API and saved records.</p>
           
           <div className="space-y-8 relative z-10">
             <div>

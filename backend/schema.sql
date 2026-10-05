@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash VARCHAR(255) NOT NULL,
   role VARCHAR(50) NOT NULL,
   tenant_id VARCHAR(255) REFERENCES clients(id) ON DELETE CASCADE,
+  onboarding_state VARCHAR(50) DEFAULT 'PENDING',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -78,7 +79,7 @@ CREATE TABLE IF NOT EXISTS menu_items (
 
 CREATE TABLE IF NOT EXISTS qr_codes (
   id VARCHAR(255) PRIMARY KEY,
-  tenant_id VARCHAR(255) REFERENCES clients(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  tenant_id VARCHAR(255) REFERENCES clients(id) ON DELETE CASCADE NOT NULL,
   public_id VARCHAR(255) NOT NULL,
   qr_id VARCHAR(255) UNIQUE NOT NULL,
   destination_type VARCHAR(100) DEFAULT 'menu',
@@ -124,4 +125,51 @@ CREATE TABLE IF NOT EXISTS contact_leads (
   message TEXT NOT NULL,
   ip_address TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id SERIAL PRIMARY KEY,
+  tenant_id VARCHAR(255) REFERENCES clients(id) ON DELETE CASCADE,
+  user_id VARCHAR(255) REFERENCES users(id) ON DELETE SET NULL,
+  action VARCHAR(255) NOT NULL,
+  description TEXT,
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS appearance_settings (
+  id VARCHAR(255) PRIMARY KEY,
+  tenant_id VARCHAR(255) REFERENCES clients(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  template_id VARCHAR(100) DEFAULT 'royal-maharaja',
+  logo TEXT,
+  cover_image TEXT,
+  restaurant_display_name VARCHAR(255),
+  tagline VARCHAR(255),
+  accent_configuration JSONB,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+  id VARCHAR(255) PRIMARY KEY,
+  customer_name VARCHAR(255) NOT NULL,
+  customer_email VARCHAR(255) NOT NULL,
+  business_name VARCHAR(255) NOT NULL,
+  plan_id VARCHAR(100) NOT NULL,
+  amount DECIMAL(10, 2) NOT NULL,
+  currency VARCHAR(10) DEFAULT 'INR',
+  status VARCHAR(50) DEFAULT 'PENDING_PAYMENT',
+  provisioning_status VARCHAR(50) DEFAULT 'PENDING',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+  id VARCHAR(255) PRIMARY KEY,
+  order_id VARCHAR(255) REFERENCES orders(id) ON DELETE CASCADE NOT NULL,
+  gateway VARCHAR(50) NOT NULL,
+  transaction_id VARCHAR(255),
+  amount DECIMAL(10, 2) NOT NULL,
+  status VARCHAR(50) NOT NULL,
+  raw_response JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

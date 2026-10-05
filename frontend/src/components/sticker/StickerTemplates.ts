@@ -21,7 +21,7 @@ export interface StickerTemplate {
 
 export const STICKER_TEMPLATES: StickerTemplate[] = [
   {
-    id: 'menuqr-classic-green',
+    id: 'menusqr-classic-green',
     name: 'Classic Green Premium',
     primaryBg: '#f5f0e6',
     secondaryBg: '#0a2e1f',
@@ -37,7 +37,7 @@ export const STICKER_TEMPLATES: StickerTemplate[] = [
     textureUrl: "data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E"
   },
   {
-    id: 'menuqr-minimal-white',
+    id: 'menusqr-minimal-white',
     name: 'Minimal White',
     primaryBg: '#ffffff',
     secondaryBg: '#f8f9fa',

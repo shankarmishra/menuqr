@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Menu, X, LayoutDashboard, UtensilsCrossed, Palette, QrCode, CreditCard, Settings, LogOut, ChefHat, User } from 'lucide-react';
+import { getSubscription } from '../pages/app/appStore';
+import { Menu, X, LayoutDashboard, UtensilsCrossed, Palette, QrCode, CreditCard, Settings, LogOut, ChefHat, User, ShoppingBag } from 'lucide-react';
 import clsx from 'clsx';
 
-const navItems = [
+const baseNavItems = [
   { to: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/app/menu', icon: UtensilsCrossed, label: 'Menu Items' },
   { to: '/app/appearance', icon: Palette, label: 'Appearance' },
@@ -15,8 +16,23 @@ const navItems = [
 
 export default function AppLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [planId, setPlanId] = useState<string>('BASIC');
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getSubscription().then(sub => {
+      setPlanId(sub?.planId?.toUpperCase() || 'BASIC');
+    }).catch(console.error);
+  }, []);
+
+  const navItems = planId === 'PREMIUM'
+    ? [
+        baseNavItems[0],
+        { to: '/app/orders', icon: ShoppingBag, label: 'Orders' },
+        ...baseNavItems.slice(1)
+      ]
+    : baseNavItems;
 
   const handleLogout = async () => {
     await logout();
@@ -58,7 +74,7 @@ export default function AppLayout() {
         </button>
         <div className="flex items-center gap-2">
           <ChefHat className="text-[#e8783c] h-6 w-6" />
-          <span className="font-semibold text-white">MenuQR</span>
+          <span className="font-semibold text-white">MenusQR</span>
         </div>
         <button className="text-[#9ca3af] hover:text-white p-2 -mr-2">
           <User className="h-6 w-6" />
@@ -73,7 +89,7 @@ export default function AppLayout() {
             <div className="flex items-center justify-between h-16 px-4 border-b border-[#2a3832]">
               <div className="flex items-center gap-2">
                 <ChefHat className="text-[#e8783c] h-6 w-6" />
-                <span className="font-semibold text-white">MenuQR</span>
+                <span className="font-semibold text-white">MenusQR</span>
               </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}
@@ -100,7 +116,7 @@ export default function AppLayout() {
       <div className="hidden md:flex flex-col w-[260px] bg-[#1d2723] border-r border-[#2a3832]">
         <div className="flex items-center h-16 px-6 border-b border-[#2a3832]">
           <ChefHat className="text-[#e8783c] h-7 w-7 mr-3" />
-          <span className="font-bold text-xl text-white">MenuQR</span>
+          <span className="font-bold text-xl text-white">MenusQR</span>
         </div>
         {navLinks}
         <div className="p-4 border-t border-[#2a3832]">

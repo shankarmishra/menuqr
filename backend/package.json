@@ -1,5 +1,5 @@
 {
-  "name": "menuqr-backend",
+  "name": "menusqr-backend",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,9 +9,13 @@
   "dependencies": {
     "cookie": "^2.0.1",
     "dotenv": "^18.0.4",
+    "firebase-admin": "^14.5.0",
     "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.24.5",
     "nodemailer": "^10.0.13",
     "pg": "^8.23.1",
-    "resend": "^6.31.0"
+    "resend": "^6.31.0",
+    "slugify": "^1.6.9",
+    "uuid": "^14.0.2"
   }
 }

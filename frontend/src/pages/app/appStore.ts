@@ -11,7 +11,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!response.ok) {
     if (response.status === 401) {
-      window.dispatchEvent(new Event('menuqr:app-unauthorized'));
+      window.dispatchEvent(new Event('menusqr:app-unauthorized'));
     }
     const result = await response.json().catch(() => null) as { error?: string } | null;
     throw new Error(result?.error ?? `Request failed (${response.status}).`);
@@ -34,9 +34,11 @@ export interface AppDashboardData {
 }
 
 export interface AppSubscriptionData {
-  plan: string;
+  planId: string;
   status: string;
-  billingCycle: string;
+  startedAt?: string;
+  expiresAt?: string;
+  menuEditUsed?: boolean;
 }
 
 export interface AppQrData {

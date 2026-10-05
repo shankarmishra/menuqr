@@ -32,9 +32,9 @@ interface Props {
   qrImage: string;
 }
 
-export default function MenuQRStickerGenerator({ client, menuUrl, qrImage }: Props) {
+export default function MenusQRStickerGenerator({ client, menuUrl, qrImage }: Props) {
   const [stage, setStage] = useState<GenerationStage>('IDLE');
-  const [templateId, setTemplateId] = useState<string>('menuqr-classic-green');
+  const [templateId, setTemplateId] = useState<string>('menusqr-classic-green');
   const prefersReducedMotion = useReducedMotion();
   const stickerRef = useRef<HTMLDivElement>(null);
   
@@ -158,7 +158,7 @@ export default function MenuQRStickerGenerator({ client, menuUrl, qrImage }: Pro
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <ChefHat size={18} style={{ color: template.accentColor }} />
-            <span className="text-xs sm:text-sm font-bold tracking-widest text-[#dce5df]">MENUQR SYSTEM</span>
+            <span className="text-xs sm:text-sm font-bold tracking-widest text-[#dce5df]">MENUSQR SYSTEM</span>
           </div>
           <span className="text-[10px] sm:text-xs text-[#94a39d] font-mono">FABRICATION ENGINE v2.0</span>
         </div>

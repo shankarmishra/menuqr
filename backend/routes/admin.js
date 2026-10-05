@@ -1,0 +1,347 @@
+import { randomUUID } from 'node:crypto';
+import { pool } from '../db.js';
+import { enforceSuperAdmin } from '../auth.js';
+import { apiError, sendJson, readJson } from '../utils.js';
+import { createNewUserNotification } from '../notifications.js';
+
+const categories = new Set(['restaurants', 'dhabas', 'cafes']);
+
+export function validateClient(input, id, createdAt) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    throw apiError(400, 'Client data is required.');
+  }
+  const businessName = String(input.businessName ?? '').trim();
+  const menuSlug = String(input.menuSlug ?? '').trim().toLowerCase();
+  if (!businessName) throw apiError(400, 'Business name is required.');
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(menuSlug)) {
+    throw apiError(400, 'Menu URL slug is invalid.');
+  }
+  if (!categories.has(input.category)) {
+    throw apiError(400, 'Business category is invalid.');
+  }
+  if (!Array.isArray(input.menuItems) || input.menuItems.length > 300) {
+    throw apiError(400, 'Menu items must be a list of up to 300 items.');
+  }
+  if (!Array.isArray(input.services)) {
+    throw apiError(400, 'Services must be a list.');
+  }
+
+  const menuItems = input.menuItems.map((item) => {
+    if (!item || typeof item !== 'object' || !String(item.name ?? '').trim()) {
+      throw apiError(400, 'Each menu item needs a name.');
+    }
+    return {
+      id: String(item.id || randomUUID()),
+      name: String(item.name).trim(),
+      description: String(item.description ?? ''),
+      price: String(item.price ?? ''),
+      pricingType: ['single', 'half-full', 'sizes'].includes(item.pricingType)
+        ? item.pricingType
+        : 'single',
+      halfPrice: String(item.halfPrice ?? ''),
+      fullPrice: String(item.fullPrice ?? ''),
+      regPrice: String(item.regPrice ?? ''),
+      medPrice: String(item.medPrice ?? ''),
+      largePrice: String(item.largePrice ?? ''),
+      category: String(item.category ?? 'Other'),
+      dietType: ['veg', 'non-veg', 'vegan'].includes(item.dietType)
+        ? item.dietType
+        : 'veg',
+      image: String(item.image ?? ''),
+      available: Boolean(item.available),
+    };
+  });
+
+  return {
+    id,
+    businessName,
+    category: input.category,
+    ownerName: String(input.ownerName ?? ''),
+    email: String(input.email ?? ''),
+    phone: String(input.phone ?? ''),
+    website: String(input.website ?? ''),
+    address: String(input.address ?? ''),
+    city: String(input.city ?? ''),
+    state: String(input.state ?? ''),
+    postalCode: String(input.postalCode ?? ''),
+    country: String(input.country ?? ''),
+    menuSlug,
+    plan: String(input.plan ?? 'Starter'),
+    billingCycle: String(input.billingCycle ?? 'Monthly'),
+    monthlyPrice: String(input.monthlyPrice ?? ''),
+    openingHours: String(input.openingHours ?? ''),
+    services: input.services.map(String),
+    menuItems,
+    heroImage: String(input.heroImage ?? ''),
+    status: String(input.status ?? 'Active'),
+    notes: String(input.notes ?? ''),
+    createdAt,
+  };
+}
+
+export default async function adminRoutes(request, response, url) {
+  if (!url.pathname.startsWith('/api/admin/')) return false;
+  
+  enforceSuperAdmin(request);
+
+  if (request.method === 'GET' && url.pathname === '/api/admin/clients') {
+    const res = await pool.query(`
+      SELECT c.*, 
+             COALESCE(
+               json_agg(
+                 json_build_object(
+                   'id', m.id,
+                   'name', m.name,
+                   'description', m.description,
+                   'price', m.price,
+                   'available', m.is_available,
+                   'category', mc.name
+                 )
+               ) FILTER (WHERE m.id IS NOT NULL), '[]'
+             ) as "menuItems"
+      FROM clients c
+      LEFT JOIN menu_items m ON m.tenant_id = c.id
+      LEFT JOIN menu_categories mc ON m.category_id = mc.id
+      GROUP BY c.id
+      ORDER BY c.created_at DESC
+    `);
+    const records = res.rows.map(row => ({
+      ...row,
+      menuItems: row.menuItems,
+      businessName: row.business_name,
+      menuSlug: row.menu_slug
+    }));
+    sendJson(response, 200, records);
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/admin/orders') {
+    const res = await pool.query('SELECT * FROM orders ORDER BY created_at DESC LIMIT 200');
+    sendJson(response, 200, res.rows);
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/admin/payments') {
+    const res = await pool.query('SELECT * FROM payments ORDER BY created_at DESC LIMIT 200');
+    sendJson(response, 200, res.rows);
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/admin/notifications') {
+    const notifications = (await pool.query('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 50')).rows;
+    sendJson(response, 200, notifications);
+    return true;
+  }
+
+  if (request.method === 'DELETE' && url.pathname === '/api/admin/notifications') {
+    const result = await pool.query('DELETE FROM notifications');
+    sendJson(response, 200, { deletedCount: result.rowCount });
+    return true;
+  }
+
+  const notificationReadMatch = url.pathname.match(
+    /^\/api\/admin\/notifications\/([^/]+)\/read$/
+  );
+  if (request.method === 'PATCH' && notificationReadMatch) {
+    const notificationId = decodeURIComponent(notificationReadMatch[1]);
+    const result = await pool.query('UPDATE notifications SET is_read = true WHERE id = $1', [notificationId]);
+    if (result.rowCount === 0) throw apiError(404, 'Notification not found.');
+    sendJson(response, 200, { status: 'read' });
+    return true;
+  }
+
+  const adminClientMatch = url.pathname.match(
+    /^\/api\/admin\/clients\/([^/]+)$/
+  );
+  if (adminClientMatch) {
+    const id = decodeURIComponent(adminClientMatch[1]);
+
+    if (request.method === 'GET') {
+      const clientRes = await pool.query(`
+        SELECT c.*, 
+               COALESCE(
+                 json_agg(
+                   json_build_object(
+                     'id', m.id,
+                     'name', m.name,
+                     'description', m.description,
+                     'price', m.price,
+                     'available', m.is_available,
+                     'category', mc.name
+                   )
+                 ) FILTER (WHERE m.id IS NOT NULL), '[]'
+               ) as "menuItems"
+        FROM clients c
+        LEFT JOIN menu_items m ON m.tenant_id = c.id
+        LEFT JOIN menu_categories mc ON m.category_id = mc.id
+        WHERE c.id = $1
+        GROUP BY c.id
+      `, [id]);
+      const client = clientRes.rows[0] ? {
+        ...clientRes.rows[0],
+        menuItems: clientRes.rows[0].menuItems,
+        businessName: clientRes.rows[0].business_name,
+        menuSlug: clientRes.rows[0].menu_slug
+      } : null;
+      if (!client) throw apiError(404, 'Client not found.');
+      sendJson(response, 200, client);
+      return true;
+    }
+
+    if (request.method === 'PUT') {
+      const currentRes = await pool.query('SELECT * FROM clients WHERE id = $1', [id]);
+      const current = currentRes.rows[0];
+      if (!current) throw apiError(404, 'Client not found.');
+      const updated = validateClient(
+        await readJson(request),
+        id,
+        current.created_at
+      );
+      const conflictRes = await pool.query('SELECT id FROM clients WHERE menu_slug = $1 AND id != $2', [updated.menuSlug, id]);
+      const conflict = conflictRes.rows[0];
+      if (conflict) {
+        throw apiError(409, 'That menu URL is already in use.');
+      }
+      
+      const updateFields = Object.keys(updated).filter(k => k !== 'menuItems');
+      if (updateFields.length > 0) {
+        const setClause = updateFields.map((k, i) => `"${k.replace(/[A-Z]/g, m => '_' + m.toLowerCase())}" = $${i+2}`).join(', ');
+        const values = updateFields.map(k => updated[k]);
+        await pool.query(`UPDATE clients SET ${setClause} WHERE id = $1`, [id, ...values]);
+      }
+      if (updated.menuItems) {
+        const menuId = 'menu-' + id;
+        await pool.query('DELETE FROM menus WHERE tenant_id = $1', [id]);
+        await pool.query(
+          'INSERT INTO menus (id, tenant_id, name, status) VALUES ($1, $2, $3, $4)',
+          [menuId, id, 'Main Menu', 'PUBLISHED']
+        );
+        
+        const uniqueCategories = [...new Set(updated.menuItems.map(i => i.category || 'Other'))];
+        const categoryMap = new Map();
+        
+        for (let i = 0; i < uniqueCategories.length; i++) {
+          const catName = uniqueCategories[i];
+          const catId = randomUUID();
+          await pool.query(
+            'INSERT INTO menu_categories (id, menu_id, tenant_id, name, sort_order) VALUES ($1, $2, $3, $4, $5)',
+            [catId, menuId, id, catName, i]
+          );
+          categoryMap.set(catName, catId);
+        }
+
+        for (let i = 0; i < updated.menuItems.length; i++) {
+          const item = updated.menuItems[i];
+          await pool.query(
+            'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, is_available, sort_order) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+            [item.id, menuId, id, categoryMap.get(item.category || 'Other'), item.name, item.description, item.price, item.available, i]
+          );
+        }
+      }
+      sendJson(response, 200, updated);
+      return true;
+    }
+
+    if (request.method === 'DELETE') {
+      const result = await pool.query('DELETE FROM clients WHERE id = $1', [id]);
+      if (result.rowCount === 0) throw apiError(404, 'Client not found.');
+      response.writeHead(204);
+      response.end();
+      return true;
+    }
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/admin/clients') {
+    const input = await readJson(request);
+    const requestedId =
+      typeof input?.id === 'string' && input.id.length <= 100
+        ? input.id
+        : randomUUID();
+    const client = validateClient(
+      input,
+      requestedId,
+      new Date().toISOString()
+    );
+    if (
+      (await pool.query('SELECT id FROM clients WHERE id = $1', [client.id])).rows[0]
+    ) {
+      throw apiError(409, 'That client ID is already in use.');
+    }
+    if (
+      (await pool.query('SELECT id FROM clients WHERE menu_slug = $1', [client.menuSlug])).rows[0]
+    ) {
+      throw apiError(409, 'That menu URL is already in use.');
+    }
+
+    const clientEmail = client.email || `${client.menuSlug || client.id}@menusqr.local`;
+    if (
+      (await pool.query('SELECT id FROM users WHERE email = $1', [clientEmail])).rows[0]
+    ) {
+      throw apiError(409, 'That email is already in use by another user.');
+    }
+
+    await pool.query(
+        'INSERT INTO clients (id, public_id, business_name, menu_slug, category, tagline, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [client.id, client.publicId || client.id, client.businessName, client.menuSlug, client.category, client.tagline, client.status]
+      );
+
+    const rawPassword = input.password || randomUUID().slice(0, 8);
+    const { hashPassword } = await import('../auth.js');
+    const passwordHash = hashPassword(rawPassword);
+    const userId = randomUUID();
+
+    await pool.query(
+      'INSERT INTO users (id, email, password_hash, role, tenant_id) VALUES ($1, $2, $3, $4, $5)',
+      [userId, clientEmail, passwordHash, 'RESTAURANT_OWNER', client.id]
+    );
+
+    client.temporaryPassword = rawPassword;
+
+      if (client.menuItems && client.menuItems.length > 0) {
+        const menuId = 'menu-' + client.id;
+        await pool.query(
+          'INSERT INTO menus (id, tenant_id, name, status) VALUES ($1, $2, $3, $4)',
+          [menuId, client.id, 'Main Menu', 'PUBLISHED']
+        );
+        
+        const uniqueCategories = [...new Set(client.menuItems.map(i => i.category || 'Other'))];
+        const categoryMap = new Map();
+        
+        for (let i = 0; i < uniqueCategories.length; i++) {
+          const catName = uniqueCategories[i];
+          const catId = randomUUID();
+          await pool.query(
+            'INSERT INTO menu_categories (id, menu_id, tenant_id, name, sort_order) VALUES ($1, $2, $3, $4, $5)',
+            [catId, menuId, client.id, catName, i]
+          );
+          categoryMap.set(catName, catId);
+        }
+
+        for (let i = 0; i < client.menuItems.length; i++) {
+          const item = client.menuItems[i];
+          await pool.query(
+            'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, is_available, sort_order) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+            [item.id, menuId, client.id, categoryMap.get(item.category || 'Other'), item.name, item.description, item.price, item.available, i]
+          );
+        }
+      }
+    if (request.headers['x-menusqr-import'] !== 'legacy') {
+      const notif = createNewUserNotification(client);
+        await pool.query('INSERT INTO notifications (id, message, is_read, created_at) VALUES ($1, $2, $3, $4)', [notif.id, notif.message, notif.isRead, notif.createdAt]);
+      void import('../email.js')
+        .then(({ sendNewUserAlert, sendClientWelcomeEmail }) =>
+          Promise.all([
+            sendNewUserAlert(client),
+            sendClientWelcomeEmail(client),
+          ])
+        )
+        .catch((error) => {
+          console.error('[email] Could not start registration emails:', error.message);
+        });
+    }
+    sendJson(response, 201, client);
+    return true;
+  }
+  
+  return false;
+}

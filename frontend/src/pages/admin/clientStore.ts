@@ -56,6 +56,7 @@ export interface PublicMenuRecord {
   services: string[];
   heroImage?: string;
   menuItems: MenuItemRecord[];
+  plan?: string;
 }
 
 export interface ApiHealth {
@@ -79,9 +80,9 @@ export interface AdminSession {
   authenticated: boolean;
 }
 
-const storageKey = 'menuqr.clients';
-const draftStorageKey = 'menuqr.clientDrafts';
-const migrationStorageKey = 'menuqr.apiMigration.v1';
+const storageKey = 'menusqr.clients';
+const draftStorageKey = 'menusqr.clientDrafts';
+const migrationStorageKey = 'menusqr.apiMigration.v1';
 
 
 type ClientDraft = Omit<ClientRecord, 'id' | 'createdAt'>;
@@ -99,7 +100,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!response.ok) {
     if (response.status === 401 && path.startsWith('/admin/')) {
-      window.dispatchEvent(new Event('menuqr:admin-unauthorized'));
+      window.dispatchEvent(new Event('menusqr:admin-unauthorized'));
     }
     const result = await response.json().catch(() => null) as { error?: string } | null;
     throw new Error(result?.error ?? `Request failed (${response.status}).`);
@@ -127,7 +128,7 @@ async function migrateLegacyClients(clients: ClientRecord[]): Promise<ClientReco
           await request<ClientRecord>('/admin/clients', {
             method: 'POST',
             body: JSON.stringify(legacyClient),
-            headers: { 'X-MenuQR-Import': 'legacy' },
+            headers: { 'X-MenusQR-Import': 'legacy' },
           });
         } catch (error) {
           if (!(error instanceof Error) || !error.message.includes('already in use')) throw error;
@@ -146,6 +147,14 @@ async function migrateLegacyClients(clients: ClientRecord[]): Promise<ClientReco
 
 export async function getClients(): Promise<ClientRecord[]> {
   return migrateLegacyClients(await request<ClientRecord[]>('/admin/clients'));
+}
+
+export async function getOrders(): Promise<any[]> {
+  return request<any[]>('/admin/orders');
+}
+
+export async function getPayments(): Promise<any[]> {
+  return request<any[]>('/admin/payments');
 }
 
 export function getApiHealth(): Promise<ApiHealth> {
@@ -171,12 +180,48 @@ export function getAdminSession(): Promise<AdminSession> {
   return request<AdminSession>('/auth/session');
 }
 
-export async function loginAdmin(password: string, email?: string): Promise<AdminSession> {
-  const session = await request<AdminSession>('/auth/login', {
+export interface LoginResponse {
+  authenticated?: boolean;
+  role?: string;
+  requireOtp?: boolean;
+  tempToken?: string;
+  email?: string;
+  message?: string;
+}
+
+export async function loginAdmin(password: string, email?: string): Promise<LoginResponse> {
+  return request<LoginResponse>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ password, email }),
   });
-  return { authenticated: session.authenticated };
+}
+
+export async function verifyLoginOtp(tempToken: string, otp: string): Promise<LoginResponse> {
+  return request<LoginResponse>('/auth/verify-login-otp', {
+    method: 'POST',
+    body: JSON.stringify({ tempToken, otp }),
+  });
+}
+
+export async function resendLoginOtp(tempToken: string): Promise<{ success: boolean; message: string }> {
+  return request<{ success: boolean; message: string }>('/auth/resend-login-otp', {
+    method: 'POST',
+    body: JSON.stringify({ tempToken }),
+  });
+}
+
+export async function requestForgotPassword(email: string): Promise<{ success: boolean; message: string }> {
+  return request<{ success: boolean; message: string }>('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(email: string, otp: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+  return request<{ success: boolean; message: string }>('/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ email, otp, newPassword }),
+  });
 }
 
 export async function logoutAdmin(): Promise<AdminSession> {
@@ -197,6 +242,9 @@ export async function getClientByMenuSlug(slug: string): Promise<PublicMenuRecor
   try {
     return await request<PublicMenuRecord>(`/public/menus/${encodeURIComponent(slug)}`);
   } catch (error) {
+    if (error instanceof Error && error.message === 'SUBSCRIPTION_EXPIRED') {
+      throw error;
+    }
     if (error instanceof Error && error.message === 'This menu is unavailable.') return undefined;
     throw error;
   }
@@ -247,4 +295,38 @@ export function removeClientDraft(key: string): void {
   }
   delete drafts[key];
   localStorage.setItem(draftStorageKey, JSON.stringify(drafts));
+}
+
+export interface CustomerOrder {
+  id: string;
+  tableNumber: string;
+  items: Array<{ id: string; name: string; quantity: number; price: number; variant?: string }>;
+  total: number;
+  status: 'NEW' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED';
+  time: string;
+}
+
+export async function submitCustomerOrder(order: Omit<CustomerOrder, 'id' | 'status' | 'time'>): Promise<CustomerOrder> {
+  const newOrder: CustomerOrder = {
+    ...order,
+    id: Math.random().toString(36).substring(2, 9).toUpperCase(),
+    status: 'NEW',
+    time: new Date().toISOString()
+  };
+  
+  const orders = JSON.parse(localStorage.getItem('menusqr.mockOrders') || '[]');
+  orders.push(newOrder);
+  localStorage.setItem('menusqr.mockOrders', JSON.stringify(orders));
+  
+  return newOrder;
+}
+
+export async function getMockOrders(): Promise<CustomerOrder[]> {
+  return JSON.parse(localStorage.getItem('menusqr.mockOrders') || '[]');
+}
+
+export async function updateMockOrderStatus(id: string, status: CustomerOrder['status']): Promise<void> {
+  const orders = JSON.parse(localStorage.getItem('menusqr.mockOrders') || '[]');
+  const updatedOrders = orders.map((o: CustomerOrder) => o.id === id ? { ...o, status } : o);
+  localStorage.setItem('menusqr.mockOrders', JSON.stringify(updatedOrders));
 }

@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
-import { ChefHat } from 'lucide-react';
+import { MenusQRMark } from './components/brand/MenusQRMark';
 import { HashRouter, Routes, Route, Navigate, useLocation, useMatch } from 'react-router-dom';
-import PublicHomePage from './pages/public/PublicHomePage';
+import HomePage from './pages/HomePage';
+import SignupPage from './pages/public/SignupPage';
+import OnboardingWizard from './pages/public/OnboardingWizard';
+import PricingPage from './pages/purchase/PricingPage';
+import PurchaseDetailsPage from './pages/purchase/PurchaseDetailsPage';
+import PurchaseReviewPage from './pages/purchase/PurchaseReviewPage';
+import CheckoutPage from './pages/purchase/CheckoutPage';
+import PurchaseSuccessPage from './pages/purchase/PurchaseSuccessPage';
 import MenuPage from './pages/customer/MenuPage';
 import AdminLayout from './layouts/AdminLayout';
 import AppLayout from './layouts/AppLayout';
@@ -11,6 +18,8 @@ import ClientList from './pages/admin/ClientList';
 import QrGenerator from './pages/admin/QrGenerator';
 import Settings from './pages/admin/Settings';
 import ClientForm from './pages/admin/ClientForm';
+import Orders from './pages/admin/Orders';
+import Payments from './pages/admin/Payments';
 import { getAdminSession, getClientByMenuSlug } from './pages/admin/clientStore';
 import { useAuth } from './contexts/AuthContext';
 import AppDashboard from './pages/app/Dashboard';
@@ -19,6 +28,8 @@ import AppAppearance from './pages/app/Appearance';
 import AppQrCenter from './pages/app/QrCenter';
 import AppSubscription from './pages/app/Subscription';
 import AppSettings from './pages/app/Settings';
+import AppOrders from './pages/app/Orders';
+import SupabaseTest from './components/SupabaseTest';
 
 function ProtectedAdminLayout() {
   const location = useLocation();
@@ -33,10 +44,10 @@ function ProtectedAdminLayout() {
       if (isCurrent) setSessionState('error');
     });
     const handleUnauthorized = () => setSessionState('unauthenticated');
-    window.addEventListener('menuqr:admin-unauthorized', handleUnauthorized);
+    window.addEventListener('menusqr:admin-unauthorized', handleUnauthorized);
     return () => {
       isCurrent = false;
-      window.removeEventListener('menuqr:admin-unauthorized', handleUnauthorized);
+      window.removeEventListener('menusqr:admin-unauthorized', handleUnauthorized);
     };
   }, [retry]);
 
@@ -69,7 +80,7 @@ function AppRoutes() {
   const [loadedRoute, setLoadedRoute] = useState('');
   const loaderName = menuSlug
     ? menuName?.slug === menuSlug ? menuName.name : 'Preparing menu'
-    : 'MenuQR';
+    : 'MenusQR';
   const loaderCaption = menuMatch ? 'Preparing your menu' : 'Preparing your experience';
   const isLoading = loadedRoute !== routeKey;
 
@@ -77,9 +88,9 @@ function AppRoutes() {
     let isCurrent = true;
     if (menuSlug) {
       void getClientByMenuSlug(menuSlug).then((menu) => {
-        if (isCurrent) setMenuName({ slug: menuSlug, name: menu?.businessName ?? 'MenuQR' });
+        if (isCurrent) setMenuName({ slug: menuSlug, name: menu?.businessName ?? 'MenusQR' });
       }).catch(() => {
-        if (isCurrent) setMenuName({ slug: menuSlug, name: 'MenuQR' });
+        if (isCurrent) setMenuName({ slug: menuSlug, name: 'MenusQR' });
       });
     }
     const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 150 : 1100;
@@ -93,10 +104,20 @@ function AppRoutes() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<PublicHomePage />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/onboarding" element={<OnboardingWizard />} />
+        <Route path="/plans" element={<PricingPage />} />
+        <Route path="/purchase/details" element={<PurchaseDetailsPage />} />
+        <Route path="/purchase/review" element={<PurchaseReviewPage />} />
+        <Route path="/checkout/:orderId" element={<CheckoutPage />} />
+        <Route path="/purchase/success" element={<PurchaseSuccessPage />} />
 
         {/* Customer Menu Route */}
         <Route path="/menu/:slug" element={<MenuPage key={menuSlug} />} />
+
+        {/* Supabase Test Route */}
+        <Route path="/test-supabase" element={<SupabaseTest />} />
 
         <Route path="/admin/login" element={<AdminLogin />} />
         
@@ -109,6 +130,8 @@ function AppRoutes() {
           <Route path="restaurants" element={<ClientList />} />
           <Route path="dhabas" element={<ClientList />} />
           <Route path="cafes" element={<ClientList />} />
+          <Route path="orders" element={<Orders />} />
+          <Route path="payments" element={<Payments />} />
           <Route path="qr" element={<QrGenerator />} />
           <Route path="settings" element={<Settings />} />
         </Route>
@@ -122,19 +145,36 @@ function AppRoutes() {
           <Route path="qr" element={<AppQrCenter />} />
           <Route path="subscription" element={<AppSubscription />} />
           <Route path="settings" element={<AppSettings />} />
+          <Route path="orders" element={<AppOrders />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {isLoading && (
-        <div className="app-loader" role="status" aria-live="polite" aria-label={`Loading ${loaderName}`}>
-          <div className="app-loader-content">
-            <div className="app-loader-mark" aria-hidden="true">
-              <span className="app-loader-mark-core"><ChefHat size={30} strokeWidth={1.8} /></span>
+        <div 
+          className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-[#050807] transition-opacity duration-300"
+          role="status" 
+          aria-live="polite" 
+          aria-label={`Loading ${loaderName}`}
+        >
+          <div className="relative flex flex-row items-center justify-center gap-6 animate-in fade-in zoom-in duration-500">
+            <div className="relative w-[100px] h-[100px]">
+              <MenusQRMark animated={true} color="#FFFFFF" />
             </div>
-            <p className="app-loader-brand">{loaderName}</p>
-            <p className="app-loader-caption">{loaderCaption}</p>
-            <div className="app-loader-progress" aria-hidden="true"><span /></div>
+
+            <div className="flex flex-col text-left justify-center overflow-hidden">
+              <div
+                className="text-6xl md:text-7xl font-black tracking-[-0.03em] leading-none text-white"
+                style={{ fontFamily: 'var(--font-brand, system-ui)' }}
+              >
+                Menus<span className="text-[#E8783C]">QR</span>
+              </div>
+              
+              <div className="flex flex-col mt-3">
+                <div className="text-white text-lg font-bold tracking-tight">{loaderName}</div>
+                <div className="text-[#aab7b2] text-xs font-medium uppercase tracking-widest">{loaderCaption}</div>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -1,7 +1,7 @@
-# MENUQR — MASTER PRODUCT SPECIFICATION
+# MenusQR — MASTER PRODUCT SPECIFICATION
 
 ## 1. Executive Summary
-MenuQR is a B2B SaaS platform that modernizes how restaurants, cafes, and dhabas present their menus. By providing a permanent QR code paired with a dynamic, highly customizable digital menu, the platform eliminates the need for recurring printing costs. MenuQR ensures that menu updates (prices, availability, new items) are reflected instantly while maintaining a strict subscription-based access model. 
+MenusQR is a B2B SaaS platform that modernizes how restaurants, cafes, and dhabas present their menus. By providing a permanent QR code paired with a dynamic, highly customizable digital menu, the platform eliminates the need for recurring printing costs. MenusQR ensures that menu updates (prices, availability, new items) are reflected instantly while maintaining a strict subscription-based access model. 
 
 ## 2. Product Vision
 To be the most reliable, fast, and premium digital menu infrastructure for food businesses, bridging the gap between physical dining and digital convenience without requiring app installations.
@@ -9,7 +9,7 @@ To be the most reliable, fast, and premium digital menu infrastructure for food 
 ## 3. Target Users
 1. **Public Customers**: Diners visiting the restaurant who scan the QR code to view the menu on their mobile devices.
 2. **Restaurant Owners / Managers**: The primary SaaS tenants who purchase subscriptions, manage menu items, update prices, and track performance.
-3. **Super Admins**: The MenuQR platform operators who manage the overall SaaS health, billing, tenant lifecycle, and templates.
+3. **Super Admins**: The MenusQR platform operators who manage the overall SaaS health, billing, tenant lifecycle, and templates.
 
 ## 4. User Personas
 * **Ravi (Dhaba Owner)**: Low technical literacy. Needs a dead-simple way to turn items "off" when they run out. Uses a smartphone for all management.
@@ -18,7 +18,7 @@ To be the most reliable, fast, and premium digital menu infrastructure for food 
 
 ## 5. Product Value Proposition
 > "Update your menu endlessly without ever changing your QR code."
-MenuQR saves printing costs, allows real-time dynamic pricing, improves hygiene, and elevates the dining experience through beautiful, customizable digital menus.
+MenusQR saves printing costs, allows real-time dynamic pricing, improves hygiene, and elevates the dining experience through beautiful, customizable digital menus.
 
 ## 6. Core Product Flow
 1. **Onboarding**: Restaurant registers and purchases a subscription.
@@ -56,7 +56,7 @@ The core SaaS portal for tenants (Desktop & Mobile responsive).
 * **Settings**: Restaurant profile, opening hours, contact info.
 
 ## 11. Super Admin Panel
-The internal tool for MenuQR operators.
+The internal tool for MenusQR operators.
 * **Dashboard**: Total active tenants, MRR, system alerts.
 * **Restaurants**: Global list of all tenants, impersonation, suspension toggle.
 * **Subscriptions**: Expiry tracking, manual renewals, payment overrides.
@@ -133,7 +133,7 @@ Professionally designed layouts injected via the Theme System.
 * **Logic**: Automated CRON job checks `expiryDate - 10 days` to inject `WARNING` alerts into the Restaurant Panel.
 
 ## 24. Security
-* **No Sensitive Data in QR**: QR code only contains `https://menuqr.in/m/CLIENT_PUBLIC_ID`.
+* **No Sensitive Data in QR**: QR code only contains `https://MenusQR.in/m/CLIENT_PUBLIC_ID`.
 * **IDOR Prevention**: All tenant routes must validate ownership.
 * **Rate Limiting**: Apply strict limits to login endpoints and public menu endpoints to prevent scraping.
 * **Secrets**: `DATABASE_URL`, `JWT_SECRET`, and `RESEND_API_KEY` stored securely in environment variables.
@@ -181,7 +181,7 @@ Reusable UI library encompassing:
 
 ## 32. Error States
 * **Expired Subscription**: "This menu is temporarily unavailable. Please contact the restaurant." (No system info leaked).
-* **Invalid QR**: 404 page styled with MenuQR branding.
+* **Invalid QR**: 404 page styled with MenusQR branding.
 * **Network Failure**: "Unable to load menu. Check your connection." with a `[Retry]` button.
 
 ## 33. Loading States

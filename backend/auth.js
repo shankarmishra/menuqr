@@ -4,7 +4,7 @@ import { randomBytes, pbkdf2Sync } from 'node:crypto';
 
 // Use a secure JWT secret from env or generate a temporary one (not ideal for production restarts, but safe for dev)
 const JWT_SECRET = process.env.JWT_SECRET || randomBytes(32).toString('hex');
-const COOKIE_NAME = 'menuqr_auth';
+const COOKIE_NAME = 'menusqr_auth';
 
 // Password Hashing (PBKDF2)
 export function hashPassword(password) {

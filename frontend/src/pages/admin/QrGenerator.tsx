@@ -3,7 +3,7 @@ import { Check, Copy, ExternalLink, QrCode, Store } from 'lucide-react';
 import QRCode from 'qrcode';
 import { Link, useSearchParams } from 'react-router-dom';
 import { getClients, type ClientRecord } from './clientStore';
-import MenuQRStickerGenerator from '../../components/sticker/MenuQRStickerGenerator';
+import MenusQRStickerGenerator from '../../components/sticker/MenusQRStickerGenerator';
 export default function QrGenerator() {
   const [clients, setClients] = useState<ClientRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,7 +131,7 @@ export default function QrGenerator() {
           </div>
           
           <div className="relative min-h-[600px] w-full bg-[#0d1210]">
-            <MenuQRStickerGenerator 
+            <MenusQRStickerGenerator 
               client={selectedClient} 
               menuUrl={menuUrl} 
               qrImage={qrImage} 
