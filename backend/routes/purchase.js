@@ -81,6 +81,48 @@ export default async function purchaseRoutes(request, response, url) {
 
     const orderId = `order_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
 
+    let paymentSessionId = null;
+    const appId = process.env.CASHFREE_APP_ID;
+    const secretKey = process.env.CASHFREE_SECRET_KEY;
+    const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
+    const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
+
+    if (appId && secretKey) {
+      try {
+        const cfRes = await fetch(`${baseUrl}/orders`, {
+          method: 'POST',
+          headers: {
+            'x-client-id': appId,
+            'x-client-secret': secretKey,
+            'x-api-version': '2023-08-01',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            order_id: orderId,
+            order_amount: plan.price,
+            order_currency: currency || 'INR',
+            customer_details: {
+              customer_id: `cust_${randomUUID().substring(0, 8)}`,
+              customer_email: customerEmail.trim().toLowerCase(),
+              customer_phone: phone || '9999999999',
+              customer_name: customerName
+            },
+            order_meta: {
+              return_url: `${process.env.FRONTEND_ORIGIN || 'http://localhost:5173'}/purchase/success?order_id={order_id}`
+            }
+          })
+        });
+        if (cfRes.ok) {
+          const cfData = await cfRes.json();
+          paymentSessionId = cfData.payment_session_id;
+        } else {
+          console.error('Cashfree order creation response:', await cfRes.text());
+        }
+      } catch (err) {
+        console.error('Cashfree order creation network error:', err);
+      }
+    }
+
     await pool.query(
       `INSERT INTO orders
          (id, customer_name, customer_email, phone, business_name, city, address,
@@ -93,7 +135,7 @@ export default async function purchaseRoutes(request, response, url) {
        'PENDING_PAYMENT', 'PENDING']
     );
 
-    sendJson(response, 200, { orderId, amount: plan.price, status: 'PENDING_PAYMENT' });
+    sendJson(response, 200, { orderId, amount: plan.price, status: 'PENDING_PAYMENT', paymentSessionId });
     return true;
   }
 

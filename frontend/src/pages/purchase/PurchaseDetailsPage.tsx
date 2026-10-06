@@ -1,7 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import SiteHeader from '../../components/marketing/SiteHeader';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ChevronRight, ShieldCheck } from 'lucide-react';
+
+const PLANS: Record<string, { price: number; label: string; features: string[] }> = {
+  basic: {
+    price: 999,
+    label: 'Basic',
+    features: ['1 QR Code', 'Unlimited menu views', 'Up to 50 items', 'Basic templates', 'Email support']
+  },
+  intermediate: {
+    price: 1499,
+    label: 'Intermediate',
+    features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', 'Priority support', 'Analytics dashboard']
+  },
+  premium: {
+    price: 2999,
+    label: 'Premium',
+    features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', '24/7 support', 'Analytics dashboard', 'Table ordering']
+  }
+};
 
 export default function PurchaseDetailsPage() {
   const navigate = useNavigate();
@@ -10,7 +28,7 @@ export default function PurchaseDetailsPage() {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [planId] = useState(initialPlan); // Lock it in state
+  const [planId] = useState(initialPlan);
 
   const [formData, setFormData] = useState({
     customerName: '',
@@ -54,9 +72,7 @@ export default function PurchaseDetailsPage() {
     e.preventDefault();
     setError('');
     
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
 
@@ -78,9 +94,10 @@ export default function PurchaseDetailsPage() {
         throw new Error(data.error || 'Failed to create order');
       }
       
-      // Pass orderId via state so it's not exposed in URL if preferred, or store in sessionStorage.
-      // The instructions say /purchase/review (without :orderId), so we pass it in state.
       sessionStorage.setItem('pendingOrderId', data.orderId);
+      if (data.paymentSessionId) {
+        sessionStorage.setItem('paymentSessionId', data.paymentSessionId);
+      }
       navigate(`/purchase/review`);
     } catch (err: any) {
       setError(err.message);
@@ -92,156 +109,206 @@ export default function PurchaseDetailsPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear validation error when user types
     if (validationErrors[name]) {
       setValidationErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
+  const plan = PLANS[planId] || PLANS['premium'];
+
   return (
-    <div className="min-h-screen bg-[#FAFAF7]">
+    <div className="min-h-screen bg-[#FAFAF7] flex flex-col">
       <SiteHeader />
-      <div className="pt-32 pb-24 px-6 md:px-12 max-w-2xl mx-auto">
+      
+      <main className="flex-1 pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto w-full">
         <div className="mb-8">
-          <Link to="/plans" className="text-[#E8783C] hover:underline text-sm font-medium mb-4 inline-block">
+          <Link to="/plans" className="text-[#E8783C] hover:underline text-sm font-medium mb-4 flex items-center gap-1 w-fit">
             &larr; Back to Plans
           </Link>
-          <h1 className="text-3xl font-bold text-[#151C19] mb-2">Account Details</h1>
-          <p className="text-[#151C19]/60">
-            Tell us about your restaurant to get started with the {planId.toUpperCase()} plan.
+          <h1 className="text-4xl font-extrabold text-[#151C19] mb-3 tracking-tight">Complete your account setup</h1>
+          <p className="text-[#151C19]/60 text-lg">
+            Tell us about your restaurant to get started with the {plan.label} plan.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-          {error && (
-            <div className="mb-8 p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-start gap-3">
-              <AlertCircle className="text-rose-600 mt-0.5 flex-shrink-0" size={20} />
-              <div className="text-sm font-medium text-rose-800 leading-relaxed">
-                {error}
-                {error.includes('already exists') && (
-                  <div className="mt-2">
-                    <Link to="/admin/login" className="text-rose-600 underline font-bold">
-                      Go to Login
-                    </Link>
+        <div className="grid lg:grid-cols-12 gap-12 items-start">
+          {/* Form Section */}
+          <div className="lg:col-span-7 xl:col-span-8 order-2 lg:order-1">
+            <form onSubmit={handleSubmit} className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-gray-100">
+              {error && (
+                <div className="mb-8 p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                  <AlertCircle className="text-rose-600 mt-0.5 flex-shrink-0" size={20} />
+                  <div className="text-sm font-medium text-rose-800 leading-relaxed">
+                    {error}
+                    {error.includes('already exists') && (
+                      <div className="mt-2">
+                        <Link to="/admin/login" className="text-rose-600 underline font-bold hover:text-rose-700">
+                          Go to Login &rarr;
+                        </Link>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          <div className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold text-[#151C19] mb-2">Owner Name</label>
-                <input
-                  type="text"
-                  name="customerName"
-                  value={formData.customerName}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all ${
-                    validationErrors.customerName ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
-                  }`}
-                  placeholder="John Doe"
-                />
-                {validationErrors.customerName && <p className="text-rose-500 text-xs mt-1.5">{validationErrors.customerName}</p>}
-              </div>
+                </div>
+              )}
               
-              <div>
-                <label className="block text-sm font-semibold text-[#151C19] mb-2">Email Address</label>
-                <input
-                  type="email"
-                  name="customerEmail"
-                  value={formData.customerEmail}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all ${
-                    validationErrors.customerEmail ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
-                  }`}
-                  placeholder="john@example.com"
-                />
-                {validationErrors.customerEmail && <p className="text-rose-500 text-xs mt-1.5">{validationErrors.customerEmail}</p>}
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-[#151C19] mb-2">Owner Name</label>
+                    <input
+                      type="text"
+                      name="customerName"
+                      value={formData.customerName}
+                      onChange={handleInputChange}
+                      className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all ${
+                        validationErrors.customerName ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
+                      }`}
+                      placeholder="e.g. John Doe"
+                    />
+                    {validationErrors.customerName && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.customerName}</p>}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-[#151C19] mb-2">Email Address</label>
+                    <input
+                      type="email"
+                      name="customerEmail"
+                      value={formData.customerEmail}
+                      onChange={handleInputChange}
+                      className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all ${
+                        validationErrors.customerEmail ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
+                      }`}
+                      placeholder="john@example.com"
+                    />
+                    {validationErrors.customerEmail && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.customerEmail}</p>}
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-[#151C19] mb-2">Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all ${
+                        validationErrors.phone ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
+                      }`}
+                      placeholder="+91 98765 43210"
+                    />
+                    {validationErrors.phone && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.phone}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-[#151C19] mb-2">Restaurant Name</label>
+                    <input
+                      type="text"
+                      name="businessName"
+                      value={formData.businessName}
+                      onChange={handleInputChange}
+                      className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all ${
+                        validationErrors.businessName ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
+                      }`}
+                      placeholder="The Spice Lounge"
+                    />
+                    {validationErrors.businessName && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.businessName}</p>}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#151C19] mb-2">City</label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all ${
+                      validationErrors.city ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
+                    }`}
+                    placeholder="e.g. Mumbai"
+                  />
+                  {validationErrors.city && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.city}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#151C19] mb-2">Address</label>
+                  <textarea
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    rows={3}
+                    className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all resize-none ${
+                      validationErrors.address ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
+                    }`}
+                    placeholder="123 Restaurant Street..."
+                  />
+                  {validationErrors.address && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.address}</p>}
+                </div>
               </div>
-            </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold text-[#151C19] mb-2">Phone Number</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all ${
-                    validationErrors.phone ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
-                  }`}
-                  placeholder="+91 98765 43210"
-                />
-                {validationErrors.phone && <p className="text-rose-500 text-xs mt-1.5">{validationErrors.phone}</p>}
+              <div className="mt-10">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-[#E8783C] hover:bg-[#d66a30] text-white py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-[#E8783C]/20 hover:shadow-[#E8783C]/30 flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:shadow-none"
+                >
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      Continue to Review
+                      <ChevronRight size={20} />
+                    </>
+                  )}
+                </button>
+                <div className="flex items-center justify-center gap-2 mt-6 text-sm text-[#151C19]/50 font-medium">
+                  <ShieldCheck size={16} className="text-emerald-500" />
+                  Your information is securely encrypted
+                </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-[#151C19] mb-2">Restaurant Name</label>
-                <input
-                  type="text"
-                  name="businessName"
-                  value={formData.businessName}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all ${
-                    validationErrors.businessName ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
-                  }`}
-                  placeholder="The Spice Lounge"
-                />
-                {validationErrors.businessName && <p className="text-rose-500 text-xs mt-1.5">{validationErrors.businessName}</p>}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[#151C19] mb-2">City</label>
-              <input
-                type="text"
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all ${
-                  validationErrors.city ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
-                }`}
-                placeholder="Mumbai"
-              />
-              {validationErrors.city && <p className="text-rose-500 text-xs mt-1.5">{validationErrors.city}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[#151C19] mb-2">Address</label>
-              <textarea
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                rows={3}
-                className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all resize-none ${
-                  validationErrors.address ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
-                }`}
-                placeholder="123 Restaurant Street..."
-              />
-              {validationErrors.address && <p className="text-rose-500 text-xs mt-1.5">{validationErrors.address}</p>}
-            </div>
+            </form>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-8 bg-[#151C19] hover:bg-[#151C19]/90 text-white py-4 rounded-xl font-bold transition-colors flex items-center justify-center disabled:opacity-70"
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Processing...
-              </span>
-            ) : 'Continue to Review'}
-          </button>
-        </form>
-      </div>
+          {/* Summary Section */}
+          <div className="lg:col-span-5 xl:col-span-4 order-1 lg:order-2">
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm sticky top-32">
+              <h3 className="text-lg font-bold text-[#151C19] mb-6 border-b border-gray-100 pb-4">Order Summary</h3>
+              
+              <div className="flex items-end justify-between mb-8">
+                <div>
+                  <p className="text-[#151C19]/60 font-medium mb-1 uppercase tracking-wide text-xs">Selected Plan</p>
+                  <h4 className="text-2xl font-black text-[#151C19]">{plan.label}</h4>
+                </div>
+                <div className="text-right">
+                  <span className="text-3xl font-black text-[#151C19]">₹{plan.price}</span>
+                  <span className="text-[#151C19]/60 font-medium text-sm block">/ year</span>
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-8 bg-gray-50/50 p-6 rounded-2xl">
+                {plan.features.map((feature, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <CheckCircle2 className="text-[#E8783C] flex-shrink-0 mt-0.5" size={18} />
+                    <span className="text-[#151C19]/80 font-medium text-sm leading-relaxed">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-4 text-sm text-[#151C19]/60 font-medium bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">
+                <ShieldCheck className="text-emerald-500 flex-shrink-0" size={24} />
+                <p>30-day money-back guarantee. No questions asked.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
