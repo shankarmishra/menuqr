@@ -102,7 +102,7 @@ async function sendEmail(message, label) {
   });
 }
 
-// CORPORATE TRANSACTIONAL EMAIL WRAPPER (Clean Stripe/Vercel Aesthetic)
+// CORPORATE TRANSACTIONAL EMAIL WRAPPER (Minimal Aesthetic)
 function buildCorporateEmailHtml({ title, bodyHtml }) {
   const currentYear = new Date().getFullYear();
   return `
@@ -113,63 +113,35 @@ function buildCorporateEmailHtml({ title, bodyHtml }) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${title}</title>
     </head>
-    <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #111827;">
+    <body style="margin: 0; padding: 0; background-color: #fafafa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #111827;">
       
-      <!-- Container Outer -->
-      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f3f4f6; padding: 40px 15px;">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #fafafa; padding: 40px 15px;">
         <tr>
           <td align="center">
             
-            <!-- Email Card -->
-            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 580px; background-color: #ffffff; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 540px; background-color: #ffffff; border-radius: 8px; border: 1px solid #eaeaea; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);">
               
-              <!-- Brand Header with Logo -->
+              <!-- Minimal Brand Header -->
               <tr>
-                <td style="background-color: #0f172a; padding: 24px 32px; border-bottom: 3px solid #e8783c;">
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                    <tr>
-                      <td align="left" style="vertical-align: middle;">
-                        <table border="0" cellspacing="0" cellpadding="0">
-                          <tr>
-                            <td style="vertical-align: middle; padding-right: 12px;">
-                              <div style="background-color: #e8783c; width: 40px; height: 40px; border-radius: 9px; text-align: center; line-height: 40px;">
-                                <img src="https://api.iconify.design/lucide:utensils-crossed.svg?color=%23ffffff&width=22" width="22" height="22" alt="MenusQR Logo" style="vertical-align: middle; display: inline-block;" />
-                              </div>
-                            </td>
-                            <td style="vertical-align: middle;">
-                              <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; line-height: 1; display: block;">
-                                Menu<span style="color: #e8783c;">QR</span>
-                              </span>
-                              <span style="font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-top: 2px;">
-                                Digital Menus Made Simple
-                              </span>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td align="right" style="vertical-align: middle;">
-                        <span style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px;">Verified Platform</span>
-                      </td>
-                    </tr>
-                  </table>
+                <td style="padding: 24px 32px; border-bottom: 1px solid #eaeaea; text-align: left;">
+                  <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 800; color: #111827; letter-spacing: -0.5px;">
+                    MENUSQR
+                  </span>
                 </td>
               </tr>
 
               <!-- Main Body Content -->
               <tr>
-                <td style="padding: 36px 32px; background-color: #ffffff;">
+                <td style="padding: 32px; background-color: #ffffff; text-align: left;">
                   ${bodyHtml}
                 </td>
               </tr>
 
               <!-- Footer -->
               <tr>
-                <td style="background-color: #f9fafb; padding: 24px 32px; border-top: 1px solid #e5e7eb; text-align: center;">
-                  <p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280;">
-                    This is an automated system notification from MENUSQR Platform.
-                  </p>
-                  <p style="margin: 0; font-size: 12px; color: #9ca3af;">
-                    &copy; ${currentYear} MENUSQR Technologies. All rights reserved. &bull; <a href="${process.env.APP_URL || 'https://menusqr.in'}" style="color: #6b7280; text-decoration: underline;">menusqr.in</a>
+                <td style="background-color: #fafafa; padding: 24px 32px; border-top: 1px solid #eaeaea; text-align: left;">
+                  <p style="margin: 0; font-size: 12px; color: #888888;">
+                    &copy; ${currentYear} MENUSQR Technologies. &bull; <a href="${process.env.APP_URL || 'https://menusqr.in'}" style="color: #666666; text-decoration: none;">menusqr.in</a>
                   </p>
                 </td>
               </tr>
@@ -273,74 +245,63 @@ export async function sendClientWelcomeEmail(client) {
   }, `welcome email for ${client.businessName}`);
 }
 
-export async function sendActivationEmail({ email, ownerName, businessName, plan, activationToken }) {
+export async function sendActivationEmail({ email, ownerName, businessName, plan, activationToken, password }) {
   if (!email) return;
 
   const name = ownerName?.trim() || 'Partner';
   const baseUrl = process.env.APP_URL || 'https://menusqr.in';
-  const activationUrl = activationToken
+  
+  // Direct to login page if they already have a password set
+  const loginUrl = (activationToken && !password)
     ? `${baseUrl}/#/auth/activate?token=${encodeURIComponent(activationToken)}`
     : `${baseUrl}/#/admin/login`;
+  
+  const ctaText = (activationToken && !password) ? 'Complete Account Setup' : 'Sign in to Dashboard';
 
   const bodyHtml = `
-    <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #111827;">Activate Your MENUSQR Account</h1>
-
-    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #374151;">
-      Hello <strong>${name}</strong>,
+    <h1 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #111827; letter-spacing: -0.5px;">Workspace successfully provisioned</h1>
+    
+    <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #4b5563;">
+      Hello ${name},<br><br>
+      Your digital menu workspace for <strong>${businessName || 'your restaurant'}</strong> is now active. Please use the credentials below to access your dashboard.
     </p>
 
-    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #374151;">
-      Your MENUSQR account for <strong>${businessName || 'your restaurant'}</strong> is ready. Complete the final activation step below to set up your secure login and start managing your digital menu.
-    </p>
-
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 24px 0; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;">
-      <tr>
-        <td style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
-          <table width="100%" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td style="font-size: 13px; font-weight: 600; color: #6b7280; width: 120px;">Account:</td>
-              <td style="font-size: 14px; font-weight: 700; color: #111827;">${businessName || 'MENUSQR Account'}</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
-          <table width="100%" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td style="font-size: 13px; font-weight: 600; color: #6b7280; width: 120px;">Plan:</td>
-              <td style="font-size: 14px; font-weight: 700; color: #111827;">${plan || 'Premium'}</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding: 16px;">
-          <table width="100%" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td style="font-size: 13px; font-weight: 600; color: #6b7280; width: 120px;">Email:</td>
-              <td style="font-size: 14px; font-weight: 700; font-family: monospace; color: #111827;">${email}</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-
-    <div style="margin: 28px 0; text-align: left;">
-      <a href="${activationUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 6px; text-decoration: none;">Activate Account &rarr;</a>
+    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+      <p style="margin: 0 0 12px 0; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Login Details</p>
+      
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td style="padding: 6px 0; font-size: 13px; color: #64748b; width: 100px;">Portal URL:</td>
+          <td style="padding: 6px 0; font-size: 13px; font-weight: 500; color: #111827;">${baseUrl}/#/admin/login</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Email:</td>
+          <td style="padding: 6px 0; font-size: 13px; font-weight: 500; color: #111827;">${email}</td>
+        </tr>
+        ${password ? `
+        <tr>
+          <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Password:</td>
+          <td style="padding: 6px 0; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #0f172a;">${password}</td>
+        </tr>
+        ` : ''}
+      </table>
     </div>
 
-    <p style="margin: 0; font-size: 13px; color: #6b7280; line-height: 1.5;">
-      This activation link is valid for a limited time. If you did not request this account, you can safely ignore this email.
+    <div style="margin: 32px 0;">
+      <a href="${loginUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 13px; font-weight: 500; padding: 10px 24px; border-radius: 6px; text-decoration: none;">${ctaText}</a>
+    </div>
+
+    <p style="margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.5;">
+      If you require assistance, please reply to this email to contact our support team.
     </p>
   `;
 
   await sendEmail({
     to: email,
-    subject: `Activate Your MENUSQR Account - ${businessName || 'Restaurant Setup'}`,
-    html: buildCorporateEmailHtml({ title: 'Account Activation', bodyHtml }),
-    text: `Activate your MENUSQR account: ${activationUrl}`
-  }, `activation email for ${email}`);
+    subject: `Your MENUSQR workspace is ready - ${businessName || 'Restaurant'}`,
+    html: buildCorporateEmailHtml({ title: 'Workspace Ready', bodyHtml }),
+    text: `Your MENUSQR workspace is ready. Log in at: ${loginUrl}. Email: ${email}${password ? `, Password: ${password}` : ''}`
+  }, `activation/welcome email for ${email}`);
 }
 
 export async function sendLoginOtpEmail({ email, otp, ownerName }) {

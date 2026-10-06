@@ -75,7 +75,61 @@ export default async function purchaseRoutes(request, response, url) {
         [customerName, businessName, phone || null, city || null, address || null,
          cuisine || null, website || null, instagram || null, eid]
       );
-      sendJson(response, 200, { orderId: eid, amount: plan.price, status: 'PENDING_PAYMENT' });
+      
+      // Fetch existing session ID from Cashfree if configured
+      let paymentSessionId = null;
+      const appId = process.env.CASHFREE_APP_ID;
+      const secretKey = process.env.CASHFREE_SECRET_KEY;
+      if (appId && secretKey) {
+        const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
+        const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
+        try {
+          const cfRes = await fetch(`${baseUrl}/orders/${eid}`, {
+            headers: {
+              'x-client-id': appId,
+              'x-client-secret': secretKey,
+              'x-api-version': '2023-08-01',
+            }
+          });
+          if (cfRes.ok) {
+            const cfData = await cfRes.json();
+            paymentSessionId = cfData.payment_session_id;
+          } else if (cfRes.status === 404) {
+            // Cashfree order was never created (maybe failed validation previously). Create it now.
+            const cfCreate = await fetch(`${baseUrl}/orders`, {
+              method: 'POST',
+              headers: {
+                'x-client-id': appId,
+                'x-client-secret': secretKey,
+                'x-api-version': '2023-08-01',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                order_id: eid,
+                order_amount: plan.price,
+                order_currency: currency || 'INR',
+                customer_details: {
+                  customer_id: `cust_${randomUUID().substring(0, 8)}`,
+                  customer_email: customerEmail.trim().toLowerCase(),
+                  customer_phone: ((phone || '').replace(/[^0-9]/g, '').length >= 10) ? (phone || '').replace(/[^0-9]/g, '').substring(0, 15) : '9999999999',
+                  customer_name: customerName
+                },
+                order_meta: {
+                  return_url: `${process.env.FRONTEND_ORIGIN || 'http://localhost:5173'}/purchase/success?order_id={order_id}`
+                }
+              })
+            });
+            if (cfCreate.ok) {
+              const cfData = await cfCreate.json();
+              paymentSessionId = cfData.payment_session_id;
+            }
+          }
+        } catch (e) {
+          console.error('Cashfree existing order fetch error:', e);
+        }
+      }
+
+      sendJson(response, 200, { orderId: eid, amount: plan.price, status: 'PENDING_PAYMENT', paymentSessionId });
       return true;
     }
 
@@ -104,7 +158,7 @@ export default async function purchaseRoutes(request, response, url) {
             customer_details: {
               customer_id: `cust_${randomUUID().substring(0, 8)}`,
               customer_email: customerEmail.trim().toLowerCase(),
-              customer_phone: phone || '9999999999',
+              customer_phone: ((phone || '').replace(/[^0-9]/g, '').length >= 10) ? (phone || '').replace(/[^0-9]/g, '').substring(0, 15) : '9999999999',
               customer_name: customerName
             },
             order_meta: {
@@ -123,16 +177,21 @@ export default async function purchaseRoutes(request, response, url) {
       }
     }
 
+    let metadataJSON = null;
+    if (input.password) {
+      metadataJSON = JSON.stringify({ password_hash: hashPassword(input.password), clear_password: input.password });
+    }
+
     await pool.query(
       `INSERT INTO orders
          (id, customer_name, customer_email, phone, business_name, city, address,
-          cuisine, website, instagram, plan_id, amount, currency, status, provisioning_status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+          cuisine, website, instagram, plan_id, amount, currency, status, provisioning_status, metadata)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
       [orderId, customerName, customerEmail.trim().toLowerCase(), phone || null,
        businessName, city || null, address || null, cuisine || null,
        website || null, instagram || null,
        planKey, plan.price, currency || 'INR',
-       'PENDING_PAYMENT', 'PENDING']
+       'PENDING_PAYMENT', 'PENDING', metadataJSON]
     );
 
     sendJson(response, 200, { orderId, amount: plan.price, status: 'PENDING_PAYMENT', paymentSessionId });
@@ -161,7 +220,7 @@ export default async function purchaseRoutes(request, response, url) {
   if (request.method === 'POST' && verifyMatch) {
     const orderId = verifyMatch[1];
     const input = await readJson(request);
-    const { razorpayPaymentId, razorpayOrderId, razorpaySignature, mockSuccess } = input;
+    const { razorpayPaymentId, razorpayOrderId, razorpaySignature, mockSuccess, isCashfreeRedirect } = input;
 
     const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
     const order = orderRes.rows[0];
@@ -183,8 +242,39 @@ export default async function purchaseRoutes(request, response, url) {
     // ── PAYMENT VERIFICATION ──────────────────────────────────────────────
     if (order.status !== 'PAID') {
       const razorpayConfigured = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+      const cashfreeConfigured = !!(process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY);
 
-      if (razorpayConfigured) {
+      let gatewayUsed = 'mock';
+      let transactionId = `mock_${randomUUID()}`;
+
+      if (isCashfreeRedirect && cashfreeConfigured) {
+        const appId = process.env.CASHFREE_APP_ID;
+        const secretKey = process.env.CASHFREE_SECRET_KEY;
+        const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
+        const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
+        
+        const cfRes = await fetch(`${baseUrl}/orders/${orderId}`, {
+          method: 'GET',
+          headers: {
+            'x-client-id': appId,
+            'x-client-secret': secretKey,
+            'x-api-version': '2023-08-01',
+          }
+        });
+        
+        if (!cfRes.ok) {
+           throw apiError(400, 'Failed to verify Cashfree order status.');
+        }
+        
+        const cfData = await cfRes.json();
+        if (cfData.order_status !== 'PAID') {
+           await pool.query("UPDATE orders SET status='FAILED' WHERE id=$1", [orderId]);
+           throw apiError(400, 'Payment not marked as PAID by Cashfree.');
+        }
+        
+        gatewayUsed = 'cashfree';
+        transactionId = orderId; // Using orderId as transactionId for simplicity
+      } else if (razorpayConfigured) {
         if (!razorpayPaymentId || !razorpaySignature) {
           throw apiError(400, 'Razorpay payment details missing.');
         }
@@ -197,6 +287,8 @@ export default async function purchaseRoutes(request, response, url) {
           await pool.query("UPDATE orders SET status='FAILED' WHERE id=$1", [orderId]);
           throw apiError(400, 'Payment signature verification failed.');
         }
+        gatewayUsed = 'razorpay';
+        transactionId = razorpayPaymentId;
       } else if (process.env.NODE_ENV !== 'production' && mockSuccess) {
         // mock payment accepted only in dev/test
       } else {
@@ -210,10 +302,10 @@ export default async function purchaseRoutes(request, response, url) {
         `INSERT INTO payments (id, order_id, gateway, transaction_id, amount, status, raw_response)
          VALUES ($1,$2,$3,$4,$5,$6,$7)`,
         [paymentId, orderId,
-         razorpayPaymentId ? 'razorpay' : 'mock',
-         razorpayPaymentId || `mock_${randomUUID()}`,
+         gatewayUsed,
+         transactionId,
          order.amount, 'SUCCESS',
-         JSON.stringify({ razorpayPaymentId, razorpayOrderId, mockSuccess })]
+         JSON.stringify({ razorpayPaymentId, razorpayOrderId, mockSuccess, isCashfreeRedirect })]
       );
     }
 
@@ -251,8 +343,8 @@ export default async function purchaseRoutes(request, response, url) {
         tenantId = userCheck.rows[0].tenant_id || null;
       } else {
         userId = randomUUID();
-        // Random hashed password — user MUST use activation link to set real password
-        const pwdHash = hashPassword(randomUUID().substring(0, 32));
+        const orderMeta = order.metadata || {};
+        const pwdHash = orderMeta.password_hash || hashPassword(randomUUID().substring(0, 32));
         const { raw, hashed } = generateActivationToken();
         activationTokenRaw = raw;
         const tokenExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
@@ -262,7 +354,7 @@ export default async function purchaseRoutes(request, response, url) {
              (id, email, password_hash, role, onboarding_state,
               activation_token_hash, activation_token_expires_at)
            VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-          [userId, order.customer_email, pwdHash, 'RESTAURANT_OWNER', 'PENDING',
+          [userId, order.customer_email, pwdHash, 'RESTAURANT_OWNER', orderMeta.password_hash ? 'COMPLETED' : 'PENDING',
            hashed, tokenExpiry]
         );
       }
@@ -362,12 +454,15 @@ export default async function purchaseRoutes(request, response, url) {
 
     // ── 9. Send activation email (async, non-blocking) ───────────────────
     const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
+    const clearPassword = (order.metadata || {}).clear_password;
+    
     void sendActivationEmail({
       email: order.customer_email,
       ownerName: order.customer_name,
       businessName: order.business_name,
       plan: planMeta.label || order.plan_id.toUpperCase(),
       activationToken: activationTokenRaw,  // null if user already existed
+      password: clearPassword
     }).catch(err => {
       console.error('[activation email error]', err);
       // Log email failure to activity_logs but don't block
@@ -575,14 +670,15 @@ export default async function purchaseRoutes(request, response, url) {
         tenantId = userCheck.rows[0].tenant_id || null;
       } else {
         userId = randomUUID();
-        const pwdHash = hashPassword(randomUUID().substring(0, 32));
+        const orderMeta = order.metadata || {};
+        const pwdHash = orderMeta.password_hash || hashPassword(randomUUID().substring(0, 32));
         const { raw, hashed } = generateActivationToken();
         activationTokenRaw = raw;
         const tokenExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
         await pool.query(
           `INSERT INTO users (id, email, password_hash, role, onboarding_state, activation_token_hash, activation_token_expires_at)
            VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-          [userId, order.customer_email, pwdHash, 'RESTAURANT_OWNER', 'PENDING', hashed, tokenExpiry]
+          [userId, order.customer_email, pwdHash, 'RESTAURANT_OWNER', orderMeta.password_hash ? 'COMPLETED' : 'PENDING', hashed, tokenExpiry]
         );
       }
 
@@ -627,12 +723,14 @@ export default async function purchaseRoutes(request, response, url) {
     }
 
     const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
+    const clearPassword = (order.metadata || {}).clear_password;
     void sendActivationEmail({
       email: order.customer_email,
       ownerName: order.customer_name,
       businessName: order.business_name,
       plan: planMeta.label || order.plan_id.toUpperCase(),
       activationToken: activationTokenRaw,
+      password: clearPassword
     }).catch(err => {
       console.error('[activation email error]', err);
       pool.query(

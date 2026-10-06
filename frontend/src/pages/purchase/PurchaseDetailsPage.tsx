@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import SiteHeader from '../../components/marketing/SiteHeader';
-import { AlertCircle, CheckCircle2, ChevronRight, ShieldCheck } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ChevronRight, ShieldCheck, MapPin } from 'lucide-react';
 
 const PLANS: Record<string, { price: number; label: string; features: string[] }> = {
   basic: {
@@ -27,6 +27,7 @@ export default function PurchaseDetailsPage() {
   const initialPlan = searchParams.get('plan') || 'premium';
   
   const [loading, setLoading] = useState(false);
+  const [gettingLocation, setGettingLocation] = useState(false);
   const [error, setError] = useState('');
   const [planId] = useState(initialPlan);
 
@@ -36,7 +37,8 @@ export default function PurchaseDetailsPage() {
     phone: '',
     businessName: '',
     city: '',
-    address: ''
+    address: '',
+    password: ''
   });
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -47,6 +49,62 @@ export default function PurchaseDetailsPage() {
     }
   }, [planId, navigate]);
 
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    setGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await res.json();
+          if (data && data.address) {
+            const addr = data.address;
+            const city = addr.city || addr.town || addr.village || addr.county || addr.state_district || '';
+            
+            // Format a nicer display address if possible, else use full display_name
+            const parts = [
+              addr.amenity || addr.shop || addr.building,
+              addr.road,
+              addr.suburb || addr.neighbourhood,
+              city,
+              addr.state,
+              addr.postcode
+            ].filter(Boolean);
+            
+            const displayAddress = parts.length > 0 ? parts.join(', ') : data.display_name || '';
+            
+            setFormData(prev => ({
+              ...prev,
+              city: city,
+              address: displayAddress
+            }));
+            
+            setValidationErrors(prev => ({
+              ...prev,
+              city: '',
+              address: ''
+            }));
+          }
+        } catch (error) {
+          console.error("Error fetching address:", error);
+          alert('Could not fetch address automatically. Please enter it manually.');
+        } finally {
+          setGettingLocation(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert('Could not access your location. Please allow location permissions or enter manually.');
+        setGettingLocation(false);
+      },
+      { timeout: 10000 }
+    );
+  };
+
   const validateForm = () => {
     const errors: Record<string, string> = {};
     if (!formData.customerName.trim()) errors.customerName = 'Name is required';
@@ -54,6 +112,11 @@ export default function PurchaseDetailsPage() {
       errors.customerEmail = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customerEmail)) {
       errors.customerEmail = 'Please enter a valid email address';
+    }
+    if (!formData.password.trim()) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
     }
     if (!formData.phone.trim()) {
       errors.phone = 'Phone number is required';
@@ -152,98 +215,132 @@ export default function PurchaseDetailsPage() {
               )}
               
               <div className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-[#151C19] mb-2">Owner Name</label>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Owner Name</label>
                     <input
                       type="text"
                       name="customerName"
                       value={formData.customerName}
                       onChange={handleInputChange}
-                      className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all ${
+                      className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm ${
                         validationErrors.customerName ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
                       }`}
                       placeholder="e.g. John Doe"
                     />
-                    {validationErrors.customerName && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.customerName}</p>}
+                    {validationErrors.customerName && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.customerName}</p>}
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-semibold text-[#151C19] mb-2">Email Address</label>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Email Address</label>
                     <input
                       type="email"
                       name="customerEmail"
                       value={formData.customerEmail}
                       onChange={handleInputChange}
-                      className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all ${
+                      className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm ${
                         validationErrors.customerEmail ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
                       }`}
                       placeholder="john@example.com"
                     />
-                    {validationErrors.customerEmail && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.customerEmail}</p>}
+                    {validationErrors.customerEmail && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.customerEmail}</p>}
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-[#151C19] mb-2">Phone Number</label>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Phone Number</label>
                     <input
                       type="tel"
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all ${
+                      className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm ${
                         validationErrors.phone ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
                       }`}
                       placeholder="+91 98765 43210"
                     />
-                    {validationErrors.phone && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.phone}</p>}
+                    {validationErrors.phone && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.phone}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-[#151C19] mb-2">Restaurant Name</label>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Restaurant Name</label>
                     <input
                       type="text"
                       name="businessName"
                       value={formData.businessName}
                       onChange={handleInputChange}
-                      className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all ${
+                      className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm ${
                         validationErrors.businessName ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
                       }`}
                       placeholder="The Spice Lounge"
                     />
-                    {validationErrors.businessName && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.businessName}</p>}
+                    {validationErrors.businessName && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.businessName}</p>}
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">City</label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm ${
+                        validationErrors.city ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
+                      }`}
+                      placeholder="e.g. Mumbai"
+                    />
+                    {validationErrors.city && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.city}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Create Password</label>
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm ${
+                        validationErrors.password ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
+                      }`}
+                      placeholder="Minimum 6 characters"
+                    />
+                    {validationErrors.password && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.password}</p>}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#151C19] mb-2">City</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-[#151C19]">Address</label>
+                    <button
+                      type="button"
+                      onClick={handleGetLocation}
+                      className="text-xs text-[#E8783C] font-semibold flex items-center gap-1 hover:underline disabled:opacity-50"
+                      disabled={gettingLocation}
+                    >
+                      {gettingLocation ? (
+                        <span className="animate-pulse">Detecting...</span>
+                      ) : (
+                        <>
+                          <MapPin size={12} />
+                          Detect Location
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <input
                     type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all ${
-                      validationErrors.city ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
-                    }`}
-                    placeholder="e.g. Mumbai"
-                  />
-                  {validationErrors.city && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.city}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-[#151C19] mb-2">Address</label>
-                  <textarea
                     name="address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    rows={3}
-                    className={`w-full px-5 py-4 rounded-2xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E8783C]/10 focus:border-[#E8783C] transition-all resize-none ${
+                    className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm ${
                       validationErrors.address ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
                     }`}
                     placeholder="123 Restaurant Street..."
                   />
-                  {validationErrors.address && <p className="text-rose-500 text-xs mt-2 font-medium">{validationErrors.address}</p>}
+                  {validationErrors.address && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.address}</p>}
                 </div>
               </div>
 

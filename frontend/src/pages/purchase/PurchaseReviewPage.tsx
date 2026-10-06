@@ -95,12 +95,32 @@ export default function PurchaseReviewPage() {
           >
             Edit Details
           </button>
-          <Link
-            to={`/checkout/${order.id}`}
+          <button
+            onClick={async () => {
+              const paymentSessionId = sessionStorage.getItem('paymentSessionId');
+              if (paymentSessionId) {
+                // Initialize Cashfree SDK
+                if (!document.getElementById('cashfree-sdk')) {
+                  const script = document.createElement('script');
+                  script.id = 'cashfree-sdk';
+                  script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+                  script.onload = () => {
+                    const cashfree = (window as any).Cashfree({ mode: "sandbox" });
+                    cashfree.checkout({ paymentSessionId });
+                  };
+                  document.body.appendChild(script);
+                } else {
+                  const cashfree = (window as any).Cashfree({ mode: "sandbox" });
+                  cashfree.checkout({ paymentSessionId });
+                }
+              } else {
+                navigate(`/checkout/${order.id}`);
+              }
+            }}
             className="flex-1 text-center bg-[#E8783C] hover:bg-[#d66a30] text-white py-4 rounded-xl font-bold transition-colors shadow-lg shadow-[#E8783C]/20"
           >
             Proceed to Payment
-          </Link>
+          </button>
         </div>
       </div>
     </div>
