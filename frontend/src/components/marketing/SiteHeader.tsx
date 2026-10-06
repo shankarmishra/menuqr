@@ -64,7 +64,7 @@ export default function SiteHeader() {
       {/* CTA Login Button */}
       <motion.div variants={logoVariants} className="hidden md:flex items-center">
         <a
-          href="/login"
+          href="/admin/login"
           className="group flex items-center gap-2 text-white/90 hover:text-white text-xs font-bold uppercase tracking-wider transition-colors"
         >
           <span>Client Portal</span>
@@ -104,7 +104,7 @@ export default function SiteHeader() {
               FAQ
             </a>
             <div className="h-px w-full bg-white/10 my-1" />
-            <a href="/login" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-[#E8783C] hover:text-[#d9672d] py-2 px-4 flex items-center gap-2">
+            <a href="/admin/login" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-[#E8783C] hover:text-[#d9672d] py-2 px-4 flex items-center gap-2">
               Client Portal <ArrowUpRight size={16} />
             </a>
           </motion.div>

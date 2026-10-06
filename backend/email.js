@@ -162,7 +162,7 @@ export async function sendClientWelcomeEmail(client) {
   if (!recipient) return;
 
   const name = client.ownerName?.trim() || client.businessName;
-  const loginUrl = `${process.env.APP_URL || 'https://menusqr.in'}/#/admin/login`;
+  const loginUrl = `${process.env.APP_URL || 'https://menusqr.in'}/admin/login`;
 
   const bodyHtml = `
     <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #111827;">Account Activated &mdash; Welcome to MENUSQR</h1>
@@ -254,7 +254,7 @@ export async function sendActivationEmail({ email, ownerName, businessName, plan
   // Direct to login page if they already have a password set
   const loginUrl = (activationToken && !password)
     ? `${baseUrl}/#/auth/activate?token=${encodeURIComponent(activationToken)}`
-    : `${baseUrl}/#/admin/login`;
+    : `${baseUrl}/admin/login`;
   
   const ctaText = (activationToken && !password) ? 'Complete Account Setup' : 'Sign in to Dashboard';
 
@@ -272,7 +272,7 @@ export async function sendActivationEmail({ email, ownerName, businessName, plan
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
           <td style="padding: 6px 0; font-size: 13px; color: #64748b; width: 100px;">Portal URL:</td>
-          <td style="padding: 6px 0; font-size: 13px; font-weight: 500; color: #111827;">${baseUrl}/#/admin/login</td>
+          <td style="padding: 6px 0; font-size: 13px; font-weight: 500; color: #111827;">${baseUrl}/admin/login</td>
         </tr>
         <tr>
           <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Email:</td>
