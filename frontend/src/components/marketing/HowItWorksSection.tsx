@@ -1,211 +1,296 @@
-import { useRef } from 'react';
-import { motion, useScroll, useSpring } from 'framer-motion';
-import { QrCode, Smartphone, Layers, Palette, LayoutGrid, Store } from 'lucide-react';
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import {
+  ArrowRight,
+  Check,
+  CircleCheck,
+  Layers,
+  LayoutGrid,
+  Palette,
+  QrCode,
+  Smartphone,
+  Store,
+  Utensils,
+} from 'lucide-react';
+import ScannableQRCode from './ScannableQRCode';
 
 const STEPS = [
   { 
     id: '01', 
     title: 'Create', 
+    heading: 'Create your profile',
     subtitle: 'Account Setup',
     desc: 'Register your restaurant identity. No app downloads required. Just a clean, browser-based command center for your brand.',
     Icon: Store,
+    preview: 'profile',
   },
   { 
     id: '02', 
     title: 'Build', 
+    heading: 'Build your digital menu',
     subtitle: 'Digital Menu',
     desc: 'Structure your offerings with categories, dietary tags, and high-resolution imagery using our seamless builder.',
     Icon: LayoutGrid,
+    preview: 'menu',
   },
   { 
     id: '03', 
     title: 'Design', 
+    heading: 'Design your menu',
     subtitle: 'Brand Alignment',
     desc: 'Select from professionally crafted templates. Adjust colors and typography to perfectly match your physical restaurant aesthetic.',
     Icon: Palette,
+    preview: 'design',
   },
   { 
     id: '04', 
     title: 'QR', 
+    heading: 'Generate your QR code',
     subtitle: 'Generate Code',
     desc: 'Your unique, permanent QR code is generated instantly. Export it in ultra-high resolution for professional printing.',
     Icon: QrCode,
+    preview: 'qr',
   },
   { 
     id: '05', 
     title: 'Place', 
+    heading: 'Place your QR code',
     subtitle: 'Physical Deployment',
     desc: 'Display your customized QR placards across tables, reception desks, and outdoor seating areas.',
     Icon: Layers,
+    preview: 'tables',
   },
   { 
     id: '06', 
     title: 'Scan', 
+    heading: 'Go live for diners',
     subtitle: 'Live Dining',
     desc: 'Diners scan and browse instantly. You update prices or remove sold-out items in real-time, without ever reprinting.',
     Icon: Smartphone,
+    preview: 'live',
   },
 ];
 
-const ScrollLine = () => {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: svgRef as any,
-    offset: ["start center", "end center"]
-  });
+function StepPreview({ preview }: { preview: string }) {
+  if (preview === 'profile') {
+    return (
+      <div className="w-full max-w-sm rounded-2xl border border-[#ECEBE6] bg-white p-5 shadow-[0_16px_40px_rgba(21,28,25,0.06)]">
+        <div className="flex items-center gap-3 border-b border-[#F0EFEA] pb-4">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-menusqr-emerald text-white"><Store size={20} /></div>
+          <div><p className="text-sm font-bold text-[#151C19]">Your restaurant</p><p className="text-xs text-[#555D58]">Profile setup</p></div>
+          <CircleCheck className="ml-auto text-[#34A853]" size={19} />
+        </div>
+        <div className="mt-4 space-y-3">
+          <div className="h-9 rounded-lg border border-[#E8E7E2] px-3 py-2 text-xs text-[#333A35]">The Garden Cafe</div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-9 rounded-lg border border-[#E8E7E2] px-3 py-2 text-xs text-[#555D58]">Restaurant</div>
+            <div className="h-9 rounded-lg border border-[#E8E7E2] px-3 py-2 text-xs text-[#555D58]">Mumbai, India</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const pathLength = useSpring(scrollYProgress, { stiffness: 400, damping: 90 });
+  if (preview === 'menu') {
+    return (
+      <div className="w-full max-w-sm rounded-2xl border border-[#ECEBE6] bg-white p-5 shadow-[0_16px_40px_rgba(21,28,25,0.06)]">
+        <div className="mb-4 flex items-center justify-between">
+          <div><p className="text-sm font-bold text-[#151C19]">Your menu</p><p className="text-xs text-[#555D58]">A few items to get started</p></div>
+          <span className="rounded-lg bg-orange-50 px-2.5 py-1.5 text-xs font-semibold text-[#B84D1B]">+ Add item</span>
+        </div>
+        {[['Double Smash Burger', '₹340'], ['Truffle Fries', '₹180'], ['Classic Mojito', '₹150']].map(([name, price]) => (
+          <div key={name} className="flex items-center gap-3 border-t border-[#F0EFEA] py-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F6F5F1] text-[#475049]"><Utensils size={15} /></div>
+            <span className="flex-1 text-xs font-semibold text-[#242A26]">{name}</span>
+            <span className="text-xs font-bold text-[#242A26]">{price}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (preview === 'design') {
+    return (
+      <div className="w-full max-w-sm rounded-2xl border border-[#ECEBE6] bg-white p-5 shadow-[0_16px_40px_rgba(21,28,25,0.06)]">
+        <div className="mb-4 flex items-center justify-between"><div><p className="text-sm font-bold text-[#151C19]">Choose your look</p><p className="text-xs text-[#555D58]">Made to match your brand</p></div><Palette className="text-menusqr-orange" size={19} /></div>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            ['#173B32', '#E8783C', 'Classic'],
+            ['#3D342E', '#D6A66B', 'Warm'],
+            ['#26354A', '#91AFC7', 'Modern'],
+          ].map(([primary, accent, name], index) => (
+            <div key={name} className={`rounded-xl border p-2 ${index === 0 ? 'border-menusqr-orange ring-2 ring-orange-100' : 'border-[#E8E7E2]'}`}>
+              <div className="mb-2 flex h-16 items-end gap-1 rounded-lg p-2" style={{ backgroundColor: primary }}><span className="h-2 w-8 rounded bg-white/70" /><span className="h-2 w-4 rounded" style={{ backgroundColor: accent }} /></div>
+              <p className="text-center text-[10px] font-semibold text-[#333A35]">{name}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (preview === 'qr') {
+    return (
+      <div className="flex w-full max-w-sm items-center gap-5 rounded-2xl border border-[#ECEBE6] bg-white p-5 shadow-[0_16px_40px_rgba(21,28,25,0.06)]">
+        <div className="rounded-xl border border-[#ECEBE6] p-2"><ScannableQRCode url="https://menusqr.app/menu/the-garden" size={104} /></div>
+        <div><div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-[#EFF8F1] text-[#32834A]"><Check size={18} /></div><p className="text-sm font-bold text-[#151C19]">Your QR is ready</p><p className="mt-1 text-xs leading-relaxed text-[#414641]">One permanent code for your digital menu.</p></div>
+      </div>
+    );
+  }
+
+  if (preview === 'tables') {
+    return (
+      <div className="w-full max-w-sm rounded-2xl border border-[#ECEBE6] bg-white p-5 shadow-[0_16px_40px_rgba(21,28,25,0.06)]">
+        <div className="mb-4"><p className="text-sm font-bold text-[#151C19]">Ready for your tables</p><p className="text-xs text-[#555D58]">Place a QR at every seat</p></div>
+        <div className="grid grid-cols-3 gap-3">
+          {['01', '02', '03', '04', '05', '06'].map((table) => (
+            <div key={table} className="flex flex-col items-center gap-2 rounded-xl border border-[#ECEBE6] bg-[#FBFAF7] py-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-menusqr-emerald shadow-sm"><QrCode size={22} /></div><span className="text-[10px] font-bold uppercase tracking-wide text-[#333A35]">Table {table}</span></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="absolute left-[24px] md:left-1/2 top-0 bottom-0 w-2 -translate-x-1/2 h-full z-0 pointer-events-none">
-      <svg 
-        ref={svgRef}
-        className="w-full h-full"
-        viewBox="0 0 8 1000" 
-        preserveAspectRatio="none"
-      >
-        <path 
-          d="M 4 0 L 4 1000" 
-          stroke="currentColor"
-          className="text-menusqr-emerald/10"
-          strokeWidth="1" 
-          fill="none" 
-          vectorEffect="non-scaling-stroke"
-        />
-        <motion.path 
-          d="M 4 0 L 4 1000" 
-          stroke="currentColor" 
-          className="text-menusqr-orange"
-          strokeWidth="2" 
-          fill="none" 
-          vectorEffect="non-scaling-stroke"
-          style={{ pathLength }}
-        />
-      </svg>
+    <div className="w-full max-w-sm rounded-2xl border border-[#ECEBE6] bg-white p-5 shadow-[0_16px_40px_rgba(21,28,25,0.06)]">
+      <div className="mb-4 flex items-center justify-between"><div><p className="text-sm font-bold text-[#151C19]">The Garden Cafe</p><p className="text-xs text-[#555D58]">Live digital menu</p></div><span className="flex items-center gap-1.5 rounded-full bg-[#EFF8F1] px-2.5 py-1 text-[10px] font-bold text-[#32834A]"><span className="h-1.5 w-1.5 rounded-full bg-[#34A853]" />LIVE</span></div>
+      {['Double Smash Burger', 'Truffle Fries', 'Classic Mojito'].map((item, index) => (
+        <div key={item} className="flex items-center gap-3 border-t border-[#F0EFEA] py-3"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F6F5F1]"><Utensils size={15} className="text-[#475049]" /></div><span className="flex-1 text-xs font-semibold text-[#242A26]">{item}</span><span className="text-xs font-bold text-[#242A26]">{['₹340', '₹180', '₹150'][index]}</span></div>
+      ))}
     </div>
   );
-};
+}
 
 export default function HowItWorksSection() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeStep, setActiveStep] = useState(0);
+  const step = STEPS[activeStep];
+  const StepIcon = step.Icon;
 
   return (
-    <section 
-      ref={containerRef}
-      className="py-24 md:py-24 px-6 bg-menusqr-primary relative overflow-hidden" 
-      id="how-it-works"
-    >
-      <div className="absolute inset-0 texture-paper-grain opacity-20 pointer-events-none"></div>
-
-      <div className="max-w-[1240px] mx-auto relative z-10">
-        <div className="text-center mb-24 md:mb-32">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-            className="inline-block border border-menusqr-emerald/10 px-4 py-1.5 rounded-full text-menusqr-emerald text-xs font-semibold tracking-widest uppercase mb-6"
-          >
+    <section className="relative overflow-hidden bg-white px-5 py-20 sm:px-8 md:py-24" id="how-it-works">
+      <div className="pointer-events-none absolute right-0 top-8 h-80 w-80 rounded-full bg-orange-50 blur-[110px]" />
+      <div className="relative z-10 mx-auto max-w-[1160px]">
+        <motion.header
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.55 }}
+          className="mx-auto mb-10 max-w-3xl text-center md:mb-12"
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-menusqr-orange/20 bg-orange-50/70 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-menusqr-emerald">
+            <span className="h-1.5 w-1.5 rounded-full bg-menusqr-orange" />
             How It Works
-          </motion.div>
-          
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-menusqr-emerald tracking-tight max-w-4xl mx-auto leading-tight"
-          >
-            One QR code.<br/>
-            <span className="text-menusqr-neutral-muted font-light italic">Endless possibilities.</span>
-          </motion.h2>
+          </span>
+          <h2 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-menusqr-emerald sm:text-5xl md:text-6xl">
+            One QR code.
+            <br className="sm:hidden" />{' '}
+            <span className="font-serif font-medium italic text-menusqr-orange">Endless possibilities.</span>
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[#414641] sm:text-lg">
+            From your first menu to your first scan, get your restaurant online in a few simple steps.
+          </p>
+        </motion.header>
+
+        <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          {STEPS.map((item, index) => {
+            const Icon = item.Icon;
+            const isActive = activeStep === index;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveStep(index)}
+                aria-pressed={isActive}
+                className={`group flex min-h-[112px] flex-col items-start rounded-2xl border p-3.5 text-left transition-all duration-200 sm:p-4 ${
+                  isActive
+                    ? 'border-menusqr-emerald bg-menusqr-emerald text-white shadow-[0_10px_24px_rgba(21,28,25,0.14)]'
+                    : 'border-[#E9E7E1] bg-white text-menusqr-emerald hover:border-menusqr-orange/40 hover:bg-[#FCFBF9]'
+                }`}
+              >
+                <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                  isActive ? 'bg-white/10 text-menusqr-orange' : 'bg-orange-50 text-menusqr-orange'
+                }`}>
+                  <Icon size={17} />
+                </span>
+                <span className={`mt-3 text-[9px] font-bold uppercase tracking-[0.14em] ${
+                  isActive ? 'text-white/60' : 'text-[#555D58]'
+                }`}>Step {item.id}</span>
+                <span className="mt-0.5 text-sm font-bold">{item.title}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Timeline Container */}
-        <div className="relative max-w-5xl mx-auto pl-12 md:pl-0">
-          <ScrollLine />
-
-          <div className="flex flex-col gap-24 md:gap-40 relative z-10">
-            {STEPS.map((step, idx) => {
-              const isEven = idx % 2 === 0;
-              return (
-                <div key={step.id} className="relative flex flex-col md:flex-row items-center w-full group">
-                  
-                  {/* Central Node */}
-                  <div className="absolute left-[-24px] md:left-1/2 top-8 md:top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-menusqr-primary border-2 border-menusqr-emerald z-20 flex items-center justify-center transition-colors duration-500 group-hover:border-menusqr-orange">
-                    <motion.div 
-                      className="w-1.5 h-1.5 rounded-full bg-menusqr-orange opacity-0 scale-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300"
-                    />
-                  </div>
-                  
-                  {/* Text Side */}
-                  <div className={`w-full md:w-1/2 flex ${isEven ? 'md:justify-end md:pr-16 md:text-right' : 'md:justify-start md:pl-16 md:order-2'}`}>
-                    <motion.div 
-                      initial={{ opacity: 0, x: isEven ? -40 : 40, y: 20 }}
-                      whileInView={{ opacity: 1, x: 0, y: 0 }}
-                      viewport={{ once: true, margin: "-150px" }}
-                      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                      className="relative max-w-md w-full"
-                    >
-                      {/* Step Number Watermark */}
-                      <div className={`text-[6rem] md:text-[8rem] lg:text-[10rem] font-black text-menusqr-emerald/[0.03] leading-none absolute -top-8 md:-top-16 z-0 select-none pointer-events-none font-serif italic ${isEven ? 'left-0 md:left-auto md:-right-12' : 'left-0 md:-left-12'}`}>
-                        {step.id}
-                      </div>
-                      
-                      <div className="relative z-10">
-                        <h4 className={`text-menusqr-orange font-mono text-xs md:text-sm tracking-widest uppercase mb-3 flex items-center gap-3 ${isEven ? 'md:justify-end' : 'md:justify-start'}`}>
-                          <span className={isEven ? 'md:order-2' : ''}>Step {step.id}</span>
-                          <span className={`w-8 h-[1px] bg-menusqr-orange/30 ${isEven ? 'md:order-1' : ''}`}></span>
-                          <span className={isEven ? 'md:order-0 text-menusqr-emerald/70' : 'text-menusqr-emerald/70'}>{step.subtitle}</span>
-                        </h4>
-                        <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-menusqr-emerald mb-4 tracking-tight">
-                          {step.title}
-                        </h3>
-                        <p className="text-menusqr-neutral-sec text-base md:text-lg leading-relaxed">
-                          {step.desc}
-                        </p>
-                      </div>
-                    </motion.div>
-                  </div>
-
-                  {/* Visual Side */}
-                  <div className={`w-full md:w-1/2 mt-12 md:mt-0 flex ${isEven ? 'md:justify-start md:pl-16' : 'md:justify-end md:pr-16 md:order-1'}`}>
-                     <motion.div 
-                        initial={{ opacity: 0, filter: 'blur(10px)', scale: 0.95 }}
-                        whileInView={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
-                        viewport={{ once: true, margin: "-150px" }}
-                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                        className="w-full max-w-sm aspect-[4/5] relative flex flex-col justify-between p-8 border border-menusqr-emerald/10 bg-menusqr-white shadow-[0_20px_40px_-15px_rgba(21,28,25,0.05)] mx-auto md:mx-0 transition-transform duration-500 group-hover:-translate-y-2"
-                      >
-                        <div className="flex justify-between items-start">
-                          <span className="text-menusqr-emerald/30 font-mono text-sm tracking-widest">
-                            {step.id} / 06
-                          </span>
-                          <step.Icon className="text-menusqr-orange w-6 h-6" strokeWidth={1.5} />
-                        </div>
-
-                        <div className="flex-1 flex items-center justify-center overflow-hidden">
-                           <div className="text-[12rem] font-serif italic text-menusqr-emerald/5 select-none transition-transform duration-700 group-hover:scale-110">
-                             {step.title[0]}
-                           </div>
-                        </div>
-
-                        <div className="text-right border-t border-menusqr-emerald/5 pt-4 mt-4">
-                          <span className="text-menusqr-emerald font-semibold text-lg tracking-tight">
-                            {step.title}
-                          </span>
-                        </div>
-                      </motion.div>
-                  </div>
-
+        <div className="grid overflow-hidden rounded-[28px] border border-[#E9E7E1] bg-[#FAF9F6] shadow-[0_22px_70px_rgba(21,28,25,0.08)] lg:min-h-[390px] lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="flex flex-col justify-center p-6 sm:p-9 lg:p-12">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="mb-5 flex items-center gap-3">
+                  <span className="font-mono text-sm font-bold tracking-[0.16em] text-menusqr-orange">{step.id} / 06</span>
+                  <span className="h-px w-8 bg-menusqr-orange/40" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#555D58]">{step.subtitle}</span>
                 </div>
-              );
-            })}
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-menusqr-orange shadow-sm">
+                  <StepIcon size={23} />
+                </div>
+                <h3 className="text-3xl font-extrabold tracking-tight text-menusqr-emerald sm:text-4xl">{step.heading}</h3>
+                <p className="mt-4 max-w-md text-base leading-relaxed text-[#292D2A]">{step.desc}</p>
+                <div className="mt-7 flex flex-wrap items-center gap-3">
+                  <Link to="/signup" className="inline-flex items-center gap-2 rounded-xl bg-menusqr-orange px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#D9652B]">
+                    Get started <ArrowRight size={16} />
+                  </Link>
+                  <span className="text-xs font-medium text-[#414641]">No app download needed</span>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <div className="relative flex min-h-[280px] items-center justify-center overflow-hidden border-t border-[#E9E7E1] bg-[radial-gradient(ellipse_at_50%_45%,#FFFFFF_0%,#F5F3EE_78%)] p-6 sm:min-h-[320px] sm:p-10 lg:border-l lg:border-t-0">
+            <span className="absolute right-5 top-5 rounded-full border border-[#E9E7E1] bg-white/80 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-[#414641]">Your workspace</span>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step.preview}
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.99 }}
+                transition={{ duration: 0.25 }}
+                className="w-full"
+              >
+                <StepPreview preview={step.preview} />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        <div className="mt-5 flex items-center justify-between gap-4">
+          <p className="text-xs font-medium text-[#555D58]">Select a step to see how it works</p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveStep((activeStep + STEPS.length - 1) % STEPS.length)}
+              aria-label="Previous step"
+              className="rounded-full border border-[#E4E2DC] bg-white px-4 py-2 text-xs font-bold text-menusqr-emerald transition-colors hover:border-menusqr-orange/40"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveStep((activeStep + 1) % STEPS.length)}
+              aria-label="Next step"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#E4E2DC] bg-white px-4 py-2 text-xs font-bold text-menusqr-emerald transition-colors hover:border-menusqr-orange/40"
+            >
+              Next <ArrowRight size={13} />
+            </button>
           </div>
         </div>
       </div>
     </section>
   );
 }
-
-
