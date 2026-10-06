@@ -50,7 +50,6 @@ export function MenusQRBrand({
   return (
     <div className={`flex items-center ${gap} ${className} cursor-pointer group`} role="banner">
       <motion.div 
-        layoutId="brand-mark-container"
         style={{ width: markSize, height: markSize }}
         className="shrink-0 group-hover:rotate-1 transition-transform duration-300"
       >
@@ -59,7 +58,6 @@ export function MenusQRBrand({
 
       {!markOnly && (
         <motion.div 
-          layoutId="brand-wordmark-container"
           className="flex flex-col text-left leading-none justify-center"
         >
           <div 

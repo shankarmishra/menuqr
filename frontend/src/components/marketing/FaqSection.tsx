@@ -29,7 +29,7 @@ export default function FaqSection() {
   };
 
   return (
-    <section className="py-24 md:py-32 px-6 bg-[#FAFAF7] relative overflow-hidden" id="faq">
+    <section className="py-24 md:py-24 px-6 bg-[#FAFAF7] relative overflow-hidden" id="faq">
       <div className="texture-paper-grain z-0"></div>
       
       <div className="max-w-4xl mx-auto relative z-10">

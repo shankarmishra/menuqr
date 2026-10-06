@@ -28,6 +28,17 @@
   --color-dark-muted: var(--color-menusqr-neutral-muted);
 }
 
+html, body {
+  overflow-x: clip !important;
+  width: 100vw !important;
+  max-width: 100% !important;
+}
+
+#root {
+  overflow-x: clip !important;
+  width: 100%;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;

@@ -1,5 +1,5 @@
 import { pool } from '../db.js';
-import { apiError, sendJson, readJson } from '../utils.js';
+import { apiError, sendJson, readJson, getClientIp } from '../utils.js';
 
 const contactRateLimits = new Map();
 
@@ -126,7 +126,7 @@ export default async function publicRoutes(request, response, url) {
 
   // Contact Form Submission
   if (request.method === 'POST' && url.pathname === '/api/public/contact') {
-    const address = request.socket.remoteAddress ?? 'unknown';
+    const address = getClientIp(request);
     const now = Date.now();
     const hourAgo = now - 3600 * 1000;
     let limitData = contactRateLimits.get(address) || { count: 0, firstRequest: now };
@@ -163,6 +163,88 @@ export default async function publicRoutes(request, response, url) {
     contactRateLimits.set(address, limitData);
     
     sendJson(response, 200, { success: true });
+    return true;
+  }
+  
+  const orderMatch = url.pathname.match(/^\/api\/public\/menus\/([^/]+)\/orders$/);
+  if (request.method === 'POST' && orderMatch) {
+    const slug = decodeURIComponent(orderMatch[1]);
+    
+    // 1. Get client by slug, verify premium plan AND active subscription
+    const clientRes = await pool.query(
+      `SELECT c.id, s.plan_id, s.status as sub_status, s.expires_at
+       FROM clients c 
+       LEFT JOIN subscriptions s ON c.id = s.tenant_id 
+       WHERE c.menu_slug = $1`, 
+      [slug]
+    );
+    const client = clientRes.rows[0];
+    if (!client) {
+      throw apiError(404, 'Menu not found.');
+    }
+    
+    // Case-insensitive premium check
+    if (!client.plan_id || client.plan_id.toUpperCase() !== 'PREMIUM') {
+      throw apiError(403, 'Online ordering is not available on this plan. Please upgrade to Premium.');
+    }
+    
+    // Verify subscription is active and not expired
+    if (!client.sub_status || client.sub_status.toUpperCase() !== 'ACTIVE') {
+      throw apiError(403, 'This restaurant\'s subscription is not active. Ordering is unavailable.');
+    }
+    if (client.expires_at && new Date(client.expires_at) < new Date()) {
+      throw apiError(403, 'This restaurant\'s subscription has expired. Ordering is unavailable.');
+    }
+    
+    const input = await readJson(request);
+    
+    const tableNumber = String(input.tableNumber || '').trim();
+    if (!tableNumber) {
+      throw apiError(400, 'Table number is required.');
+    }
+    
+    if (!Array.isArray(input.items) || input.items.length === 0) {
+      throw apiError(400, 'Order items are required.');
+    }
+    
+    // Fetch real prices from database
+    const menuItemsRes = await pool.query('SELECT id, price, name FROM menu_items WHERE tenant_id = $1 AND is_available = true', [client.id]);
+    const itemPrices = new Map(menuItemsRes.rows.map(r => [r.id, { price: parseFloat(r.price || '0'), name: r.name }]));
+    
+    let calculatedTotal = 0;
+    const validatedItems = [];
+    
+    for (const item of input.items) {
+      if (!item || !item.id) throw apiError(400, 'Invalid item in order.');
+      const qty = parseInt(item.quantity, 10);
+      if (isNaN(qty) || qty <= 0 || qty > 100) {
+        throw apiError(400, `Invalid quantity for item: ${item.name || item.id}`);
+      }
+      if (!itemPrices.has(item.id)) {
+        throw apiError(400, `Item not found or unavailable: ${item.name || item.id}`);
+      }
+      const dbItem = itemPrices.get(item.id);
+      calculatedTotal += dbItem.price * qty;
+      validatedItems.push({
+        id: item.id,
+        name: dbItem.name,
+        price: dbItem.price,
+        quantity: qty
+      });
+    }
+    
+    // Generate a readable ID like MQR-4B9F2
+    const { randomBytes } = await import('node:crypto');
+    const orderId = randomBytes(4).toString('hex').toUpperCase();
+    
+    const res = await pool.query(
+      `INSERT INTO customer_orders (id, tenant_id, table_number, items, total, status)
+       VALUES ($1, $2, $3, $4, $5, 'NEW')
+       RETURNING id, table_number as "tableNumber", items, total, status, created_at as time`,
+      [orderId, client.id, tableNumber, JSON.stringify(validatedItems), calculatedTotal]
+    );
+    
+    sendJson(response, 201, res.rows[0]);
     return true;
   }
   

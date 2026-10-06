@@ -6,29 +6,13 @@ export interface MenusQRMarkProps {
   animated?: boolean;
 }
 
-export function MenusQRMark({ color = '#151C19', animated = false }: MenusQRMarkProps) {
-  // A highly detailed, lightning-inspired QR identity
+export function MenusQRMark({ color = '#151C19', orange = '#E8783C', animated = false }: MenusQRMarkProps) {
   return (
     <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        {/* Intense Neon / Lightning Glow */}
-        <filter id="lightning-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation={animated ? "8" : "3"} result="blur1" />
-          <feGaussianBlur stdDeviation={animated ? "15" : "6"} result="blur2" />
-          <feMerge>
-            <feMergeNode in="blur2" />
-            <feMergeNode in="blur1" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
         <linearGradient id="electric-grad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FFC928" />
-          <stop offset="40%" stopColor="#E8783C" />
-          <stop offset="100%" stopColor="#FF5E4D" />
-        </linearGradient>
-        <linearGradient id="electric-grad-reverse" x1="100%" y1="100%" x2="0%" y2="0%">
-          <stop offset="0%" stopColor="#FFC928" />
-          <stop offset="50%" stopColor="#E8783C" />
+          <stop offset="50%" stopColor={orange} />
           <stop offset="100%" stopColor="#FF5E4D" />
         </linearGradient>
       </defs>
@@ -73,12 +57,11 @@ export function MenusQRMark({ color = '#151C19', animated = false }: MenusQRMark
       <motion.path
         d="M 18 82 L 36 20 L 50 48 L 64 20 L 82 82 L 68 82 L 59 44 L 50 62 L 41 44 L 32 82 Z"
         fill="url(#electric-grad)"
-        filter="url(#lightning-glow)"
-        initial={animated ? { opacity: 0, scale: 0.5, filter: "brightness(5) blur(10px)" } : { opacity: 1, scale: 1, filter: "url(#lightning-glow)" }}
+        initial={animated ? { opacity: 0, scale: 0.5 } : { opacity: 1, scale: 1 }}
         animate={
           animated 
-          ? { opacity: [0, 1, 0.6, 1], scale: 1, filter: ["brightness(5) blur(10px)", "brightness(3) blur(2px)", "url(#lightning-glow)"] } 
-          : { opacity: 1, scale: 1, filter: "url(#lightning-glow)" }
+          ? { opacity: [0, 1, 0.6, 1], scale: 1 } 
+          : { opacity: 1, scale: 1 }
         }
         transition={{ duration: 0.5, delay: animated ? 0.3 : 0, ease: "easeOut" }}
         style={{ originX: '50%', originY: '50%' }}

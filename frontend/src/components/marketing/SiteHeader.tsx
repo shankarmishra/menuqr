@@ -38,20 +38,11 @@ export default function SiteHeader() {
       variants={navContainerVariants}
       className="fixed top-5 left-6 right-6 z-50 mx-auto max-w-[1400px] h-[72px] bg-[#151C19] rounded-[18px] border border-white/10 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] flex items-center justify-between px-6"
     >
-      {/* Brand Logo & LIVE Badge */}
+      {/* Brand Logo */}
       <motion.div variants={logoVariants} className="flex items-center gap-4">
         <a href="#" className="flex items-center">
           <MenusQRBrand size="sm" variant="light" />
         </a>
-        <div className="hidden sm:flex items-center gap-2 bg-[#1D2723] border border-white/5 rounded-full px-2.5 py-1">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0.5, 1] }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
-            className="w-1.5 h-1.5 rounded-full bg-[#E8783C]"
-          />
-          <span className="text-[9px] font-bold tracking-widest uppercase text-white/80">LIVE SAAS</span>
-        </div>
       </motion.div>
 
       {/* Desktop Navigation Links (Lighter internal surface) */}

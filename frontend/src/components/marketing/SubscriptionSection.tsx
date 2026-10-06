@@ -84,7 +84,7 @@ export default function SubscriptionSection() {
   const currentIndex = TIMELINE_STEPS.findIndex(s => s.id === selectedState);
 
   return (
-    <section className="py-24 md:py-36 px-6 bg-menusqr-primary border-b border-menusqr-emerald/5 relative overflow-hidden">
+    <section className="py-24 md:py-24 px-6 bg-menusqr-primary border-b border-menusqr-emerald/5 relative overflow-hidden">
       {/* Texture */}
       <div className="texture-paper-grain z-0" />
 

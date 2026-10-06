@@ -3,10 +3,72 @@ import { enforceTenant } from '../auth.js';
 import { apiError, sendJson, readJson } from '../utils.js';
 import { randomUUID } from 'node:crypto';
 
+export const PLAN_CAPABILITIES = {
+  BASIC: [
+    "digital_menu",
+    "menu_conversion",
+    "qr_code",
+    "login",
+    "menu_setup",
+  ],
+  INTERMEDIATE: [
+    "digital_menu",
+    "menu_conversion",
+    "qr_code",
+    "login",
+    "menu_setup",
+    "templates_limited",
+    "add_item",
+    "edit_item",
+    "delete_item",
+    "menu_management"
+  ],
+  PREMIUM: [
+    "digital_menu",
+    "menu_conversion",
+    "qr_code",
+    "login",
+    "menu_setup",
+    "templates_limited",
+    "add_item",
+    "edit_item",
+    "delete_item",
+    "menu_management",
+    "customer_ordering",
+    "reception_orders",
+    "order_acceptance",
+    "order_management"
+  ]
+};
+
+async function getTenantSub(tenantId) {
+  const res = await pool.query(
+    'SELECT plan_id, status, expires_at FROM subscriptions WHERE tenant_id = $1',
+    [tenantId]
+  );
+  if (!res.rows[0]) return { planId: 'BASIC', status: 'INACTIVE' };
+  return {
+    planId: (res.rows[0].plan_id || 'BASIC').toUpperCase(),
+    status: (res.rows[0].status || 'INACTIVE').toUpperCase(),
+    expiresAt: res.rows[0].expires_at
+  };
+}
+
+function hasCapability(planId, capability) {
+  const caps = PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC;
+  return caps.includes(capability);
+}
+
 export default async function appRoutes(request, response, url) {
   if (!url.pathname.startsWith('/api/app/')) return false;
   
-  const user = enforceTenant(request);
+  const user = await enforceTenant(request);
+
+  if (request.method === 'POST' && url.pathname === '/api/app/onboarding/complete') {
+    await pool.query('UPDATE users SET onboarding_state = $1 WHERE id = $2', ['COMPLETED', user.id]);
+    sendJson(response, 200, { success: true });
+    return true;
+  }
 
   if (request.method === 'GET' && url.pathname === '/api/app/profile') {
     const res = await pool.query(`
@@ -42,18 +104,7 @@ export default async function appRoutes(request, response, url) {
   }
 
   if (request.method === 'POST' && url.pathname === '/api/app/subscription/renew') {
-    const newExpiresAt = new Date();
-    newExpiresAt.setFullYear(newExpiresAt.getFullYear() + 1);
-
-    const subRes = await pool.query(`
-      UPDATE subscriptions 
-      SET status = 'ACTIVE', expires_at = $1, updated_at = CURRENT_TIMESTAMP
-      WHERE tenant_id = $2
-      RETURNING plan_id as "planId", status, started_at as "startedAt", expires_at as "expiresAt"
-    `, [newExpiresAt, user.tenantId]);
-
-    sendJson(response, 200, subRes.rows[0]);
-    return true;
+    throw apiError(400, 'Please use the checkout page to renew your subscription. Free renewals are not allowed.');
   }
 
 
@@ -193,6 +244,10 @@ export default async function appRoutes(request, response, url) {
   }
 
   if (request.method === 'POST' && url.pathname === '/api/app/categories') {
+    const sub = await getTenantSub(user.tenantId);
+    if (!hasCapability(sub.planId, 'menu_management')) {
+      throw apiError(403, 'Category management requires an Intermediate or Premium plan.');
+    }
     const input = await readJson(request);
     let { name, description, menuId } = input;
     
@@ -215,6 +270,10 @@ export default async function appRoutes(request, response, url) {
 
   const catMatch = url.pathname.match(/^\/api\/app\/categories\/([^/]+)$/);
   if (catMatch) {
+    const sub = await getTenantSub(user.tenantId);
+    if (!hasCapability(sub.planId, 'menu_management')) {
+      throw apiError(403, 'Category management requires an Intermediate or Premium plan.');
+    }
     const catId = catMatch[1];
     if (request.method === 'PUT') {
       const input = await readJson(request);
@@ -236,6 +295,10 @@ export default async function appRoutes(request, response, url) {
   }
 
   if (request.method === 'PATCH' && url.pathname === '/api/app/categories/reorder') {
+    const sub = await getTenantSub(user.tenantId);
+    if (!hasCapability(sub.planId, 'menu_management')) {
+      throw apiError(403, 'Category management requires an Intermediate or Premium plan.');
+    }
     const input = await readJson(request);
     const { order } = input; 
     for (const item of order) {
@@ -249,6 +312,10 @@ export default async function appRoutes(request, response, url) {
   }
 
   if (request.method === 'POST' && url.pathname === '/api/app/items') {
+    const sub = await getTenantSub(user.tenantId);
+    if (!hasCapability(sub.planId, 'add_item')) {
+      throw apiError(403, 'Adding menu items requires an Intermediate or Premium plan.');
+    }
     const input = await readJson(request);
     let { menuId, categoryId, name, description, price, halfPrice, fullPrice, dietType, isAvailable } = input;
     
@@ -272,6 +339,10 @@ export default async function appRoutes(request, response, url) {
 
   const itemMatch = url.pathname.match(/^\/api\/app\/items\/([^/]+)(?:\/(.+))?$/);
   if (itemMatch && request.method !== 'POST') {
+    const sub = await getTenantSub(user.tenantId);
+    if (!hasCapability(sub.planId, 'edit_item')) {
+      throw apiError(403, 'Item editing requires an Intermediate or Premium plan.');
+    }
     const itemId = itemMatch[1];
     const subAction = itemMatch[2];
     
@@ -290,6 +361,9 @@ export default async function appRoutes(request, response, url) {
     }
     
     if (request.method === 'DELETE' && !subAction) {
+      if (!hasCapability(sub.planId, 'delete_item')) {
+        throw apiError(403, 'Deleting items requires an Intermediate or Premium plan.');
+      }
       const res = await pool.query('DELETE FROM menu_items WHERE id = $1 AND tenant_id = $2 RETURNING *', [itemId, user.tenantId]);
       if (!res.rows[0]) throw apiError(404, 'Item not found');
       sendJson(response, 200, { success: true });
@@ -307,6 +381,48 @@ export default async function appRoutes(request, response, url) {
       sendJson(response, 200, res.rows[0]);
       return true;
     }
+  }
+
+  // Customer Orders (Reception Dashboard)
+  if (request.method === 'GET' && url.pathname === '/api/app/orders') {
+    const sub = await getTenantSub(user.tenantId);
+    if (!hasCapability(sub.planId, 'reception_orders')) {
+      throw apiError(403, 'Order reception management is a Premium feature. Please upgrade your plan.');
+    }
+    const res = await pool.query(`
+      SELECT id, table_number as "tableNumber", items, total, status, created_at as time
+      FROM customer_orders
+      WHERE tenant_id = $1
+        AND created_at >= NOW() - INTERVAL '24 HOURS'
+      ORDER BY created_at DESC
+    `, [user.tenantId]);
+    sendJson(response, 200, res.rows);
+    return true;
+  }
+
+  const orderUpdateMatch = url.pathname.match(/^\/api\/app\/orders\/([^/]+)\/status$/);
+  if (request.method === 'PATCH' && orderUpdateMatch) {
+    const sub = await getTenantSub(user.tenantId);
+    if (!hasCapability(sub.planId, 'reception_orders')) {
+      throw apiError(403, 'Order status management is a Premium feature. Please upgrade your plan.');
+    }
+    const orderId = decodeURIComponent(orderUpdateMatch[1]);
+    const input = await readJson(request);
+    
+    if (!['NEW', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED'].includes(input.status)) {
+      throw apiError(400, 'Invalid status.');
+    }
+    
+    const res = await pool.query(`
+      UPDATE customer_orders
+      SET status = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2 AND tenant_id = $3
+      RETURNING id, table_number as "tableNumber", items, total, status, created_at as time
+    `, [input.status, orderId, user.tenantId]);
+    
+    if (!res.rows[0]) throw apiError(404, 'Order not found.');
+    sendJson(response, 200, res.rows[0]);
+    return true;
   }
 
   return false;

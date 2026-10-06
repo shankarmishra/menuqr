@@ -1,7 +1,6 @@
+import './env.js';
 import { createServer } from 'node:http';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { config as loadEnv } from 'dotenv';
+
 import { connectDB, pool } from './db.js';
 import { apiError, sendJson } from './utils.js';
 
@@ -10,9 +9,6 @@ import appRoutes from './routes/app.js';
 import adminRoutes from './routes/admin.js';
 import publicRoutes from './routes/public.js';
 import purchaseRoutes from './routes/purchase.js';
-
-const directory = dirname(fileURLToPath(import.meta.url));
-loadEnv({ path: join(directory, '.env') });
 
 const port = Number(process.env.PORT || process.env.API_PORT || 3001);
 const frontendOrigin = process.env.FRONTEND_ORIGIN?.trim().replace(/\/$/, '');
@@ -26,12 +22,15 @@ const server = createServer(async (request, response) => {
   const requestOrigin = request.headers.origin;
 
   // Render & Localhost origin allowed for CORS
-  const isAllowedOrigin =
-    !frontendOrigin ||
-    requestOrigin === frontendOrigin ||
-    frontendOrigin === '*' ||
-    requestOrigin?.includes('localhost') ||
-    requestOrigin?.includes('onrender.com');
+  const allowedLocalOrigins = ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'];
+  let isAllowedOrigin = !frontendOrigin || requestOrigin === frontendOrigin || frontendOrigin === '*';
+  if (requestOrigin && !isAllowedOrigin) {
+    try {
+      const parsedOrigin = new URL(requestOrigin);
+      if (allowedLocalOrigins.includes(requestOrigin)) isAllowedOrigin = true;
+      if (parsedOrigin.hostname.endsWith('.onrender.com')) isAllowedOrigin = true;
+    } catch { /* invalid origin */ }
+  }
 
   if (requestOrigin && isAllowedOrigin) {
     response.setHeader('Access-Control-Allow-Origin', requestOrigin);

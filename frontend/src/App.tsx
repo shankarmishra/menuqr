@@ -1,6 +1,8 @@
+﻿import NotFoundPage from './pages/public/NotFoundPage';
 import { useEffect, useState } from 'react';
 import { MenusQRMark } from './components/brand/MenusQRMark';
-import { HashRouter, Routes, Route, Navigate, useLocation, useMatch } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useMatch } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import HomePage from './pages/HomePage';
 import SignupPage from './pages/public/SignupPage';
 import OnboardingWizard from './pages/public/OnboardingWizard';
@@ -10,6 +12,8 @@ import PurchaseReviewPage from './pages/purchase/PurchaseReviewPage';
 import CheckoutPage from './pages/purchase/CheckoutPage';
 import PurchaseSuccessPage from './pages/purchase/PurchaseSuccessPage';
 import MenuPage from './pages/customer/MenuPage';
+import DigitalQrMenu from './pages/public/seo/DigitalQrMenu';
+import RestaurantQrMenu from './pages/public/seo/RestaurantQrMenu';
 import AdminLayout from './layouts/AdminLayout';
 import AppLayout from './layouts/AppLayout';
 import AdminLogin from './pages/admin/AdminLogin';
@@ -51,7 +55,7 @@ function ProtectedAdminLayout() {
     };
   }, [retry]);
 
-  if (sessionState === 'checking') return <div className="grid min-h-screen place-items-center bg-[#151c19] text-sm text-[#aab7b2]">Checking admin session…</div>;
+  if (sessionState === 'checking') return <div className="grid min-h-screen place-items-center bg-[#151c19] text-sm text-[#aab7b2]">Checking admin sessionâ€¦</div>;
   if (sessionState === 'error') return <div className="grid min-h-screen place-items-center bg-[#151c19] px-5 text-center text-sm text-rose-300"><div><p>Could not connect to the admin API.</p><button type="button" onClick={() => { setSessionState('checking'); setRetry((current) => current + 1); }} className="mt-4 rounded-lg bg-[#e8783c] px-4 py-2 font-semibold text-white">Retry</button></div></div>;
   if (sessionState === 'unauthenticated') return <Navigate to="/admin/login" replace state={{ from: location }} />;
   return <AdminLayout />;
@@ -112,6 +116,10 @@ function AppRoutes() {
         <Route path="/purchase/review" element={<PurchaseReviewPage />} />
         <Route path="/checkout/:orderId" element={<CheckoutPage />} />
         <Route path="/purchase/success" element={<PurchaseSuccessPage />} />
+        
+        {/* SEO Pages */}
+        <Route path="/digital-qr-menu" element={<DigitalQrMenu />} />
+        <Route path="/restaurant-qr-menu" element={<RestaurantQrMenu />} />
 
         {/* Customer Menu Route */}
         <Route path="/menu/:slug" element={<MenuPage key={menuSlug} />} />
@@ -148,7 +156,7 @@ function AppRoutes() {
           <Route path="orders" element={<AppOrders />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       {isLoading && (
         <div 
@@ -183,20 +191,13 @@ function AppRoutes() {
 }
 
 export default function App() {
-  if (
-    /^\/menu\/[^/]+\/?$/.test(window.location.pathname) &&
-    !window.location.hash.startsWith('#/')
-  ) {
-    window.history.replaceState(
-      null,
-      '',
-      `/#${window.location.pathname}${window.location.search}${window.location.hash}`
-    );
-  }
-
   return (
-    <HashRouter>
-      <AppRoutes />
-    </HashRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }
+
+

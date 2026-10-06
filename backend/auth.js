@@ -3,7 +3,11 @@ import { parseCookie as parse, stringifySetCookie as serialize } from 'cookie';
 import { randomBytes, pbkdf2Sync } from 'node:crypto';
 
 // Use a secure JWT secret from env or generate a temporary one (not ideal for production restarts, but safe for dev)
-const JWT_SECRET = process.env.JWT_SECRET || randomBytes(32).toString('hex');
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error("FATAL: JWT_SECRET environment variable is missing.");
+  process.exit(1);
+}
 const COOKIE_NAME = 'menusqr_auth';
 
 // Password Hashing (PBKDF2)
@@ -52,22 +56,34 @@ export function clearAuthCookie() {
   });
 }
 
+import { pool } from './db.js';
+
 // Helpers for native Node HTTP requests
-export function getAuthenticatedUser(req) {
+export async function getAuthenticatedUser(req) {
   try {
     const cookies = parse(req.headers.cookie || '');
     const token = cookies[COOKIE_NAME] || (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null);
     
     if (!token) return null;
-    return jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    if (decoded.role === 'SUPER_ADMIN') {
+      return decoded;
+    }
+    
+    // Check if user still exists in DB
+    const res = await pool.query('SELECT id, role, tenant_id FROM users WHERE id = $1', [decoded.id]);
+    if (res.rows.length === 0) return null;
+    
+    return decoded;
   } catch (error) {
     console.error('JWT Verify Error:', error.message);
     return null;
   }
 }
 
-export function enforceAuth(req) {
-  const user = getAuthenticatedUser(req);
+export async function enforceAuth(req) {
+  const user = await getAuthenticatedUser(req);
   if (!user) {
     const err = new Error('Authentication required.');
     err.status = 401;
@@ -76,8 +92,8 @@ export function enforceAuth(req) {
   return user;
 }
 
-export function enforceSuperAdmin(req) {
-  const user = enforceAuth(req);
+export async function enforceSuperAdmin(req) {
+  const user = await enforceAuth(req);
   if (user.role !== 'SUPER_ADMIN') {
     const err = new Error('Forbidden. Super Admin access required.');
     err.status = 403;
@@ -86,8 +102,8 @@ export function enforceSuperAdmin(req) {
   return user;
 }
 
-export function enforceTenant(req) {
-  const user = enforceAuth(req);
+export async function enforceTenant(req) {
+  const user = await enforceAuth(req);
   if (user.role !== 'RESTAURANT_OWNER' || !user.tenantId) {
     const err = new Error('Forbidden. Tenant access required.');
     err.status = 403;

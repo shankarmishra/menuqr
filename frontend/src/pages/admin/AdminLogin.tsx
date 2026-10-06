@@ -43,7 +43,12 @@ export default function AdminLogin() {
     return () => window.clearInterval(timer);
   }, [mode, resendTimer]);
 
-  function handleLoginSuccess(role?: string) {
+  function handleLoginSuccess(role?: string, onboardingState?: string) {
+    if (onboardingState === 'PENDING') {
+      navigate('/onboarding', { replace: true });
+      window.location.reload();
+      return;
+    }
     const defaultDest = role === 'SUPER_ADMIN' ? '/admin/dashboard' : '/app';
     const dest = returnTo ? `${returnTo.pathname ?? defaultDest}${returnTo.search ?? ''}${returnTo.hash ?? ''}` : defaultDest;
     navigate(dest, { replace: true });
@@ -64,7 +69,7 @@ export default function AdminLogin() {
         setResendTimer(30);
         setInfoMessage(res.message || 'A 6-digit OTP code has been sent to your email.');
       } else if (res.authenticated) {
-        handleLoginSuccess(res.role);
+        handleLoginSuccess(res.role, res.onboardingState);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not sign in. Please try again.');
@@ -85,7 +90,7 @@ export default function AdminLogin() {
     try {
       const res = await verifyLoginOtp(tempToken, otp);
       if (res.authenticated) {
-        handleLoginSuccess(res.role);
+        handleLoginSuccess(res.role, res.onboardingState);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Incorrect OTP code. Try again.');

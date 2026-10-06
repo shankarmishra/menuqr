@@ -61,12 +61,12 @@ export default function OneQrSection() {
   };
 
   return (
-    <section className="py-24 md:py-36 px-6 bg-[#FAFAF7] relative border-y border-menusqr-emerald/5 overflow-hidden">
+    <section className="py-14 md:py-18 px-6 bg-[#FAFAF7] relative border-y border-menusqr-emerald/5 overflow-hidden">
       {/* Decorative texture overlay */}
       <div className="texture-paper-grain z-0"></div>
 
       <div className="max-w-[1240px] mx-auto relative z-10">
-        <div className="grid lg:grid-cols-12 gap-16 items-start">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* Left Column: Editorial Text & Timeline */}
           <div className="lg:col-span-4 space-y-12 lg:sticky lg:top-32">
@@ -80,32 +80,35 @@ export default function OneQrSection() {
               </p>
             </div>
 
-            <div className="space-y-2 relative before:absolute before:inset-y-0 before:left-[19px] before:w-[2px] before:bg-menusqr-emerald/10">
+            <div className="space-y-3 relative before:absolute before:inset-y-0 before:left-[19px] before:w-[2px] before:bg-menusqr-emerald/10">
               {timelineStates.map((state, idx) => (
                 <button
                   key={state.id}
                   onClick={() => handleTabClick(idx)}
-                  className={`w-full text-left p-4 rounded-xl transition-all duration-500 relative z-10 flex gap-4 ${
+                  className={`w-full text-left p-4 rounded-xl transition-all duration-300 relative z-10 flex gap-4 ${
                     activeIndex === idx
-                      ? 'bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-menusqr-emerald/5 scale-[1.02]'
-                      : 'hover:bg-black/5 border border-transparent opacity-70 hover:opacity-100'
+                      ? 'bg-white shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-menusqr-emerald/15 scale-[1.02]'
+                      : 'hover:bg-white/60 border border-transparent opacity-75 hover:opacity-100'
                   }`}
                 >
-                  <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 transition-colors duration-300 ${
-                    activeIndex === idx ? 'bg-menusqr-orange shadow-[0_0_0_4px_rgba(232,120,60,0.2)]' : 'bg-menusqr-emerald/20'
+                  <div className={`mt-1.5 w-2.5 h-2.5 rounded-full shrink-0 transition-colors duration-300 ${
+                    activeIndex === idx ? 'bg-[#E8783C] shadow-[0_0_0_4px_rgba(232,120,60,0.2)]' : 'bg-menusqr-emerald/20'
                   }`} />
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-xs font-black uppercase tracking-wider ${
-                        activeIndex === idx ? 'text-menusqr-orange' : 'text-menusqr-neutral-muted'
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className={`text-[11px] font-mono font-bold tracking-widest ${
+                        activeIndex === idx ? 'text-[#E8783C]' : 'text-gray-400'
                       }`}>
-                        {state.day}
+                        {idx === 0 ? '09:10 MENU LIVE' : idx === 1 ? '12:45 SOLD OUT' : '18:20 PRICE UPDATED'}
+                      </span>
+                      <span className="text-xs font-mono font-bold text-[#1A2B24]">
+                        {idx === 0 ? '₹280' : idx === 1 ? '₹280' : '₹320'}
                       </span>
                     </div>
-                    <h4 className={`text-lg font-bold ${activeIndex === idx ? 'text-menusqr-emerald' : 'text-menusqr-neutral-sec'}`}>
+                    <h4 className={`text-base font-bold ${activeIndex === idx ? 'text-[#1A2B24]' : 'text-gray-600'}`}>
                       {state.title}
                     </h4>
-                    <p className={`text-sm mt-1 ${activeIndex === idx ? 'text-menusqr-emerald/70' : 'text-menusqr-neutral-muted'}`}>
+                    <p className={`text-xs mt-0.5 ${activeIndex === idx ? 'text-gray-600' : 'text-gray-400'}`}>
                       {state.subtitle}
                     </p>
                   </div>
@@ -115,7 +118,7 @@ export default function OneQrSection() {
           </div>
 
           {/* Right Column: Visualization Area */}
-          <div className="lg:col-span-8 flex flex-col sm:flex-row items-center justify-center gap-12 lg:gap-24 relative mt-12 lg:mt-0">
+          <div className="lg:col-span-8 flex flex-col sm:flex-row items-center justify-center gap-8 lg:gap-16 relative mt-4 lg:mt-0">
             
             {/* The Unmoving QR */}
             <div className="relative z-10 flex flex-col items-center">

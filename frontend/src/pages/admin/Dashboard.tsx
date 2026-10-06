@@ -1,23 +1,25 @@
 import { useEffect, useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
-import { Utensils, QrCode, TrendingUp, Store, Coffee, ArrowUpRight, Users, Activity } from 'lucide-react';
+import { Utensils, QrCode, TrendingUp, Store, Coffee, ArrowUpRight, Users, Activity, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getApiHealth, getClients, type ApiHealth, type ClientRecord } from './clientStore';
+import { getApiHealth, getClients, getAdminTimeline, type ApiHealth, type ClientRecord, type TimelineEvent } from './clientStore';
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
 const itemAnim: Variants = { hidden: { y: 20, opacity: 0 }, show: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
 
 export default function Dashboard() {
   const [clients, setClients] = useState<ClientRecord[]>([]);
+  const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [apiHealth, setApiHealth] = useState<ApiHealth>();
   const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     let isCurrent = true;
-    void Promise.all([getClients(), getApiHealth()]).then(([records, health]) => {
+    void Promise.all([getClients(), getApiHealth(), getAdminTimeline()]).then(([records, health, timelineData]) => {
       if (!isCurrent) return;
       setClients(records);
       setApiHealth(health);
+      setTimeline(timelineData);
     }).catch((error: unknown) => {
       if (isCurrent) setLoadError(error instanceof Error ? error.message : 'Could not load dashboard data.');
     });
@@ -38,7 +40,6 @@ export default function Dashboard() {
     { name: 'Dhabas', count: activeClients.filter((client) => client.category === 'dhabas').length, icon: Store, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
     { name: 'Cafes', count: activeClients.filter((client) => client.category === 'cafes').length, icon: Coffee, color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20' },
   ];
-  const recentClients = [...clients].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3);
 
   return (
     <div className="admin-dashboard space-y-7">
@@ -111,23 +112,28 @@ export default function Dashboard() {
            </div>
            
            <div className="mt-8 pt-6 border-t border-white/[0.05]">
-              <h3 className="text-[10px] font-bold text-slate-500 mb-4 uppercase tracking-widest">Recent Activity</h3>
-              <div className="space-y-3">
-                  {recentClients.map((client) => (
-                    <div key={client.id} className="flex items-center justify-between p-4 bg-white/[0.02] hover:bg-white/[0.05] rounded-2xl transition-all border border-transparent hover:border-white/[0.1]">
-                       <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 text-white flex items-center justify-center font-black text-xl border border-white/5 shadow-inner">
-                          {client.businessName.charAt(0)}
-                          </div>
-                          <div>
-                          <p className="font-bold text-white text-lg">{client.businessName}</p>
-                          <p className="text-xs text-slate-400 font-medium">Added {new Date(client.createdAt).toLocaleDateString('en-IN')}</p>
-                          </div>
+              <h3 className="text-[10px] font-bold text-slate-500 mb-4 uppercase tracking-widest flex items-center gap-2"><Clock size={14}/> Admin Operations Timeline</h3>
+              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {timeline.map((event, idx) => (
+                    <div key={`${event.entity_id}-${idx}`} className="flex gap-4 relative">
+                       <div className="flex flex-col items-center">
+                         <div className={`w-2.5 h-2.5 rounded-full mt-1.5 ${
+                           event.type === 'CLIENT_JOINED' ? 'bg-blue-400' :
+                           event.type === 'ORDER_CREATED' ? 'bg-orange-400' : 'bg-emerald-400'
+                         }`} />
+                         {idx !== timeline.length - 1 && <div className="w-px h-full bg-white/10 mt-2 flex-1" />}
                        </div>
-                      <Link to={`/admin/clients/${client.id}/business`} className="text-sm font-bold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-4 py-2 rounded-xl hover:bg-orange-500 hover:text-white transition-colors">Manage</Link>
+                       <div className="pb-4 flex-1">
+                          <p className="font-bold text-white text-sm">
+                            {event.type === 'CLIENT_JOINED' ? 'New Client Onboarded' :
+                             event.type === 'ORDER_CREATED' ? 'Subscription Order Placed' : 'Payment Processed'}
+                          </p>
+                          <p className="text-xs text-slate-400 font-medium mt-1">{event.details}</p>
+                          <p className="text-[10px] text-slate-500 mt-2 font-medium">{new Date(event.time).toLocaleString('en-IN')}</p>
+                       </div>
                     </div>
                  ))}
-                  {recentClients.length === 0 && <p className="text-sm text-slate-400">No clients yet.</p>}
+                  {timeline.length === 0 && <p className="text-sm text-slate-400">No operations recorded yet.</p>}
               </div>
            </div>
         </motion.div>

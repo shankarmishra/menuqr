@@ -1,28 +1,41 @@
 import { useEffect, useState } from 'react';
-import { getMockOrders, updateMockOrderStatus, type CustomerOrder } from '../admin/clientStore';
+import { getLiveOrders, updateOrderStatus, type CustomerOrder } from '../admin/clientStore';
 import { Clock, Check, ChefHat, CheckCircle2 } from 'lucide-react';
 
 export default function Orders() {
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchOrders = async () => {
-      const data = await getMockOrders();
-      // Sort by newest first
-      data.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-      setOrders(data);
+      try {
+        const data = await getLiveOrders();
+        if (!isMounted) return;
+        // Sort by newest first
+        data.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+        setOrders(data);
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     fetchOrders();
-    const interval = setInterval(fetchOrders, 3000);
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchOrders, 5000); // Polling every 5s
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const handleStatusUpdate = async (id: string, newStatus: CustomerOrder['status']) => {
-    await updateMockOrderStatus(id, newStatus);
-    const data = await getMockOrders();
-    data.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-    setOrders(data);
+    try {
+      await updateOrderStatus(id, newStatus);
+      const data = await getLiveOrders();
+      data.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+      setOrders(data);
+    } catch (err) {
+      console.error('Failed to update status', err);
+    }
   };
 
   const newOrders = orders.filter(o => o.status === 'NEW');

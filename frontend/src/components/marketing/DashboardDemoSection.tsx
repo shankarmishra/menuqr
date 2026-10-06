@@ -75,7 +75,7 @@ export default function DashboardDemoSection() {
   ];
 
   return (
-    <section className="py-24 md:py-32 px-6 bg-menusqr-primary overflow-hidden relative">
+    <section className="py-16 md:py-20 px-6 bg-menusqr-primary overflow-hidden relative">
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-menusqr-emerald/10 to-transparent"></div>
       
       <div className="max-w-[1200px] mx-auto text-center mb-16 relative z-10">

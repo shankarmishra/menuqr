@@ -88,18 +88,18 @@ export default function HeroScene() {
         initial={shouldReduceMotion ? false : { y: '110%', opacity: 0 }}
         animate={
           stage === 'hidden'
-            ? { y: '110%', opacity: 0, x: '25%' }
+            ? { y: '110%', opacity: 0, x: '25%', rotate: 0 }
             : stage === 'entering'
-            ? { y: '10%', opacity: 1, x: '25%' }
+            ? { y: '10%', opacity: 1, x: '25%', rotate: 0 }
             : stage === 'aiming'
-            ? { y: '0%', opacity: 1, x: '15%' }
+            ? { y: '0%', opacity: 1, x: '-15%', rotate: -3 }
             : stage === 'scanning'
-            ? { y: '0%', opacity: 1, x: '15%' }
+            ? { y: '0%', opacity: 1, x: '-15%', rotate: -3 }
             : stage === 'detected'
-            ? { y: '0%', opacity: 1, x: '15%' }
+            ? { y: '0%', opacity: 1, x: '-15%', rotate: -2 }
             : stage === 'processing'
-            ? { y: '0%', opacity: 1, x: '15%' }
-            : { y: '0%', opacity: 1, x: '35%' }
+            ? { y: '0%', opacity: 1, x: '-10%', rotate: -1 }
+            : { y: '0%', opacity: 1, x: '28%', rotate: 0 }
         }
         transition={{ duration: shouldReduceMotion ? 0 : 1.1, type: 'spring', stiffness: 55, damping: 16 }}
         className="absolute bottom-[5%] sm:bottom-[8%] left-1/2 -translate-x-1/2 z-20 origin-bottom"
@@ -143,13 +143,18 @@ export default function HeroScene() {
                         borderColor: stage === 'detected' ? '#34B56A' : 'rgba(255,255,255,0.4)',
                         scale: stage === 'detected' ? 1.04 : 1,
                       }}
-                      className="relative w-44 h-44 border-2 border-white/40 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-white/5 transition-colors"
+                      className="relative w-44 h-44 border-2 border-white/40 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-white/10 transition-colors overflow-hidden"
                     >
                       {/* Viewfinder Corners */}
-                      <div className="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-white rounded-tl-xl" />
-                      <div className="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-white rounded-tr-xl" />
-                      <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-white rounded-bl-xl" />
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-4 border-r-4 border-white rounded-br-xl" />
+                      <div className="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-white rounded-tl-xl z-20 pointer-events-none" />
+                      <div className="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-white rounded-tr-xl z-20 pointer-events-none" />
+                      <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-white rounded-bl-xl z-20 pointer-events-none" />
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-4 border-r-4 border-white rounded-br-xl z-20 pointer-events-none" />
+
+                      {/* Live Camera View of Physical QR Stand being scanned */}
+                      <div className="absolute inset-0 flex items-center justify-center scale-[0.48] translate-y-3 pointer-events-none opacity-90">
+                        <PhysicalQRStand tableNumber="TABLE 12" />
+                      </div>
 
                       {/* Laser Beam Animation */}
                       {stage === 'scanning' && (
@@ -157,7 +162,7 @@ export default function HeroScene() {
                           initial={{ top: '10%' }}
                           animate={{ top: '85%' }}
                           transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
-                          className="absolute left-0 right-0 h-0.5 bg-[#FFC928] shadow-[0_0_12px_2px_rgba(255,201,40,0.8)] z-20"
+                          className="absolute left-0 right-0 h-0.5 bg-[#FFC928] shadow-[0_0_12px_2px_rgba(255,201,40,0.8)] z-30 pointer-events-none"
                         />
                       )}
 
@@ -166,7 +171,7 @@ export default function HeroScene() {
                         <motion.div
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className="bg-[#34B56A] text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1.5"
+                          className="relative z-40 bg-[#34B56A] text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1.5"
                         >
                           {stage === 'processing' ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                           <span>{stage === 'processing' ? 'Opening...' : 'QR Detected'}</span>

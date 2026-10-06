@@ -95,6 +95,21 @@ export default function OnboardingWizard() {
     }
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleComplete = async () => {
+    setIsSubmitting(true);
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/app/onboarding/complete`, {
+        method: 'POST',
+      });
+      navigate('/app/dashboard', { replace: true });
+    } catch (err) {
+      console.error(err);
+      navigate('/app/dashboard', { replace: true });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#151C19] text-white font-sans flex flex-col justify-between selection:bg-[#E8783C] selection:text-white">
       <header className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-[#1D2723]/80 backdrop-blur-md">
@@ -313,8 +328,8 @@ export default function OnboardingWizard() {
                 Continue <ArrowRight size={14} />
               </button>
             ) : (
-              <button onClick={() => navigate('/app/dashboard')} className="px-7 py-3 rounded-xl bg-[#34B56A] text-xs font-bold text-white hover:bg-emerald-600 flex items-center gap-2 shadow-lg">
-                Go to Dashboard <Check size={15} />
+              <button onClick={handleComplete} disabled={isSubmitting} className="px-7 py-3 rounded-xl bg-[#34B56A] text-xs font-bold text-white hover:bg-emerald-600 flex items-center gap-2 shadow-lg disabled:opacity-70">
+                {isSubmitting ? 'Saving...' : 'Go to Dashboard'} <Check size={15} />
               </button>
             )}
           </div>

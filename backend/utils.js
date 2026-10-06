@@ -29,3 +29,11 @@ export async function readJson(request) {
     throw apiError(400, 'Request body must contain valid JSON.');
   }
 }
+
+export function getClientIp(request) {
+  const forwarded = request.headers['x-forwarded-for'];
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return request.socket.remoteAddress || 'unknown';
+}

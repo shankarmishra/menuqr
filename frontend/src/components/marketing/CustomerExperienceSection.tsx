@@ -44,7 +44,7 @@ export default function CustomerExperienceSection() {
   const searchQueryText = animationStep === 3 ? 'Pa' : animationStep >= 4 ? 'Paneer' : '';
 
   return (
-    <section className="py-24 md:py-36 px-6 bg-menusqr-primary relative overflow-hidden">
+    <section className="py-24 md:py-24 px-6 bg-menusqr-primary relative overflow-hidden">
       {/* Background Soft Textures */}
       <div className="absolute inset-0 bg-gradient-to-br from-menusqr-secondary/50 to-transparent" />
       <div className="texture-paper-grain" />

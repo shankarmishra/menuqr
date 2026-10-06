@@ -82,7 +82,7 @@ export function validateClient(input, id, createdAt) {
 export default async function adminRoutes(request, response, url) {
   if (!url.pathname.startsWith('/api/admin/')) return false;
   
-  enforceSuperAdmin(request);
+  await enforceSuperAdmin(request);
 
   if (request.method === 'GET' && url.pathname === '/api/admin/clients') {
     const res = await pool.query(`
@@ -136,6 +136,23 @@ export default async function adminRoutes(request, response, url) {
   if (request.method === 'DELETE' && url.pathname === '/api/admin/notifications') {
     const result = await pool.query('DELETE FROM notifications');
     sendJson(response, 200, { deletedCount: result.rowCount });
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/admin/timeline') {
+    const res = await pool.query(`
+      SELECT 'CLIENT_JOINED' as type, id as entity_id, business_name as details, created_at as time 
+      FROM clients
+      UNION ALL
+      SELECT 'ORDER_CREATED' as type, id as entity_id, 'Plan: ' || plan_id || ' - Amt: ' || amount as details, created_at as time 
+      FROM orders
+      UNION ALL
+      SELECT 'PAYMENT_RECEIVED' as type, id as entity_id, 'Gateway: ' || gateway || ' - Status: ' || status as details, created_at as time 
+      FROM payments
+      ORDER BY time DESC
+      LIMIT 50
+    `);
+    sendJson(response, 200, res.rows);
     return true;
   }
 

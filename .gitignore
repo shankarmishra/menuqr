@@ -37,3 +37,14 @@ backend/data/
 # Scratch/System
 scratch/
 .system_generated/
+# Ignore reports and temporary scratch files
+*.md
+!README.md
+backend/test_*.js
+backend/test_*.cjs
+frontend/homepage_dom.html
+frontend/techtext*.json
+frontend/test-results/
+scratch_screenshot/
+temp.txt
+

@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 import SiteHeader from '../../components/marketing/SiteHeader';
 import { Check } from 'lucide-react';
+import { SEO } from '../../seo/SEO';
 
 export default function PricingPage() {
   const plans = [
     {
       id: 'basic',
       name: 'BASIC',
-      price: '₹499',
+      price: '₹999',
       description: 'Perfect for small cafes and food stalls starting their digital journey.',
       features: [
         'Permanent Table QR Code',
@@ -21,7 +22,7 @@ export default function PricingPage() {
     {
       id: 'intermediate',
       name: 'INTERMEDIATE',
-      price: '₹999',
+      price: '₹1499',
       description: 'Ideal for growing restaurants needing more flexibility and style.',
       features: [
         'Permanent Table QR Code',
@@ -36,14 +37,14 @@ export default function PricingPage() {
     {
       id: 'premium',
       name: 'PREMIUM',
-      price: '₹1499',
+      price: '₹2999',
       description: 'Everything you need to run a world-class digital menu for your restaurant.',
       features: [
         'Permanent Table QR Code',
         'Unlimited Menu Edits & Categories',
         'All Premium Design Templates',
         'Dietary Tags & Image Support',
-        'Instant Customer Scan (No App)',
+        'Premium Ordering System',
         'Priority Email Support',
       ],
       highlight: true,
@@ -52,6 +53,11 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
+      <SEO 
+        title="MenusQR Pricing | Digital Menu Plans for Restaurants"
+        description="View MenusQR pricing plans. Basic ₹999/year, Intermediate ₹1499/year, and Premium ₹2999/year. Create your digital restaurant QR menu today."
+        canonicalUrl="/plans"
+      />
       <SiteHeader />
       <div className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto">
         <div className="text-center mb-16">

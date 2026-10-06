@@ -139,7 +139,7 @@ const EnvironmentBlock = ({ env }: { env: typeof ENVIRONMENTS[0] }) => {
 
 export default function BuiltForTableSection() {
   return (
-    <section className="py-24 md:py-36 px-6 bg-[#FAFAF7] relative overflow-hidden">
+    <section className="py-24 md:py-24 px-6 bg-[#FAFAF7] relative overflow-hidden">
       <div className="max-w-[1240px] mx-auto text-center mb-16 md:mb-32">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

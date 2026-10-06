@@ -11,25 +11,14 @@ const footerLinks = [
       { label: "Features", href: "#features" },
       { label: "Templates", href: "#templates" },
       { label: "Pricing", href: "#pricing" },
-      { label: "Changelog", href: "#" },
     ]
   },
   {
-    title: "Resources",
+    title: "Support",
     links: [
       { label: "Help Center", href: "#" },
-      { label: "API Docs", href: "#" },
-      { label: "Best Practices", href: "#" },
-      { label: "Blog", href: "#" },
-    ]
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About Us", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Contact", href: "#contact" },
-      { label: "Partners", href: "#" },
+      { label: "Contact Us", href: "#" },
+      { label: "Restaurant Guide", href: "#" },
     ]
   },
   {
@@ -37,7 +26,6 @@ const footerLinks = [
     links: [
       { label: "Privacy Policy", href: "#" },
       { label: "Terms of Service", href: "#" },
-      { label: "Cookie Policy", href: "#" },
     ]
   }
 ];

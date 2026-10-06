@@ -1,0 +1,16 @@
+{
+  "name": "MenusQR",
+  "short_name": "MenusQR",
+  "description": "Digital QR Menus for Restaurants & Cafés",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#151c19",
+  "theme_color": "#153b32",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

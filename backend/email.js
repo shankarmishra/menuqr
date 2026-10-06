@@ -251,7 +251,7 @@ export async function sendClientWelcomeEmail(client) {
 
     <!-- Call to Action Button -->
     <div style="margin: 28px 0; text-align: left;">
-      <a href="${loginUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 6px; text-decoration: none;">Sign In to Client Portal &rarr;</a>
+      <a href="${loginUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 6px; text-decoration: none;">${client.password ? 'Sign In to Client Portal &rarr;' : 'Activate Account &rarr;'}</a>
     </div>
 
     <!-- Subscription Summary Box -->
@@ -271,6 +271,76 @@ export async function sendClientWelcomeEmail(client) {
     html: buildCorporateEmailHtml({ title: `Account Activated - ${client.businessName}`, bodyHtml }),
     text: `Welcome to MENUSQR. Restaurant: ${client.businessName}. Login URL: ${loginUrl}. Email: ${recipient}. Password: ${client.password || 'Set during signup'}.`
   }, `welcome email for ${client.businessName}`);
+}
+
+export async function sendActivationEmail({ email, ownerName, businessName, plan, activationToken }) {
+  if (!email) return;
+
+  const name = ownerName?.trim() || 'Partner';
+  const baseUrl = process.env.APP_URL || 'https://menusqr.in';
+  const activationUrl = activationToken
+    ? `${baseUrl}/#/auth/activate?token=${encodeURIComponent(activationToken)}`
+    : `${baseUrl}/#/admin/login`;
+
+  const bodyHtml = `
+    <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #111827;">Activate Your MENUSQR Account</h1>
+
+    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+      Hello <strong>${name}</strong>,
+    </p>
+
+    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+      Your MENUSQR account for <strong>${businessName || 'your restaurant'}</strong> is ready. Complete the final activation step below to set up your secure login and start managing your digital menu.
+    </p>
+
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 24px 0; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;">
+      <tr>
+        <td style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
+          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td style="font-size: 13px; font-weight: 600; color: #6b7280; width: 120px;">Account:</td>
+              <td style="font-size: 14px; font-weight: 700; color: #111827;">${businessName || 'MENUSQR Account'}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
+          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td style="font-size: 13px; font-weight: 600; color: #6b7280; width: 120px;">Plan:</td>
+              <td style="font-size: 14px; font-weight: 700; color: #111827;">${plan || 'Premium'}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 16px;">
+          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td style="font-size: 13px; font-weight: 600; color: #6b7280; width: 120px;">Email:</td>
+              <td style="font-size: 14px; font-weight: 700; font-family: monospace; color: #111827;">${email}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <div style="margin: 28px 0; text-align: left;">
+      <a href="${activationUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 6px; text-decoration: none;">Activate Account &rarr;</a>
+    </div>
+
+    <p style="margin: 0; font-size: 13px; color: #6b7280; line-height: 1.5;">
+      This activation link is valid for a limited time. If you did not request this account, you can safely ignore this email.
+    </p>
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: `Activate Your MENUSQR Account - ${businessName || 'Restaurant Setup'}`,
+    html: buildCorporateEmailHtml({ title: 'Account Activation', bodyHtml }),
+    text: `Activate your MENUSQR account: ${activationUrl}`
+  }, `activation email for ${email}`);
 }
 
 export async function sendLoginOtpEmail({ email, otp, ownerName }) {

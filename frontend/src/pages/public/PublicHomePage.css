@@ -30,8 +30,12 @@ main > section::before {
   z-index: 0;
 }
 
-/* Keep actual section content above the background pattern */
-main > section > * {
+/* Keep ordinary content above the pattern without overriding absolute or sticky positioning */
+main > section > :not(.absolute):not([class*='sticky']):not([class*='fixed']) {
   position: relative;
+  z-index: 10;
+}
+
+main > section > .sticky {
   z-index: 10;
 }

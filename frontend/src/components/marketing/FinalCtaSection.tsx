@@ -18,7 +18,7 @@ const mockItems = [
 
 export default function FinalCtaSection() {
   return (
-    <section className="relative overflow-hidden bg-[#151C19] text-white py-24 sm:py-32 px-6">
+    <section className="relative overflow-hidden bg-[#151C19] text-white py-24 sm:py-24 px-6">
       {/* Background ambient light */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[120px]" />

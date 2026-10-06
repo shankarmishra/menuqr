@@ -1,8 +1,9 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, CheckCircle, Store, Mail, Lock, User, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
+import { SEO } from '../../seo/SEO';
 
 export default function SignupPage() {
   const [step, setStep] = useState(1);
@@ -86,6 +87,7 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-[#151c19] flex items-center justify-center p-4">
+      <SEO title="Sign Up | MenusQR" description="Sign up for MenusQR" index={false} />
       <div className="absolute inset-0 opacity-[0.03] mix-blend-multiply pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] z-0" />
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#E8783C]/5 rounded-full blur-[140px] pointer-events-none z-0" />
 
@@ -188,7 +190,7 @@ export default function SignupPage() {
             >
               <div className="text-center mb-6">
                 <h1 className="text-2xl font-bold text-white">Payment Details</h1>
-                <p className="text-[#8a9aac] text-sm mt-2">Premium Plan - ₹4,999/year</p>
+                <p className="text-[#8a9aac] text-sm mt-2">Premium Plan - ₹2,999/year</p>
               </div>
 
               {error && <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-xl">{error}</div>}
@@ -235,7 +237,7 @@ export default function SignupPage() {
                   disabled={loading}
                   className="flex-[2] py-3.5 bg-gradient-to-r from-[#D4AF37] to-[#F3C35C] text-[#140D05] font-bold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  {loading ? 'Processing...' : 'Pay ₹4,999 & Subscribe'}
+                  {loading ? 'Processing...' : 'Pay ₹2,999 & Subscribe'}
                 </button>
               </div>
             </motion.form>

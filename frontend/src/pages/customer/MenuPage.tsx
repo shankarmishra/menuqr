@@ -57,7 +57,7 @@ function App() {
     }
     setOrderStatus('submitting');
     try {
-      await submitCustomerOrder({
+      await submitCustomerOrder(slug!, {
         tableNumber,
         items: cart,
         total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0)

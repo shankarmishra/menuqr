@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /purchase/
+Disallow: /login
+Disallow: /onboarding
+Disallow: /test-supabase
+
+Sitemap: https://menusqr.in/sitemap.xml

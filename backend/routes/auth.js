@@ -1,9 +1,13 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { pool } from '../db.js';
 import { generateAuthCookie, clearAuthCookie, getAuthenticatedUser, verifyPassword } from '../auth.js';
-import { apiError, sendJson, readJson } from '../utils.js';
+import { apiError, sendJson, readJson, getClientIp } from '../utils.js';
 
-const adminPassword = process.env.ADMIN_PASSWORD || 'MenusQR@2026!';
+const adminPassword = process.env.ADMIN_PASSWORD;
+if (!adminPassword) {
+  console.error("FATAL: ADMIN_PASSWORD environment variable is missing.");
+  process.exit(1);
+}
 const adminPasswordHash = createHash('sha256').update(adminPassword).digest();
 const loginLockDurationMs = 60 * 1000;
 const loginAttempts = new Map();
@@ -26,7 +30,7 @@ const passwordResetStore = new Map();
 
 export default async function authRoutes(request, response, url) {
   if (request.method === 'GET' && url.pathname === '/api/auth/session') {
-    const user = getAuthenticatedUser(request);
+    const user = await getAuthenticatedUser(request);
     sendJson(response, 200, {
       authenticated: !!user,
       user: user || null,
@@ -130,11 +134,13 @@ export default async function authRoutes(request, response, url) {
     }
 
     // Fallback/Simulated test verification
-    if (pendingTransactions.has(orderId) || orderId) {
-      pendingTransactions.delete(orderId);
-      paidTransactions.add(orderId);
-      sendJson(response, 200, { success: true, orderId, status: 'PAID' });
-      return true;
+    if (!appId || !secretKey || isSandbox) {
+      if (pendingTransactions.has(orderId)) {
+        pendingTransactions.delete(orderId);
+        paidTransactions.add(orderId);
+        sendJson(response, 200, { success: true, orderId, status: 'PAID' });
+        return true;
+      }
     }
 
     throw apiError(400, 'Payment verification failed.');
@@ -237,7 +243,7 @@ export default async function authRoutes(request, response, url) {
   }
 
   if (request.method === 'POST' && url.pathname === '/api/auth/login') {
-    const address = request.socket.remoteAddress ?? 'unknown';
+    const address = getClientIp(request);
     const now = Date.now();
     const attempt = loginAttempts.get(address);
     if (attempt?.lockedUntil > now) throw apiError(429, 'Too many login attempts. Try again in 1 minute.');
@@ -255,8 +261,13 @@ export default async function authRoutes(request, response, url) {
         userEmail = dbUser.email;
       }
     } else {
-      if (hasCorrectAdminPassword(input?.password)) {
+      const { verifyAdminPassword, checkAdminLoginRateLimit, recordAdminLoginFailure, createAdminOtpSession } = await import('../adminAuth.js');
+      checkAdminLoginRateLimit(address);
+      if (verifyAdminPassword(input?.password)) {
         user = { id: 'super-admin', role: 'SUPER_ADMIN' };
+        userEmail = 'admin@menusqr.com'; // Dummy email for MFA session
+      } else {
+        recordAdminLoginFailure(address);
       }
     }
 
@@ -269,12 +280,26 @@ export default async function authRoutes(request, response, url) {
     }
     
     loginAttempts.delete(address);
-
-    // If Super Admin, log in directly
+    
     if (user.role === 'SUPER_ADMIN') {
-      const cookie = generateAuthCookie(user);
-      response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
-      response.end(JSON.stringify({ authenticated: true, role: user.role }));
+      const { createAdminOtpSession } = await import('../adminAuth.js');
+      const { tempToken, otp, expiresAt } = createAdminOtpSession(userEmail);
+      console.log('Admin OTP generated:', otp); // Only for debugging, typically sent via email
+      // We assume an admin OTP might be sent via email or generated via authenticator. 
+      // The current adminAuth.js expects it to be verified. Let's send a fake email here.
+      void sendLoginOtpEmail({
+        email: userEmail,
+        otp,
+        ownerName: 'Admin',
+      }).catch(err => console.error('[OTP email error]', err));
+
+      sendJson(response, 200, {
+        requireOtp: true,
+        isAdmin: true,
+        tempToken,
+        email: userEmail,
+        message: 'A 6-digit verification code has been sent to the admin email.'
+      });
       return true;
     }
 
@@ -303,31 +328,51 @@ export default async function authRoutes(request, response, url) {
 
   if (request.method === 'POST' && url.pathname === '/api/auth/verify-login-otp') {
     const input = await readJson(request);
-    const { tempToken, otp } = input || {};
+    const { tempToken, otp, isAdmin } = input || {};
 
     if (!tempToken || !otp) {
       throw apiError(400, 'Temporary session token and OTP are required.');
     }
 
-    const session = loginOtpStore.get(tempToken);
-    if (!session) {
-      throw apiError(400, 'Invalid or expired 2FA session. Please log in again.');
-    }
+    let sessionUser;
 
-    if (Date.now() > session.expiresAt) {
+    if (isAdmin) {
+      const { verifyAdminOtp, auditLog } = await import('../adminAuth.js');
+      const address = getClientIp(request);
+      try {
+        const email = verifyAdminOtp(tempToken, otp, address);
+        sessionUser = { id: 'super-admin', role: 'SUPER_ADMIN', email };
+        auditLog('ADMIN_LOGIN_SUCCESS', address, { method: 'OTP' });
+      } catch (err) {
+        throw apiError(err.status || 401, err.message);
+      }
+    } else {
+      const session = loginOtpStore.get(tempToken);
+      if (!session) {
+        throw apiError(400, 'Invalid or expired 2FA session. Please log in again.');
+      }
+
+      if (Date.now() > session.expiresAt) {
+        loginOtpStore.delete(tempToken);
+        throw apiError(400, 'OTP code has expired. Please request a new code.');
+      }
+
+      if (session.otp !== String(otp).trim()) {
+        session.attemptCount = (session.attemptCount || 0) + 1;
+        if (session.attemptCount >= 5) {
+          loginOtpStore.delete(tempToken);
+          throw apiError(429, 'Too many failed attempts. Please log in again.');
+        }
+        throw apiError(401, 'Incorrect 2-step verification OTP code.');
+      }
+
       loginOtpStore.delete(tempToken);
-      throw apiError(400, 'OTP code has expired. Please request a new code.');
+      sessionUser = session.user;
     }
 
-    if (session.otp !== String(otp).trim()) {
-      throw apiError(401, 'Incorrect 2-step verification OTP code.');
-    }
-
-    loginOtpStore.delete(tempToken);
-
-    const cookie = generateAuthCookie(session.user);
+    const cookie = generateAuthCookie(sessionUser);
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
-    response.end(JSON.stringify({ authenticated: true, role: session.user.role, user: session.user }));
+    response.end(JSON.stringify({ authenticated: true, role: sessionUser.role, user: sessionUser, onboardingState: sessionUser.onboarding_state }));
     return true;
   }
 

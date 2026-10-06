@@ -165,6 +165,17 @@ export function getNotifications(): Promise<AdminNotification[]> {
   return request<AdminNotification[]>('/admin/notifications');
 }
 
+export interface TimelineEvent {
+  type: 'CLIENT_JOINED' | 'ORDER_CREATED' | 'PAYMENT_RECEIVED';
+  entity_id: string;
+  details: string;
+  time: string;
+}
+
+export function getAdminTimeline(): Promise<TimelineEvent[]> {
+  return request<TimelineEvent[]>('/admin/timeline');
+}
+
 export function clearNotifications(): Promise<{ deletedCount: number }> {
   return request<{ deletedCount: number }>('/admin/notifications', { method: 'DELETE' });
 }
@@ -187,6 +198,7 @@ export interface LoginResponse {
   tempToken?: string;
   email?: string;
   message?: string;
+  onboardingState?: string;
 }
 
 export async function loginAdmin(password: string, email?: string): Promise<LoginResponse> {
@@ -238,16 +250,78 @@ export async function getClient(id: string): Promise<ClientRecord | undefined> {
   }
 }
 
+// Raw shape returned by GET /api/public/menus/:slug
+interface RawPublicMenuApiResponse {
+  isExpired?: boolean;
+  restaurant: {
+    name: string;
+    tagline?: string;
+    category?: string;
+    phone?: string;
+    address?: string;
+  };
+  plan: string;
+  templateId?: string;
+  categories: Array<{ id: string; name: string; order: number }>;
+  items: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    price: number;
+    category: string;
+    dietType: 'veg' | 'non-veg' | 'vegan';
+    available: boolean;
+    image?: string;
+  }>;
+}
+
 export async function getClientByMenuSlug(slug: string): Promise<PublicMenuRecord | undefined> {
+  let raw: RawPublicMenuApiResponse;
   try {
-    return await request<PublicMenuRecord>(`/public/menus/${encodeURIComponent(slug)}`);
+    raw = await request<RawPublicMenuApiResponse>(`/public/menus/${encodeURIComponent(slug)}`);
   } catch (error) {
     if (error instanceof Error && error.message === 'SUBSCRIPTION_EXPIRED') {
       throw error;
     }
-    if (error instanceof Error && error.message === 'This menu is unavailable.') return undefined;
+    if (error instanceof Error && (
+      error.message === 'This menu is unavailable.' ||
+      error.message.includes('404')
+    )) return undefined;
     throw error;
   }
+
+  // Map API shape → PublicMenuRecord that MenuPage.tsx consumes
+  const menuItems: MenuItemRecord[] = raw.items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description ?? '',
+    price: String(item.price),
+    pricingType: 'single' as const,
+    halfPrice: '',
+    fullPrice: '',
+    regPrice: '',
+    medPrice: '',
+    largePrice: '',
+    category: item.category,
+    dietType: (item.dietType ?? 'veg') as MenuDietType,
+    image: item.image ?? '',
+    available: item.available,
+  }));
+
+  return {
+    businessName: raw.restaurant.name,
+    category: (raw.restaurant.category ?? 'restaurants') as ClientCategory,
+    phone: raw.restaurant.phone ?? '',
+    address: raw.restaurant.address ?? '',
+    city: '',
+    state: '',
+    website: '',
+    openingHours: '',
+    services: [],
+    heroImage: undefined,
+    menuItems,
+    plan: raw.plan,
+  };
 }
 
 export function createClient(client: Omit<ClientRecord, 'id' | 'createdAt'>): Promise<ClientRecord> {
@@ -306,27 +380,20 @@ export interface CustomerOrder {
   time: string;
 }
 
-export async function submitCustomerOrder(order: Omit<CustomerOrder, 'id' | 'status' | 'time'>): Promise<CustomerOrder> {
-  const newOrder: CustomerOrder = {
-    ...order,
-    id: Math.random().toString(36).substring(2, 9).toUpperCase(),
-    status: 'NEW',
-    time: new Date().toISOString()
-  };
-  
-  const orders = JSON.parse(localStorage.getItem('menusqr.mockOrders') || '[]');
-  orders.push(newOrder);
-  localStorage.setItem('menusqr.mockOrders', JSON.stringify(orders));
-  
-  return newOrder;
+export async function submitCustomerOrder(slug: string, order: Omit<CustomerOrder, 'id' | 'status' | 'time'>): Promise<CustomerOrder> {
+  return request<CustomerOrder>(`/public/menus/${encodeURIComponent(slug)}/orders`, {
+    method: 'POST',
+    body: JSON.stringify(order)
+  });
 }
 
-export async function getMockOrders(): Promise<CustomerOrder[]> {
-  return JSON.parse(localStorage.getItem('menusqr.mockOrders') || '[]');
+export async function getLiveOrders(): Promise<CustomerOrder[]> {
+  return request<CustomerOrder[]>('/app/orders');
 }
 
-export async function updateMockOrderStatus(id: string, status: CustomerOrder['status']): Promise<void> {
-  const orders = JSON.parse(localStorage.getItem('menusqr.mockOrders') || '[]');
-  const updatedOrders = orders.map((o: CustomerOrder) => o.id === id ? { ...o, status } : o);
-  localStorage.setItem('menusqr.mockOrders', JSON.stringify(updatedOrders));
+export async function updateOrderStatus(id: string, status: CustomerOrder['status']): Promise<CustomerOrder> {
+  return request<CustomerOrder>(`/app/orders/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status })
+  });
 }

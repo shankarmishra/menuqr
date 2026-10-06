@@ -92,7 +92,7 @@ export default function HowItWorksSection() {
   return (
     <section 
       ref={containerRef}
-      className="py-24 md:py-36 px-6 bg-menusqr-primary relative overflow-hidden" 
+      className="py-24 md:py-24 px-6 bg-menusqr-primary relative overflow-hidden" 
       id="how-it-works"
     >
       <div className="absolute inset-0 texture-paper-grain opacity-20 pointer-events-none"></div>
