@@ -3,7 +3,7 @@ import { motion, useInView, AnimatePresence, useReducedMotion, useScroll, useTra
 import PhysicalQRStand from './PhysicalQRStand';
 import PremiumIPhoneMockup from './PremiumIPhoneMockup';
 import { Signal, Wifi, Battery, CheckCircle2, Loader2 } from 'lucide-react';
-import heroRestaurantPoster from '../../assets/hero.png';
+const heroRestaurantPoster = '/marketing/hero/hero-restaurant-poster.webp';
 
 type HeroStage = 'hidden' | 'entering' | 'aiming' | 'scanning' | 'detected' | 'processing' | 'menu-open';
 
