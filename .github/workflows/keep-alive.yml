@@ -12,4 +12,4 @@ jobs:
     steps:
       - name: Ping Backend API Health
         # Replace the URL below with your actual Render backend URL once deployed.
-        run: curl -s https://backend-menuqr.onrender.com/api/health
+        run: curl -s https://menuqr-backend-mohg.onrender.com
