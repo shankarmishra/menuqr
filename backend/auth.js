@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { parseCookie as parse, stringifySetCookie as serialize } from 'cookie';
 import { randomBytes, pbkdf2Sync } from 'node:crypto';
+import { pool, queryPortable } from './db.js';
 
 // Use a secure JWT secret from env or generate a temporary one (not ideal for production restarts, but safe for dev)
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -56,7 +57,7 @@ export function clearAuthCookie() {
   });
 }
 
-import { pool, queryPortable } from './db.js';
+
 
 // Helpers for native Node HTTP requests
 import { verifyAdminSession } from './adminAuth.js';
