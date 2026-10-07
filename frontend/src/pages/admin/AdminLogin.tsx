@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { Eye, EyeOff, KeyRound, Utensils, Mail, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SEO } from '../../seo/SEO';
+import { isAdminHostname } from '../../utils/hostRouting';
 import { loginAdmin, verifyLoginOtp, resendLoginOtp, requestForgotPassword, resetPassword, requestSuperAdminOtp, verifySuperAdminOtp } from './clientStore';
 
 interface LoginLocationState {
@@ -14,7 +15,7 @@ export default function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
   const returnTo = (location.state as LoginLocationState | null)?.from;
-  const isAdminPage = location.pathname === '/admin/login';
+  const isAdminPage = isAdminHostname(window.location.hostname, import.meta.env.VITE_ADMIN_HOSTNAME);
 
   // Login State
   const [mode, setMode] = useState<AuthMode>('LOGIN');

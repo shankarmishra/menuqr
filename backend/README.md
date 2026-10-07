@@ -31,6 +31,9 @@ npm run dev
 Vite forwards `/api` requests to `http://127.0.0.1:3001`. The backend binds to loopback and is intended for local development.
 Admin access is passwordless and uses email OTP. Only active records in `admin_users` can request a code; `schema.sql` seeds the three approved addresses. There is no public admin signup or admin password. Admin OTPs are short-lived, hashed in PostgreSQL, rate-limited, and exchanged for an eight-hour HttpOnly session cookie. Set a stable, private `ADMIN_OTP_PEPPER` (or use `JWT_SECRET` as the fallback) consistently across backend instances.
 
+Production serves the admin portal on `https://admin.menusqr.in` and the client/public app on `https://menusqr.in`. Configure `VITE_ADMIN_HOSTNAME=admin.menusqr.in` and `VITE_API_BASE_URL=https://api.menusqr.in`; point `FRONTEND_ORIGINS` at the two frontend origins. The API custom hostname keeps the Secure, HttpOnly, host-only session cookie same-site while CORS remains exact-origin and credentialed.
+Set `COOKIE_SECURE=true` in the production backend environment (or `NODE_ENV=production`) so the admin session cookie always has the `Secure` attribute over HTTPS.
+
 ## Routes
 
 - `GET /api/health` reports API status and saved-client count.

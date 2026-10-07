@@ -39,7 +39,10 @@ This document outlines the step-by-step procedure for deploying the **MENUQR** p
 ```env
 API_PORT=3001
 PORT=3001
-ADMIN_PASSWORD=YourSuperSecureAdminPassword
+JWT_SECRET=replace-with-a-long-random-secret
+ADMIN_OTP_PEPPER=replace-with-a-separate-long-random-secret
+FRONTEND_ORIGINS=https://menusqr.in,https://admin.menusqr.in
+COOKIE_SECURE=true
 
 # Hostinger Transactional SMTP Mailer
 SMTP_HOST=smtp.hostinger.com
@@ -63,14 +66,9 @@ CASHFREE_ENV=TEST
 ### Frontend Environment Variables (`frontend/.env`)
 
 ```env
-# Firebase Client SDK Configuration
-VITE_FIREBASE_API_KEY=AIzaSyAN5jHuF9OXUEB_oQj_Q4wb3lo_XBQGxxs
-VITE_FIREBASE_AUTH_DOMAIN=menusqr-2f532.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=menusqr-2f532
-VITE_FIREBASE_STORAGE_BUCKET=menusqr-2f532.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=817554036783
-VITE_FIREBASE_APP_ID=1:817554036783:web:ee3dfb712c2012464a0eda
-VITE_FIREBASE_MEASUREMENT_ID=G-27Y6TC9XTE
+VITE_API_BASE_URL=https://<production-api-origin>
+VITE_PUBLIC_SITE_URL=https://menusqr.in
+VITE_ADMIN_HOSTNAME=admin.menusqr.in
 ```
 
 ---
@@ -98,13 +96,32 @@ VITE_FIREBASE_MEASUREMENT_ID=G-27Y6TC9XTE
    - `notifications`
    - `contact_leads`
 
-### Step 3.3: Frontend Build & Asset Deployment
-1. Build the Vite production bundle:
+### Step 3.3: Frontend Deployment on Vercel
+1. Deploy the `frontend/` project through the configured Vercel project. The same build serves the public app on `menusqr.in` and the isolated admin portal on `admin.menusqr.in`.
+2. Set these Vercel Production Environment Variables:
+  - `VITE_API_BASE_URL`: the deployed backend origin.
+  - `VITE_PUBLIC_SITE_URL`: `https://menusqr.in`.
+  - `VITE_ADMIN_HOSTNAME`: `admin.menusqr.in`.
+3. Set `FRONTEND_ORIGINS=https://menusqr.in,https://admin.menusqr.in` on the backend service. The API uses exact-origin credentialed CORS; do not use `*` or a broad hosting-provider wildcard.
+4. Build the Vite production bundle:
    ```bash
    cd frontend
    npm run build
    ```
-2. Deploy the generated `frontend/dist/` assets to Hostinger's public web directory.
+
+### Step 3.4: Add the Dedicated Admin Hostname in Vercel and Hostinger
+1. In the Vercel project that deploys `frontend/`, add both `menusqr.in` and `admin.menusqr.in` under **Settings → Domains**. Wait for Vercel to show the exact DNS target for `admin.menusqr.in`.
+4. In Hostinger hPanel, open the `menusqr.in` DNS zone and add these records using the exact targets shown by each hosting provider:
+
+  | Type | Name | Target | TTL |
+  | --- | --- | --- | --- |
+  | CNAME | `admin` | `e531be5b9bf90894.vercel-dns-017.com` | Auto/default |
+  | CNAME | `api` | `menuqr-backend-mohg.onrender.com` | Auto/default |
+
+  These are hostnames, not IP addresses. The admin target is the currently published Vercel CNAME; the API target is the current production backend hostname. If either hosting dashboard supplies a different target for its custom-domain binding, use the target shown there. Remove conflicting `A`, `AAAA`, or `CNAME` records for `admin`/`api` first.
+5. Add `api.menusqr.in` as a custom domain on the existing Render backend service before creating its DNS record. Leave the existing apex and `www` records unchanged. Do not change mail `MX`, `TXT`, SPF, DKIM, or DMARC records.
+6. Wait for Vercel and the backend provider to verify their domains and for DNS to propagate. Then test `https://admin.menusqr.in/login` and `https://api.menusqr.in/api/health`. The admin host sends `/` to login; the main hostname does not render admin routes and redirects legacy `/admin/*` paths to the dedicated host.
+7. Set `FRONTEND_ORIGINS=https://menusqr.in,https://admin.menusqr.in` on the backend. The session cookie is Secure, HttpOnly, host-only (no `Domain` attribute), and SameSite=Strict; the custom API hostname keeps frontend and API same-site.
 
 ---
 

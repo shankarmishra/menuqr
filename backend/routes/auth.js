@@ -1,6 +1,7 @@
 import { pool } from '../db.js';
 import { generateAuthCookie, clearAuthCookie, getAuthenticatedUser, verifyPassword } from '../auth.js';
 import { apiError, sendJson, readJson, getClientIp, normalizeEmail } from '../utils.js';
+import { createAdminSessionCookieOptions, createClearedAdminSessionCookieOptions } from '../adminSessionCookie.js';
 
 import { randomUUID, randomInt } from 'node:crypto';
 import slugify from 'slugify';
@@ -57,15 +58,7 @@ export default async function authRoutes(request, response, url) {
     }
 
     const { stringifySetCookie: serialize } = await import('cookie');
-    const cookie = serialize({
-      name: 'menusqr_admin_session',
-      value: result.token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 8 * 60 * 60,
-    });
+    const cookie = serialize(createAdminSessionCookieOptions(result.token));
     
     response.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
     response.end(JSON.stringify({ authenticated: true, role: 'SUPER_ADMIN', email: result.email }));
@@ -80,15 +73,7 @@ export default async function authRoutes(request, response, url) {
       const { clearAdminSession } = await import('../adminAuth.js');
       await clearAdminSession(adminToken);
     }
-    const cookie = serialize({
-      name: 'menusqr_admin_session',
-      value: '',
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 0,
-    });
+    const cookie = serialize(createClearedAdminSessionCookieOptions());
     response.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
     response.end(JSON.stringify({ authenticated: false }));
     return true;

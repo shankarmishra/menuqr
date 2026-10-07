@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 
 import { connectDB, pool } from './db.js';
 import { apiError, sendJson } from './utils.js';
+import { createCorsOriginChecker } from './cors.js';
 
 import authRoutes from './routes/auth.js';
 import appRoutes from './routes/app.js';
@@ -11,7 +12,7 @@ import publicRoutes from './routes/public.js';
 import purchaseRoutes from './routes/purchase.js';
 
 const port = Number(process.env.PORT || process.env.API_PORT || 3001);
-const frontendOrigin = process.env.FRONTEND_ORIGIN?.trim().replace(/\/$/, '');
+const isAllowedOrigin = createCorsOriginChecker(process.env);
 
 async function initializeStore() {
   await connectDB(process.env.DATABASE_URL);
@@ -20,19 +21,9 @@ async function initializeStore() {
 const server = createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
   const requestOrigin = request.headers.origin;
+  const originAllowed = isAllowedOrigin(requestOrigin);
 
-  // Render & Localhost origin allowed for CORS
-  const allowedLocalOrigins = ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'];
-  let isAllowedOrigin = !frontendOrigin || requestOrigin === frontendOrigin || frontendOrigin === '*';
-  if (requestOrigin && !isAllowedOrigin) {
-    try {
-      const parsedOrigin = new URL(requestOrigin);
-      if (allowedLocalOrigins.includes(requestOrigin)) isAllowedOrigin = true;
-      if (parsedOrigin.hostname.endsWith('.onrender.com')) isAllowedOrigin = true;
-    } catch { /* invalid origin */ }
-  }
-
-  if (requestOrigin && isAllowedOrigin) {
+  if (requestOrigin && originAllowed) {
     response.setHeader('Access-Control-Allow-Origin', requestOrigin);
     response.setHeader('Access-Control-Allow-Credentials', 'true');
     response.setHeader(
@@ -47,7 +38,7 @@ const server = createServer(async (request, response) => {
   }
 
   if (request.method === 'OPTIONS') {
-    response.writeHead(204);
+    response.writeHead(originAllowed ? 204 : 403);
     response.end();
     return;
   }

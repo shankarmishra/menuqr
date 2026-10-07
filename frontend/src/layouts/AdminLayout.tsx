@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, Utensils, Store, Coffee, QrCode, Settings, Menu, X, Bell, ClipboardPlus, LogOut, Trash2, Receipt, CreditCard, PackageCheck } from 'lucide-react';
-import { clearNotifications, getApiHealth, getNotifications, logoutAdmin, markNotificationRead, type AdminNotification } from '../pages/admin/clientStore';
+import { clearNotifications, getApiHealth, getNotifications, logoutSuperAdmin, markNotificationRead, type AdminNotification } from '../pages/admin/clientStore';
 import { MenusQRBrand } from '../components/brand/MenusQRBrand';
 import '../App.css';
 
@@ -103,8 +103,8 @@ export default function AdminLayout() {
     setIsLoggingOut(true);
     setLogoutError('');
     try {
-      await logoutAdmin();
-      navigate('/admin/login', { replace: true });
+      await logoutSuperAdmin();
+      navigate('/login', { replace: true });
     } catch (error) {
       setLogoutError(error instanceof Error ? error.message : 'Could not sign out.');
     } finally {

@@ -54,8 +54,8 @@ async function createRestaurant(plan: 'BASIC' | 'PREMIUM', name: string, withMen
   return fixture;
 }
 
-async function addAuthCookie(context: BrowserContext, value: string, name: string = 'menusqr_auth') {
-  await context.addCookies([{ name, value, url: 'http://127.0.0.1:5174', httpOnly: true, sameSite: 'Strict' }]);
+async function addAuthCookie(context: BrowserContext, value: string, name: string = 'menusqr_auth', origin = 'http://127.0.0.1:5174') {
+  await context.addCookies([{ name, value, url: origin, httpOnly: true, sameSite: 'Strict' }]);
 }
 
 async function cleanTenant(tenantId: string) {
@@ -194,9 +194,11 @@ test('Basic onboarding saves real data, creates one permanent QR, edits live men
   await expect(page.getByRole('status').filter({ hasText: 'Sticker request submitted successfully.' })).toBeVisible();
 
   const adminContext = await browser.newContext();
-  await addAuthCookie(adminContext, adminCookie, 'menusqr_admin_session');
+  const adminOrigin = new URL(baseURL!);
+  adminOrigin.hostname = 'localhost';
+  await addAuthCookie(adminContext, adminCookie, 'menusqr_admin_session', adminOrigin.origin);
   const admin = await adminContext.newPage();
-  await admin.goto(`${baseURL}/admin/sticker-requests`);
+  await admin.goto(`${adminOrigin.origin}/admin/sticker-requests`);
   await expect(admin.getByRole('heading', { name: 'Sticker requests', level: 1 }).last()).toBeVisible();
   await expect(admin.getByText(basicRestaurantName)).toBeVisible();
   await expect(admin.getByText(managerContactName)).toBeVisible();

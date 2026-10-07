@@ -50,8 +50,8 @@ async function createRestaurant(plan: 'BASIC' | 'PREMIUM', name: string, withMen
   return fixture;
 }
 
-async function addAuthCookie(context: BrowserContext, value: string, name: string = 'menusqr_auth') {
-  await context.addCookies([{ name, value, url: 'http://127.0.0.1:5174', httpOnly: true, sameSite: 'Strict' }]);
+async function addAuthCookie(context: BrowserContext, value: string, name: string = 'menusqr_auth', origin = 'http://127.0.0.1:5174') {
+  await context.addCookies([{ name, value, url: origin, httpOnly: true, sameSite: 'Strict' }]);
 }
 
 async function cleanTenant(tenantId: string) {
@@ -145,7 +145,9 @@ test('Client Panel routes load without errors', async ({ browser, baseURL }) => 
 
 test('Admin Panel routes load without errors', async ({ browser, baseURL }) => {
   const context = await browser.newContext();
-  await addAuthCookie(context, adminCookie, 'menusqr_admin_session');
+  const adminOrigin = new URL(baseURL!);
+  adminOrigin.hostname = 'localhost';
+  await addAuthCookie(context, adminCookie, 'menusqr_admin_session', adminOrigin.origin);
   const page = await context.newPage();
   
   const errors: Error[] = [];
@@ -157,34 +159,43 @@ test('Admin Panel routes load without errors', async ({ browser, baseURL }) => {
   });
 
   // Dashboard
-  await page.goto(`${baseURL}/admin`);
+  await page.goto(`${adminOrigin.origin}/admin`);
   await expect(page).toHaveURL(/.*\/admin(\/dashboard)?/);
   await expect(page.locator('body')).toContainText(/Dashboard|Admin/i);
   
   // Restaurants
-  await page.goto(`${baseURL}/admin/restaurants`);
+  await page.goto(`${adminOrigin.origin}/admin/restaurants`);
   await expect(page).toHaveURL(/.*\/admin\/restaurants/);
   await expect(page.locator('body')).toContainText(/Restaurants/i);
   
   // Orders
-  await page.goto(`${baseURL}/admin/orders`);
+  await page.goto(`${adminOrigin.origin}/admin/orders`);
   await expect(page).toHaveURL(/.*\/admin\/orders/);
   await expect(page.locator('body')).toContainText(/Orders|Subscriptions/i);
   
   // Sticker Requests
-  await page.goto(`${baseURL}/admin/sticker-requests`);
+  await page.goto(`${adminOrigin.origin}/admin/sticker-requests`);
   await expect(page).toHaveURL(/.*\/admin\/sticker-requests/);
   await expect(page.locator('body')).toContainText(/Sticker|Requests/i);
   
   // Payments
-  await page.goto(`${baseURL}/admin/payments`);
+  await page.goto(`${adminOrigin.origin}/admin/payments`);
   await expect(page).toHaveURL(/.*\/admin\/payments/);
   await expect(page.locator('body')).toContainText(/Payments|Revenue/i);
   
   // Settings
-  await page.goto(`${baseURL}/admin/settings`);
+  await page.goto(`${adminOrigin.origin}/admin/settings`);
   await expect(page).toHaveURL(/.*\/admin\/settings/);
   await expect(page.locator('body')).toContainText(/Settings/i);
+
+  await page.getByRole('button', { name: 'Sign out' }).click();
+  const adminSessionAfterLogout = await page.evaluate(async () => {
+    const response = await fetch('/api/auth/session', { credentials: 'include' });
+    return response.json();
+  });
+  expect(adminSessionAfterLogout.authenticated).toBe(false);
+  await page.goto(`${adminOrigin.origin}/admin/dashboard`);
+  await expect(page).toHaveURL(`${adminOrigin.origin}/login`);
   
   expect(errors).toEqual([]);
   await context.close();

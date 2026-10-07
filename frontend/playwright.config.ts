@@ -43,10 +43,14 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
-      command: 'npm run dev -- --host 127.0.0.1 --port 5174 --strictPort',
+      command: 'npm run dev -- --host 0.0.0.0 --port 5174 --strictPort',
       cwd: '.',
       url: 'http://127.0.0.1:5174',
-      env: { MENUSQR_API_PROXY: 'http://127.0.0.1:3311' },
+      env: {
+        MENUSQR_API_PROXY: 'http://127.0.0.1:3311',
+        VITE_ADMIN_HOSTNAME: 'localhost',
+        VITE_API_BASE_URL: '',
+      },
       reuseExistingServer: false,
       timeout: 30_000,
     },

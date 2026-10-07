@@ -26,7 +26,7 @@ import Orders from './pages/admin/Orders';
 import Payments from './pages/admin/Payments';
 import StickerRequests from './pages/admin/StickerRequests';
 import { getAdminSession, getClientByMenuSlug } from './pages/admin/clientStore';
-import { useAuth } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AppDashboard from './pages/app/Dashboard';
 import AppMenu from './pages/app/Menu';
 import AppAppearance from './pages/app/Appearance';
@@ -38,6 +38,7 @@ import SupabaseTest from './components/SupabaseTest';
 import FeatureGate from './components/guards/FeatureGate';
 import { ToastProvider } from './components/feedback/ToastProvider';
 import QrLandingPage from './pages/public/QrLandingPage';
+import { getAdminRedirectUrl, isAdminHostname, isAdminPath } from './utils/hostRouting';
 
 function ProtectedAdminLayout() {
   const location = useLocation();
@@ -61,7 +62,7 @@ function ProtectedAdminLayout() {
 
   if (sessionState === 'checking') return <div className="grid min-h-screen place-items-center bg-[#151c19] text-sm text-[#aab7b2]">Checking admin sessionâ€¦</div>;
   if (sessionState === 'error') return <div className="grid min-h-screen place-items-center bg-[#151c19] px-5 text-center text-sm text-rose-300"><div><p>Could not connect to the admin API.</p><button type="button" onClick={() => { setSessionState('checking'); setRetry((current) => current + 1); }} className="mt-4 rounded-lg bg-[#e8783c] px-4 py-2 font-semibold text-white">Retry</button></div></div>;
-  if (sessionState === 'unauthenticated') return <Navigate to="/admin/login" replace state={{ from: location }} />;
+  if (sessionState === 'unauthenticated') return <Navigate to="/login" replace state={{ from: location }} />;
   return <AdminLayout />;
 }
 
@@ -80,7 +81,40 @@ function ProtectedAppLayout() {
   return <AppLayout />;
 }
 
-function AppRoutes() {
+function AdminPortalRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<AdminLogin />} />
+      <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+      <Route path="/admin" element={<ProtectedAdminLayout />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="clients/new/:step?" element={<ClientForm />} />
+        <Route path="clients/:clientId/:step?" element={<ClientForm />} />
+        <Route path="restaurants" element={<ClientList />} />
+        <Route path="dhabas" element={<ClientList />} />
+        <Route path="cafes" element={<ClientList />} />
+        <Route path="orders" element={<Orders />} />
+        <Route path="sticker-requests" element={<StickerRequests />} />
+        <Route path="payments" element={<Payments />} />
+        <Route path="qr" element={<QrGenerator />} />
+        <Route path="settings" element={<Settings />} />
+      </Route>
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
+}
+
+function AdminDomainRedirect({ destination }: { destination: string }) {
+  useEffect(() => {
+    window.location.replace(destination);
+  }, [destination]);
+
+  return <div className="grid min-h-screen place-items-center text-sm text-[#53615a]" role="status">Opening admin portal...</div>;
+}
+
+function PublicAppRoutes() {
   const menuMatch = useMatch('/menu/:slug');
   const menuSlug = menuMatch?.params.slug;
   const routeKey = menuSlug ? `menu:${menuSlug}` : 'app';
@@ -91,6 +125,17 @@ function AppRoutes() {
     : 'MenusQR';
   const loaderCaption = menuMatch ? 'Preparing your menu' : 'Preparing your experience';
   const isLoading = loadedRoute !== routeKey;
+  const adminHostname = import.meta.env.VITE_ADMIN_HOSTNAME?.trim();
+
+  if (isAdminPath(window.location.pathname)) {
+    if (!adminHostname) return <NotFoundPage />;
+    return <AdminDomainRedirect destination={getAdminRedirectUrl(
+      adminHostname,
+      window.location.pathname,
+      window.location.search,
+      window.location.hash,
+    )} />;
+  }
 
   useEffect(() => {
     let isCurrent = true;
@@ -133,26 +178,9 @@ function AppRoutes() {
         <Route path="/test-supabase" element={<SupabaseTest />} />
 
         <Route path="/login" element={<AdminLogin />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        
-        {/* Super Admin Routes */}
-        <Route path="/admin" element={<ProtectedAdminLayout />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="clients/new/:step?" element={<ClientForm />} />
-          <Route path="clients/:clientId/:step?" element={<ClientForm />} />
-          <Route path="restaurants" element={<ClientList />} />
-          <Route path="dhabas" element={<ClientList />} />
-          <Route path="cafes" element={<ClientList />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="sticker-requests" element={<StickerRequests />} />
-          <Route path="payments" element={<Payments />} />
-          <Route path="qr" element={<QrGenerator />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
 
         {/* App Dashboard Routes */}
-        <Route path="/app" element={<ProtectedAppLayout />}>
+        <Route path="/app" element={<AuthProvider><ProtectedAppLayout /></AuthProvider>}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AppDashboard />} />
           <Route path="menu" element={<AppMenu />} />
@@ -195,6 +223,13 @@ function AppRoutes() {
       )}
     </>
   );
+}
+
+function AppRoutes() {
+  const adminHostname = import.meta.env.VITE_ADMIN_HOSTNAME;
+  return isAdminHostname(window.location.hostname, adminHostname)
+    ? <AdminPortalRoutes />
+    : <PublicAppRoutes />;
 }
 
 export default function App() {
