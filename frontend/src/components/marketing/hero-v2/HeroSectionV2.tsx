@@ -50,7 +50,7 @@ export default function HeroSectionV2() {
             className="flex flex-col sm:flex-row gap-4 mb-8 lg:mb-10"
           >
             <a
-              href="#/admin/login"
+              href="/login"
               className="group relative inline-flex items-center justify-center gap-2 bg-[#E8783C] text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all duration-300 hover:bg-[#151C19] hover:shadow-[0_8px_20px_rgba(232,120,60,0.3)] hover:-translate-y-0.5"
             >
               <span>Create Your Menu</span>

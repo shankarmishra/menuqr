@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, CheckCircle, Store, Mail, Lock, User, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -32,7 +32,7 @@ export default function SignupPage() {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/create-payment-intent', { method: 'POST' });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/auth/create-payment-intent`, { method: 'POST' });
       if (!res.ok) throw new Error('Failed to initialize payment');
       const data = await res.json();
       setTransactionId(data.transactionId);
@@ -53,14 +53,14 @@ export default function SignupPage() {
     setError('');
     setLoading(true);
     try {
-      const payRes = await fetch('/api/auth/process-payment', {
+      const payRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/auth/process-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ transactionId, cardNumber: formData.cardNumber }),
       });
       if (!payRes.ok) throw new Error('Payment processing failed');
 
-      const signupRes = await fetch('/api/auth/signup', {
+      const signupRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

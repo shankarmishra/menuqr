@@ -231,6 +231,7 @@ export default async function purchaseRoutes(request, response, url) {
       sendJson(response, 200, {
         success: true, orderId, status: 'PAID',
         provisioning_status: 'COMPLETE', alreadyProvisioned: true,
+        emailSent: Boolean(order.activation_email_sent && order.payment_receipt_email_sent),
       });
       return true;
     }
@@ -452,31 +453,55 @@ export default async function purchaseRoutes(request, response, url) {
       return true;
     }
 
-    // ── 9. Send activation email (async, non-blocking) ───────────────────
+    // ── 9. Send account and payment emails ───────────────────────────────
     const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
     const clearPassword = (order.metadata || {}).clear_password;
-    
-    void sendActivationEmail({
-      email: order.customer_email,
-      ownerName: order.customer_name,
-      businessName: order.business_name,
-      plan: planMeta.label || order.plan_id.toUpperCase(),
-      activationToken: activationTokenRaw,  // null if user already existed
-      password: clearPassword
-    }).catch(err => {
-      console.error('[activation email error]', err);
-      // Log email failure to activity_logs but don't block
-      pool.query(
-        `INSERT INTO activity_logs (tenant_id, action, description, metadata)
-         VALUES ($1,$2,$3,$4)`,
-        [provisionedTenantId, 'EMAIL_FAILED',
-         'Activation email failed to send',
-         JSON.stringify({ orderId, error: err.message })]
-      ).catch(() => {});
-    });
+
+    const subscriptionResult = await pool.query(
+      'SELECT expires_at FROM subscriptions WHERE tenant_id = $1',
+      [provisionedTenantId]
+    );
+    const expiresAt = subscriptionResult.rows[0]?.expires_at || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    const emailResults = await Promise.allSettled([
+      sendActivationEmail({
+        email: order.customer_email,
+        ownerName: order.customer_name,
+        businessName: order.business_name,
+        plan: planMeta.label || order.plan_id.toUpperCase(),
+        activationToken: activationTokenRaw,
+        password: clearPassword,
+      }),
+      sendPaymentSuccessEmail({
+        email: order.customer_email,
+        businessName: order.business_name,
+        plan: planMeta.label || order.plan_id.toUpperCase(),
+        amount: order.amount,
+        expiresAt,
+      }),
+    ]);
+    const activationEmailSent = emailResults[0].status === 'fulfilled';
+    const paymentReceiptEmailSent = emailResults[1].status === 'fulfilled';
+
+    await pool.query(
+      'UPDATE orders SET activation_email_sent = $1, payment_receipt_email_sent = $2 WHERE id = $3',
+      [activationEmailSent, paymentReceiptEmailSent, orderId]
+    );
+
+    for (const [index, result] of emailResults.entries()) {
+      if (result.status === 'rejected') {
+        const emailType = index === 0 ? 'Activation' : 'Payment receipt';
+        console.error(`[${emailType} email error]`, result.reason?.message || 'Email delivery failed.');
+        await pool.query(
+          `INSERT INTO activity_logs (tenant_id, action, description, metadata)
+           VALUES ($1,$2,$3,$4)`,
+          [provisionedTenantId, 'EMAIL_FAILED', `${emailType} email failed to send`, JSON.stringify({ orderId })]
+        ).catch(() => {});
+      }
+    }
 
     sendJson(response, 200, {
       success: true, orderId, status: 'PAID', provisioning_status: 'COMPLETE',
+      emailSent: activationEmailSent && paymentReceiptEmailSent,
     });
     return true;
   }

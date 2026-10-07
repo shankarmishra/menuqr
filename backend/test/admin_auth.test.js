@@ -14,6 +14,14 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL is required to run tests.');
 }
 
+const databaseName = decodeURIComponent(new URL(databaseUrl).pathname).replace(/^\/+/, '');
+if (!/(?:^|[_-])test(?:$|[_-])/i.test(databaseName)) {
+  throw new Error('Admin auth integration tests require a dedicated test database.');
+}
+
+process.env.JWT_SECRET = 'test-secret';
+const { requestAdminOtp } = await import('../adminAuth.js');
+
 let serverProcess;
 let baseUrl;
 
@@ -54,13 +62,14 @@ test.before(async () => {
   // Clear tables
   await pool.query('DELETE FROM admin_sessions');
   await pool.query('DELETE FROM admin_otp_challenges');
-  await pool.query('DELETE FROM admin_users');
+  await pool.query('DELETE FROM admin_auth_rate_limits');
 
   // Insert the 3 allowed admins
-  await pool.query(`INSERT INTO admin_users (id, email, status) VALUES 
+  await pool.query(`INSERT INTO admin_users (id, email, status) VALUES
     ('admin-1', 'xshankarmishra@gmail.com', 'active'),
     ('admin-2', 'qevnaro@gmail.com', 'active'),
     ('admin-3', 'menusqr.in@gmail.com', 'active')
+    ON CONFLICT (email) DO UPDATE SET status = 'active'
   `);
 
   const port = await findFreePort();
@@ -108,17 +117,19 @@ test('Admin Auth Flow', async (t) => {
   });
 
   await t.test('allowed email can request OTP', async () => {
-    const res = await fetch(`${baseUrl}/api/auth/admin/request-otp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'xshankarmishra@gmail.com' })
-    });
-    
-    assert.equal(res.status, 200);
-    
-    // Check DB: OTP should have been generated
-    const dbRes = await pool.query('SELECT * FROM admin_otp_challenges WHERE email = $1 AND used = false', ['xshankarmishra@gmail.com']);
-    assert.equal(dbRes.rows.length, 1);
+    for (const [index, email] of ['xshankarmishra@gmail.com', 'qevnaro@gmail.com', 'menusqr.in@gmail.com'].entries()) {
+      const result = await requestAdminOtp(email, `198.51.100.${index + 1}`);
+      assert.ok(result);
+      assert.equal(result.email, email);
+
+      const dbRes = await pool.query(
+        'SELECT otp_hash, expires_at FROM admin_otp_challenges WHERE email = $1 AND used = false',
+        [email]
+      );
+      assert.equal(dbRes.rows.length, 1);
+      assert.notEqual(dbRes.rows[0].otp_hash, result.otp);
+      assert.ok(new Date(dbRes.rows[0].expires_at) > new Date());
+    }
   });
 
   await t.test('wrong OTP fails and increments attempts', async () => {
@@ -148,41 +159,97 @@ test('Admin Auth Flow', async (t) => {
     });
     assert.equal(res.status, 429);
     const data = await res.json();
-    assert.equal(data.error, 'Too many failed attempts. Try again later.');
+    assert.equal(data.error, 'Unable to verify sign-in. Please request a new code.');
+  });
+
+  await t.test('requesting a new code invalidates the previous code', async () => {
+    const email = 'xshankarmishra@gmail.com';
+    const previous = await requestAdminOtp(email, '198.51.100.21');
+    const latest = await requestAdminOtp(email, '198.51.100.22');
+    const previousRow = await pool.query('SELECT used FROM admin_otp_challenges WHERE id = $1', [previous.challengeId]);
+    assert.equal(previousRow.rows[0].used, true);
+
+    const staleVerify = await fetch(`${baseUrl}/api/auth/admin/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, otp: previous.otp })
+    });
+    assert.equal(staleVerify.status, 401);
+    assert.notEqual(previous.otp, latest.otp);
   });
 
   await t.test('correct OTP logs in and provides cookie', async () => {
-    // Request a new OTP
-    const reqRes = await fetch(`${baseUrl}/api/auth/admin/request-otp`, {
+    const sessions = [];
+    for (const [index, email] of ['xshankarmishra@gmail.com', 'qevnaro@gmail.com', 'menusqr.in@gmail.com'].entries()) {
+      const challenge = await requestAdminOtp(email, `198.51.100.${index + 11}`);
+      const res = await fetch(`${baseUrl}/api/auth/admin/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: challenge.otp })
+      });
+      const data = await res.json();
+      assert.equal(res.status, 200);
+      assert.equal(data.authenticated, true);
+      assert.equal(data.role, 'SUPER_ADMIN');
+
+      const cookie = getCookie(res, 'menusqr_admin_session');
+      assert.ok(cookie);
+      sessions.push({ email, cookie, otp: challenge.otp });
+
+      const reused = await fetch(`${baseUrl}/api/auth/admin/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: challenge.otp })
+      });
+      assert.equal(reused.status, 401);
+    }
+
+    const deactivated = sessions[0];
+    await pool.query("UPDATE admin_users SET status = 'inactive' WHERE email = $1", [deactivated.email]);
+    await pool.query("UPDATE admin_users SET status = 'active' WHERE email = $1", [deactivated.email]);
+    const denied = await fetch(`${baseUrl}/api/admin/clients`, {
+      headers: { Cookie: `menusqr_admin_session=${deactivated.cookie}` }
+    });
+    assert.equal(denied.status, 401);
+
+    const stillDenied = await fetch(`${baseUrl}/api/admin/clients`, {
+      headers: { Cookie: `menusqr_admin_session=${deactivated.cookie}` }
+    });
+    assert.equal(stillDenied.status, 401);
+  });
+
+  await t.test('expired challenge fails and unknown-email login stays generic', async () => {
+    const email = 'qevnaro@gmail.com';
+    const challenge = await requestAdminOtp(email, '198.51.100.31');
+    await pool.query('UPDATE admin_otp_challenges SET expires_at = NOW() - INTERVAL \'1 minute\' WHERE id = $1', [challenge.challengeId]);
+    const expired = await fetch(`${baseUrl}/api/auth/admin/verify-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'xshankarmishra@gmail.com' })
+      body: JSON.stringify({ email, otp: challenge.otp })
     });
-    const reqData = await reqRes.json();
-    console.log('DEBUG:', reqRes.status, reqData);
-    const validOtp = reqData._testOtp;
-    assert.ok(validOtp);
+    assert.equal(expired.status, 401);
 
-    // Verify
-    const res = await fetch(`${baseUrl}/api/auth/admin/verify-otp`, {
+    const request = await fetch(`${baseUrl}/api/auth/admin/request-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'xshankarmishra@gmail.com', otp: validOtp })
+      body: JSON.stringify({ email: 'unknown@example.com' })
     });
-    const data = await res.json();
-    console.log('VERIFY DEBUG:', res.status, data);
-    assert.equal(res.status, 200);
-    assert.equal(data.authenticated, true);
-    assert.equal(data.role, 'SUPER_ADMIN');
+    assert.equal(request.status, 200);
+    assert.equal((await request.json()).message, 'If an admin account exists, an OTP has been sent.');
+    const login = await fetch(`${baseUrl}/api/auth/admin/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'unknown@example.com', otp: '000000' })
+    });
+    assert.equal(login.status, 401);
+  });
 
-    const setCookie = res.headers.get('set-cookie');
-    console.log('SET-COOKIE HEADER:', setCookie);
-    const cookie = getCookie(res, 'menusqr_admin_session');
-    assert.ok(cookie);
-
-    // Test that the OTP is marked used
-    const dbRes = await pool.query('SELECT used FROM admin_otp_challenges WHERE email = $1 ORDER BY created_at DESC LIMIT 1', ['xshankarmishra@gmail.com']);
-    assert.equal(dbRes.rows[0].used, true);
+  await t.test('request rate limit rejects excessive OTP generation', async () => {
+    const email = 'menusqr.in@gmail.com';
+    const ip = '198.51.100.41';
+    for (let attempt = 0; attempt < 3; attempt += 1) await requestAdminOtp(email, ip);
+    const error = await requestAdminOtp(email, ip).then(() => null, (caught) => caught);
+    assert.equal(error.status, 429);
   });
 });
 

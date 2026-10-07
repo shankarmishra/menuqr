@@ -54,8 +54,8 @@ async function createRestaurant(plan: 'BASIC' | 'PREMIUM', name: string, withMen
   return fixture;
 }
 
-async function addAuthCookie(context: BrowserContext, value: string) {
-  await context.addCookies([{ name: 'menusqr_auth', value, url: 'http://127.0.0.1:5174', httpOnly: true, sameSite: 'Strict' }]);
+async function addAuthCookie(context: BrowserContext, value: string, name: string = 'menusqr_auth') {
+  await context.addCookies([{ name, value, url: 'http://127.0.0.1:5174', httpOnly: true, sameSite: 'Strict' }]);
 }
 
 async function cleanTenant(tenantId: string) {
@@ -76,13 +76,27 @@ async function cleanTenant(tenantId: string) {
 }
 
 test.beforeAll(async () => {
+  const { randomUUID, randomBytes, createHash } = await import('node:crypto');
   const runId = Date.now().toString(36);
   basicRestaurantName = `E2E Basic Cafe ${runId}`;
   premiumRestaurantName = `E2E Premium Grill ${runId}`;
   managerContactName = `E2E Manager ${runId}`;
   basic = await createRestaurant('BASIC', basicRestaurantName, false);
   premium = await createRestaurant('PREMIUM', premiumRestaurantName, true);
-  adminCookie = cookieValue(generateAuthCookie({ id: 'super-admin', role: 'SUPER_ADMIN' }));
+
+  const adminEmail = 'xshankarmishra@gmail.com';
+  const adminInsertResult = await pool.query("INSERT INTO admin_users (id, email, status) VALUES ($1, $2, 'active') ON CONFLICT (email) DO UPDATE SET status='active' RETURNING id", [randomUUID(), adminEmail]);
+  const adminId = adminInsertResult.rows[0].id;
+
+  const token = randomBytes(32).toString('hex');
+  const tokenHash = createHash('sha256').update(token).digest('hex');
+  const sessionExpiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  const sessionId = randomBytes(16).toString('hex');
+  await pool.query(
+    'INSERT INTO admin_sessions (id, admin_id, token_hash, expires_at, ip_address) VALUES ($1, $2, $3, $4, $5)',
+    [sessionId, adminId, tokenHash, sessionExpiresAt, '127.0.0.1']
+  );
+  adminCookie = token;
 });
 
 test.afterAll(async () => {
@@ -127,7 +141,7 @@ test('Basic onboarding saves real data, creates one permanent QR, edits live men
 
   await page.goto(`${baseURL}/app/qr`);
   await expect(page.getByRole('heading', { name: 'QR Studio' })).toBeVisible();
-  await page.getByRole('button', { name: 'Preview, download or print' }).click();
+  await page.getByRole('button', { name: 'Print Ready' }).click();
   await expect(page.getByText('Scan to view our menu')).toBeVisible();
   const sticker = page.locator('.qr-print-sticker');
   const stickerBounds = await sticker.boundingBox();
@@ -169,18 +183,18 @@ test('Basic onboarding saves real data, creates one permanent QR, edits live men
   expect(stableQr.rows[0].qr_code_id).toBe(qrRecordId);
 
   await page.goto(`${baseURL}/app/qr`);
-  await page.getByRole('button', { name: 'Order stickers' }).click();
+  await page.getByRole('button', { name: 'Order New +' }).click();
   await page.getByLabel('Quantity').fill('50');
   await page.getByLabel('Contact name').fill(managerContactName);
   await page.getByLabel('Contact phone').fill('+1 555 0199');
   await page.getByLabel('Contact email').fill('manager@example.invalid');
   await page.getByLabel('Delivery address').fill('24 River Street');
   await page.getByLabel('City').fill('Portland');
-  await page.getByRole('button', { name: 'Submit sticker request' }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Sticker request sent.' })).toBeVisible();
+  await page.getByRole('button', { name: 'Submit Request' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Sticker request submitted successfully.' })).toBeVisible();
 
   const adminContext = await browser.newContext();
-  await addAuthCookie(adminContext, adminCookie);
+  await addAuthCookie(adminContext, adminCookie, 'menusqr_admin_session');
   const admin = await adminContext.newPage();
   await admin.goto(`${baseURL}/admin/sticker-requests`);
   await expect(admin.getByRole('heading', { name: 'Sticker requests', level: 1 }).last()).toBeVisible();
@@ -216,6 +230,6 @@ test('Premium scan places server-priced order and restaurant accepts it', async 
   await page.goto(`${baseURL}/app/orders`);
   await expect(page.getByText('Grilled Paneer')).toBeVisible();
   await page.getByRole('button', { name: /ACCEPT/ }).click();
-  await expect(page.getByText('ACCEPTED', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /COOKING/ })).toBeVisible();
   await context.close();
 });

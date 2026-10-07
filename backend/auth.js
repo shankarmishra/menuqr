@@ -110,8 +110,8 @@ export async function enforceSuperAdmin(req) {
     if (adminUser) return adminUser;
   }
   
-  const err = new Error('Forbidden. Super Admin access required.');
-  err.status = 403;
+  const err = new Error('Authentication required.');
+  err.status = 401;
   throw err;
 }
 

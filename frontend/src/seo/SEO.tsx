@@ -31,7 +31,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta name="description" content={description} />
       
       {/* Canonical */}
-      <link rel="canonical" href={url} />
+      {url && <link rel="canonical" href={url} />}
       
       {/* Robots */}
       <meta name="robots" content={index ? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' : 'noindex, nofollow'} />

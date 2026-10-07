@@ -205,7 +205,7 @@ export default function PurchaseDetailsPage() {
                     {error}
                     {error.includes('already exists') && (
                       <div className="mt-2">
-                        <Link to="/admin/login" className="text-rose-600 underline font-bold hover:text-rose-700">
+                        <Link to="/login" className="text-rose-600 underline font-bold hover:text-rose-700">
                           Go to Login &rarr;
                         </Link>
                       </div>

@@ -20,7 +20,7 @@ export default function AppLayout() {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/admin/login');
+    navigate('/login');
   };
 
   const planId = sub?.planId?.toUpperCase() || 'BASIC';

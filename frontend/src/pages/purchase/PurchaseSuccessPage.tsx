@@ -10,6 +10,7 @@ export default function PurchaseSuccessPage() {
   
   const [verifying, setVerifying] = useState(!!orderId);
   const [error, setError] = useState('');
+  const [emailSent, setEmailSent] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (orderId) {
@@ -22,6 +23,7 @@ export default function PurchaseSuccessPage() {
           });
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || 'Failed to verify payment');
+          setEmailSent(data.emailSent === true);
         } catch (err: any) {
           setError(err.message);
         } finally {
@@ -142,17 +144,30 @@ export default function PurchaseSuccessPage() {
               <div className="relative z-10 max-w-md text-center md:text-left">
                 <h2 className="text-2xl font-bold mb-3 flex items-center justify-center md:justify-start gap-3">
                   <Mail className="text-[#E8783C]" />
-                  Check your inbox
+                  {emailSent ? 'Check your inbox' : 'Account ready'}
                 </h2>
                 <p className="text-gray-300 leading-relaxed">
-                  We have sent a Welcome Email containing your temporary password. You will need it to log in and begin customizing your menu.
+                  {emailSent
+                    ? 'Your account details and payment receipt have been sent. Use your restaurant email and password to sign in; we will email a one-time verification code.'
+                    : 'Your payment and workspace are ready, but we could not deliver the account email. Contact support and include your order reference.'}
                 </p>
+                {!emailSent && orderId && (
+                  <>
+                    <p className="mt-3 text-sm text-gray-400">Order reference: {orderId}</p>
+                    <a
+                      href={`mailto:support@menusqr.com?subject=Account%20email%20not%20received&body=Order%20reference%3A%20${encodeURIComponent(orderId)}`}
+                      className="mt-3 inline-flex text-sm font-semibold text-[#ffc08d] underline underline-offset-4"
+                    >
+                      Contact support
+                    </a>
+                  </>
+                )}
               </div>
               <Link
-                to="/admin/login"
+                to="/login"
                 className="relative z-10 w-full md:w-auto flex items-center justify-center bg-[#E8783C] hover:bg-[#d66a30] text-white px-8 py-5 rounded-2xl font-bold transition-all hover:scale-105 gap-2 shadow-lg shadow-[#E8783C]/20"
               >
-                LOGIN NOW <ArrowRight size={20} />
+                RESTAURANT LOGIN <ArrowRight size={20} />
               </Link>
             </div>
           </div>

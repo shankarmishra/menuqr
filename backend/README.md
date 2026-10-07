@@ -14,7 +14,7 @@ Copy-Item .env.example .env
 
 Edit `backend/.env` and set `DATABASE_URL` to your local PostgreSQL connection string (e.g. `postgres://postgres:password@localhost:5432/menusqr`). Keep `.env` private; it is git-ignored.
 
-For email, set `RESEND_API_KEY` from your Resend dashboard and `ADMIN_EMAIL` to the admin's destination address. `RESEND_FROM_EMAIL` defaults to Resend's `onboarding@resend.dev` testing sender; this sender can only deliver to the Resend account's verified email address. To send welcome emails to arbitrary customers in production, verify a domain in Resend and set `RESEND_FROM_EMAIL` to an address on that domain. New registrations send an admin alert and a customer welcome email containing the selected plan, billing cycle, and price. Email delivery is best-effort and does not delay client creation. Set these variables in both local `backend/.env` and the Render backend service environment.
+For email, configure Hostinger SMTP with `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, and `SMTP_PASSWORD`. `BREVO_API_KEY` can be set as a fallback provider. Set `MAIL_FROM_NAME` and `MAIL_FROM_ADDRESS` to a verified sender identity. Mail delivery failures are surfaced to login requests; purchase verification records whether activation and receipt emails were delivered. Set provider credentials in local `backend/.env` and the production backend environment.
 
 Open two terminals from the repository root:
 
@@ -29,13 +29,16 @@ npm run dev
 ```
 
 Vite forwards `/api` requests to `http://127.0.0.1:3001`. The backend binds to loopback and is intended for local development.
-The built-in admin password is `MenusQR@2026!`. Set `ADMIN_PASSWORD` in `backend/.env` to override it. Successful logins use an HttpOnly, eight-hour session; failed login attempts are temporarily rate-limited.
+Admin access is passwordless and uses email OTP. Only active records in `admin_users` can request a code; `schema.sql` seeds the three approved addresses. There is no public admin signup or admin password. Admin OTPs are short-lived, hashed in PostgreSQL, rate-limited, and exchanged for an eight-hour HttpOnly session cookie. Set a stable, private `ADMIN_OTP_PEPPER` (or use `JWT_SECRET` as the fallback) consistently across backend instances.
 
 ## Routes
 
 - `GET /api/health` reports API status and saved-client count.
 - `GET /api/auth/session` checks the current admin session.
-- `POST /api/auth/login` starts a session with `{ "password": "..." }`.
+- `POST /api/auth/admin/request-otp` requests an admin code with `{ "email": "..." }` and returns a generic response.
+- `POST /api/auth/admin/verify-otp` verifies `{ "email": "...", "otp": "..." }` and sets the admin session cookie.
+- `POST /api/auth/admin/logout` revokes the admin session.
+- `POST /api/auth/login` starts the separate restaurant-owner password + email OTP flow.
 - `POST /api/auth/logout` ends the current session.
 - `GET /api/admin/clients` lists client records for the admin UI.
 - `GET /api/admin/clients/:id` fetches one client.
@@ -46,4 +49,4 @@ The built-in admin password is `MenusQR@2026!`. Set `ADMIN_PASSWORD` in `backend
 - `DELETE /api/admin/clients/:id` removes a client.
 - `GET /api/public/menus/:slug` returns active customer-facing menu data without owner contact or billing details.
 
-All `/api/admin/*` routes require a valid admin session. The built-in password is for local development; set a private `ADMIN_PASSWORD` and use HTTPS before deployment. Production deployments should additionally use a managed identity provider and review session-secret/password policies.
+Every `/api/admin/*` request validates the admin session and the admin's current active status in `admin_users`; restaurant-owner JWTs are not accepted. Production must use HTTPS so the admin cookie is Secure.

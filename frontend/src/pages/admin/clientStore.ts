@@ -80,6 +80,7 @@ export interface AdminNotification {
 
 export interface AdminSession {
   authenticated: boolean;
+  user?: { role?: string } | null;
 }
 
 const storageKey = 'menusqr.clients';
@@ -240,6 +241,24 @@ export async function resetPassword(email: string, otp: string, newPassword: str
 
 export async function logoutAdmin(): Promise<AdminSession> {
   return await request<AdminSession>('/auth/logout', { method: 'POST', body: '{}' });
+}
+
+export async function requestSuperAdminOtp(email: string): Promise<{ success: boolean; message: string }> {
+  return request<{ success: boolean; message: string }>('/auth/admin/request-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function verifySuperAdminOtp(email: string, otp: string): Promise<LoginResponse> {
+  return request<LoginResponse>('/auth/admin/verify-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email, otp }),
+  });
+}
+
+export async function logoutSuperAdmin(): Promise<AdminSession> {
+  return await request<AdminSession>('/auth/admin/logout', { method: 'POST', body: '{}' });
 }
 
 export async function getClient(id: string): Promise<ClientRecord | undefined> {

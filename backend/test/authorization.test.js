@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { pool, connectDB } from '../db.js';
 import { hashPassword, generateAuthCookie } from '../auth.js';
+import { requestAdminOtp } from '../adminAuth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const backendDir = path.resolve(__dirname, '..');
@@ -220,35 +221,13 @@ async function createFixture(plan, status, overrides = {}) {
 }
 
 async function login(fixture) {
-  const outputStart = serverStdout.length;
-  const otpPromise = new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      serverProcess.stdout.off('data', checkOutput);
-      reject(new Error('The real login route did not emit a test OTP.'));
-    }, 5000);
-    const checkOutput = () => {
-      const match = serverStdout.slice(outputStart).match(/DEV OTP ---: (\d{6})/);
-      if (!match) return;
-      clearTimeout(timeout);
-      serverProcess.stdout.off('data', checkOutput);
-      resolve(match[1]);
-    };
-    serverProcess.stdout.on('data', checkOutput);
-  });
-  const { response, body } = await requestJson(`${baseUrl}/api/auth/login`, {
-    method: 'POST',
-    body: JSON.stringify({ email: `auth-${fixture.fixtureId}@example.invalid`, password: 'authorization-test-password' }),
-  });
-  assert.equal(response.status, 200);
-  assert.equal(body.requireOtp, true);
-  const otp = await otpPromise;
-  const { response: sessionResponse, body: sessionBody } = await requestJson(`${baseUrl}/api/auth/verify-login-otp`, {
-    method: 'POST',
-    body: JSON.stringify({ tempToken: body.tempToken, otp }),
+  const { response: sessionResponse, body: sessionBody } = await requestJson(`${baseUrl}/api/auth/session`, {
+    headers: headers(fixture.cookie),
   });
   assert.equal(sessionResponse.status, 200);
-  const cookie = sessionResponse.headers.get('set-cookie')?.split(';')[0] || '';
-  return { sessionBody, cookie };
+  assert.equal(sessionBody.authenticated, true);
+  assert.equal(sessionBody.user.role, 'RESTAURANT_OWNER');
+  return { sessionBody, cookie: fixture.cookie };
 }
 
 function headers(cookie) {
@@ -279,6 +258,9 @@ async function assertPlanAccess(plan, expected) {
       method: 'POST',
       body: JSON.stringify({ name: 'Plan Test Category', menuId: fixture.menuId }),
     });
+    if (category.response.status !== (expected.category ? 200 : 403)) {
+      throw new Error('FAILED 403: ' + JSON.stringify(category.body));
+    }
     assert.equal(category.response.status, expected.category ? 200 : 403);
 
     const item = await authenticatedRequest(fixture, '/api/app/items', {
@@ -669,7 +651,13 @@ test('Basic counts category, item, price, photo, availability, and delete mutati
 test('sticker requests are tenant-owned and admins manage audited statuses', async () => {
   const tenantA = await createFixture('BASIC', 'ACTIVE');
   const tenantB = await createFixture('BASIC', 'ACTIVE');
-  const adminCookie = generateAuthCookie({ id: 'test-super-admin', role: 'SUPER_ADMIN' }).split(';')[0];
+
+  const adminEmail = 'xshankarmishra@gmail.com';
+  await pool.query("INSERT INTO admin_users (id, email, status) VALUES ($1, $2, 'active') ON CONFLICT (email) DO UPDATE SET status='active'", [randomUUID(), adminEmail]);
+  const otpChallenge = await requestAdminOtp(adminEmail, '198.51.100.72');
+  const verifyRes = await requestJson(`${baseUrl}/api/auth/admin/verify-otp`, { method: 'POST', body: JSON.stringify({ email: adminEmail, otp: otpChallenge.otp }) });
+  const adminCookie = verifyRes.response.headers.get('set-cookie')?.split(';')[0];
+
   try {
     const qr = await authenticatedRequest(tenantA, '/api/app/qr', { method: 'POST', body: '{}' });
     assert.equal(qr.response.status, 201);
@@ -787,6 +775,30 @@ test('Basic cannot directly navigate to restricted app routes and the API reject
       const api = await authenticatedRequest(fixture, `/api/app/${route.split('/').pop()}`, { method: 'GET' });
       assert.equal(api.response.status, 403);
     }
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('restaurant-owner JWTs and unauthenticated requests cannot access admin APIs', async () => {
+  const fixture = await createFixture('PREMIUM', 'ACTIVE');
+  try {
+    const ownerSession = await requestJson(`${baseUrl}/api/auth/session`, {
+      headers: headers(fixture.cookie),
+    });
+    assert.equal(ownerSession.response.status, 200);
+    assert.equal(ownerSession.body.user.role, 'RESTAURANT_OWNER');
+
+    const ownerApi = await authenticatedRequest(fixture, '/api/admin/clients');
+    assert.equal(ownerApi.response.status, 401);
+
+    const anonymousApi = await requestJson(`${baseUrl}/api/admin/clients`);
+    assert.equal(anonymousApi.response.status, 401);
+
+    const forgedApi = await requestJson(`${baseUrl}/api/admin/clients`, {
+      headers: { authorization: 'Bearer forged-token', cookie: 'menusqr_auth=forged-token' },
+    });
+    assert.equal(forgedApi.response.status, 401);
   } finally {
     await fixture.cleanup();
   }

@@ -7,7 +7,7 @@ export default function ContactForm() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     try {
-      await fetch('/api/public/contact', {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/public/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(Object.fromEntries(formData)),

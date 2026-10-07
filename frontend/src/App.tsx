@@ -47,7 +47,7 @@ function ProtectedAdminLayout() {
   useEffect(() => {
     let isCurrent = true;
     void getAdminSession().then((session) => {
-      if (isCurrent) setSessionState(session.authenticated ? 'authenticated' : 'unauthenticated');
+      if (isCurrent) setSessionState(session.authenticated && session.user?.role === 'SUPER_ADMIN' ? 'authenticated' : 'unauthenticated');
     }).catch(() => {
       if (isCurrent) setSessionState('error');
     });
@@ -74,7 +74,7 @@ function ProtectedAppLayout() {
   }
 
   if (!user || (user.role !== 'RESTAURANT_OWNER' && user.role !== 'SUPER_ADMIN')) {
-    return <Navigate to="/admin/login" replace state={{ from: location }} />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   return <AppLayout />;
@@ -132,6 +132,7 @@ function AppRoutes() {
         {/* Supabase Test Route */}
         <Route path="/test-supabase" element={<SupabaseTest />} />
 
+        <Route path="/login" element={<AdminLogin />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         
         {/* Super Admin Routes */}

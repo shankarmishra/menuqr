@@ -29,7 +29,7 @@ export default function QrCenter() {
     let current = true;
     Promise.allSettled([getQr(), getProfile(), getStickerRequests()]).then(([qrResult, profileResult, requestResult]) => {
       if (!current) return;
-      if (qrResult.status === 'fulfilled' && (qrResult.value as any).length > 0) setQr((qrResult.value as any)[0]);
+      if (qrResult.status === 'fulfilled' && qrResult.value) setQr(qrResult.value as AppQrData);
       if (profileResult.status === 'fulfilled') {
         setProfile(profileResult.value);
         if (profileResult.value) {

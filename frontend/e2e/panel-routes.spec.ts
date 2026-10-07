@@ -50,8 +50,8 @@ async function createRestaurant(plan: 'BASIC' | 'PREMIUM', name: string, withMen
   return fixture;
 }
 
-async function addAuthCookie(context: BrowserContext, value: string) {
-  await context.addCookies([{ name: 'menusqr_auth', value, url: 'http://127.0.0.1:5174', httpOnly: true, sameSite: 'Strict' }]);
+async function addAuthCookie(context: BrowserContext, value: string, name: string = 'menusqr_auth') {
+  await context.addCookies([{ name, value, url: 'http://127.0.0.1:5174', httpOnly: true, sameSite: 'Strict' }]);
 }
 
 async function cleanTenant(tenantId: string) {
@@ -72,9 +72,23 @@ async function cleanTenant(tenantId: string) {
 }
 
 test.beforeAll(async () => {
+  const { randomUUID, randomBytes, createHash } = await import('node:crypto');
   const runId = Date.now().toString(36);
   premium = await createRestaurant('PREMIUM', `E2E Premium ${runId}`, true);
-  adminCookie = cookieValue(generateAuthCookie({ id: 'super-admin', role: 'SUPER_ADMIN' }));
+
+  const adminEmail = 'xshankarmishra@gmail.com';
+  const adminInsertResult = await pool.query("INSERT INTO admin_users (id, email, status) VALUES ($1, $2, 'active') ON CONFLICT (email) DO UPDATE SET status='active' RETURNING id", [randomUUID(), adminEmail]);
+  const adminId = adminInsertResult.rows[0].id;
+
+  const token = randomBytes(32).toString('hex');
+  const tokenHash = createHash('sha256').update(token).digest('hex');
+  const sessionExpiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  const sessionId = randomBytes(16).toString('hex');
+  await pool.query(
+    'INSERT INTO admin_sessions (id, admin_id, token_hash, expires_at, ip_address) VALUES ($1, $2, $3, $4, $5)',
+    [sessionId, adminId, tokenHash, sessionExpiresAt, '127.0.0.1']
+  );
+  adminCookie = token;
 });
 
 test.afterAll(async () => {
@@ -131,7 +145,7 @@ test('Client Panel routes load without errors', async ({ browser, baseURL }) => 
 
 test('Admin Panel routes load without errors', async ({ browser, baseURL }) => {
   const context = await browser.newContext();
-  await addAuthCookie(context, adminCookie);
+  await addAuthCookie(context, adminCookie, 'menusqr_admin_session');
   const page = await context.newPage();
   
   const errors: Error[] = [];

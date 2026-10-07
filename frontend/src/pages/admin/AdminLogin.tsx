@@ -1,7 +1,8 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { Eye, EyeOff, KeyRound, Utensils, Mail, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { loginAdmin, verifyLoginOtp, resendLoginOtp, requestForgotPassword, resetPassword } from './clientStore';
+import { SEO } from '../../seo/SEO';
+import { loginAdmin, verifyLoginOtp, resendLoginOtp, requestForgotPassword, resetPassword, requestSuperAdminOtp, verifySuperAdminOtp } from './clientStore';
 
 interface LoginLocationState {
   from?: { pathname?: string; search?: string; hash?: string };
@@ -13,6 +14,7 @@ export default function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
   const returnTo = (location.state as LoginLocationState | null)?.from;
+  const isAdminPage = location.pathname === '/admin/login';
 
   // Login State
   const [mode, setMode] = useState<AuthMode>('LOGIN');
@@ -49,7 +51,7 @@ export default function AdminLogin() {
       window.location.reload();
       return;
     }
-    const defaultDest = role === 'SUPER_ADMIN' ? '/admin/dashboard' : '/app';
+    const defaultDest = role === 'SUPER_ADMIN' ? '/admin' : '/app';
     const dest = returnTo ? `${returnTo.pathname ?? defaultDest}${returnTo.search ?? ''}${returnTo.hash ?? ''}` : defaultDest;
     navigate(dest, { replace: true });
     window.location.reload();
@@ -61,18 +63,29 @@ export default function AdminLogin() {
     setInfoMessage('');
     setIsSubmitting(true);
     try {
-      const res = await loginAdmin(password, email || undefined);
-      if (res.requireOtp && res.tempToken) {
-        setTempToken(res.tempToken);
-        setTargetEmail(res.email || email);
+      if (isAdminPage) {
+        if (!email) throw new Error('Email is required for Admin login.');
+        const res = await requestSuperAdminOtp(email);
         setMode('OTP');
+        setTargetEmail(email);
         setResendTimer(30);
         setInfoMessage(res.message || 'A 6-digit OTP code has been sent to your email.');
-      } else if (res.authenticated) {
-        handleLoginSuccess(res.role, res.onboardingState);
+      } else {
+        const res = await loginAdmin(password, email || undefined);
+        if (res.requireOtp && res.tempToken) {
+          setTempToken(res.tempToken);
+          setTargetEmail(res.email || email);
+          setMode('OTP');
+          setResendTimer(30);
+          setInfoMessage(res.message || 'A 6-digit OTP code has been sent to your email.');
+        } else if (res.authenticated) {
+          handleLoginSuccess(res.role, res.onboardingState);
+        }
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not sign in. Please try again.');
+    } catch {
+      setError(isAdminPage
+        ? 'Unable to send a sign-in code right now. Please try again later.'
+        : 'Could not sign in. Please check your details and try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -88,12 +101,16 @@ export default function AdminLogin() {
     setInfoMessage('');
     setIsSubmitting(true);
     try {
-      const res = await verifyLoginOtp(tempToken, otp);
+      const res = isAdminPage
+        ? await verifySuperAdminOtp(targetEmail, otp)
+        : await verifyLoginOtp(tempToken, otp);
       if (res.authenticated) {
         handleLoginSuccess(res.role, res.onboardingState);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Incorrect OTP code. Try again.');
+    } catch {
+      setError(isAdminPage
+        ? 'Unable to verify sign-in. Check your details or request a new code.'
+        : 'Incorrect code. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -104,11 +121,19 @@ export default function AdminLogin() {
     setError('');
     setIsSubmitting(true);
     try {
-      const res = await resendLoginOtp(tempToken);
-      setInfoMessage(res.message || 'New OTP sent to your email.');
-      setResendTimer(30);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not resend OTP.');
+      if (isAdminPage) {
+        const res = await requestSuperAdminOtp(targetEmail);
+        setInfoMessage(res.message || 'New OTP sent to your email.');
+        setResendTimer(30);
+      } else {
+        const res = await resendLoginOtp(tempToken);
+        setInfoMessage(res.message || 'New OTP sent to your email.');
+        setResendTimer(30);
+      }
+    } catch {
+      setError(isAdminPage
+        ? 'Unable to send a new code right now. Please try again later.'
+        : 'Could not resend the code. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -155,16 +180,22 @@ export default function AdminLogin() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[radial-gradient(ellipse_at_50%_35%,#26342e_0%,#151c19_58%,#101513_100%)] px-5 py-10 text-white">
+    <>
+      <SEO
+        title={isAdminPage ? 'Administrator Access | MenusQR' : 'Restaurant Sign In | MenusQR'}
+        description={isAdminPage ? 'MenusQR administrator sign in.' : 'Sign in to your MenusQR restaurant account.'}
+        index={false}
+      />
+      <main className="grid min-h-screen place-items-center bg-[radial-gradient(ellipse_at_50%_35%,#26342e_0%,#151c19_58%,#101513_100%)] px-5 py-10 text-white">
       <section className="w-full max-w-md rounded-2xl border border-white/10 bg-[#202a26]/95 p-7 shadow-2xl shadow-black/30 sm:p-9">
         
         {/* Brand Header */}
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="grid h-12 w-12 place-items-center rounded-xl bg-[#e8783c] text-white shadow-lg shadow-[#e8783c]/20"><Utensils size={23} /></span>
+            <span className="grid h-12 w-12 place-items-center rounded-xl bg-[#e8783c] text-white shadow-lg shadow-[#e8783c]/20">{isAdminPage ? <ShieldCheck size={23} /> : <Utensils size={23} />}</span>
             <div>
               <p className="text-xl font-extrabold">Menu<span className="text-[#f29a66]">QR</span></p>
-              <p className="mt-0.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#94a39d]">Portal</p>
+              <p className="mt-0.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#94a39d]">{isAdminPage ? 'Private Admin Access' : 'Restaurant Portal'}</p>
             </div>
           </div>
           {mode !== 'LOGIN' && (
@@ -195,8 +226,10 @@ export default function AdminLogin() {
         {/* MODE 1: STANDARD LOGIN */}
         {mode === 'LOGIN' && (
           <>
-            <h1 className="text-2xl font-bold">Sign in to continue</h1>
-            <p className="mt-2 text-sm text-[#aab7b2]">Enter your restaurant credentials to manage your digital menu.</p>
+            <h1 className="text-2xl font-bold">{isAdminPage ? 'Administrator sign in' : 'Sign in to continue'}</h1>
+            <p className="mt-2 text-sm text-[#aab7b2]">
+              {isAdminPage ? 'Private access for approved administrators.' : 'Enter your restaurant credentials to manage your digital menu.'}
+            </p>
 
             <form onSubmit={handleInitialLogin} className="mt-7 space-y-5">
               <label className="block text-sm font-semibold text-[#dce5df]" htmlFor="email">
@@ -207,55 +240,58 @@ export default function AdminLogin() {
                     id="email"
                     autoComplete="email"
                     autoFocus
+                    required
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full rounded-lg border border-white/10 bg-[#151d19] py-3 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-[#728079] focus:border-[#e8783c] focus:ring-2 focus:ring-[#e8783c]/20"
-                    placeholder="owner@restaurant.com"
+                    placeholder={isAdminPage ? 'admin@menusqr.com' : 'owner@restaurant.com'}
                   />
                 </span>
               </label>
 
-              <div>
-                <div className="flex items-center justify-between text-sm font-semibold text-[#dce5df]">
-                  <label htmlFor="admin-password">Password</label>
-                  <button
-                    type="button"
-                    onClick={() => { setMode('FORGOT_EMAIL'); setForgotEmail(email); setError(''); setInfoMessage(''); }}
-                    className="text-xs text-[#e8783c] hover:underline"
-                  >
-                    Forgot password?
-                  </button>
+              {!isAdminPage && (
+                <div>
+                  <div className="flex items-center justify-between text-sm font-semibold text-[#dce5df]">
+                    <label htmlFor="admin-password">Password</label>
+                    <button
+                      type="button"
+                      onClick={() => { setMode('FORGOT_EMAIL'); setForgotEmail(email); setError(''); setInfoMessage(''); }}
+                      className="text-xs text-[#e8783c] hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                  <span className="relative mt-2 block">
+                    <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#84938c]" size={17} aria-hidden="true" />
+                    <input
+                      id="admin-password"
+                      autoComplete="current-password"
+                      required
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full rounded-lg border border-white/10 bg-[#151d19] py-3 pl-10 pr-12 text-sm text-white outline-none transition placeholder:text-[#728079] focus:border-[#e8783c] focus:ring-2 focus:ring-[#e8783c]/20"
+                      placeholder="Enter password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-[#94a39d] transition hover:bg-white/5 hover:text-white"
+                    >
+                      {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                    </button>
+                  </span>
                 </div>
-                <span className="relative mt-2 block">
-                  <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#84938c]" size={17} aria-hidden="true" />
-                  <input
-                    id="admin-password"
-                    autoComplete="current-password"
-                    required
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border border-white/10 bg-[#151d19] py-3 pl-10 pr-12 text-sm text-white outline-none transition placeholder:text-[#728079] focus:border-[#e8783c] focus:ring-2 focus:ring-[#e8783c]/20"
-                    placeholder="Enter password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-[#94a39d] transition hover:bg-white/5 hover:text-white"
-                  >
-                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                  </button>
-                </span>
-              </div>
+              )}
 
               <button
                 type="submit"
-                disabled={isSubmitting || !password}
+                disabled={isSubmitting || (isAdminPage ? !email : !password)}
                 className="w-full rounded-lg bg-[#e8783c] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#f18b50] disabled:cursor-wait disabled:opacity-60"
               >
-                {isSubmitting ? 'Verifying credentials...' : 'Continue to Sign In &rarr;'}
+                {isSubmitting ? (isAdminPage ? 'Sending OTP...' : 'Verifying credentials...') : isAdminPage ? 'Request sign-in code' : 'Continue to Sign In \u2192'}
               </button>
             </form>
           </>
@@ -269,7 +305,9 @@ export default function AdminLogin() {
             </div>
             <h1 className="text-2xl font-bold">Enter Verification Code</h1>
             <p className="mt-2 text-sm text-[#aab7b2]">
-              We sent a 6-digit OTP code to <strong className="text-white font-mono">{targetEmail}</strong>.
+              {isAdminPage
+                ? <>If <strong className="text-white font-mono">{targetEmail}</strong> is approved, a 6-digit code has been sent there.</>
+                : <>We sent a 6-digit OTP code to <strong className="text-white font-mono">{targetEmail}</strong>.</>}
             </p>
 
             <form onSubmit={handleVerifyOtp} className="mt-6 space-y-5">
@@ -294,7 +332,7 @@ export default function AdminLogin() {
                 disabled={isSubmitting || otp.length < 6}
                 className="w-full rounded-lg bg-[#e8783c] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#f18b50] disabled:opacity-60"
               >
-                {isSubmitting ? 'Verifying OTP...' : 'Verify & Enter Dashboard'}
+                {isSubmitting ? 'Verifying OTP...' : isAdminPage ? 'Verify & enter admin console' : 'Verify & Enter Dashboard'}
               </button>
 
               <div className="flex items-center justify-between text-xs text-[#94a39d] pt-2">
@@ -409,6 +447,7 @@ export default function AdminLogin() {
         )}
 
       </section>
-    </main>
+      </main>
+    </>
   );
 }

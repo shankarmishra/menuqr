@@ -1,32 +1,18 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
 import { pool } from '../db.js';
 import { generateAuthCookie, clearAuthCookie, getAuthenticatedUser, verifyPassword } from '../auth.js';
-import { apiError, sendJson, readJson, getClientIp } from '../utils.js';
+import { apiError, sendJson, readJson, getClientIp, normalizeEmail } from '../utils.js';
 
-const adminPassword = process.env.ADMIN_PASSWORD;
-if (!adminPassword) {
-  console.error("FATAL: ADMIN_PASSWORD environment variable is missing.");
-  process.exit(1);
-}
-const adminPasswordHash = createHash('sha256').update(adminPassword).digest();
-const loginLockDurationMs = 60 * 1000;
-const loginAttempts = new Map();
-
-function hasCorrectAdminPassword(password) {
-  if (typeof password !== 'string' || password.length > 256) return false;
-  const passwordHash = createHash('sha256').update(password).digest();
-  return timingSafeEqual(adminPasswordHash, passwordHash);
-}
-
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomInt } from 'node:crypto';
 import slugify from 'slugify';
 import { hashPassword } from '../auth.js';
-import { sendClientWelcomeEmail, sendPaymentSuccessEmail, sendLoginOtpEmail, sendPasswordResetOtpEmail } from '../email.js';
+import { sendClientWelcomeEmail, sendPaymentSuccessEmail, sendLoginOtpEmail, sendAdminLoginOtpEmail, sendPasswordResetOtpEmail } from '../email.js';
 
 const pendingTransactions = new Set();
 const paidTransactions = new Set();
 const loginOtpStore = new Map();
 const passwordResetStore = new Map();
+const clientLoginAttempts = new Map();
+const clientLoginLockDurationMs = 60 * 1000;
 
 export default async function authRoutes(request, response, url) {
 
@@ -39,18 +25,14 @@ export default async function authRoutes(request, response, url) {
     const { requestAdminOtp } = await import('../adminAuth.js');
     const address = getClientIp(request);
     
-    try {
-      const result = await requestAdminOtp(email, address);
-      if (result) {
-        const { sendLoginOtpEmail } = await import('../email.js');
-        void sendLoginOtpEmail({ email, otp: result.otp, ownerName: 'Admin' }).catch(() => {});
-        if (process.env.NODE_ENV === 'test') {
-           sendJson(response, 200, { success: true, message: 'If an admin account exists, an OTP has been sent.', _testOtp: result.otp });
-           return true;
-        }
+    const result = await requestAdminOtp(email, address);
+    if (result) {
+      try {
+        await sendAdminLoginOtpEmail({ email, otp: result.otp, ownerName: 'Admin' });
+      } catch {
+        await pool.query('UPDATE admin_otp_challenges SET used = true WHERE id = $1', [result.challengeId]).catch(() => {});
+        console.error('[admin auth] OTP email delivery failed.');
       }
-    } catch (err) {
-      if (err.status === 429) throw err;
     }
     
     sendJson(response, 200, { success: true, message: 'If an admin account exists, an OTP has been sent.' });
@@ -69,7 +51,9 @@ export default async function authRoutes(request, response, url) {
     try {
       result = await verifyAdminOtp(email.trim().toLowerCase(), otp, address);
     } catch (err) {
-      console.error(err); throw apiError(err.status || 401, err.message);
+      throw apiError(err.status || 401, err.status === 429
+        ? 'Unable to verify sign-in. Please request a new code.'
+        : 'Unable to verify sign-in. Check your details or request a new code.');
     }
 
     const { stringifySetCookie: serialize } = await import('cookie');
@@ -83,7 +67,7 @@ export default async function authRoutes(request, response, url) {
       maxAge: 8 * 60 * 60,
     });
     
-    response.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': cookie });
+    response.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
     response.end(JSON.stringify({ authenticated: true, role: 'SUPER_ADMIN', email: result.email }));
     return true;
   }
@@ -105,13 +89,24 @@ export default async function authRoutes(request, response, url) {
       path: '/',
       maxAge: 0,
     });
-    response.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': cookie });
+    response.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
     response.end(JSON.stringify({ authenticated: false }));
     return true;
   }
 
   if (request.method === 'GET' && url.pathname === '/api/auth/session') {
-    const user = await getAuthenticatedUser(request);
+    response.setHeader('Cache-Control', 'no-store');
+    let user = await getAuthenticatedUser(request);
+    if (!user) {
+      const { parseCookie: parse } = await import('cookie');
+      const cookies = parse(request.headers.cookie || '');
+      const adminToken = cookies['menusqr_admin_session'];
+      if (adminToken) {
+        const { verifyAdminSession } = await import('../adminAuth.js');
+        const adminUser = await verifyAdminSession(adminToken);
+        if (adminUser) user = adminUser;
+      }
+    }
     sendJson(response, 200, {
       authenticated: !!user,
       user: user || null,
@@ -326,18 +321,19 @@ export default async function authRoutes(request, response, url) {
   if (request.method === 'POST' && url.pathname === '/api/auth/login') {
     const address = getClientIp(request);
     const now = Date.now();
-    const attempt = loginAttempts.get(address);
+    const attempt = clientLoginAttempts.get(address);
     if (attempt?.lockedUntil > now) throw apiError(429, 'Too many login attempts. Try again in 1 minute.');
     
     const input = await readJson(request);
     let user = null;
     let userEmail = null;
 
-    if (input?.email) {
-      const dbRes = await pool.query('SELECT * FROM users WHERE email = $1', [input.email]);
+    const normalizedEmail = normalizeEmail(input?.email);
+    if (normalizedEmail) {
+      const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
       const dbUser = dbRes.rows[0];
       
-      if (dbUser && verifyPassword(input.password, dbUser.password_hash)) {
+      if (dbUser && dbUser.role !== 'SUPER_ADMIN' && verifyPassword(input.password, dbUser.password_hash)) {
         user = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
         userEmail = dbUser.email;
       }
@@ -346,49 +342,30 @@ export default async function authRoutes(request, response, url) {
     if (!user) {
       const currentAttempt = attempt && now - attempt.windowStartedAt < 15 * 60 * 1000 ? attempt : { count: 0, windowStartedAt: now, lockedUntil: 0 };
       currentAttempt.count += 1;
-      if (currentAttempt.count >= 5) currentAttempt.lockedUntil = now + loginLockDurationMs;
-      loginAttempts.set(address, currentAttempt);
+      if (currentAttempt.count >= 5) currentAttempt.lockedUntil = now + clientLoginLockDurationMs;
+      clientLoginAttempts.set(address, currentAttempt);
       throw apiError(401, 'Incorrect credentials.');
     }
     
-    loginAttempts.delete(address);
-    
-    if (user.role === 'SUPER_ADMIN') {
-      const { createAdminOtpSession } = await import('../adminAuth.js');
-      const { tempToken, otp, expiresAt } = createAdminOtpSession(userEmail);
-      console.log('Admin OTP generated:', otp); // Only for debugging, typically sent via email
-      // We assume an admin OTP might be sent via email or generated via authenticator. 
-      // The current adminAuth.js expects it to be verified. Let's send a fake email here.
-      void sendLoginOtpEmail({
-        email: userEmail,
-        otp,
-        ownerName: 'Admin',
-      }).catch(err => console.error('[OTP email error]', err));
-
-      sendJson(response, 200, {
-        requireOtp: true,
-        isAdmin: true,
-        tempToken,
-        email: userEmail,
-        message: 'A 6-digit verification code has been sent to the admin email.'
-      });
-      return true;
-    }
+    clientLoginAttempts.delete(address);
 
     // For Restaurant Owners: Generate 2FA OTP & Send Email
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('--- DEV OTP ---:', otp);
+    const otp = String(randomInt(100000, 1_000_000));
     const tempToken = randomUUID();
     const expiresAt = now + 5 * 60 * 1000; // 5 minutes
 
     loginOtpStore.set(tempToken, { otp, expiresAt, user, email: userEmail });
 
-    // Send OTP email asynchronously
-    void sendLoginOtpEmail({
-      email: userEmail,
-      otp,
-      ownerName: userEmail.split('@')[0],
-    }).catch(err => console.error('[OTP email error]', err));
+    try {
+      await sendLoginOtpEmail({
+        email: userEmail,
+        otp,
+        ownerName: userEmail.split('@')[0],
+      });
+    } catch {
+      loginOtpStore.delete(tempToken);
+      throw apiError(503, 'Unable to send a sign-in code right now. Please try again later.');
+    }
 
     sendJson(response, 200, {
       requireOtp: true,
@@ -401,47 +378,33 @@ export default async function authRoutes(request, response, url) {
 
   if (request.method === 'POST' && url.pathname === '/api/auth/verify-login-otp') {
     const input = await readJson(request);
-    const { tempToken, otp, isAdmin } = input || {};
+    const { tempToken, otp } = input || {};
 
     if (!tempToken || !otp) {
       throw apiError(400, 'Temporary session token and OTP are required.');
     }
 
-    let sessionUser;
-
-    if (isAdmin) {
-      const { verifyAdminOtp, auditLog } = await import('../adminAuth.js');
-      const address = getClientIp(request);
-      try {
-        const email = verifyAdminOtp(tempToken, otp, address);
-        sessionUser = { id: 'super-admin', role: 'SUPER_ADMIN', email };
-        auditLog('ADMIN_LOGIN_SUCCESS', address, { method: 'OTP' });
-      } catch (err) {
-        throw apiError(err.status || 401, err.message);
-      }
-    } else {
-      const session = loginOtpStore.get(tempToken);
-      if (!session) {
-        throw apiError(400, 'Invalid or expired 2FA session. Please log in again.');
-      }
-
-      if (Date.now() > session.expiresAt) {
-        loginOtpStore.delete(tempToken);
-        throw apiError(400, 'OTP code has expired. Please request a new code.');
-      }
-
-      if (session.otp !== String(otp).trim()) {
-        session.attemptCount = (session.attemptCount || 0) + 1;
-        if (session.attemptCount >= 5) {
-          loginOtpStore.delete(tempToken);
-          throw apiError(429, 'Too many failed attempts. Please log in again.');
-        }
-        throw apiError(401, 'Incorrect 2-step verification OTP code.');
-      }
-
-      loginOtpStore.delete(tempToken);
-      sessionUser = session.user;
+    const session = loginOtpStore.get(tempToken);
+    if (!session) {
+      throw apiError(400, 'Invalid or expired 2FA session. Please log in again.');
     }
+
+    if (Date.now() > session.expiresAt) {
+      loginOtpStore.delete(tempToken);
+      throw apiError(400, 'OTP code has expired. Please request a new code.');
+    }
+
+    if (session.otp !== String(otp).trim()) {
+      session.attemptCount = (session.attemptCount || 0) + 1;
+      if (session.attemptCount >= 5) {
+        loginOtpStore.delete(tempToken);
+        throw apiError(429, 'Too many failed attempts. Please log in again.');
+      }
+      throw apiError(401, 'Incorrect 2-step verification OTP code.');
+    }
+
+    loginOtpStore.delete(tempToken);
+    const sessionUser = session.user;
 
     const cookie = generateAuthCookie(sessionUser);
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
@@ -458,17 +421,18 @@ export default async function authRoutes(request, response, url) {
       throw apiError(400, 'Invalid or expired 2FA session.');
     }
 
-    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('--- DEV RESEND OTP ---:', newOtp);
+    const newOtp = String(randomInt(100000, 1_000_000));
+    try {
+      await sendLoginOtpEmail({
+        email: session.email,
+        otp: newOtp,
+        ownerName: session.email.split('@')[0],
+      });
+    } catch {
+      throw apiError(503, 'Unable to send a sign-in code right now. Please try again later.');
+    }
     session.otp = newOtp;
     session.expiresAt = Date.now() + 5 * 60 * 1000;
-    loginOtpStore.set(tempToken, session);
-
-    void sendLoginOtpEmail({
-      email: session.email,
-      otp: newOtp,
-      ownerName: session.email.split('@')[0],
-    }).catch(err => console.error('[Resend OTP email error]', err));
 
     sendJson(response, 200, { success: true, message: 'New OTP code sent to your email.' });
     return true;
@@ -480,7 +444,8 @@ export default async function authRoutes(request, response, url) {
 
     if (!email) throw apiError(400, 'Email address is required.');
 
-    const dbRes = await pool.query('SELECT * FROM users WHERE email = $1', [email.trim()]);
+    const normalizedEmail = normalizeEmail(email);
+    const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
     if (dbRes.rows.length === 0) {
       // Don't leak user existence, return success anyway
       sendJson(response, 200, { success: true, message: 'If an account exists with this email, a reset code has been sent.' });
@@ -488,16 +453,15 @@ export default async function authRoutes(request, response, url) {
     }
 
     const dbUser = dbRes.rows[0];
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('--- DEV OTP ---:', otp);
+    const otp = String(randomInt(100000, 1_000_000));
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-    passwordResetStore.set(email.trim().toLowerCase(), { otp, expiresAt, userId: dbUser.id });
+    passwordResetStore.set(normalizedEmail, { otp, expiresAt, userId: dbUser.id });
 
     void sendPasswordResetOtpEmail({
-      email: email.trim(),
+      email: normalizedEmail,
       otp,
-      ownerName: email.trim().split('@')[0],
+      ownerName: normalizedEmail.split('@')[0],
     }).catch(err => console.error('[Forgot password email error]', err));
 
     sendJson(response, 200, { success: true, message: 'Password reset code has been sent to your email.' });

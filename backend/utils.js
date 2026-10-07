@@ -37,3 +37,7 @@ export function getClientIp(request) {
   }
   return request.socket.remoteAddress || 'unknown';
 }
+
+export function normalizeEmail(value) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : '';
+}

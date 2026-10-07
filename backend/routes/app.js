@@ -172,8 +172,8 @@ export default async function appRoutes(request, response, url) {
   if (request.method === 'POST' && url.pathname === '/api/app/subscription/renew') {
     const input = await readJson(request);
     const newPlanId = String(input.planId || authorization.planId).toUpperCase();
-    
-    // We will do a mock "instant" renewal since this is for testing/demonstration
+
+    // Allow mock "instant" renewal to any plan for testing/demonstration
     const client = await pool.connect();
     try {
       await client.query('BEGIN');

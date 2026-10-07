@@ -18,9 +18,6 @@ function getSmtpTransporter() {
         auth: {
           user: smtpUser,
           pass: smtpPass,
-        },
-        tls: {
-          rejectUnauthorized: false
         }
       });
     }
@@ -33,6 +30,7 @@ async function sendEmail(message, label) {
   const transporter = getSmtpTransporter();
   const fromAddress = process.env.MAIL_FROM_ADDRESS || process.env.SMTP_USER || 'no-reply@menusqr.in';
   const fromName = process.env.MAIL_FROM_NAME || 'MENUSQR';
+  let smtpError;
 
   if (transporter) {
     try {
@@ -46,16 +44,16 @@ async function sendEmail(message, label) {
       console.info(`[email] ${label} sent successfully via Hostinger SMTP.`);
       return;
     } catch (err) {
+      smtpError = err;
       console.error(`[email] Error sending ${label} via Hostinger SMTP:`, err.message);
     }
   }
 
   if (!process.env.BREVO_API_KEY) {
-    console.warn(`[email] Neither Hostinger SMTP nor BREVO_API_KEY is configured; logged email attempt for ${label} to ${message.to}.`);
-    return;
+    throw new Error(smtpError ? 'Email delivery failed.' : 'No email delivery provider is configured.');
   }
   
-  const senderEmail = process.env.SMTP_USER?.trim() || 'qevnaro@gmail.com';
+  const senderEmail = process.env.MAIL_FROM_ADDRESS?.trim() || process.env.SMTP_USER?.trim() || 'qevnaro@gmail.com';
 
   const payload = JSON.stringify({
     sender: { email: senderEmail, name: 'MENUSQR' },
@@ -77,24 +75,23 @@ async function sendEmail(message, label) {
     }
   };
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
+      res.resume();
       res.on('end', () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           console.info(`[email] ${label} accepted by Brevo.`);
           resolve();
         } else {
-          console.error(`[email] Could not send ${label} (status: ${res.statusCode}):`, data);
-          resolve();
+          console.error(`[email] Could not send ${label} (status: ${res.statusCode}).`);
+          reject(new Error('Email provider rejected the message.'));
         }
       });
     });
     
     req.on('error', (e) => {
       console.error(`[email] Request error for ${label}:`, e.message);
-      resolve();
+      reject(new Error('Email provider request failed.'));
     });
     
     req.write(payload);
@@ -162,7 +159,7 @@ export async function sendClientWelcomeEmail(client) {
   if (!recipient) return;
 
   const name = client.ownerName?.trim() || client.businessName;
-  const loginUrl = `${process.env.APP_URL || 'https://menusqr.in'}/admin/login`;
+  const loginUrl = `${process.env.APP_URL || 'https://menusqr.in'}/admin/login?mode=restaurant`;
 
   const bodyHtml = `
     <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #111827;">Account Activated &mdash; Welcome to MENUSQR</h1>
@@ -250,11 +247,12 @@ export async function sendActivationEmail({ email, ownerName, businessName, plan
 
   const name = ownerName?.trim() || 'Partner';
   const baseUrl = process.env.APP_URL || 'https://menusqr.in';
+  const restaurantLoginUrl = `${baseUrl}/admin/login?mode=restaurant`;
   
   // Direct to login page if they already have a password set
   const loginUrl = (activationToken && !password)
     ? `${baseUrl}/#/auth/activate?token=${encodeURIComponent(activationToken)}`
-    : `${baseUrl}/admin/login`;
+    : restaurantLoginUrl;
   
   const ctaText = (activationToken && !password) ? 'Complete Account Setup' : 'Sign in to Dashboard';
 
@@ -272,7 +270,7 @@ export async function sendActivationEmail({ email, ownerName, businessName, plan
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
           <td style="padding: 6px 0; font-size: 13px; color: #64748b; width: 100px;">Portal URL:</td>
-          <td style="padding: 6px 0; font-size: 13px; font-weight: 500; color: #111827;">${baseUrl}/admin/login</td>
+          <td style="padding: 6px 0; font-size: 13px; font-weight: 500; color: #111827;">${restaurantLoginUrl}</td>
         </tr>
         <tr>
           <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Email:</td>
@@ -322,7 +320,7 @@ export async function sendLoginOtpEmail({ email, otp, ownerName }) {
       <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">This code will expire in 5 minutes.</p>
     </div>
 
-    <div style="margin: 0 0 20px 0; padding: 12px 16px; background-color: #fffbebf; border-left: 4px solid #d97706; border-radius: 0 4px 4px 0;">
+    <div style="margin: 0 0 20px 0; padding: 12px 16px; background-color: #fffbeb; border-left: 4px solid #d97706; border-radius: 0 4px 4px 0;">
       <p style="margin: 0; font-size: 12px; color: #92400e; line-height: 1.5;">
         <strong>Security Notice:</strong> Never share this code with anyone. MENUSQR staff will never call or message you asking for your verification code.
       </p>
@@ -339,6 +337,33 @@ export async function sendLoginOtpEmail({ email, otp, ownerName }) {
     html: buildCorporateEmailHtml({ title: 'Login OTP Code', bodyHtml }),
     text: `Your MENUSQR 2-step verification code is: ${otp}. Valid for 5 minutes.`
   }, `login OTP email for ${email}`);
+}
+
+export async function sendAdminLoginOtpEmail({ email, otp }) {
+  if (!email) return;
+
+  const bodyHtml = `
+    <h1 style="margin: 0 0 12px; font-size: 21px; line-height: 1.3; font-weight: 700; color: #17231e;">Admin sign-in code</h1>
+    <p style="margin: 0 0 22px; font-size: 14px; line-height: 1.65; color: #53615a;">
+      Use this one-time code to sign in to the MENUSQR administration portal. It expires in five minutes.
+    </p>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 22px; background: #f5f8f6; border: 1px solid #dbe5de; border-radius: 8px;">
+      <tr><td align="center" style="padding: 24px 16px 20px;">
+        <p style="margin: 0 0 10px; font-size: 11px; font-weight: 700; color: #6e7e74; text-transform: uppercase;">Your verification code</p>
+        <p style="margin: 0; font-family: 'Courier New', Courier, monospace; font-size: 34px; line-height: 1.2; font-weight: 700; letter-spacing: 7px; color: #17231e;">${otp}</p>
+      </td></tr>
+    </table>
+    <p style="margin: 0; padding: 13px 15px; background: #fff8e8; border-left: 3px solid #bf7b18; font-size: 12px; line-height: 1.55; color: #6f511b;">
+      MENUSQR will never ask you to share this code. If you did not request it, you can safely ignore this email.
+    </p>
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: 'Your MENUSQR admin sign-in code',
+    html: buildCorporateEmailHtml({ title: 'Admin Sign-In Code', bodyHtml }),
+    text: `Your MENUSQR admin sign-in code is ${otp}. It expires in five minutes. Never share this code.`
+  }, `admin sign-in OTP email for ${email}`);
 }
 
 export async function sendPasswordResetOtpEmail({ email, otp, ownerName }) {

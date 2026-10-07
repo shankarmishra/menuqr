@@ -227,6 +227,8 @@ CREATE TABLE IF NOT EXISTS orders (
   currency VARCHAR(10) DEFAULT 'INR',
   status VARCHAR(50) DEFAULT 'PENDING_PAYMENT',
   provisioning_status VARCHAR(50) DEFAULT 'PENDING',
+  activation_email_sent BOOLEAN NOT NULL DEFAULT FALSE,
+  payment_receipt_email_sent BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -238,6 +240,8 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS cuisine VARCHAR(100);
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS website VARCHAR(255);
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS instagram VARCHAR(255);
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS metadata JSONB;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS activation_email_sent BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_receipt_email_sent BOOLEAN NOT NULL DEFAULT FALSE;
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS activation_token_hash VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS activation_token_expires_at TIMESTAMP;
@@ -307,6 +311,39 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
   user_agent TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS admin_auth_rate_limits (
+  bucket_key VARCHAR(64) PRIMARY KEY,
+  window_started_at TIMESTAMP NOT NULL,
+  hits INTEGER NOT NULL DEFAULT 0 CHECK (hits >= 0),
+  blocked_until TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_otp_challenges_email_created
+  ON admin_otp_challenges (email, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_admin_sessions_admin_id
+  ON admin_sessions (admin_id);
+CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires_at
+  ON admin_sessions (expires_at);
+CREATE INDEX IF NOT EXISTS idx_admin_auth_rate_limits_updated_at
+  ON admin_auth_rate_limits (updated_at);
+
+CREATE OR REPLACE FUNCTION revoke_admin_sessions_on_deactivation()
+RETURNS trigger AS $$
+BEGIN
+  IF OLD.status = 'active' AND NEW.status <> 'active' THEN
+    DELETE FROM admin_sessions WHERE admin_id = OLD.id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_revoke_admin_sessions_on_deactivation ON admin_users;
+CREATE TRIGGER trg_revoke_admin_sessions_on_deactivation
+AFTER UPDATE OF status ON admin_users
+FOR EACH ROW
+EXECUTE FUNCTION revoke_admin_sessions_on_deactivation();
 
 INSERT INTO admin_users (id, email) VALUES
   ('admin-1', 'xshankarmishra@gmail.com'),
