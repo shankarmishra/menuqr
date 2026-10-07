@@ -1,4 +1,30 @@
 {
+  "redirects": [
+    {
+      "source": "/admin/login",
+      "destination": "https://admin.menusqr.in/login",
+      "permanent": false,
+      "has": [{ "type": "host", "value": "menusqr.in" }]
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://admin.menusqr.in/admin/:path*",
+      "permanent": false,
+      "has": [{ "type": "host", "value": "menusqr.in" }]
+    },
+    {
+      "source": "/admin/login",
+      "destination": "https://admin.menusqr.in/login",
+      "permanent": false,
+      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://admin.menusqr.in/admin/:path*",
+      "permanent": false,
+      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
