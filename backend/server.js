@@ -34,6 +34,7 @@ const server = createServer(async (request, response) => {
 
   if (requestOrigin && isAllowedOrigin) {
     response.setHeader('Access-Control-Allow-Origin', requestOrigin);
+    response.setHeader('Access-Control-Allow-Credentials', 'true');
     response.setHeader(
       'Access-Control-Allow-Headers',
       'Content-Type, Authorization, X-MenusQR-Import'

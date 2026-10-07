@@ -17,7 +17,7 @@ export default function PurchaseReviewPage() {
 
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/purchase/orders/${orderId}`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/purchase/orders/${orderId}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Order not found');
         setOrder(data);

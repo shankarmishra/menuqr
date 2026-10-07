@@ -15,7 +15,7 @@ export default function PurchaseSuccessPage() {
     if (orderId) {
       const verifyOrder = async () => {
         try {
-          const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/purchase/orders/${orderId}/verify`, {
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/purchase/orders/${orderId}/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ isCashfreeRedirect: true }) // Using Cashfree logic in backend

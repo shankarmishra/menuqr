@@ -20,7 +20,7 @@ export default function CheckoutPage() {
     const cleanCardNumber = cardNumber.replace(/\s+/g, '');
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/purchase/orders/${orderId}/pay`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/purchase/orders/${orderId}/pay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cardNumber: cleanCardNumber }),
