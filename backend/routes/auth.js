@@ -73,7 +73,9 @@ export default async function authRoutes(request, response, url) {
     }
 
     const { stringifySetCookie: serialize } = await import('cookie');
-    const cookie = serialize('menusqr_admin_session', result.token, {
+    const cookie = serialize({
+      name: 'menusqr_admin_session',
+      value: result.token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -94,7 +96,9 @@ export default async function authRoutes(request, response, url) {
       const { clearAdminSession } = await import('../adminAuth.js');
       await clearAdminSession(adminToken);
     }
-    const cookie = serialize('menusqr_admin_session', '', {
+    const cookie = serialize({
+      name: 'menusqr_admin_session',
+      value: '',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
