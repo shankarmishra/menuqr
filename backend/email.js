@@ -3,6 +3,19 @@ import nodemailer from 'nodemailer';
 
 let smtpTransporter = null;
 
+export function getSmtpTimeoutOptions(environment = process.env) {
+  const timeoutValue = (value, fallback) => {
+    const timeout = Number(value);
+    return Number.isFinite(timeout) && timeout > 0 ? timeout : fallback;
+  };
+
+  return {
+    connectionTimeout: timeoutValue(environment.SMTP_CONNECTION_TIMEOUT_MS, 10_000),
+    greetingTimeout: timeoutValue(environment.SMTP_GREETING_TIMEOUT_MS, 10_000),
+    socketTimeout: timeoutValue(environment.SMTP_SOCKET_TIMEOUT_MS, 20_000),
+  };
+}
+
 function getSmtpTransporter() {
   const smtpHost = process.env.SMTP_HOST || 'smtp.hostinger.com';
   const smtpPort = Number(process.env.SMTP_PORT) || 587;
@@ -18,7 +31,8 @@ function getSmtpTransporter() {
         auth: {
           user: smtpUser,
           pass: smtpPass,
-        }
+        },
+        ...getSmtpTimeoutOptions(),
       });
     }
     return smtpTransporter;
@@ -92,6 +106,10 @@ async function sendEmail(message, label) {
     req.on('error', (e) => {
       console.error(`[email] Request error for ${label}:`, e.message);
       reject(new Error('Email provider request failed.'));
+    });
+
+    req.setTimeout(Number(process.env.BREVO_REQUEST_TIMEOUT_MS) || 15_000, () => {
+      req.destroy(new Error('Email provider request timed out.'));
     });
     
     req.write(payload);
