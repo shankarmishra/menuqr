@@ -305,6 +305,7 @@ export default async function authRoutes(request, response, url) {
 
     // For Restaurant Owners: Generate 2FA OTP & Send Email
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('--- DEV OTP ---:', otp);
     const tempToken = randomUUID();
     const expiresAt = now + 5 * 60 * 1000; // 5 minutes
 
@@ -386,6 +387,7 @@ export default async function authRoutes(request, response, url) {
     }
 
     const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('--- DEV RESEND OTP ---:', newOtp);
     session.otp = newOtp;
     session.expiresAt = Date.now() + 5 * 60 * 1000;
     loginOtpStore.set(tempToken, session);
@@ -415,6 +417,7 @@ export default async function authRoutes(request, response, url) {
 
     const dbUser = dbRes.rows[0];
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('--- DEV OTP ---:', otp);
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     passwordResetStore.set(email.trim().toLowerCase(), { otp, expiresAt, userId: dbUser.id });
