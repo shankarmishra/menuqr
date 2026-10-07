@@ -85,7 +85,7 @@ export default function AdminLogin() {
       }
     } catch {
       setError(isAdminPage
-        ? 'Unable to send a sign-in code right now. Please try again later.'
+        ? 'We could not send a sign-in code. Please try again shortly. If the problem continues, contact support.'
         : 'Could not sign in. Please check your details and try again.');
     } finally {
       setIsSubmitting(false);
@@ -133,7 +133,7 @@ export default function AdminLogin() {
       }
     } catch {
       setError(isAdminPage
-        ? 'Unable to send a new code right now. Please try again later.'
+        ? 'We could not send a new code. Please wait a moment and try again.'
         : 'Could not resend the code. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -240,13 +240,16 @@ export default function AdminLogin() {
                   <input
                     id="email"
                     autoComplete="email"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
                     autoFocus
                     required
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full rounded-lg border border-white/10 bg-[#151d19] py-3 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-[#728079] focus:border-[#e8783c] focus:ring-2 focus:ring-[#e8783c]/20"
-                    placeholder={isAdminPage ? 'admin@menusqr.com' : 'owner@restaurant.com'}
+                    placeholder={isAdminPage ? 'Administrator email address' : 'owner@restaurant.com'}
                   />
                 </span>
               </label>

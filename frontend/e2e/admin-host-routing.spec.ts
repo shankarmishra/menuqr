@@ -34,3 +34,24 @@ test('dedicated hostname shows OTP-only admin login while the main hostname keep
   await expect(page.getByRole('button', { name: 'Forgot password?' })).toBeVisible();
   expect(ownerSessionRequests).toHaveLength(0);
 });
+
+test('admin email field and delivery error use clear, professional copy', async ({ page, baseURL }) => {
+  const adminOrigin = new URL(baseURL!);
+  adminOrigin.hostname = 'localhost';
+  await page.route('**/api/auth/admin/request-otp', (route) => route.fulfill({
+    status: 503,
+    contentType: 'application/json',
+    body: JSON.stringify({ error: 'Server SMTP connection timed out.' }),
+  }));
+
+  await page.goto(`${adminOrigin.origin}/login`);
+  const email = page.getByLabel('Email Address');
+  await expect(email).toHaveAttribute('placeholder', 'Administrator email address');
+  await email.fill('xshankarmishra@gmail.com');
+  await page.getByRole('button', { name: 'Request sign-in code' }).click();
+
+  await expect(page.getByRole('alert')).toHaveText(
+    'We could not send a sign-in code. Please try again shortly. If the problem continues, contact support.',
+  );
+  await expect(page.getByRole('alert')).not.toContainText('SMTP');
+});
