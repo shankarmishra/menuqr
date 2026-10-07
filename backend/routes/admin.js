@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { pool } from '../db.js';
+import { pool, queryPortable } from '../db.js';
 import { enforceSuperAdmin } from '../auth.js';
 import { apiError, sendJson, readJson } from '../utils.js';
 import { createNewUserNotification } from '../notifications.js';
@@ -118,6 +118,72 @@ export default async function adminRoutes(request, response, url) {
   if (request.method === 'GET' && url.pathname === '/api/admin/orders') {
     const res = await pool.query('SELECT * FROM orders ORDER BY created_at DESC LIMIT 200');
     sendJson(response, 200, res.rows);
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/admin/sticker-requests') {
+    const requests = await pool.query(`
+      SELECT r.id, r.tenant_id as "tenantId", c.business_name as "restaurantName",
+        q.qr_id as "qrId", r.quantity, r.contact_name as "contactName",
+        r.contact_phone as "contactPhone", r.contact_email as "contactEmail",
+        r.delivery_address as "deliveryAddress", r.delivery_city as "deliveryCity",
+        r.delivery_state as "deliveryState", r.delivery_postal_code as "deliveryPostalCode",
+        r.notes, r.status, r.created_at as "createdAt", r.updated_at as "updatedAt"
+      FROM sticker_requests r
+      JOIN clients c ON c.id = r.tenant_id
+      JOIN qr_codes q ON q.id = r.qr_code_id
+      ORDER BY r.created_at DESC
+    `);
+    sendJson(response, 200, requests.rows);
+    return true;
+  }
+
+  const stickerRequestMatch = url.pathname.match(/^\/api\/admin\/sticker-requests\/([^/]+)$/);
+  if (request.method === 'PATCH' && stickerRequestMatch) {
+    const requestId = decodeURIComponent(stickerRequestMatch[1]);
+    const input = await readJson(request);
+    const status = String(input.status || '').toUpperCase();
+    const transitions = {
+      PENDING: ['REVIEWING', 'CANCELLED'],
+      REVIEWING: ['CONFIRMED', 'CANCELLED'],
+      CONFIRMED: ['IN_PRODUCTION', 'CANCELLED'],
+      IN_PRODUCTION: ['SHIPPED', 'CANCELLED'],
+      SHIPPED: ['DELIVERED'],
+      DELIVERED: [],
+      CANCELLED: [],
+    };
+    if (!Object.hasOwn(transitions, status)) throw apiError(400, 'Choose a valid sticker request status.');
+    const client = await pool.connect();
+    let updated;
+    try {
+      await client.query('BEGIN');
+      const current = await queryPortable(client,
+        'SELECT r.status FROM sticker_requests r WHERE r.id = ? FOR UPDATE',
+        [requestId]
+      );
+      const previousStatus = String(current.rows[0]?.status || '').toUpperCase();
+      if (!current.rows[0]) throw apiError(404, 'Sticker request was not found.');
+      if (!transitions[previousStatus]?.includes(status)) throw apiError(409, `This request cannot move from ${previousStatus} to ${status}.`);
+      await queryPortable(client,
+        'UPDATE sticker_requests SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [status, requestId]
+      );
+      await queryPortable(client,
+        'INSERT INTO sticker_request_events (id, request_id, previous_status, new_status, changed_by, note) VALUES (?, ?, ?, ?, NULL, ?)',
+        [randomUUID(), requestId, previousStatus, status, `Admin: super-admin. ${String(input.note || '').trim().slice(0, 900)}`]
+      );
+      updated = await queryPortable(client,
+        'SELECT id, status, updated_at as "updatedAt" FROM sticker_requests WHERE id = ?',
+        [requestId]
+      );
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+    sendJson(response, 200, updated.rows[0]);
     return true;
   }
 

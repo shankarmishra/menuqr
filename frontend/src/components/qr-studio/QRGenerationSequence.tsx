@@ -1,13 +1,22 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
+import { toPng, toSvg } from 'html-to-image';
 import { CheckCircle2, Download, Printer, ExternalLink } from 'lucide-react';
+import { MenusQRBrand } from '../brand/MenusQRBrand';
+import './QRGenerationSequence.css';
+import { menuTemplates } from '../../data/menuTemplates';
 
 interface QRGenerationSequenceProps {
   restaurantName: string;
   menuUrl: string;
   onComplete: (qrDataUrl: string) => void;
   onClose: () => void;
+  phone?: string;
+  address?: string;
+  onError?: () => void;
+  initiallyReady?: boolean;
+  templateId?: string;
 }
 
 type Phase = 'preparing' | 'material' | 'branding' | 'generating' | 'details' | 'finishing' | 'ready';
@@ -24,22 +33,16 @@ const PHASE_CONFIG: Record<Phase, { label: string; duration: number }> = {
 
 const PHASES: Phase[] = ['preparing', 'material', 'branding', 'generating', 'details', 'finishing', 'ready'];
 
-export default function QRGenerationSequence({ restaurantName, menuUrl, onComplete, onClose }: QRGenerationSequenceProps) {
+export default function QRGenerationSequence({ restaurantName, menuUrl, onComplete, onClose, phone, address, onError, initiallyReady = false, templateId = 'royal-maharaja' }: QRGenerationSequenceProps) {
   const [currentPhase, setCurrentPhase] = useState<Phase>('preparing');
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
-  const [qrSvg, setQrSvg] = useState<string>('');
+  const stickerRef = useRef<HTMLDivElement>(null);
+  const stickerTemplate = menuTemplates.find((template) => template.id === templateId) ?? menuTemplates[0];
 
   const generateQR = useCallback(async () => {
     try {
-      const [dataUrl, svgString] = await Promise.all([
+      const [dataUrl] = await Promise.all([
         QRCode.toDataURL(menuUrl, {
-          width: 600,
-          margin: 2,
-          color: { dark: '#151C19', light: '#FAFAF7' },
-          errorCorrectionLevel: 'H',
-        }),
-        QRCode.toString(menuUrl, {
-          type: 'svg',
           width: 600,
           margin: 2,
           color: { dark: '#151C19', light: '#FAFAF7' },
@@ -47,19 +50,26 @@ export default function QRGenerationSequence({ restaurantName, menuUrl, onComple
         }),
       ]);
       setQrDataUrl(dataUrl);
-      setQrSvg(svgString);
       return dataUrl;
     } catch (err) {
-      console.error('QR generation failed:', err);
+      onError?.();
       return '';
     }
-  }, [menuUrl]);
+  }, [menuUrl, onError]);
 
   useEffect(() => {
     let cancelled = false;
     let qrResult = '';
 
     async function runSequence() {
+      if (initiallyReady) {
+        qrResult = await generateQR();
+        if (!cancelled && qrResult) {
+          setCurrentPhase('ready');
+          onComplete(qrResult);
+        }
+        return;
+      }
       for (let i = 0; i < PHASES.length; i++) {
         if (cancelled) return;
         const phase = PHASES[i];
@@ -81,44 +91,48 @@ export default function QRGenerationSequence({ restaurantName, menuUrl, onComple
 
     runSequence();
     return () => { cancelled = true; };
-  }, [generateQR, onComplete]);
+  }, [generateQR, initiallyReady, onComplete]);
 
   const phaseIndex = PHASES.indexOf(currentPhase);
   const progress = ((phaseIndex + 1) / PHASES.length) * 100;
   const isReady = currentPhase === 'ready';
 
-  const downloadPNG = () => {
-    if (!qrDataUrl) return;
-    const link = document.createElement('a');
-    link.download = `MenusQR_${restaurantName.replace(/\s+/g, '_')}.png`;
-    link.href = qrDataUrl;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const downloadPNG = async () => {
+    if (!qrDataUrl || !stickerRef.current) return;
+    try {
+      const dataUrl = await toPng(stickerRef.current, { pixelRatio: 3, cacheBust: true });
+      const link = document.createElement('a');
+      link.download = `MenusQR_${restaurantName.replace(/[^a-z0-9]+/gi, '_')}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch {
+      onError?.();
+    }
   };
 
-  const downloadSVG = () => {
-    if (!qrSvg) return;
-    const blob = new Blob([qrSvg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = `MenusQR_${restaurantName.replace(/\s+/g, '_')}.svg`;
-    link.href = url;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const downloadSVG = async () => {
+    if (!qrDataUrl || !stickerRef.current) return;
+    try {
+      const svg = await toSvg(stickerRef.current, { cacheBust: true });
+      const link = document.createElement('a');
+      link.download = `MenusQR_${restaurantName.replace(/[^a-z0-9]+/gi, '_')}.svg`;
+      link.href = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch {
+      onError?.();
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+    <div className="qr-generation-overlay fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/80 px-3 py-6 backdrop-blur-sm">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-lg mx-4 bg-[#FAFAF7] rounded-3xl shadow-2xl overflow-hidden"
+        className="qr-production-panel my-auto w-full max-w-lg bg-[#FAFAF7] shadow-2xl"
       >
         {/* Production Workspace Header */}
-        <div className="bg-[#151C19] px-6 py-4 flex items-center justify-between">
+        <div className="qr-production-header bg-[#151C19] px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-[#FF5E4D]" />
@@ -135,7 +149,7 @@ export default function QRGenerationSequence({ restaurantName, menuUrl, onComple
         </div>
 
         {/* Main Content */}
-        <div className="p-8">
+        <div className="qr-production-content p-8">
           <AnimatePresence mode="wait">
             {!isReady ? (
               <motion.div
@@ -152,7 +166,7 @@ export default function QRGenerationSequence({ restaurantName, menuUrl, onComple
                     initial={{ y: 40, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.6 }}
-                    className="absolute inset-0 bg-[#FAFAF7] rounded-2xl border-2 border-[#151C19]/10 shadow-xl"
+                    className="absolute inset-0 bg-[#FAFAF7] rounded-sm border border-[#151C19]/10 shadow-xl"
                     style={{
                       background: 'linear-gradient(135deg, #FAFAF7 0%, #F0EDE6 100%)',
                     }}
@@ -170,9 +184,9 @@ export default function QRGenerationSequence({ restaurantName, menuUrl, onComple
                           <motion.div
                             initial={{ opacity: 0, y: -5 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-[8px] font-black tracking-[0.4em] text-[#151C19]/40 uppercase mb-2"
+                            className="mb-2"
                           >
-                            MENUSQR
+                            <MenusQRBrand size="sm" variant="primary" />
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -210,13 +224,6 @@ export default function QRGenerationSequence({ restaurantName, menuUrl, onComple
                         )}
 
                         {/* Scan line during generation */}
-                        {currentPhase === 'generating' && (
-                          <motion.div
-                            animate={{ top: ['0%', '100%', '0%'] }}
-                            transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-                            className="absolute left-0 right-0 h-0.5 bg-[#E8783C] shadow-[0_0_8px_#E8783C]"
-                          />
-                        )}
                       </div>
 
                       {/* Bottom text */}
@@ -258,26 +265,34 @@ export default function QRGenerationSequence({ restaurantName, menuUrl, onComple
                 className="flex flex-col items-center"
               >
                 {/* Finished Sticker */}
-                <div className="relative w-64 h-80 mb-8">
+                <div className="relative w-72 max-w-full mb-6">
                   <motion.div
-                    initial={{ rotateY: -10, rotateX: 5 }}
-                    animate={{ rotateY: 0, rotateX: 0 }}
-                    transition={{ duration: 0.6, ease: 'easeOut' }}
-                    className="absolute inset-0 bg-gradient-to-b from-[#FAFAF7] to-[#F0EDE6] rounded-2xl border border-[#151C19]/10 shadow-2xl"
-                    style={{ perspective: '1000px' }}
+                    initial={{ y: 28, rotateX: 3 }}
+                    animate={{ y: 0, rotateX: 0 }}
+                    transition={{ duration: 0.55, ease: 'easeOut' }}
+                    ref={stickerRef}
+                    className="qr-print-sticker relative flex min-h-[390px] flex-col items-center rounded-sm border border-[#18231f]/15 bg-white px-7 py-6 text-center shadow-2xl"
+                    style={{ '--sticker-accent': stickerTemplate.colors.accent, '--sticker-frame': stickerTemplate.colors.border } as React.CSSProperties}
                   >
-                    <div className="flex flex-col items-center justify-center h-full p-6">
-                      <div className="text-[8px] font-black tracking-[0.4em] text-[#151C19]/40 uppercase mb-2">MENUSQR</div>
-                      <h2 className="text-sm font-black text-[#151C19] text-center uppercase tracking-wider mb-6">{restaurantName}</h2>
-                      <div className="w-36 h-36 rounded-xl overflow-hidden mb-4">
-                        {qrDataUrl && <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain" />}
-                      </div>
-                      <div className="text-[9px] font-bold tracking-[0.3em] text-[#151C19]/40 uppercase">Scan for Menu</div>
+                    <div className="qr-print-cropmarks" aria-hidden="true" />
+                    <MenusQRBrand size="sm" variant="primary" className="mb-4" />
+                    <h2 className="max-w-full break-words text-lg font-extrabold text-[#18231f]">{restaurantName}</h2>
+                    <p className="mt-1 max-w-full break-words text-xs text-[#65716c]">Digital menu · Updated live</p>
+                    <div className="my-5 grid h-52 w-52 place-items-center bg-white p-2">
+                      {qrDataUrl && <img src={qrDataUrl} alt="Permanent restaurant menu QR code" className="h-full w-full object-contain" />}
                     </div>
+                    <div className="space-y-1 text-center">
+                      <p className="text-sm font-bold text-[#18231f]">Scan to view our menu</p>
+                      <p className="break-all text-[10px] text-[#65716c]">{new URL(menuUrl).host}</p>
+                      {phone && <p className="text-[10px] text-[#65716c]">{phone}</p>}
+                      {address && <p className="max-w-[15rem] text-[10px] text-[#65716c]">{address}</p>}
+                    </div>
+                    <p className="mt-auto pt-4 text-[9px] font-semibold uppercase tracking-[0.18em] text-[#e8783c]">One QR · Always the latest menu</p>
                   </motion.div>
                 </div>
 
                 {/* Success */}
+                <div className="qr-print-actions flex w-full max-w-xs flex-col items-center">
                 <div className="flex items-center gap-2 text-[#34B56A] mb-2">
                   <CheckCircle2 size={20} />
                   <span className="text-sm font-black">Your permanent QR is ready</span>
@@ -287,15 +302,15 @@ export default function QRGenerationSequence({ restaurantName, menuUrl, onComple
                 </p>
 
                 {/* Download Actions */}
-                <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
+                <div className="flex flex-col sm:flex-row gap-3 w-full">
                   <button
-                    onClick={downloadPNG}
+                    onClick={() => void downloadPNG()}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#151C19] hover:bg-[#202A26] text-white text-sm font-bold rounded-xl transition-colors"
                   >
                     <Download size={16} /> PNG
                   </button>
                   <button
-                    onClick={downloadSVG}
+                    onClick={() => void downloadSVG()}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#151C19] hover:bg-[#202A26] text-white text-sm font-bold rounded-xl transition-colors"
                   >
                     <Download size={16} /> SVG
@@ -316,6 +331,7 @@ export default function QRGenerationSequence({ restaurantName, menuUrl, onComple
                   >
                     <ExternalLink size={14} /> View Live Menu
                   </a>
+                </div>
                 </div>
               </motion.div>
             )}

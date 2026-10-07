@@ -37,6 +37,7 @@ backend/data/
 # Scratch/System
 scratch/
 .system_generated/
+.superpowers/
 # Ignore reports and temporary scratch files
 *.md
 !README.md

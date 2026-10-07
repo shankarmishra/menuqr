@@ -7,6 +7,12 @@ const { Pool } = pg;
 
 export let pool = null;
 
+export function queryPortable(executor, sql, values = []) {
+  let parameterIndex = 0;
+  const postgresSql = sql.replace(/\?/g, () => `$${++parameterIndex}`);
+  return executor.query(postgresSql, values);
+}
+
 export async function connectDB(uri) {
   if (pool) return pool;
   

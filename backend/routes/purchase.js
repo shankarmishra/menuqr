@@ -563,17 +563,17 @@ export default async function purchaseRoutes(request, response, url) {
       newExpiry.setFullYear(newExpiry.getFullYear() + 1);
 
       await pool.query(
-        `UPDATE subscriptions SET plan_id=$1, status='ACTIVE', expires_at=$2, updated_at=NOW()
-         WHERE tenant_id=$3`,
-        [planKey.toUpperCase(), newExpiry, tenantId]
+        `UPDATE subscriptions SET plan_id=$1, status='ACTIVE', expires_at=$2, content_period_start=$3, content_period_id=$4, updated_at=NOW()
+         WHERE tenant_id=$5`,
+        [planKey.toUpperCase(), newExpiry, new Date(), renewOrderId, tenantId]
       );
     } else {
       newExpiry.setFullYear(newExpiry.getFullYear() + 1);
       const subId = randomUUID();
       await pool.query(
-        `INSERT INTO subscriptions (id, tenant_id, plan_id, status, started_at, expires_at)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
-        [subId, tenantId, planKey.toUpperCase(), 'ACTIVE', newStart, newExpiry]
+        `INSERT INTO subscriptions (id, tenant_id, plan_id, status, started_at, expires_at, content_period_start, content_period_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [subId, tenantId, planKey.toUpperCase(), 'ACTIVE', newStart, newExpiry, new Date(), renewOrderId]
       );
     }
 

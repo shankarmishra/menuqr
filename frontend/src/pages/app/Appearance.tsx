@@ -1,207 +1,164 @@
-import { useState } from 'react';
-import { Check, Palette, Eye, Save } from 'lucide-react';
-import { updateSettings } from './appStore';
-
-interface TemplateOption {
-  id: string;
-  name: string;
-  badge: string;
-  desc: string;
-  bg: string;
-  text: string;
-  accent: string;
-  font: string;
-  renderType: 'gold-stars' | 'yellow-brush' | 'wavy-badge' | 'bifold-wood' | 'larana-wave' | 'teal-starburst' | 'minimal-white' | 'street-food' | 'royal-crimson' | 'craving-grid';
-}
-
-const TEMPLATES: TemplateOption[] = [
-  { id: 'gold-stars', name: '1. Golden Star Luxury', badge: 'Fine Dining', desc: 'Dark obsidian, gold stardust border, centered luxury layout', bg: '#0d0d0d', text: '#f5e6d0', accent: '#ffc928', font: 'serif', renderType: 'gold-stars' },
-  { id: 'yellow-brush', name: '2. Yellow Brush Chalkboard', badge: 'Chalkboard', desc: 'Chalkboard texture, yellow brush badge, top dish photo', bg: '#1a1d20', text: '#ffffff', accent: '#ffc928', font: 'sans-serif', renderType: 'yellow-brush' },
-  { id: 'wavy-badge', name: '3. Wavy Graphic Badges', badge: 'Poster Layout', desc: 'Yellow wavy header badges, section category division cards', bg: '#121418', text: '#ffffff', accent: '#ffc928', font: 'sans-serif', renderType: 'wavy-badge' },
-  { id: 'bifold-wood', name: '4. Bifold Wood Master', badge: 'Grill & Bar', desc: 'Dark wood texture, yellow paint headers, food dish thumbnails', bg: '#161412', text: '#f8fafc', accent: '#e8783c', font: 'sans-serif', renderType: 'bifold-wood' },
-  { id: 'larana-wave', name: '5. Larana Wave Bistro', badge: 'Modern Bistro', desc: 'Top wave graphic, clean 2-column text list, bottom photo gallery', bg: '#151b1e', text: '#ffffff', accent: '#e8783c', font: 'sans-serif', renderType: 'larana-wave' },
-  { id: 'teal-starburst', name: '6. Teal Card & Starburst', badge: 'Best Seller', desc: 'Deep teal slate backdrop, rounded cards, starburst badge', bg: '#0a1d24', text: '#e2f1f8', accent: '#ffc928', font: 'sans-serif', renderType: 'teal-starburst' },
-  { id: 'minimal-white', name: '7. Minimalist Linen', badge: 'Minimal White', desc: 'Crisp white background, hairline dividers, elegant serif typography', bg: '#ffffff', text: '#111827', accent: '#e8783c', font: 'serif', renderType: 'minimal-white' },
-  { id: 'street-food', name: '8. Vibrant Street Food', badge: 'Cafe & QSR', desc: 'Vibrant orange pills, Veg/Non-Veg badge indicators', bg: '#faf8f4', text: '#111827', accent: '#e8783c', font: 'sans-serif', renderType: 'street-food' },
-  { id: 'royal-crimson', name: '9. Royal Indian Spice', badge: 'Indian Cuisine', desc: 'Deep crimson & gold border framing, intricate Indian dish cards', bg: '#1c0f0a', text: '#fde8d0', accent: '#ffc928', font: 'serif', renderType: 'royal-crimson' },
-  { id: 'craving-grid', name: '10. Image Craving Grid', badge: 'Photo Focused', desc: 'Large food photography cards with floating price overlays', bg: '#0f172a', text: '#f8fafc', accent: '#38bdf8', font: 'sans-serif', renderType: 'craving-grid' },
-];
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Check, Eye, Palette, Save, Lock, Zap } from 'lucide-react';
+import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
+import { menuTemplates } from '../../data/menuTemplates';
+import { useToast } from '../../components/feedback/ToastProvider';
+import { getAppearance, getMenu, getProfile, getSubscription, updateAppearance, type AppMenuData, type AppProfile, type AppSubscriptionData } from './appStore';
 
 export default function Appearance() {
-  const [selectedTemplateId, setSelectedTemplateId] = useState('gold-stars');
+  const [menu, setMenu] = useState<AppMenuData | null>(null);
+  const [profile, setProfile] = useState<AppProfile | null>(null);
+  const [sub, setSub] = useState<AppSubscriptionData | null>(null);
+  const [templateId, setTemplateId] = useState('royal-maharaja');
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const showToast = useToast();
 
-  const selectedTemplate = TEMPLATES.find((t) => t.id === selectedTemplateId) || TEMPLATES[0];
+  useEffect(() => {
+    let current = true;
+    Promise.all([getMenu(), getProfile(), getAppearance(), getSubscription()]).then(([menuData, profileData, appearance, subData]) => {
+      if (!current) return;
+      setMenu(menuData);
+      setProfile(profileData);
+      setTemplateId(appearance.templateId || 'royal-maharaja');
+      setSub(subData);
+    }).catch(() => {
+      if (current) showToast('error', 'Your menu design could not be loaded. Please refresh and try again.');
+    }).finally(() => {
+      if (current) setLoading(false);
+    });
+    return () => { current = false; };
+  }, [showToast]);
 
-  const sampleDishes = [
-    { name: 'Smoked Salmon Tartare', price: '₹420', desc: 'Avocado & goat cheese', veg: false, emoji: '🥩' },
-    { name: 'Grilled Filet Mignon', price: '₹780', desc: 'Red wine reduction', veg: false, emoji: '🍖' },
-    { name: 'Wild Mushroom Risotto', price: '₹520', desc: 'Truffle oil & parmesan', veg: true, emoji: '🍄' },
-    { name: 'Chocolate Fondant', price: '₹340', desc: 'Vanilla bean ice cream', veg: true, emoji: '🍫' },
-  ];
-
-  const handleSave = async () => {
+  async function saveTemplate() {
     setSaving(true);
-    setSaveSuccess(false);
     try {
-      await updateSettings({ activeTemplate: selectedTemplateId });
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (e) {
-      console.error(e);
+      await updateAppearance({ templateId });
+      showToast('success', 'Menu theme updated. The same QR now opens this design.');
+    } catch (error) {
+      showToast('error', error instanceof Error ? error.message : 'The theme could not be saved. Please try again.');
     } finally {
       setSaving(false);
     }
-  };
+  }
 
-  return (
-    <div className="space-y-8">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Palette className="w-6 h-6 text-[#e8783c]" /> Menu Templates & Appearance
-          </h1>
-          <p className="text-[#9ca3af] text-sm mt-1">
-            Choose from 10 distinct template layouts. Switching templates updates your mobile customer menu instantly without changing your permanent QR code.
-          </p>
-        </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="bg-[#e8783c] hover:bg-[#d96227] text-white font-semibold px-6 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg disabled:opacity-50"
-        >
-          <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : saveSuccess ? 'Saved ✓' : 'Save & Apply Template'}
-        </button>
-      </div>
+  if (loading) return (
+    <div className="flex h-64 items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#e8783c]"></div>
+    </div>
+  );
+  
+  if (!menu?.menu) return (
+    <div className="bg-[#1d2723] rounded-xl border border-[#2a3832] p-8 text-center max-w-2xl mx-auto mt-12">
+      <h1 className="text-2xl font-bold text-white mb-2">Menu Appearance</h1>
+      <p className="text-[#849a90] mb-6">Set up your menu items and categories before choosing a design.</p>
+      <Link to="/app/menu" className="inline-flex rounded-lg bg-[#e8783c] hover:bg-[#f08b55] px-6 py-3 text-sm font-bold text-white transition-colors">
+        Manage Menu
+      </Link>
+    </div>
+  );
 
-      {/* Main Grid: Left Templates list, Right Phone Previewer */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left: 10 Templates Selector Cards */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="text-xs font-semibold text-[#9ca3af] uppercase tracking-wider mb-2">
-            Select Menu Template (10 Options)
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {TEMPLATES.map((t) => {
-              const isSelected = t.id === selectedTemplateId;
-              return (
-                <div
-                  key={t.id}
-                  onClick={() => setSelectedTemplateId(t.id)}
-                  className={`p-4 rounded-xl border-2 transition cursor-pointer flex flex-col justify-between ${
-                    isSelected
-                      ? 'border-[#e8783c] bg-[#e8783c]/10 shadow-md ring-1 ring-[#e8783c]'
-                      : 'border-[#2a3832] bg-[#1d2723] hover:border-[#e8783c]/50 hover:translate-y-[-2px]'
-                  }`}
-                >
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#e8783c]/20 text-[#e8783c]">
-                        {t.badge}
-                      </span>
-                      {isSelected && <Check className="w-4 h-4 text-[#e8783c]" />}
-                    </div>
-                    <h3 className="font-bold text-white text-sm">{t.name}</h3>
-                    <p className="text-xs text-[#9ca3af] mt-1">{t.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+  const planId = sub?.planId?.toUpperCase() || 'BASIC';
+  const isBasic = planId === 'BASIC';
 
-        {/* Right: Phone Live Preview Frame */}
-        <div className="lg:col-span-5 flex flex-col items-center">
-          <div className="text-xs font-semibold text-[#9ca3af] uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <Eye className="w-4 h-4 text-[#e8783c]" /> Live Template Preview
+  const previewCategories = menu.categories.map((category, index) => ({ id: category.id, name: category.name, order: index }));
+  const previewItems = menu.categories.flatMap((category) => category.items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description ?? '',
+    price: Number(item.price || 0),
+    category: category.id,
+    dietType: item.diet_type === 'non-veg' ? 'non-veg' as const : 'veg' as const,
+    available: item.is_available !== false,
+    image: item.image_url || undefined,
+  })));
+
+  if (isBasic) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 md:px-8 pt-4 sm:pt-6">
+        <header className="mb-8">
+          <p className="text-xs font-bold uppercase tracking-wider text-[#e8783c]">{profile?.businessName}</p>
+          <h1 className="mt-1 text-3xl font-bold text-white">Appearance</h1>
+          <p className="mt-2 text-sm text-[#849a90]">Customize how your digital menu looks to customers.</p>
+        </header>
+
+        <div className="bg-[#1d2723] rounded-2xl border border-[#2a3832] p-10 flex flex-col items-center text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-16 -mr-16 text-white/5 pointer-events-none">
+            <Palette size={200} />
           </div>
           
-          <div
-            className="w-[280px] h-[540px] rounded-[40px] border-4 border-[#3c3e42] shadow-2xl overflow-hidden relative flex flex-col"
-            style={{ background: selectedTemplate.bg, color: selectedTemplate.text, fontFamily: selectedTemplate.font === 'serif' ? 'Georgia, serif' : 'system-ui' }}
-          >
-            {/* Notch */}
-            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-5 bg-black rounded-full z-20 flex items-center justify-end pr-2">
-              <div className="w-2 h-2 rounded-full bg-[#111]" />
-            </div>
-
-            {/* Screen Content */}
-            <div className="p-4 pt-10 flex-1 flex flex-col">
-              {/* Golden Star Luxury */}
-              {selectedTemplate.renderType === 'gold-stars' && (
-                <div className="text-center flex-1 flex flex-col gap-3 uppercase">
-                  <div className="text-[10px] tracking-widest text-[#ffc928]">✦ MENU ✦</div>
-                  <div className="text-xs font-bold tracking-wider">YOUR RESTAURANT</div>
-                  {['STARTER', 'MAIN COURSE', 'DESSERT'].map((cat) => (
-                    <div key={cat} className="border-b border-[#ffc928]/30 pb-2">
-                      <div className="text-[9px] font-bold text-[#ffc928] tracking-wider">{cat}</div>
-                      {sampleDishes.slice(0, 1).map((d) => (
-                        <div key={d.name} className="mt-1">
-                          <div className="text-[10px] font-semibold">{d.name}</div>
-                          <div className="text-[9px] text-[#ffc928]">{d.price}</div>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Yellow Brush Chalkboard */}
-              {selectedTemplate.renderType === 'yellow-brush' && (
-                <div className="flex-1 flex flex-col gap-2.5">
-                  <div className="bg-[#ffc928] text-black font-extrabold text-xs uppercase p-1.5 rounded text-center">
-                    FOOD MENU
-                  </div>
-                  {sampleDishes.map((d) => (
-                    <div key={d.name} className="flex justify-between text-[10px] border-b border-white/20 pb-1">
-                      <span>{d.name}</span>
-                      <span className="text-[#ffc928] font-bold">{d.price}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Minimalist White */}
-              {selectedTemplate.renderType === 'minimal-white' && (
-                <div className="flex-1 flex flex-col gap-3">
-                  <div className="text-center border-b border-black/20 pb-2">
-                    <div className="text-xs font-bold text-[#111827]">RESTAURANT MENU</div>
-                  </div>
-                  {sampleDishes.map((d) => (
-                    <div key={d.name} className="flex justify-between text-[10px] border-b border-gray-200 pb-1">
-                      <div>
-                        <div className="font-semibold text-[#111827]">{d.name}</div>
-                        <div className="text-[8px] text-gray-500">{d.desc}</div>
-                      </div>
-                      <span className="font-bold text-[#111827]">{d.price}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Generic Fallback Render for rest */}
-              {!['gold-stars', 'yellow-brush', 'minimal-white'].includes(selectedTemplate.renderType) && (
-                <div className="flex-1 flex flex-col gap-2.5">
-                  <div className="text-center font-bold text-xs uppercase pb-2 border-b border-current opacity-80">
-                    {selectedTemplate.name.replace(/^\d+\.\s*/, '')}
-                  </div>
-                  {sampleDishes.map((d) => (
-                    <div key={d.name} className="p-2 rounded bg-white/10 flex justify-between items-center text-[10px]">
-                      <div>
-                        <div className="font-bold">{d.name}</div>
-                        <div className="text-[8px] opacity-70">{d.desc}</div>
-                      </div>
-                      <span className="font-bold" style={{ color: selectedTemplate.accent }}>{d.price}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className="bg-[#151c19] p-4 rounded-full mb-6 border border-[#2a3832]">
+            <Lock size={32} className="text-[#849a90]" />
           </div>
+          
+          <h2 className="text-2xl font-bold text-white mb-3">Premium Templates Locked</h2>
+          <p className="text-[#849a90] max-w-md mb-8">
+            Templates and appearance customization are available on Intermediate and Premium plans. Upgrade to unlock the Template Library.
+          </p>
+          
+          <Link to="/app/subscription" className="inline-flex items-center gap-2 rounded-lg bg-[#e8783c] hover:bg-[#f08b55] px-6 py-3 text-sm font-bold text-white transition-colors shadow-lg shadow-[#e8783c]/20">
+            <Zap size={18} /> Upgrade Plan
+          </Link>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-8 pb-12 px-4 md:px-8 pt-4 sm:pt-6">
+      <header className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-[#2a3832] pb-6">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-[#e8783c]">{profile?.businessName}</p>
+          <h1 className="mt-1 text-3xl font-bold text-white">Template Library</h1>
+          <p className="mt-2 text-sm text-[#849a90]">Choose a style for your live menu. Your physical QR stays exactly the same.</p>
+        </div>
+        <button type="button" onClick={saveTemplate} disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-[#e8783c] hover:bg-[#f08b55] px-6 py-2.5 text-sm font-bold text-white disabled:opacity-50 transition-colors shadow-lg shadow-[#e8783c]/20">
+          <Save size={18} /> {saving ? 'Saving...' : 'Apply Theme'}
+        </button>
+      </header>
+
+      <div className="grid lg:grid-cols-[1fr_360px] gap-10 items-start">
+        <section aria-label="Available menu themes" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {menuTemplates.map((template) => {
+            const isSelected = templateId === template.id;
+            return (
+              <button 
+                key={template.id} 
+                type="button" 
+                onClick={() => setTemplateId(template.id)} 
+                aria-pressed={isSelected} 
+                className={`flex flex-col items-start p-5 rounded-xl border-2 text-left transition-colors ${isSelected ? 'border-[#e8783c] bg-[#e8783c]/5' : 'border-[#2a3832] bg-[#1d2723] hover:border-[#36473f]'}`}
+              >
+                <div className="flex items-start justify-between w-full mb-3">
+                  <h3 className={`font-bold text-lg ${isSelected ? 'text-white' : 'text-[#e2e8f0]'}`}>{template.name}</h3>
+                  {isSelected && <Check size={20} className="text-[#e8783c] shrink-0" />}
+                </div>
+                <p className="text-sm text-[#849a90]">{template.subtitle}</p>
+              </button>
+            );
+          })}
+        </section>
+
+        <section aria-label="Live menu preview" className="lg:sticky lg:top-8 bg-[#1d2723] rounded-2xl p-6 border border-[#2a3832] flex flex-col items-center">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#849a90] mb-6 w-full justify-center">
+            <Eye size={16} className="text-[#e8783c]" /> Live menu preview
+          </div>
+          
+          <div className="w-full max-w-[340px] aspect-[9/19] rounded-[2.5rem] border-[8px] border-[#151c19] overflow-hidden shadow-2xl relative bg-black">
+            <MenuTemplateRenderer
+              templateId={templateId}
+              restaurant={{ name: profile?.businessName || 'Your restaurant', tagline: profile?.tagline, phone: profile?.phone, address: profile?.address, logo: profile?.logoUrl }}
+              categories={previewCategories}
+              items={previewItems}
+            />
+          </div>
+          
+          <div className="flex items-center gap-2 mt-6 text-xs font-medium text-[#849a90]">
+            <Palette size={14} className="text-[#e8783c]" />
+            Your customers will see this design instantly
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -64,6 +64,12 @@ export default function CheckoutPage() {
                 {error}
               </div>
             )}
+
+            <div className="flex gap-2 mb-6">
+              <button type="button" className="flex-1 py-3 bg-[#E8783C]/10 text-[#E8783C] font-bold rounded-xl border border-[#E8783C]/20">Card</button>
+              <button type="button" className="flex-1 py-3 bg-gray-50 text-gray-500 font-bold rounded-xl border border-gray-200 cursor-not-allowed">UPI (PhonePe, GPay)</button>
+              <button type="button" className="flex-1 py-3 bg-gray-50 text-gray-500 font-bold rounded-xl border border-gray-200 cursor-not-allowed">Net Banking</button>
+            </div>
             
             <div className="space-y-5 mb-8">
               <div>
@@ -128,7 +134,7 @@ export default function CheckoutPage() {
             
             <div className="flex items-center gap-2 justify-center mt-6 text-gray-400 text-sm font-medium">
               <ShieldCheck size={16} />
-              Secured by Mock Gateway
+              Secured by Mock Gateway (Use Card for Testing)
             </div>
           </form>
         </div>

@@ -1,0 +1,93 @@
+.qr-production-panel {
+  max-height: calc(100dvh - 3rem);
+  overflow-y: auto;
+}
+
+.qr-print-sticker {
+  width: 288px;
+  min-height: 390px;
+  box-sizing: border-box;
+  background-image: linear-gradient(145deg, #ffffff 0%, #f7f5ee 100%);
+}
+
+.qr-print-cropmarks {
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+  border: 1px dashed rgb(24 35 31 / 13%);
+}
+
+@media print {
+  @page {
+    size: 70mm 95mm;
+    margin: 0;
+  }
+
+  html,
+  body {
+    width: 70mm !important;
+    height: 95mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #fff !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .qr-generation-overlay,
+  .qr-generation-overlay * {
+    visibility: visible !important;
+  }
+
+  .qr-generation-overlay {
+    position: static !important;
+    display: block !important;
+    width: 70mm !important;
+    height: 95mm !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+  }
+
+  .qr-production-panel {
+    width: 70mm !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .qr-production-header,
+  .qr-print-actions {
+    display: none !important;
+  }
+
+  .qr-production-content {
+    padding: 0 !important;
+  }
+
+  .qr-print-sticker {
+    position: static !important;
+    width: 70mm !important;
+    min-height: 95mm !important;
+    height: 95mm !important;
+    padding: 7mm !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    break-inside: avoid;
+  }
+
+  .qr-print-sticker img {
+    image-rendering: crisp-edges;
+  }
+}

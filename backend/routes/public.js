@@ -1,16 +1,12 @@
 import { pool } from '../db.js';
 import { apiError, sendJson, readJson, getClientIp } from '../utils.js';
+import { resolveTenantAuthorization, requireEntitlement } from '../authorization.js';
 
 const contactRateLimits = new Map();
 
 async function getFullPublicMenuData(tenantId) {
-  // 1. Check subscription
-  const subRes = await pool.query(
-    'SELECT status, expires_at, plan_id FROM subscriptions WHERE tenant_id = $1',
-    [tenantId]
-  );
-  const sub = subRes.rows[0];
-  if (!sub || sub.status.toUpperCase() !== 'ACTIVE' || (sub.expires_at && new Date(sub.expires_at) < new Date())) {
+  const authorization = await resolveTenantAuthorization({ id: null, tenantId });
+  if (!authorization.active) {
     return { isExpired: true };
   }
 
@@ -67,8 +63,9 @@ async function getFullPublicMenuData(tenantId) {
       category: client.category,
       phone: client.phone,
       address: client.address,
+      city: client.city,
     },
-    plan: sub.plan_id,
+    plan: authorization.planId,
     templateId: appearance.template_id || 'royal-maharaja',
     categories,
     items,
@@ -107,7 +104,10 @@ export default async function publicRoutes(request, response, url) {
   );
   if (request.method === 'GET' && publicQrMatch) {
     const qrId = decodeURIComponent(publicQrMatch[1]);
-    const qrRes = await pool.query('SELECT tenant_id, is_active FROM qr_codes WHERE qr_id = $1', [qrId]);
+    const qrRes = await pool.query(
+      'SELECT q.tenant_id, q.is_active, c.menu_slug FROM qr_codes q JOIN clients c ON c.id = q.tenant_id WHERE q.qr_id = $1',
+      [qrId]
+    );
     const qr = qrRes.rows[0];
     if (!qr || !qr.is_active) {
       throw apiError(404, 'This QR code is inactive or invalid.');
@@ -119,6 +119,8 @@ export default async function publicRoutes(request, response, url) {
       sendJson(response, 403, { error: 'SUBSCRIPTION_EXPIRED', message: 'This restaurant menu is currently unavailable due to subscription expiry.' });
       return true;
     }
+
+    data.menuSlug = qr.menu_slug;
 
     sendJson(response, 200, data);
     return true;
@@ -167,34 +169,24 @@ export default async function publicRoutes(request, response, url) {
   }
   
   const orderMatch = url.pathname.match(/^\/api\/public\/menus\/([^/]+)\/orders$/);
-  if (request.method === 'POST' && orderMatch) {
-    const slug = decodeURIComponent(orderMatch[1]);
+  const qrOrderMatch = url.pathname.match(/^\/api\/public\/qr\/([^/]+)\/orders$/);
+  if (request.method === 'POST' && (orderMatch || qrOrderMatch)) {
+    const slug = orderMatch ? decodeURIComponent(orderMatch[1]) : null;
     
     // 1. Get client by slug, verify premium plan AND active subscription
-    const clientRes = await pool.query(
-      `SELECT c.id, s.plan_id, s.status as sub_status, s.expires_at
-       FROM clients c 
-       LEFT JOIN subscriptions s ON c.id = s.tenant_id 
-       WHERE c.menu_slug = $1`, 
-      [slug]
-    );
+    const clientRes = qrOrderMatch
+      ? await pool.query('SELECT c.id FROM qr_codes q JOIN clients c ON c.id = q.tenant_id WHERE q.qr_id = $1 AND q.is_active = true', [decodeURIComponent(qrOrderMatch[1])])
+      : await pool.query('SELECT id FROM clients WHERE menu_slug = $1', [slug]);
     const client = clientRes.rows[0];
     if (!client) {
       throw apiError(404, 'Menu not found.');
     }
     
-    // Case-insensitive premium check
-    if (!client.plan_id || client.plan_id.toUpperCase() !== 'PREMIUM') {
-      throw apiError(403, 'Online ordering is not available on this plan. Please upgrade to Premium.');
-    }
-    
-    // Verify subscription is active and not expired
-    if (!client.sub_status || client.sub_status.toUpperCase() !== 'ACTIVE') {
-      throw apiError(403, 'This restaurant\'s subscription is not active. Ordering is unavailable.');
-    }
-    if (client.expires_at && new Date(client.expires_at) < new Date()) {
+    const authorization = await resolveTenantAuthorization({ id: null, tenantId: client.id });
+    if (!authorization.active) {
       throw apiError(403, 'This restaurant\'s subscription has expired. Ordering is unavailable.');
     }
+    requireEntitlement(authorization, 'customer_ordering', 'Online ordering is not available on this plan. Please upgrade to Premium.');
     
     const input = await readJson(request);
     
@@ -244,7 +236,9 @@ export default async function publicRoutes(request, response, url) {
       [orderId, client.id, tableNumber, JSON.stringify(validatedItems), calculatedTotal]
     );
     
-    sendJson(response, 201, res.rows[0]);
+    const newOrder = res.rows[0];
+    newOrder.total = parseFloat(newOrder.total);
+    sendJson(response, 201, newOrder);
     return true;
   }
   

@@ -1,23 +1,38 @@
 import { useEffect, useState } from 'react';
-import { getSubscription, type AppSubscriptionData } from './appStore';
-import { ShieldCheck, Calendar, Zap, CreditCard, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { getSubscription, renewSubscription, type AppSubscriptionData } from './appStore';
+import { ShieldCheck, Calendar, CreditCard, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export default function Subscription() {
   const [data, setData] = useState<AppSubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [renewing, setRenewing] = useState(false);
 
   useEffect(() => {
+    loadData();
+  }, []);
+  
+  const loadData = () => {
+    setLoading(true);
     getSubscription()
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  };
 
-  const handleRenew = () => {
-    // Navigate to pricing page for renewal
-    navigate('/plans');
+  const handleRenew = async () => {
+    const nextPlan = window.prompt("Enter plan to renew/upgrade to (BASIC, INTERMEDIATE, PREMIUM):", data?.planId || 'BASIC');
+    if (!nextPlan) return;
+    
+    setRenewing(true);
+    try {
+      await renewSubscription(nextPlan.toUpperCase());
+      alert('Subscription successfully renewed!');
+      loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to renew');
+    } finally {
+      setRenewing(false);
+    }
   };
 
   if (loading) return (
@@ -92,10 +107,11 @@ export default function Subscription() {
             </div>
             
             <button 
-              onClick={handleRenew} 
-              className="w-full flex items-center justify-center gap-2 bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-[#e8783c]/20 hover:shadow-[#e8783c]/40"
+              onClick={handleRenew}
+              disabled={renewing}
+              className="w-full flex items-center justify-center gap-2 bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-[#e8783c]/20 hover:shadow-[#e8783c]/40 disabled:opacity-70"
             >
-              <CreditCard size={18} /> Renew or Upgrade
+              <CreditCard size={18} /> {renewing ? 'Processing...' : 'Renew or Upgrade'}
             </button>
             <p className="text-[11px] text-center text-[#62756d] leading-tight">
               Renewing keeps your permanent QR code and digital menu data intact.

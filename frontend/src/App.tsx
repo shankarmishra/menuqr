@@ -24,6 +24,7 @@ import Settings from './pages/admin/Settings';
 import ClientForm from './pages/admin/ClientForm';
 import Orders from './pages/admin/Orders';
 import Payments from './pages/admin/Payments';
+import StickerRequests from './pages/admin/StickerRequests';
 import { getAdminSession, getClientByMenuSlug } from './pages/admin/clientStore';
 import { useAuth } from './contexts/AuthContext';
 import AppDashboard from './pages/app/Dashboard';
@@ -34,6 +35,9 @@ import AppSubscription from './pages/app/Subscription';
 import AppSettings from './pages/app/Settings';
 import AppOrders from './pages/app/Orders';
 import SupabaseTest from './components/SupabaseTest';
+import FeatureGate from './components/guards/FeatureGate';
+import { ToastProvider } from './components/feedback/ToastProvider';
+import QrLandingPage from './pages/public/QrLandingPage';
 
 function ProtectedAdminLayout() {
   const location = useLocation();
@@ -122,6 +126,7 @@ function AppRoutes() {
         <Route path="/restaurant-qr-menu" element={<RestaurantQrMenu />} />
 
         {/* Customer Menu Route */}
+        <Route path="/qr/:qrId" element={<QrLandingPage />} />
         <Route path="/menu/:slug" element={<MenuPage key={menuSlug} />} />
 
         {/* Supabase Test Route */}
@@ -139,6 +144,7 @@ function AppRoutes() {
           <Route path="dhabas" element={<ClientList />} />
           <Route path="cafes" element={<ClientList />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="sticker-requests" element={<StickerRequests />} />
           <Route path="payments" element={<Payments />} />
           <Route path="qr" element={<QrGenerator />} />
           <Route path="settings" element={<Settings />} />
@@ -149,11 +155,11 @@ function AppRoutes() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AppDashboard />} />
           <Route path="menu" element={<AppMenu />} />
-          <Route path="appearance" element={<AppAppearance />} />
+          <Route path="appearance" element={<FeatureGate capability="menu_management"><AppAppearance /></FeatureGate>} />
           <Route path="qr" element={<AppQrCenter />} />
           <Route path="subscription" element={<AppSubscription />} />
           <Route path="settings" element={<AppSettings />} />
-          <Route path="orders" element={<AppOrders />} />
+          <Route path="orders" element={<FeatureGate capability="reception_orders"><AppOrders /></FeatureGate>} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
@@ -194,7 +200,9 @@ export default function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
-        <AppRoutes />
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
       </BrowserRouter>
     </HelmetProvider>
   );

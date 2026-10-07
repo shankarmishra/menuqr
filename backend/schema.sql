@@ -13,6 +13,11 @@ CREATE TABLE IF NOT EXISTS clients (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS city VARCHAR(255);
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS address TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS logo_url TEXT;
+
 CREATE TABLE IF NOT EXISTS users (
   id VARCHAR(255) PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
@@ -33,6 +38,24 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   expires_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS content_period_start TIMESTAMP;
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS content_period_id VARCHAR(255);
+
+CREATE TABLE IF NOT EXISTS subscription_content_usage (
+  tenant_id VARCHAR(255) REFERENCES subscriptions(tenant_id) ON DELETE CASCADE NOT NULL,
+  period_start TIMESTAMP NOT NULL,
+  changes_used INTEGER NOT NULL DEFAULT 0 CHECK (changes_used >= 0 AND changes_used <= 20),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (tenant_id, period_start)
+);
+
+CREATE TABLE IF NOT EXISTS subscription_feature_usage (
+  tenant_id VARCHAR(255) REFERENCES subscriptions(tenant_id) ON DELETE CASCADE NOT NULL,
+  feature_key VARCHAR(100) NOT NULL,
+  consumed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (tenant_id, feature_key)
 );
 
 CREATE TABLE IF NOT EXISTS menus (
@@ -86,6 +109,45 @@ CREATE TABLE IF NOT EXISTS qr_codes (
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS tenant_qr_identity (
+  tenant_id VARCHAR(255) PRIMARY KEY REFERENCES clients(id) ON DELETE CASCADE,
+  qr_code_id VARCHAR(255) UNIQUE NOT NULL REFERENCES qr_codes(id) ON DELETE RESTRICT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS sticker_requests (
+  id VARCHAR(255) PRIMARY KEY,
+  tenant_id VARCHAR(255) REFERENCES clients(id) ON DELETE CASCADE NOT NULL,
+  qr_code_id VARCHAR(255) REFERENCES qr_codes(id) ON DELETE RESTRICT NOT NULL,
+  quantity INTEGER NOT NULL CHECK (quantity BETWEEN 1 AND 10000),
+  contact_name VARCHAR(255) NOT NULL,
+  contact_phone VARCHAR(50) NOT NULL,
+  contact_email VARCHAR(255) NOT NULL,
+  delivery_address TEXT NOT NULL,
+  delivery_city VARCHAR(255) NOT NULL,
+  delivery_state VARCHAR(255),
+  delivery_postal_code VARCHAR(50),
+  notes TEXT,
+  status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_sticker_requests_tenant_created
+  ON sticker_requests (tenant_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sticker_requests_status_created
+  ON sticker_requests (status, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS sticker_request_events (
+  id VARCHAR(255) PRIMARY KEY,
+  request_id VARCHAR(255) REFERENCES sticker_requests(id) ON DELETE CASCADE NOT NULL,
+  previous_status VARCHAR(50),
+  new_status VARCHAR(50) NOT NULL,
+  changed_by VARCHAR(255),
+  note TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS audit_logs (
@@ -190,3 +252,65 @@ CREATE TABLE IF NOT EXISTS payments (
   raw_response JSONB,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS metadata JSONB;
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE TABLE IF NOT EXISTS customer_orders (
+  id VARCHAR(255) PRIMARY KEY,
+  tenant_id VARCHAR(255) REFERENCES clients(id) ON DELETE CASCADE NOT NULL,
+  order_number SERIAL,
+  customer_name VARCHAR(255),
+  table_number VARCHAR(50),
+  status VARCHAR(50) DEFAULT 'NEW',
+  total DECIMAL(10, 2) NOT NULL,
+  items JSONB,
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS admin_users ( id VARCHAR(255) PRIMARY KEY, email VARCHAR(255) UNIQUE NOT NULL, status VARCHAR(50) DEFAULT 'active', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ); CREATE TABLE IF NOT EXISTS admin_otp_challenges ( id VARCHAR(255) PRIMARY KEY, email VARCHAR(255) NOT NULL, otp_hash VARCHAR(255) NOT NULL, expires_at TIMESTAMP NOT NULL, attempts INTEGER DEFAULT 0, max_attempts INTEGER DEFAULT 5, used BOOLEAN DEFAULT false, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ); CREATE TABLE IF NOT EXISTS admin_sessions ( id VARCHAR(255) PRIMARY KEY, admin_id VARCHAR(255) REFERENCES admin_users(id) ON DELETE CASCADE, token_hash VARCHAR(255) UNIQUE NOT NULL, expires_at TIMESTAMP NOT NULL, ip_address VARCHAR(100), user_agent TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ); INSERT INTO admin_users (id, email) VALUES ('admin-1', 'xshankarmishra@gmail.com'), ('admin-2', 'qevnaro@gmail.com'), ('admin-3', 'menusqr.in@gmail.com') ON CONFLICT (email) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS admin_users (
+  id VARCHAR(255) PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  status VARCHAR(50) DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS admin_otp_challenges (
+  id VARCHAR(255) PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  otp_hash VARCHAR(255) NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  attempts INTEGER DEFAULT 0,
+  max_attempts INTEGER DEFAULT 5,
+  used BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS admin_sessions (
+  id VARCHAR(255) PRIMARY KEY,
+  admin_id VARCHAR(255) REFERENCES admin_users(id) ON DELETE CASCADE,
+  token_hash VARCHAR(255) UNIQUE NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  ip_address VARCHAR(100),
+  user_agent TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO admin_users (id, email) VALUES
+  ('admin-1', 'xshankarmishra@gmail.com'),
+  ('admin-2', 'qevnaro@gmail.com'),
+  ('admin-3', 'menusqr.in@gmail.com')
+ON CONFLICT (email) DO NOTHING;
+

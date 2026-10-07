@@ -11,11 +11,14 @@ import { normalizePlan, hasCapability, type PlanId } from './planCapabilities';
 export type SubscriptionState =
   | 'loading'
   | 'active'
-  | 'warning'   // expiring within 14 days
+  | 'warning'
   | 'expired'
+  | 'inactive'
   | 'none';
 
 export interface UsePlanResult {
+  contentChangesLimit?: number;
+  isEditLimitReached: boolean;
   /** Normalised plan id: 'basic' | 'intermediate' | 'premium' */
   plan: PlanId;
   /** Raw subscription data from the API */
@@ -24,8 +27,9 @@ export interface UsePlanResult {
   subState: SubscriptionState;
   /** True while the first fetch is in-flight */
   loading: boolean;
-  /** True if Basic plan and the one included edit has been consumed */
+  /** True if Basic plan and all included menu changes have been consumed */
   basicEditUsed: boolean;
+  contentChangesRemaining: number;
   /** Returns true if the current plan includes the requested capability */
   can: (capability: string) => boolean;
   /** Manually refresh the subscription data */
@@ -37,15 +41,13 @@ const WARNING_DAYS = 14;
 function computeSubState(sub: AppSubscriptionData | null): SubscriptionState {
   if (!sub || sub.status === 'none') return 'none';
   const status = (sub.status ?? '').toUpperCase();
-  if (status === 'EXPIRED') return 'expired';
-  if (sub.expiresAt) {
-    const msLeft = new Date(sub.expiresAt).getTime() - Date.now();
-    const daysLeft = msLeft / (1000 * 60 * 60 * 24);
-    if (daysLeft < 0) return 'expired';
-    if (daysLeft < WARNING_DAYS) return 'warning';
-  }
-  if (status === 'ACTIVE') return 'active';
-  return 'none';
+  if (['EXPIRED', 'TERMINATED', 'SUSPENDED'].includes(status)) return 'expired';
+  if (!['ACTIVE', 'WARNING', 'EXPIRING', 'RENEWAL_PENDING', 'CANCELLED'].includes(status)) return 'inactive';
+
+  if (!sub.expiresAt || new Date(sub.expiresAt).getTime() <= Date.now()) return 'expired';
+  const daysLeft = (new Date(sub.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+  if (['WARNING', 'EXPIRING'].includes(status) || daysLeft < WARNING_DAYS) return 'warning';
+  return 'active';
 }
 
 export function usePlan(): UsePlanResult {
@@ -53,16 +55,20 @@ export function usePlan(): UsePlanResult {
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(0);
 
-  const refresh = useCallback(() => setTick((t) => t + 1), []);
+  const refresh = useCallback(() => {
+    setLoading(true);
+    setTick((t) => t + 1);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     getSubscription()
       .then((data) => {
         if (!cancelled) setSub(data);
       })
-      .catch(console.error)
+      .catch(() => {
+        if (!cancelled) setSub(null);
+      })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
@@ -72,13 +78,16 @@ export function usePlan(): UsePlanResult {
   const plan = normalizePlan(sub?.planId);
   const subState = loading ? 'loading' : computeSubState(sub);
 
-  /** Basic edit used is now tracked server-side via sub.menuEditUsed */
-  const basicEditUsed = plan === 'basic' && (sub?.menuEditUsed === true);
+  const contentChangesRemaining = Math.max(0, sub?.contentChangesRemaining ?? 30);
+  const contentChangesLimit = sub?.contentChangesLimit;
+  const isEditLimitReached = contentChangesLimit !== null && contentChangesRemaining === 0;
+  const basicEditUsed = isEditLimitReached; // For backwards compatibility
+  
+  const can = useCallback((capability: string) => {
+    if (loading || !['active', 'warning'].includes(subState)) return false;
+    if (capability === 'one_time_edit') return !isEditLimitReached;
+    return hasCapability(plan, capability);
+  }, [basicEditUsed, loading, plan, subState]);
 
-  const can = useCallback(
-    (capability: string) => hasCapability(plan, capability),
-    [plan],
-  );
-
-  return { plan, sub, subState, loading, basicEditUsed, can, refresh };
+  return { plan, sub, subState, loading, basicEditUsed, contentChangesRemaining, contentChangesLimit, isEditLimitReached, can, refresh };
 }

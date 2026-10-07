@@ -1,15 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ArrowRight, ArrowLeft, Store, Palette, Utensils, Sparkles, Smartphone, Monitor } from 'lucide-react';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import ScannableQRCode from '../../components/marketing/ScannableQRCode';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
+import QRGenerationSequence from '../../components/qr-studio/QRGenerationSequence';
 import { menuTemplates } from '../../data/menuTemplates';
-import { getSubscription } from '../app/appStore';
+import { createPermanentQr, getQr, getSubscription, saveOnboarding, type AppQrData } from '../app/appStore';
+import { useToast } from '../../components/feedback/ToastProvider';
+
+type OnboardingCategory = { id: string; name: string; description: string; order: number };
+type OnboardingItem = { id: string; name: string; description: string; price: number; category: string; dietType: 'veg' | 'non-veg' | 'vegan'; available: boolean; imageUrl: string };
 
 export default function OnboardingWizard() {
   const navigate = useNavigate();
+  const showToast = useToast();
   const [planId, setPlanId] = useState('PREMIUM');
 
   useEffect(() => {
@@ -30,52 +36,21 @@ export default function OnboardingWizard() {
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
   const currentStep = steps[currentStepIdx];
 
-  const [restaurantData, setRestaurantData] = useState({
-    name: 'The Golden Spoon',
-    tagline: 'Authentic Indian Bistro & Tandoor',
-    cuisine: 'North Indian & Mughlai',
-    phone: '+91 98765 43210',
-    email: 'contact@goldenspoon.com',
-    address: 'Indiranagar, Bengaluru',
-    slug: 'golden-spoon-bistros',
-    logo: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=150&auto=format&fit=crop&q=80',
-    templateId: 'royal-maharaja',
-    categories: [
-      { id: 'cat-1', name: 'STARTERS', order: 0 },
-      { id: 'cat-2', name: 'MAIN COURSE', order: 1 },
-      { id: 'cat-3', name: 'DESSERTS', order: 2 },
-    ],
-    items: [
-      {
-        id: 'item-1',
-        name: 'Tandoori Paneer Tikka',
-        description: 'Smoked cottage cheese marinated in hung curd and aromatics',
-        price: 280,
-        category: 'cat-1',
-        dietType: 'veg' as const,
-        available: true,
-      },
-      {
-        id: 'item-2',
-        name: 'Butter Chicken Signature',
-        description: 'Clay oven chicken in velvety tomato butter gravy',
-        price: 360,
-        category: 'cat-2',
-        dietType: 'non-veg' as const,
-        available: true,
-      },
-      {
-        id: 'item-3',
-        name: 'Gulab Jamun Flambé',
-        description: 'Soft milk solids in saffron syrup',
-        price: 140,
-        category: 'cat-3',
-        dietType: 'veg' as const,
-        available: true,
-      },
-    ],
-    orderingEnabled: false,
-    receptionDevice: 'none'
+  const [restaurantData, setRestaurantData] = useState<{
+    name: string;
+    tagline: string;
+    phone: string;
+    city: string;
+    address: string;
+    logoUrl: string;
+    templateId: string;
+    categories: OnboardingCategory[];
+    items: OnboardingItem[];
+    orderingEnabled: boolean;
+    receptionDevice: string;
+  }>({
+    name: '', tagline: '', phone: '', city: '', address: '', logoUrl: '',
+    templateId: 'royal-maharaja', categories: [], items: [], orderingEnabled: false, receptionDevice: 'none',
   });
 
   const nextStep = () => setCurrentStepIdx((prev) => Math.min(prev + 1, steps.length - 1));
@@ -96,18 +71,83 @@ export default function OnboardingWizard() {
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [qr, setQr] = useState<AppQrData | null>(null);
+  const [isPrinterOpen, setIsPrinterOpen] = useState(false);
+  const [qrReady, setQrReady] = useState(false);
 
-  const handleComplete = async () => {
+  const addCategory = () => setRestaurantData((current) => ({
+    ...current,
+    categories: [...current.categories, { id: crypto.randomUUID(), name: '', description: '', order: current.categories.length }],
+  }));
+
+  const addItem = () => setRestaurantData((current) => ({
+    ...current,
+    items: [...current.items, {
+      id: crypto.randomUUID(), name: '', description: '', price: 0,
+      category: current.categories[0]?.id || '', dietType: 'veg', available: true, imageUrl: '',
+    }],
+  }));
+
+  const handlePrinterComplete = useCallback(() => {
+    setQrReady(true);
+    showToast('success', 'Your permanent QR sticker is ready to download or print.');
+  }, [showToast]);
+
+  const createFirstQr = async () => {
+    if (!restaurantData.name.trim() || restaurantData.categories.length === 0 || restaurantData.items.length === 0) {
+      showToast('error', 'Add your restaurant name, a menu category, and at least one item first.');
+      return;
+    }
+    if (restaurantData.categories.some((category) => !category.name.trim()) || restaurantData.items.some((item) => !item.name.trim() || !item.category || item.price < 0)) {
+      showToast('error', 'Check the menu names, categories, and prices before saving.');
+      return;
+    }
     setIsSubmitting(true);
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/app/onboarding/complete`, {
-        method: 'POST',
+      await saveOnboarding({
+        businessName: restaurantData.name,
+        tagline: restaurantData.tagline,
+        phone: restaurantData.phone,
+        city: restaurantData.city,
+        address: restaurantData.address,
+        logoUrl: restaurantData.logoUrl,
+        menuName: `${restaurantData.name} Menu`,
+        templateId: restaurantData.templateId,
+        categories: restaurantData.categories.map(({ name, description }) => ({ name, description })),
+        items: restaurantData.items.map((item) => ({
+          categoryIndex: restaurantData.categories.findIndex((category) => category.id === item.category),
+          name: item.name,
+          description: item.description,
+          price: Number(item.price),
+          imageUrl: item.imageUrl,
+          dietType: item.dietType,
+          available: item.available,
+        })),
       });
-      navigate('/app/dashboard', { replace: true });
-    } catch (err) {
-      console.error(err);
-      navigate('/app/dashboard', { replace: true });
+      const existingQr = await getQr();
+      if (existingQr?.qrId) {
+        setQr(existingQr);
+        setQrReady(true);
+        showToast('success', 'Your saved menu is ready. Your permanent QR is unchanged.');
+        return;
+      }
+      const createdQr = await createPermanentQr();
+      if (!createdQr.qrId) throw new Error('QR could not be created.');
+      setQr(createdQr);
+      setIsPrinterOpen(true);
+    } catch {
+      showToast('error', 'We could not save your menu just now. Your details are still here; please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const handleComplete = async () => {
+    if (!qrReady) {
+      showToast('info', 'Save your menu and create its permanent QR before finishing setup.');
+      return;
+    }
+    navigate('/app/dashboard', { replace: true });
   };
 
   return (
@@ -158,11 +198,23 @@ export default function OnboardingWizard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-[#AAB7B2] mb-1.5">Restaurant Name *</label>
-                    <input type="text" value={restaurantData.name} onChange={(e) => setRestaurantData({ ...restaurantData, name: e.target.value })} className="w-full bg-[#151C19] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#E8783C]" />
+                    <input type="text" aria-label="Restaurant name" value={restaurantData.name} onChange={(e) => setRestaurantData({ ...restaurantData, name: e.target.value })} className="w-full bg-[#151C19] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#E8783C]" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#AAB7B2] mb-1.5">Phone</label>
+                    <input type="tel" aria-label="Restaurant phone" value={restaurantData.phone} onChange={(e) => setRestaurantData({ ...restaurantData, phone: e.target.value })} className="w-full bg-[#151C19] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#E8783C]" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#AAB7B2] mb-1.5">City</label>
+                    <input type="text" aria-label="Restaurant city" value={restaurantData.city} onChange={(e) => setRestaurantData({ ...restaurantData, city: e.target.value })} className="w-full bg-[#151C19] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#E8783C]" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-[#AAB7B2] mb-1.5">Address</label>
+                    <input type="text" aria-label="Restaurant address" value={restaurantData.address} onChange={(e) => setRestaurantData({ ...restaurantData, address: e.target.value })} className="w-full bg-[#151C19] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#E8783C]" />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-[#AAB7B2] mb-1.5">Tagline</label>
-                    <input type="text" value={restaurantData.tagline} onChange={(e) => setRestaurantData({ ...restaurantData, tagline: e.target.value })} className="w-full bg-[#151C19] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#E8783C]" />
+                    <input type="text" aria-label="Restaurant tagline" value={restaurantData.tagline} onChange={(e) => setRestaurantData({ ...restaurantData, tagline: e.target.value })} className="w-full bg-[#151C19] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#E8783C]" />
                   </div>
                 </div>
               </motion.div>
@@ -176,11 +228,11 @@ export default function OnboardingWizard() {
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-[#151C19] rounded-xl border border-white/10">
                   <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[#E8783C] bg-black shrink-0">
-                    <img src={restaurantData.logo} alt="Logo" className="w-full h-full object-cover" />
+                    {restaurantData.logoUrl ? <img src={restaurantData.logoUrl} alt="Restaurant logo preview" className="w-full h-full object-cover" /> : <Store className="m-auto mt-6 text-white/60" />}
                   </div>
                   <div className="space-y-2 w-full">
                     <p className="text-xs font-bold text-white">Logo URL</p>
-                    <input type="text" value={restaurantData.logo} onChange={(e) => setRestaurantData({ ...restaurantData, logo: e.target.value })} className="w-full bg-[#1D2723] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#E8783C]" />
+                    <input type="url" aria-label="Logo URL" value={restaurantData.logoUrl} onChange={(e) => setRestaurantData({ ...restaurantData, logoUrl: e.target.value })} placeholder="https://..." className="w-full bg-[#1D2723] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#E8783C]" />
                   </div>
                 </div>
               </motion.div>
@@ -191,6 +243,7 @@ export default function OnboardingWizard() {
                 <div className="space-y-2">
                   <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5"><Utensils size={14} /> Menu Setup</span>
                   <h2 className="text-2xl sm:text-3xl font-black text-white">Menu Categories</h2>
+                  <button type="button" onClick={addCategory} className="rounded-md border border-[#E8783C]/50 px-3 py-2 text-sm font-semibold text-[#E8783C]">Add category</button>
                 </div>
                 <div className="space-y-3">
                   {restaurantData.categories.map((cat, idx) => (
@@ -200,7 +253,8 @@ export default function OnboardingWizard() {
                         const updated = [...restaurantData.categories];
                         updated[idx].name = e.target.value;
                         setRestaurantData({ ...restaurantData, categories: updated });
-                      }} className="flex-1 bg-transparent text-sm font-bold text-white focus:outline-none" />
+                      }} aria-label={`Category name ${idx + 1}`} className="flex-1 bg-transparent text-sm font-bold text-white focus:outline-none" />
+                      <button type="button" aria-label={`Remove ${cat.name || 'category'}`} onClick={() => setRestaurantData((current) => ({ ...current, categories: current.categories.filter((category) => category.id !== cat.id), items: current.items.filter((item) => item.category !== cat.id) }))} className="text-xs text-rose-300">Remove</button>
                     </div>
                   ))}
                 </div>
@@ -212,6 +266,7 @@ export default function OnboardingWizard() {
                 <div className="space-y-2">
                   <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5"><Utensils size={14} /> Menu Setup</span>
                   <h2 className="text-2xl sm:text-3xl font-black text-white">First Dishes</h2>
+                  <button type="button" onClick={addItem} disabled={restaurantData.categories.length === 0} className="rounded-md border border-[#E8783C]/50 px-3 py-2 text-sm font-semibold text-[#E8783C] disabled:opacity-40">Add menu item</button>
                 </div>
                 <div className="space-y-3">
                   {restaurantData.items.map((item, idx) => (
@@ -223,9 +278,9 @@ export default function OnboardingWizard() {
                             const updated = [...restaurantData.items];
                             updated[idx].name = e.target.value;
                             setRestaurantData({ ...restaurantData, items: updated });
-                          }} className="bg-transparent font-bold text-sm text-white focus:outline-none" />
+                          }} aria-label={`Dish name ${idx + 1}`} className="bg-transparent font-bold text-sm text-white focus:outline-none" />
                         </div>
-                        <input type="text" value={item.description} onChange={(e) => {
+                        <input type="text" aria-label={`Dish description ${idx + 1}`} value={item.description} onChange={(e) => {
                           const updated = [...restaurantData.items];
                           updated[idx].description = e.target.value;
                           setRestaurantData({ ...restaurantData, items: updated });
@@ -233,12 +288,22 @@ export default function OnboardingWizard() {
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs text-[#E8783C] font-bold">₹</span>
-                        <input type="number" value={item.price} onChange={(e) => {
+                        <input type="number" aria-label={`Dish price ${idx + 1}`} value={item.price} onChange={(e) => {
                           const updated = [...restaurantData.items];
                           updated[idx].price = Number(e.target.value);
                           setRestaurantData({ ...restaurantData, items: updated });
                         }} className="w-20 bg-[#1D2723] border border-white/10 rounded-lg px-2.5 py-1 text-xs font-bold text-white focus:outline-none" />
                       </div>
+                      <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
+                        <select aria-label="Category" value={item.category} onChange={(event) => setRestaurantData((current) => ({ ...current, items: current.items.map((entry) => entry.id === item.id ? { ...entry, category: event.target.value } : entry) }))} className="rounded-lg border border-white/10 bg-[#1D2723] px-2 py-2 text-xs text-white">
+                          {restaurantData.categories.map((category) => <option key={category.id} value={category.id}>{category.name || 'New category'}</option>)}
+                        </select>
+                        <select aria-label="Diet type" value={item.dietType} onChange={(event) => setRestaurantData((current) => ({ ...current, items: current.items.map((entry) => entry.id === item.id ? { ...entry, dietType: event.target.value as OnboardingItem['dietType'] } : entry) }))} className="rounded-lg border border-white/10 bg-[#1D2723] px-2 py-2 text-xs text-white">
+                          <option value="veg">Vegetarian</option><option value="non-veg">Non-vegetarian</option><option value="vegan">Vegan</option>
+                        </select>
+                        <input type="url" aria-label="Dish photo URL" placeholder="Dish photo URL" value={item.imageUrl} onChange={(event) => setRestaurantData((current) => ({ ...current, items: current.items.map((entry) => entry.id === item.id ? { ...entry, imageUrl: event.target.value } : entry) }))} className="rounded-lg border border-white/10 bg-[#1D2723] px-2 py-2 text-xs text-white" />
+                      </div>
+                      <button type="button" onClick={() => setRestaurantData((current) => ({ ...current, items: current.items.filter((entry) => entry.id !== item.id) }))} className="text-xs text-rose-300">Remove item</button>
                     </div>
                   ))}
                 </div>
@@ -298,20 +363,27 @@ export default function OnboardingWizard() {
                 <div className="space-y-2 text-center">
                   <span className="text-xs font-mono text-[#34B56A] uppercase tracking-widest flex items-center justify-center gap-1.5"><Check size={14} /> Ready</span>
                   <h2 className="text-2xl sm:text-3xl font-black text-white">Your Permanent QR</h2>
-                  {planId === 'BASIC' && <p className="text-xs text-[#e8783c] mt-2">Note: You have 1 included menu edit remaining.</p>}
+                  {planId === 'BASIC' && <p className="text-xs text-[#e8783c] mt-2">20 menu changes are included after setup.</p>}
                 </div>
+                {!qrReady ? (
+                  <div className="mx-auto max-w-lg space-y-4 text-center">
+                    <p className="text-sm text-[#AAB7B2]">Your menu is saved first. Then we create one permanent QR that always opens its latest version.</p>
+                    <button type="button" onClick={() => void createFirstQr()} disabled={isSubmitting} className="rounded-xl bg-[#E8783C] px-6 py-3 text-sm font-bold text-white disabled:opacity-60">{isSubmitting ? 'Saving menu...' : 'Save menu and create permanent QR'}</button>
+                  </div>
+                ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                   <div className="bg-[#151C19] p-6 rounded-2xl border border-white/10 flex flex-col items-center text-center space-y-4">
-                    <ScannableQRCode url={`https://menusqr.app/menu/${restaurantData.slug}`} size={140} />
+                    {qr?.qrId && <ScannableQRCode url={`${window.location.origin}/qr/${encodeURIComponent(qr.qrId)}`} size={140} />}
                     <div>
                       <h4 className="font-extrabold text-sm text-white">{restaurantData.name}</h4>
                       <p className="text-[10px] font-mono text-[#E8783C] mt-0.5">PERMANENT QR CODE</p>
                     </div>
                   </div>
                   <div className="h-[280px] rounded-2xl overflow-hidden border border-white/10 shadow-xl bg-white">
-                    <MenuTemplateRenderer templateId={restaurantData.templateId} restaurant={restaurantData} categories={restaurantData.categories} items={restaurantData.items} compact />
+                    <MenuTemplateRenderer templateId={restaurantData.templateId} restaurant={{ name: restaurantData.name, tagline: restaurantData.tagline, phone: restaurantData.phone, address: restaurantData.address, logo: restaurantData.logoUrl }} categories={restaurantData.categories} items={restaurantData.items.map((item) => ({ ...item, image: item.imageUrl, dietType: item.dietType === 'vegan' ? 'veg' : item.dietType }))} compact />
                   </div>
                 </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -335,6 +407,14 @@ export default function OnboardingWizard() {
           </div>
         </div>
       </main>
+      {isPrinterOpen && qr?.qrId && (
+        <QRGenerationSequence
+          restaurantName={restaurantData.name}
+          menuUrl={`${window.location.origin}/qr/${encodeURIComponent(qr.qrId)}`}
+          onComplete={handlePrinterComplete}
+          onClose={() => setIsPrinterOpen(false)}
+        />
+      )}
     </div>
   );
 }

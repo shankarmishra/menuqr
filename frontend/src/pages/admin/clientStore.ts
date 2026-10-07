@@ -29,6 +29,7 @@ export interface ClientRecord {
   address: string;
   city: string;
   state: string;
+  templateId?: string;
   postalCode: string;
   country: string;
   menuSlug: string;
@@ -57,6 +58,7 @@ export interface PublicMenuRecord {
   heroImage?: string;
   menuItems: MenuItemRecord[];
   plan?: string;
+  templateId?: string;
 }
 
 export interface ApiHealth {
@@ -68,7 +70,7 @@ export interface ApiHealth {
 export interface AdminNotification {
   id: string;
   type: 'new-user';
-  user: { clientId: string; name: string; email: string; phone: string };
+  user?: { clientId?: string; name?: string; email?: string; phone?: string };
   message: string;
   source: string;
   status: 'unread' | 'read';
@@ -253,12 +255,14 @@ export async function getClient(id: string): Promise<ClientRecord | undefined> {
 // Raw shape returned by GET /api/public/menus/:slug
 interface RawPublicMenuApiResponse {
   isExpired?: boolean;
+  menuSlug?: string;
   restaurant: {
     name: string;
     tagline?: string;
     category?: string;
     phone?: string;
     address?: string;
+    city?: string;
   };
   plan: string;
   templateId?: string;
@@ -273,6 +277,40 @@ interface RawPublicMenuApiResponse {
     available: boolean;
     image?: string;
   }>;
+}
+
+function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
+  const menuItems: MenuItemRecord[] = raw.items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description ?? '',
+    price: String(item.price),
+    pricingType: 'single' as const,
+    halfPrice: '',
+    fullPrice: '',
+    regPrice: '',
+    medPrice: '',
+    largePrice: '',
+    category: item.category,
+    dietType: (item.dietType ?? 'veg') as MenuDietType,
+    image: item.image ?? '',
+    available: item.available,
+  }));
+  return {
+    businessName: raw.restaurant.name,
+    category: (raw.restaurant.category ?? 'restaurants') as ClientCategory,
+    phone: raw.restaurant.phone ?? '',
+    address: raw.restaurant.address ?? '',
+    city: raw.restaurant.city ?? '',
+    state: '',
+    website: '',
+    openingHours: '',
+    services: [],
+    heroImage: undefined,
+    menuItems,
+    plan: raw.plan,
+    templateId: raw.templateId,
+  };
 }
 
 export async function getClientByMenuSlug(slug: string): Promise<PublicMenuRecord | undefined> {
@@ -290,38 +328,13 @@ export async function getClientByMenuSlug(slug: string): Promise<PublicMenuRecor
     throw error;
   }
 
-  // Map API shape → PublicMenuRecord that MenuPage.tsx consumes
-  const menuItems: MenuItemRecord[] = raw.items.map((item) => ({
-    id: item.id,
-    name: item.name,
-    description: item.description ?? '',
-    price: String(item.price),
-    pricingType: 'single' as const,
-    halfPrice: '',
-    fullPrice: '',
-    regPrice: '',
-    medPrice: '',
-    largePrice: '',
-    category: item.category,
-    dietType: (item.dietType ?? 'veg') as MenuDietType,
-    image: item.image ?? '',
-    available: item.available,
-  }));
+  return mapPublicMenu(raw);
+}
 
-  return {
-    businessName: raw.restaurant.name,
-    category: (raw.restaurant.category ?? 'restaurants') as ClientCategory,
-    phone: raw.restaurant.phone ?? '',
-    address: raw.restaurant.address ?? '',
-    city: '',
-    state: '',
-    website: '',
-    openingHours: '',
-    services: [],
-    heroImage: undefined,
-    menuItems,
-    plan: raw.plan,
-  };
+export async function getClientByQrId(qrId: string): Promise<{ menuSlug: string; client: PublicMenuRecord }> {
+  const raw = await request<RawPublicMenuApiResponse>(`/public/qr/${encodeURIComponent(qrId)}`);
+  if (!raw.menuSlug) throw new Error('This permanent menu link is unavailable.');
+  return { menuSlug: raw.menuSlug, client: mapPublicMenu(raw) };
 }
 
 export function createClient(client: Omit<ClientRecord, 'id' | 'createdAt'>): Promise<ClientRecord> {
@@ -395,5 +408,42 @@ export async function updateOrderStatus(id: string, status: CustomerOrder['statu
   return request<CustomerOrder>(`/app/orders/${encodeURIComponent(id)}/status`, {
     method: 'PATCH',
     body: JSON.stringify({ status })
+  });
+}
+
+export async function submitCustomerOrderByQr(qrId: string, order: Omit<CustomerOrder, 'id' | 'status' | 'time'>): Promise<CustomerOrder> {
+  return request<CustomerOrder>(`/public/qr/${encodeURIComponent(qrId)}/orders`, {
+    method: 'POST',
+    body: JSON.stringify(order),
+  });
+}
+
+export interface AdminStickerRequest {
+  id: string;
+  tenantId: string;
+  restaurantName: string;
+  qrId: string;
+  quantity: number;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  deliveryAddress: string;
+  deliveryCity: string;
+  deliveryState?: string;
+  deliveryPostalCode?: string;
+  notes?: string;
+  status: 'PENDING' | 'REVIEWING' | 'CONFIRMED' | 'IN_PRODUCTION' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function getAdminStickerRequests(): Promise<AdminStickerRequest[]> {
+  return request<AdminStickerRequest[]>('/admin/sticker-requests');
+}
+
+export function updateAdminStickerRequest(id: string, status: AdminStickerRequest['status'], note?: string): Promise<{ id: string; status: AdminStickerRequest['status']; updatedAt: string }> {
+  return request<{ id: string; status: AdminStickerRequest['status']; updatedAt: string }>(`/admin/sticker-requests/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, note }),
   });
 }

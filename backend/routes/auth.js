@@ -29,6 +29,83 @@ const loginOtpStore = new Map();
 const passwordResetStore = new Map();
 
 export default async function authRoutes(request, response, url) {
+
+  // NEW ADMIN ROUTES
+  if (request.method === 'POST' && url.pathname === '/api/auth/admin/request-otp') {
+    const input = await readJson(request);
+    const email = input?.email?.trim().toLowerCase();
+    if (!email) throw apiError(400, 'Email is required.');
+
+    const { requestAdminOtp } = await import('../adminAuth.js');
+    const address = getClientIp(request);
+    
+    try {
+      const result = await requestAdminOtp(email, address);
+      if (result) {
+        const { sendLoginOtpEmail } = await import('../email.js');
+        void sendLoginOtpEmail({ email, otp: result.otp, ownerName: 'Admin' }).catch(() => {});
+        if (process.env.NODE_ENV === 'test') {
+           sendJson(response, 200, { success: true, message: 'If an admin account exists, an OTP has been sent.', _testOtp: result.otp });
+           return true;
+        }
+      }
+    } catch (err) {
+      if (err.status === 429) throw err;
+    }
+    
+    sendJson(response, 200, { success: true, message: 'If an admin account exists, an OTP has been sent.' });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/auth/admin/verify-otp') {
+    const input = await readJson(request);
+    const { email, otp } = input || {};
+    if (!email || !otp) throw apiError(400, 'Email and OTP are required.');
+
+    const { verifyAdminOtp } = await import('../adminAuth.js');
+    const address = getClientIp(request);
+    
+    let result;
+    try {
+      result = await verifyAdminOtp(email.trim().toLowerCase(), otp, address);
+    } catch (err) {
+      console.error(err); throw apiError(err.status || 401, err.message);
+    }
+
+    const { stringifySetCookie: serialize } = await import('cookie');
+    const cookie = serialize('menusqr_admin_session', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 8 * 60 * 60,
+    });
+    
+    response.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': cookie });
+    response.end(JSON.stringify({ authenticated: true, role: 'SUPER_ADMIN', email: result.email }));
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/auth/admin/logout') {
+    const { stringifySetCookie: serialize, parseCookie: parse } = await import('cookie');
+    const cookies = parse(request.headers.cookie || '');
+    const adminToken = cookies['menusqr_admin_session'];
+    if (adminToken) {
+      const { clearAdminSession } = await import('../adminAuth.js');
+      await clearAdminSession(adminToken);
+    }
+    const cookie = serialize('menusqr_admin_session', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 0,
+    });
+    response.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': cookie });
+    response.end(JSON.stringify({ authenticated: false }));
+    return true;
+  }
+
   if (request.method === 'GET' && url.pathname === '/api/auth/session') {
     const user = await getAuthenticatedUser(request);
     sendJson(response, 200, {
@@ -259,15 +336,6 @@ export default async function authRoutes(request, response, url) {
       if (dbUser && verifyPassword(input.password, dbUser.password_hash)) {
         user = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
         userEmail = dbUser.email;
-      }
-    } else {
-      const { verifyAdminPassword, checkAdminLoginRateLimit, recordAdminLoginFailure, createAdminOtpSession } = await import('../adminAuth.js');
-      checkAdminLoginRateLimit(address);
-      if (verifyAdminPassword(input?.password)) {
-        user = { id: 'super-admin', role: 'SUPER_ADMIN' };
-        userEmail = 'admin@menusqr.com'; // Dummy email for MFA session
-      } else {
-        recordAdminLoginFailure(address);
       }
     }
 

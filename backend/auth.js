@@ -56,9 +56,11 @@ export function clearAuthCookie() {
   });
 }
 
-import { pool } from './db.js';
+import { pool, queryPortable } from './db.js';
 
 // Helpers for native Node HTTP requests
+import { verifyAdminSession } from './adminAuth.js';
+
 export async function getAuthenticatedUser(req) {
   try {
     const cookies = parse(req.headers.cookie || '');
@@ -68,14 +70,20 @@ export async function getAuthenticatedUser(req) {
     const decoded = jwt.verify(token, JWT_SECRET);
     
     if (decoded.role === 'SUPER_ADMIN') {
-      return decoded;
+      // Disallow JWTs representing SUPER_ADMIN to ensure complete isolation
+      return null; 
     }
     
     // Check if user still exists in DB
-    const res = await pool.query('SELECT id, role, tenant_id FROM users WHERE id = $1', [decoded.id]);
-    if (res.rows.length === 0) return null;
-    
-    return decoded;
+    const res = await queryPortable(pool, 'SELECT id, role, tenant_id FROM users WHERE id = ?', [decoded.id]);
+    const currentUser = res.rows[0];
+    if (!currentUser) return null;
+
+    return {
+      id: String(currentUser.id),
+      role: currentUser.role,
+      tenantId: currentUser.tenant_id || null,
+    };
   } catch (error) {
     console.error('JWT Verify Error:', error.message);
     return null;
@@ -93,13 +101,17 @@ export async function enforceAuth(req) {
 }
 
 export async function enforceSuperAdmin(req) {
-  const user = await enforceAuth(req);
-  if (user.role !== 'SUPER_ADMIN') {
-    const err = new Error('Forbidden. Super Admin access required.');
-    err.status = 403;
-    throw err;
+  const cookies = parse(req.headers.cookie || '');
+  const adminToken = cookies['menusqr_admin_session'];
+  
+  if (adminToken) {
+    const adminUser = await verifyAdminSession(adminToken);
+    if (adminUser) return adminUser;
   }
-  return user;
+  
+  const err = new Error('Forbidden. Super Admin access required.');
+  err.status = 403;
+  throw err;
 }
 
 export async function enforceTenant(req) {

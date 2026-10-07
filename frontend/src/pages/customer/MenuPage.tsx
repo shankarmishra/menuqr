@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, ChefHat, UtensilsCrossed, Clock3, Globe2, Phone, ShoppingCart, X, Plus, Minus } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
-import { getClientByMenuSlug, submitCustomerOrder, type PublicMenuRecord } from '../admin/clientStore';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { getClientByMenuSlug, submitCustomerOrder, submitCustomerOrderByQr, type PublicMenuRecord } from '../admin/clientStore';
+import { useToast } from '../../components/feedback/ToastProvider';
+import { menuTemplates } from '../../data/menuTemplates';
 import './MenuPage.css';
 
 const categoryPalette = ['#ff761a', '#ffc928', '#ff5e4d', '#34b56a', '#28a5a2', '#e56ea9', '#6785e6', '#a36be0', '#e7a52a', '#56a7dd'];
 
 function App() {
   const { slug } = useParams();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const qrId = searchParams.get('qr');
+  const showToast = useToast();
   const [menuResult, setMenuResult] = useState<{ slug: string; client?: PublicMenuRecord; error?: string }>();
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,6 +27,7 @@ function App() {
   
   const currentMenuResult = menuResult?.slug === slug ? menuResult : undefined;
   const client = currentMenuResult?.client;
+  const template = menuTemplates.find((option) => option.id === client?.templateId) ?? menuTemplates[0];
   const isPremium = client?.plan?.toUpperCase() === 'PREMIUM';
   const loadError = currentMenuResult?.error ?? '';
   const isLoading = Boolean(slug) && !currentMenuResult;
@@ -52,16 +59,22 @@ function App() {
 
   const placeOrder = async () => {
     if (!tableNumber) {
-      alert('Please enter your table number.');
+      showToast('info', 'Enter your table number to place the order.');
+      return;
+    }
+    if (cart.length === 0) {
+      showToast('info', 'Add at least one dish to your order.');
       return;
     }
     setOrderStatus('submitting');
     try {
-      await submitCustomerOrder(slug!, {
+      const order = {
         tableNumber,
         items: cart,
         total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-      });
+      };
+      if (qrId) await submitCustomerOrderByQr(qrId, order);
+      else await submitCustomerOrder(slug!, order);
       setOrderStatus('success');
       setCart([]);
       setTimeout(() => {
@@ -69,7 +82,7 @@ function App() {
         setOrderStatus('idle');
       }, 3000);
     } catch (e) {
-      alert('Failed to place order. Please try again.');
+      showToast('error', 'Your order did not go through. Please try again in a moment.');
       setOrderStatus('idle');
     }
   };
@@ -78,6 +91,11 @@ function App() {
     let isCurrent = true;
     if (!slug) {
       return;
+    }
+    const initialMenu = (location.state as { publicMenu?: PublicMenuRecord } | null)?.publicMenu;
+    if (initialMenu) {
+      setMenuResult({ slug, client: initialMenu });
+      return () => { isCurrent = false; };
     }
     void getClientByMenuSlug(slug).then((menu) => {
       if (!isCurrent) return;
@@ -88,7 +106,7 @@ function App() {
       if (isCurrent) setMenuResult({ slug, error: error instanceof Error ? error.message : 'Could not load this menu.' });
     });
     return () => { isCurrent = false; };
-  }, [slug]);
+  }, [location.state, slug]);
 
   const menuItems = (client?.menuItems ?? []).map((item) => ({
       id: item.id,
@@ -116,11 +134,57 @@ function App() {
     const searchMatch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     return categoryMatch && searchMatch;
   });
-  const heroImage = client?.heroImage
-    || menuItems.find((item) => item.img)?.img
-    || '';
+    const heroImage = client?.heroImage
+      || menuItems.find((item) => item.img)?.img
+      || '';
+  
+    const renderDish = (item: any) => {
+      const itemColor = categoryColors.get(item.category) ?? '#ff761a';
+      return (
+        <motion.div
+          key={item.id}
+          layout
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 8 }}
+          transition={{ duration: 0.28 }}
+          className="menu-dish"
+          style={{ '--dish-bg': template.colors.surface, '--dish-ink': template.colors.text, '--dish-accent': template.colors.accent, '--dish-line': template.colors.border, '--category-color': itemColor } as React.CSSProperties}
+        >
+          <div className="menu-dish-info">
+            <h3 className="menu-dish-title">{item.name}</h3>
+            {item.description && <p className="menu-dish-description" title={item.description}>{item.description}</p>}
+            
+            {item.pricingType === 'single' && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.price)} disabled={!isPremium}>{item.price}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
+            {item.pricingType === 'half-full' && (
+              <div className="menu-dish-price-variants">
+                {item.halfPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.halfPrice, 'Half')} disabled={!isPremium}><span className="variant-label">Half</span> {item.halfPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
+                {item.fullPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.fullPrice, 'Full')} disabled={!isPremium}><span className="variant-label">Full</span> {item.fullPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
+              </div>
+            )}
+            {item.pricingType === 'sizes' && (
+              <div className="menu-dish-price-variants">
+                {item.regPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.regPrice, 'Reg')} disabled={!isPremium}><span className="variant-label">Reg</span> {item.regPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
+                {item.medPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.medPrice, 'Med')} disabled={!isPremium}><span className="variant-label">Med</span> {item.medPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
+                {item.largePrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.largePrice, 'Lrg')} disabled={!isPremium}><span className="variant-label">Lrg</span> {item.largePrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
+              </div>
+            )}
+          </div>
+          <div className="menu-dish-image-container">
+            <div className="menu-dish-image-wrap">
+              {item.img ? <img
+                src={item.img}
+                alt={item.name}
+                className="menu-dish-image"
+                loading="lazy"
+              /> : <div className="menu-dish-image-placeholder" aria-hidden="true"><UtensilsCrossed size={32} strokeWidth={1.5} /></div>}
+            </div>
+          </div>
+        </motion.div>
+      );
+    };
 
-  if (loadError === 'SUBSCRIPTION_EXPIRED') {
+    if (loadError === 'SUBSCRIPTION_EXPIRED') {
     return (
       <div className="customer-menu menu-expired-lock">
         <header className="menu-topbar">
@@ -157,7 +221,17 @@ function App() {
   }
 
   return (
-    <div className="customer-menu">
+    <div className="customer-menu" style={{
+      '--menu-bg': template.colors.bg,
+      '--menu-surface': template.colors.surface,
+      '--menu-ink': template.colors.text,
+      '--menu-muted': template.colors.secondary,
+      '--menu-accent': template.colors.accent,
+      '--menu-line': template.colors.border,
+      '--menu-heading': template.colors.heading,
+      '--font-heading': template.typography.heading,
+      '--font-body': template.typography.body,
+    } as React.CSSProperties}>
       <header className="menu-topbar">
         <Link className="menu-wordmark" to={`/menu/${slug}#top`} aria-label="MenusQR menu">
           <span className="menu-brand-icon"><ChefHat size={19} strokeWidth={2} /></span>
@@ -174,6 +248,7 @@ function App() {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.65, ease: 'easeOut' }}
+          style={{ background: template.colors.bg, color: template.colors.text }}
         >
           <div className="menu-hero-text">
             <div className="menu-hero-badge">{client.category.replace(/s$/, '')}</div>
@@ -236,54 +311,26 @@ function App() {
           </div>
         </section>
 
-        <section className="menu-dishes" aria-label="Menu dishes">
+        <section className="menu-dishes-container" aria-label="Menu dishes">
           <AnimatePresence mode="popLayout">
-            {filteredItems.map((item) => {
-              const itemColor = categoryColors.get(item.category) ?? '#ff761a';
-
-              return (
-                <motion.div
-                  key={item.id}
-                  layout
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.28 }}
-                  className="menu-dish"
-                  style={{ '--dish-bg': itemColor } as React.CSSProperties}
-                >
-                  <div className="menu-dish-info">
-                    <h3 className="menu-dish-title">{item.name}</h3>
-                    {item.description && <p className="menu-dish-description" title={item.description}>{item.description}</p>}
-                    
-                    {item.pricingType === 'single' && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.price)} disabled={!isPremium}>{item.price}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-                    {item.pricingType === 'half-full' && (
-                      <div className="menu-dish-price-variants">
-                        {item.halfPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.halfPrice, 'Half')} disabled={!isPremium}><span className="variant-label">Half</span> {item.halfPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-                        {item.fullPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.fullPrice, 'Full')} disabled={!isPremium}><span className="variant-label">Full</span> {item.fullPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-                      </div>
-                    )}
-                    {item.pricingType === 'sizes' && (
-                      <div className="menu-dish-price-variants">
-                        {item.regPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.regPrice, 'Reg')} disabled={!isPremium}><span className="variant-label">Reg</span> {item.regPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-                        {item.medPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.medPrice, 'Med')} disabled={!isPremium}><span className="variant-label">Med</span> {item.medPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-                        {item.largePrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.largePrice, 'Lrg')} disabled={!isPremium}><span className="variant-label">Lrg</span> {item.largePrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-                      </div>
-                    )}
-                  </div>
-                  <div className="menu-dish-image-container">
-                    <div className="menu-dish-image-wrap">
-                      {item.img ? <img
-                        src={item.img}
-                        alt={item.name}
-                        className="menu-dish-image"
-                        loading="lazy"
-                      /> : <div className="menu-dish-image-placeholder" aria-label={`${item.name} has no image`}><UtensilsCrossed size={28} aria-hidden="true" /></div>}
+            {activeCategory === 'All' ? (
+              categories.slice(1).map(cat => {
+                const groupItems = filteredItems.filter(i => i.category === cat);
+                if (groupItems.length === 0) return null;
+                return (
+                  <div key={cat} className="menu-category-group">
+                    <h2 className="menu-category-title" style={{ color: template.colors.heading }}>{cat}</h2>
+                    <div className="menu-dishes-grid">
+                      {groupItems.map(item => renderDish(item))}
                     </div>
                   </div>
-                </motion.div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="menu-dishes-grid">
+                {filteredItems.map(item => renderDish(item))}
+              </div>
+            )}
           </AnimatePresence>
 
           {filteredItems.length === 0 && (
@@ -298,7 +345,7 @@ function App() {
 
       {/* Cart Button */}
       {isPremium && cart.length > 0 && (
-        <button className="menu-cart-fab" onClick={() => setIsCartOpen(true)}>
+        <button aria-label={`Open order cart, ${cart.reduce((sum, item) => sum + item.quantity, 0)} pieces`} className="menu-cart-fab" onClick={() => setIsCartOpen(true)}>
           <ShoppingCart size={24} />
           <span className="menu-cart-count">{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>
         </button>
@@ -337,9 +384,9 @@ function App() {
                           <div className="item-price">₹{(item.price * item.quantity).toLocaleString('en-IN')}</div>
                         </div>
                         <div className="menu-cart-item-controls">
-                          <button onClick={() => removeFromCart(item.id, item.variant)}><Minus size={16} /></button>
+                          <button aria-label={`Remove one ${item.name}`} onClick={() => removeFromCart(item.id, item.variant)}><Minus size={16} /></button>
                           <span>{item.quantity}</span>
-                          <button onClick={() => addToCart(item, `₹${item.price}`, item.variant)}><Plus size={16} /></button>
+                          <button aria-label={`Add one ${item.name}`} onClick={() => addToCart(item, `₹${item.price}`, item.variant)}><Plus size={16} /></button>
                         </div>
                       </div>
                     ))}
@@ -356,6 +403,7 @@ function App() {
                     <input 
                       type="text" 
                       placeholder="Table Number" 
+                      aria-label="Table number"
                       value={tableNumber}
                       onChange={(e) => setTableNumber(e.target.value)}
                       className="table-input"

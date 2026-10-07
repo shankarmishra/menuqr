@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Utensils, Store, Coffee, QrCode, Settings, Menu, X, Bell, ClipboardPlus, LogOut, Trash2, Receipt, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Utensils, Store, Coffee, QrCode, Settings, Menu, X, Bell, ClipboardPlus, LogOut, Trash2, Receipt, CreditCard, PackageCheck } from 'lucide-react';
 import { clearNotifications, getApiHealth, getNotifications, logoutAdmin, markNotificationRead, type AdminNotification } from '../pages/admin/clientStore';
 import { MenusQRBrand } from '../components/brand/MenusQRBrand';
 import '../App.css';
@@ -13,6 +13,7 @@ const navItems = [
   { path: '/admin/dhabas', icon: Store, label: 'Dhabas' },
   { path: '/admin/cafes', icon: Coffee, label: 'Cafes' },
   { path: '/admin/orders', icon: Receipt, label: 'Orders' },
+  { path: '/admin/sticker-requests', icon: PackageCheck, label: 'Sticker requests' },
   { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
   { path: '/admin/qr', icon: QrCode, label: 'QR Generator' },
   { path: '/admin/settings', icon: Settings, label: 'Settings' },
@@ -227,7 +228,7 @@ export default function AdminLayout() {
                             {notification.status === 'unread' && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#df7040]" />}
                             <span className="min-w-0">
                               <span className="block text-sm font-semibold text-white">{notification.message}</span>
-                              <span className="mt-1 block text-xs text-[#aab7b2]">{notification.user.email || notification.user.phone || 'No contact details'}</span>
+                              <span className="mt-1 block text-xs text-[#aab7b2]">{notification.user?.email || notification.user?.phone || notification.message}</span>
                               <span className="mt-1 block text-[11px] text-[#87958e]">{new Date(notification.createdAt).toLocaleString()}</span>
                             </span>
                           </span>
