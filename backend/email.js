@@ -33,7 +33,7 @@ async function createSmtpTransporter(smtpHost, smtpPort, smtpUser, smtpPass) {
   });
 }
 
-async function sendEmail(message, label) {
+export async function sendEmail(message, label) {
   const smtpUser = process.env.SMTP_USER?.trim();
   const smtpPass = process.env.SMTP_PASSWORD?.trim();
 
