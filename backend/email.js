@@ -10,51 +10,28 @@ export function getSmtpTimeoutOptions(environment = process.env) {
   };
 
   return {
-    connectionTimeout: timeoutValue(environment.SMTP_CONNECTION_TIMEOUT_MS, 3_000),
-    greetingTimeout: timeoutValue(environment.SMTP_GREETING_TIMEOUT_MS, 3_000),
-    socketTimeout: timeoutValue(environment.SMTP_SOCKET_TIMEOUT_MS, 5_000),
+    connectionTimeout: timeoutValue(environment.SMTP_CONNECTION_TIMEOUT_MS, 15_000),
+    greetingTimeout: timeoutValue(environment.SMTP_GREETING_TIMEOUT_MS, 15_000),
+    socketTimeout: timeoutValue(environment.SMTP_SOCKET_TIMEOUT_MS, 30_000),
   };
 }
 
-import dnsPromises from 'node:dns/promises';
-
-async function getSmtpTransporter() {
-  const smtpUser = process.env.SMTP_USER?.trim();
-  const smtpPass = process.env.SMTP_PASSWORD?.trim();
-
-  let defaultHost = 'smtp.hostinger.com';
-  if (smtpUser && smtpUser.toLowerCase().endsWith('@gmail.com')) {
-    defaultHost = 'smtp.gmail.com';
-  }
-
-  const smtpHost = process.env.SMTP_HOST || defaultHost;
-  const smtpPort = Number(process.env.SMTP_PORT) || 587;
-
-  if (smtpUser && smtpPass) {
-    if (!smtpTransporter) {
-      try {
-        const lookup = await dnsPromises.lookup(smtpHost, { family: 4 });
-        smtpTransporter = nodemailer.createTransport({
-          host: lookup.address,
-          port: smtpPort,
-          secure: smtpPort === 465,
-          auth: {
-            user: smtpUser,
-            pass: smtpPass,
-          },
-          tls: {
-            servername: smtpHost
-          },
-          ...getSmtpTimeoutOptions(),
-        });
-      } catch (err) {
-        console.error('[email] DNS lookup failed for SMTP host:', err.message);
-        throw err;
-      }
-    }
-    return smtpTransporter;
-  }
-  return null;
+async function createSmtpTransporter(smtpHost, smtpPort, smtpUser, smtpPass) {
+  const isSecure = Number(smtpPort) === 465;
+  return nodemailer.createTransport({
+    host: smtpHost,
+    port: Number(smtpPort),
+    secure: isSecure,
+    auth: {
+      user: smtpUser,
+      pass: smtpPass,
+    },
+    tls: {
+      rejectUnauthorized: false,
+      servername: smtpHost
+    },
+    ...getSmtpTimeoutOptions(),
+  });
 }
 
 async function sendEmailViaResend(message, label, retryOnboarding = false) {
@@ -181,26 +158,59 @@ async function sendEmailViaBrevo(message, label) {
 async function sendEmail(message, label) {
   const errors = [];
 
-  // 1. PRIMARY: Nodemailer SMTP (Gmail) — most reliable, no free-plan recipient restrictions
-  try {
-    const transporter = await getSmtpTransporter();
-    const fromAddress = process.env.MAIL_FROM_ADDRESS || process.env.SMTP_USER || 'no-reply@menusqr.in';
+  // 1. PRIMARY: Nodemailer SMTP (Gmail / Hostinger)
+  const smtpUser = process.env.SMTP_USER?.trim();
+  const smtpPass = process.env.SMTP_PASSWORD?.trim();
+
+  if (smtpUser && smtpPass) {
+    const fromAddress = process.env.MAIL_FROM_ADDRESS || smtpUser || 'no-reply@menusqr.in';
     const fromName = process.env.MAIL_FROM_NAME || 'MENUSQR';
 
-    if (transporter) {
-      await transporter.sendMail({
+    let defaultHost = 'smtp.hostinger.com';
+    if (smtpUser.toLowerCase().endsWith('@gmail.com')) {
+      defaultHost = 'smtp.gmail.com';
+    }
+
+    const smtpHost = process.env.SMTP_HOST || defaultHost;
+    const primaryPort = Number(process.env.SMTP_PORT) || 587;
+
+    // Try primary configured port
+    try {
+      if (!smtpTransporter) {
+        smtpTransporter = await createSmtpTransporter(smtpHost, primaryPort, smtpUser, smtpPass);
+      }
+      await smtpTransporter.sendMail({
         from: `"${fromName}" <${fromAddress}>`,
         to: message.to,
         subject: message.subject,
         html: message.html,
         text: message.text
       });
-      console.info(`[email] ${label} sent successfully via SMTP.`);
+      console.info(`[email] ${label} sent successfully via SMTP (${smtpHost}:${primaryPort}).`);
       return;
+    } catch (firstErr) {
+      console.warn(`[email] Primary SMTP (${smtpHost}:${primaryPort}) failed (${firstErr.message}). Resetting transporter and attempting port 465 SSL fallback...`);
+      smtpTransporter = null;
+
+      // If primary port (587) timed out on Render, try port 465 SSL directly
+      const fallbackPort = primaryPort === 465 ? 587 : 465;
+      try {
+        const fallbackTransporter = await createSmtpTransporter(smtpHost, fallbackPort, smtpUser, smtpPass);
+        await fallbackTransporter.sendMail({
+          from: `"${fromName}" <${fromAddress}>`,
+          to: message.to,
+          subject: message.subject,
+          html: message.html,
+          text: message.text
+        });
+        smtpTransporter = fallbackTransporter;
+        console.info(`[email] ${label} sent successfully via fallback SMTP (${smtpHost}:${fallbackPort}).`);
+        return;
+      } catch (fallbackErr) {
+        console.error(`[email] Fallback SMTP (${smtpHost}:${fallbackPort}) also failed:`, fallbackErr.message);
+        errors.push(`SMTP: ${firstErr.message} | Fallback: ${fallbackErr.message}`);
+      }
     }
-  } catch (err) {
-    console.error(`[email] Error sending ${label} via SMTP:`, err.message);
-    errors.push(`SMTP: ${err.message}`);
   }
 
   // 2. FALLBACK: Resend API (only if SMTP failed or not configured)
