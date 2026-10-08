@@ -1,4 +1,3 @@
-import https from 'https';
 import nodemailer from 'nodemailer';
 
 let smtpTransporter = null;
@@ -34,212 +33,63 @@ async function createSmtpTransporter(smtpHost, smtpPort, smtpUser, smtpPass) {
   });
 }
 
-async function sendEmailViaResend(message, label, retryOnboarding = false) {
-  const apiKey = process.env.RESEND_API_KEY?.trim();
-  if (!apiKey) return false;
-
-  let fromAddress = process.env.MAIL_FROM_ADDRESS?.trim() || 'onboarding@resend.dev';
-  if (fromAddress.toLowerCase().endsWith('@gmail.com') || retryOnboarding) {
-    fromAddress = 'onboarding@resend.dev';
-  }
-  const fromName = process.env.MAIL_FROM_NAME?.trim() || 'MENUSQR';
-
-  const payload = JSON.stringify({
-    from: `${fromName} <${fromAddress}>`,
-    to: [message.to],
-    subject: message.subject,
-    html: message.html,
-    text: message.text,
-  });
-
-  const options = {
-    hostname: 'api.resend.com',
-    path: '/emails',
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload),
-    },
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      let responseText = '';
-      res.on('data', chunk => responseText += chunk);
-      res.on('end', async () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          console.info(`[email] ${label} sent via Resend API (${fromAddress}).`);
-          resolve(true);
-        } else if (!retryOnboarding && (res.statusCode === 403 || res.statusCode === 422 || responseText.includes('domain'))) {
-          console.warn(`[email] Resend domain restriction hit (${res.statusCode}). Retrying with onboarding@resend.dev...`);
-          try {
-            await sendEmailViaResend(message, label, true);
-            resolve(true);
-          } catch (retryErr) {
-            reject(retryErr);
-          }
-        } else {
-          console.error(`[email] Resend API rejected ${label} (${res.statusCode}): ${responseText}`);
-          reject(new Error(`Resend API rejected message (${res.statusCode}): ${responseText}`));
-        }
-      });
-    });
-
-    req.on('error', (err) => {
-      console.error(`[email] Resend request error for ${label}:`, err.message);
-      reject(err);
-    });
-
-    req.setTimeout(10_000, () => {
-      req.destroy(new Error('Resend API request timed out.'));
-    });
-
-    req.write(payload);
-    req.end();
-  });
-}
-
-async function sendEmailViaBrevo(message, label) {
-  const apiKey = process.env.BREVO_API_KEY?.trim();
-  if (!apiKey) return false;
-
-  const senderEmail = process.env.MAIL_FROM_ADDRESS?.trim() || process.env.SMTP_USER?.trim() || 'menusqr.in@gmail.com';
-  const senderName = process.env.MAIL_FROM_NAME?.trim() || 'MENUSQR';
-
-  const payload = JSON.stringify({
-    sender: { email: senderEmail, name: senderName },
-    to: [{ email: message.to }],
-    subject: message.subject,
-    htmlContent: message.html,
-    textContent: message.text
-  });
-
-  const options = {
-    hostname: 'api.brevo.com',
-    path: '/v3/smtp/email',
-    method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'api-key': apiKey,
-      'content-type': 'application/json',
-      'content-length': Buffer.byteLength(payload)
-    }
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      res.resume();
-      res.on('end', () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          console.info(`[email] ${label} accepted by Brevo.`);
-          resolve(true);
-        } else {
-          console.error(`[email] Could not send ${label} via Brevo (status: ${res.statusCode}).`);
-          reject(new Error('Brevo API rejected message.'));
-        }
-      });
-    });
-
-    req.on('error', (e) => {
-      console.error(`[email] Brevo request error for ${label}:`, e.message);
-      reject(e);
-    });
-
-    req.setTimeout(Number(process.env.BREVO_REQUEST_TIMEOUT_MS) || 15_000, () => {
-      req.destroy(new Error('Brevo API request timed out.'));
-    });
-
-    req.write(payload);
-    req.end();
-  });
-}
-
 async function sendEmail(message, label) {
-  const errors = [];
-
-  // 1. PRIMARY: Nodemailer SMTP (Gmail / Hostinger)
   const smtpUser = process.env.SMTP_USER?.trim();
   const smtpPass = process.env.SMTP_PASSWORD?.trim();
 
-  if (smtpUser && smtpPass) {
-    const fromAddress = process.env.MAIL_FROM_ADDRESS || smtpUser || 'no-reply@menusqr.in';
-    const fromName = process.env.MAIL_FROM_NAME || 'MENUSQR';
+  if (!smtpUser || !smtpPass) {
+    throw new Error('SMTP credentials (SMTP_USER / SMTP_PASSWORD) are not configured.');
+  }
 
-    let defaultHost = 'smtp.hostinger.com';
-    if (smtpUser.toLowerCase().endsWith('@gmail.com')) {
-      defaultHost = 'smtp.gmail.com';
+  const fromAddress = process.env.MAIL_FROM_ADDRESS?.trim() || smtpUser || 'menusqr.in@gmail.com';
+  const fromName = process.env.MAIL_FROM_NAME?.trim() || 'MENUSQR';
+
+  let defaultHost = 'smtp.hostinger.com';
+  if (smtpUser.toLowerCase().endsWith('@gmail.com')) {
+    defaultHost = 'smtp.gmail.com';
+  }
+
+  const smtpHost = process.env.SMTP_HOST || defaultHost;
+  // Default to Port 465 (SSL) for Gmail as Port 465 connects directly without STARTTLS delays on Render
+  const defaultPort = smtpHost === 'smtp.gmail.com' ? 465 : 587;
+  const primaryPort = Number(process.env.SMTP_PORT) || defaultPort;
+
+  // Try primary port
+  try {
+    if (!smtpTransporter) {
+      smtpTransporter = await createSmtpTransporter(smtpHost, primaryPort, smtpUser, smtpPass);
     }
+    await smtpTransporter.sendMail({
+      from: `"${fromName}" <${fromAddress}>`,
+      to: message.to,
+      subject: message.subject,
+      html: message.html,
+      text: message.text
+    });
+    console.info(`[email] ${label} sent successfully via SMTP (${smtpHost}:${primaryPort}).`);
+    return;
+  } catch (firstErr) {
+    console.warn(`[email] Primary SMTP (${smtpHost}:${primaryPort}) failed (${firstErr.message}). Attempting fallback port...`);
+    smtpTransporter = null;
 
-    const smtpHost = process.env.SMTP_HOST || defaultHost;
-    const primaryPort = Number(process.env.SMTP_PORT) || 587;
-
-    // Try primary configured port
+    const fallbackPort = primaryPort === 465 ? 587 : 465;
     try {
-      if (!smtpTransporter) {
-        smtpTransporter = await createSmtpTransporter(smtpHost, primaryPort, smtpUser, smtpPass);
-      }
-      await smtpTransporter.sendMail({
+      const fallbackTransporter = await createSmtpTransporter(smtpHost, fallbackPort, smtpUser, smtpPass);
+      await fallbackTransporter.sendMail({
         from: `"${fromName}" <${fromAddress}>`,
         to: message.to,
         subject: message.subject,
         html: message.html,
         text: message.text
       });
-      console.info(`[email] ${label} sent successfully via SMTP (${smtpHost}:${primaryPort}).`);
+      smtpTransporter = fallbackTransporter;
+      console.info(`[email] ${label} sent successfully via fallback SMTP (${smtpHost}:${fallbackPort}).`);
       return;
-    } catch (firstErr) {
-      console.warn(`[email] Primary SMTP (${smtpHost}:${primaryPort}) failed (${firstErr.message}). Resetting transporter and attempting port 465 SSL fallback...`);
-      smtpTransporter = null;
-
-      // If primary port (587) timed out on Render, try port 465 SSL directly
-      const fallbackPort = primaryPort === 465 ? 587 : 465;
-      try {
-        const fallbackTransporter = await createSmtpTransporter(smtpHost, fallbackPort, smtpUser, smtpPass);
-        await fallbackTransporter.sendMail({
-          from: `"${fromName}" <${fromAddress}>`,
-          to: message.to,
-          subject: message.subject,
-          html: message.html,
-          text: message.text
-        });
-        smtpTransporter = fallbackTransporter;
-        console.info(`[email] ${label} sent successfully via fallback SMTP (${smtpHost}:${fallbackPort}).`);
-        return;
-      } catch (fallbackErr) {
-        console.error(`[email] Fallback SMTP (${smtpHost}:${fallbackPort}) also failed:`, fallbackErr.message);
-        errors.push(`SMTP: ${firstErr.message} | Fallback: ${fallbackErr.message}`);
-      }
+    } catch (fallbackErr) {
+      console.error(`[email] Fallback SMTP (${smtpHost}:${fallbackPort}) also failed:`, fallbackErr.message);
+      throw new Error(`SMTP Delivery Failed (${smtpHost}:${primaryPort} & ${fallbackPort}): ${firstErr.message}`);
     }
   }
-
-  // 2. FALLBACK: Resend API (only if SMTP failed or not configured)
-  if (process.env.RESEND_API_KEY) {
-    try {
-      const success = await sendEmailViaResend(message, label);
-      if (success) return;
-    } catch (err) {
-      console.warn(`[email] Resend API also failed for ${label}: ${err.message}.`);
-      errors.push(`Resend: ${err.message}`);
-    }
-  }
-
-  // 3. FALLBACK: Brevo API
-  if (process.env.BREVO_API_KEY) {
-    try {
-      const success = await sendEmailViaBrevo(message, label);
-      if (success) return;
-    } catch (err) {
-      console.warn(`[email] Brevo API also failed for ${label}: ${err.message}.`);
-      errors.push(`Brevo: ${err.message}`);
-    }
-  }
-
-  if (errors.length > 0) {
-    throw new Error(`Email delivery failed: ${errors.join(' | ')}`);
-  }
-
-  throw new Error('No email delivery provider (RESEND_API_KEY, BREVO_API_KEY, or SMTP_USER/PASS) is configured.');
 }
 
 // CORPORATE TRANSACTIONAL EMAIL WRAPPER (Minimal Aesthetic)
