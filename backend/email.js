@@ -181,28 +181,7 @@ async function sendEmailViaBrevo(message, label) {
 async function sendEmail(message, label) {
   const errors = [];
 
-  // 1. Try HTTPS APIs (Resend / Brevo) on Port 443
-  if (process.env.RESEND_API_KEY) {
-    try {
-      const success = await sendEmailViaResend(message, label);
-      if (success) return;
-    } catch (err) {
-      console.warn(`[email] Resend API failed for ${label}: ${err.message}. Falling back to SMTP...`);
-      errors.push(`Resend: ${err.message}`);
-    }
-  }
-
-  if (process.env.BREVO_API_KEY) {
-    try {
-      const success = await sendEmailViaBrevo(message, label);
-      if (success) return;
-    } catch (err) {
-      console.warn(`[email] Brevo API failed for ${label}: ${err.message}. Falling back to SMTP...`);
-      errors.push(`Brevo: ${err.message}`);
-    }
-  }
-
-  // 2. Fallback to Nodemailer SMTP (Hostinger / Gmail)
+  // 1. PRIMARY: Nodemailer SMTP (Gmail) — most reliable, no free-plan recipient restrictions
   try {
     const transporter = await getSmtpTransporter();
     const fromAddress = process.env.MAIL_FROM_ADDRESS || process.env.SMTP_USER || 'no-reply@menusqr.in';
@@ -222,6 +201,28 @@ async function sendEmail(message, label) {
   } catch (err) {
     console.error(`[email] Error sending ${label} via SMTP:`, err.message);
     errors.push(`SMTP: ${err.message}`);
+  }
+
+  // 2. FALLBACK: Resend API (only if SMTP failed or not configured)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const success = await sendEmailViaResend(message, label);
+      if (success) return;
+    } catch (err) {
+      console.warn(`[email] Resend API also failed for ${label}: ${err.message}.`);
+      errors.push(`Resend: ${err.message}`);
+    }
+  }
+
+  // 3. FALLBACK: Brevo API
+  if (process.env.BREVO_API_KEY) {
+    try {
+      const success = await sendEmailViaBrevo(message, label);
+      if (success) return;
+    } catch (err) {
+      console.warn(`[email] Brevo API also failed for ${label}: ${err.message}.`);
+      errors.push(`Brevo: ${err.message}`);
+    }
   }
 
   if (errors.length > 0) {
