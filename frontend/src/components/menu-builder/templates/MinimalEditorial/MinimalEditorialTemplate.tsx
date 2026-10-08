@@ -1,6 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
-import { LayoutProps } from '../types';
+import type { LayoutProps } from '../types';
 import { DietIndicator, RenderItemPrices } from '../shared/RenderItemPrices';
 import { MinimalEditorialAtmosphere } from '../assets/builtInImages';
 
