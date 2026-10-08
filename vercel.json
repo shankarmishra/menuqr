@@ -48,6 +48,6 @@
     { "source": "/terms", "destination": "/terms/index.html" },
     { "source": "/refund-cancellation", "destination": "/refund-cancellation/index.html" },
     { "source": "/refund-policy", "destination": "/refund-cancellation/index.html" },
-    { "source": "/((?!digital-qr-menu|restaurant-qr-menu|digital-menu-for-restaurants|qr-menu-for-restaurants|restaurant-digital-menu|qr-ordering-for-restaurants|plans|digital-menu-pricing|how-it-works|templates|about|contact|faq|privacy|privacy-policy|terms|refund-cancellation|refund-policy).*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
