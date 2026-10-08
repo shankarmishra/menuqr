@@ -32,6 +32,7 @@ function getSmtpTransporter() {
           user: smtpUser,
           pass: smtpPass,
         },
+        family: 4, // Force IPv4 to avoid Render ENETUNREACH errors
         ...getSmtpTimeoutOptions(),
       });
     }

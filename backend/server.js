@@ -1,7 +1,11 @@
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
 import './env.js';
+import dns from 'node:dns';
 import { createServer } from 'node:http';
+
+// Render free tier IPv6 outbound routing is broken; force IPv4 for SMTP & external APIs.
+dns.setDefaultResultOrder('ipv4first');
 
 import { connectDB, pool } from './db.js';
 import { apiError, sendJson } from './utils.js';
