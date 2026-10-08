@@ -16,108 +16,119 @@ export const SouthIndianHeritageTemplate: React.FC<LayoutProps> = ({
   setActiveCategory,
 }) => {
   return (
-    <div className="space-y-6 relative z-10 text-[#E2C044]">
-      {/* Header */}
-      <div className="text-center pb-3 border-b border-[#E2C044]/30">
-        <div className="text-[10px] font-sans uppercase tracking-[0.3em] text-[#E2C044] font-semibold mb-1">
-          ✦ TRADITIONAL DAKSHIN CUISINE ✦
-        </div>
-        <h1
-          className={clsx('font-black text-[#FAF3E0] tracking-wide', compact ? 'text-xl sm:text-2xl' : 'text-3xl sm:text-4xl')}
-          style={{ fontFamily: template.typography.heading }}
-        >
-          {restaurant.name}
-        </h1>
-        {restaurant.tagline && <p className="text-xs italic text-[#E2C044]/80 mt-1 font-serif">{restaurant.tagline}</p>}
-      </div>
-
-      {/* Built-in Art */}
-      <SouthIndianHeritageAtmosphere compact={compact} />
-
-      {/* Kolam / Bronze Tabs */}
-      {!compact && rawCategories.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none justify-center flex-wrap">
-          <button
-            type="button"
-            onClick={() => setActiveCategory('all')}
-            className={clsx(
-              'px-3.5 py-1 text-xs font-bold font-sans border transition-all rounded-full',
-              activeCategory === 'all'
-                ? 'bg-[#E2C044] text-[#0F1E16] border-[#E2C044]'
-                : 'bg-[#182B21] text-[#E2C044] border-[#E2C044]/30 hover:border-[#E2C044]'
-            )}
-          >
-            ALL
-          </button>
-          {rawCategories.map((cat) => {
-            const isActive = activeCategory === cat.id || activeCategory === cat.name;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setActiveCategory(cat.id)}
-                className={clsx(
-                  'px-3.5 py-1 text-xs font-bold font-sans border transition-all rounded-full whitespace-nowrap',
-                  isActive
-                    ? 'bg-[#E2C044] text-[#0F1E16] border-[#E2C044]'
-                    : 'bg-[#182B21] text-[#E2C044] border-[#E2C044]/30 hover:border-[#E2C044]'
-                )}
-              >
-                ● {cat.name}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Categories & Items */}
-      <div className="space-y-6">
-        {categories.map((cat) => (
-          <div key={cat.id} className="space-y-3">
-            <div className="flex items-center gap-2 border-b border-[#E2C044]/20 pb-1">
-              <span className="text-[#E2C044] text-xs">❖</span>
-              <h2
-                className={clsx('font-black text-[#E2C044] uppercase tracking-widest', compact ? 'text-xs' : 'text-sm')}
-                style={{ fontFamily: template.typography.heading }}
-              >
-                {cat.name}
-              </h2>
+    <div className="text-[#E2C044] font-sans relative z-10 space-y-6">
+      {/* Editorial Menu Spread Container */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+        
+        {/* Left Column: Traditional Dakshin Identity (35% on Desktop) */}
+        <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#172A1F] border-2 border-[#E2C044]/40 p-5 rounded-lg shadow-2xl">
+          <div className="text-center space-y-1 pb-3 border-b border-[#E2C044]/30">
+            <div className="text-[10px] uppercase tracking-[0.3em] text-[#E2C044] font-semibold">
+              ✦ TRADITIONAL DAKSHIN CUISINE ✦
             </div>
+            <h1
+              className={clsx('font-black text-[#FAF3E0] tracking-wide', compact ? 'text-xl' : 'text-2xl sm:text-3xl lg:text-4xl')}
+              style={{ fontFamily: template.typography.heading }}
+            >
+              {restaurant.name}
+            </h1>
+            {restaurant.tagline && <p className="text-xs italic text-[#E2C044]/80 font-serif">{restaurant.tagline}</p>}
+          </div>
 
-            <div className="space-y-3">
-              {cat.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="p-3 bg-[#182B21]/90 rounded-lg border border-[#E2C044]/30 hover:border-[#E2C044] transition-all flex justify-between items-start gap-3"
+          <SouthIndianHeritageAtmosphere compact={compact} />
+
+          {!compact && rawCategories.length > 1 && (
+            <div className="space-y-1.5 pt-2">
+              <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-[#E2C044]/80 block text-center mb-1">CATEGORIES</span>
+              <div className="flex lg:flex-col flex-wrap gap-1.5 justify-center">
+                <button
+                  type="button"
+                  onClick={() => setActiveCategory('all')}
+                  className={clsx(
+                    'px-3 py-1.5 text-xs font-bold border transition-all text-left flex items-center justify-between rounded-full',
+                    activeCategory === 'all'
+                      ? 'bg-[#E2C044] text-[#0E1A13] border-[#E2C044]'
+                      : 'bg-[#172A1F] text-[#E2C044] border-[#E2C044]/30 hover:border-[#E2C044]'
+                  )}
                 >
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <DietIndicator type={item.dietType} compact={compact} color="#E2C044" />
-                      <h3
-                        className="font-bold text-xs sm:text-sm text-[#FAF3E0]"
-                        style={{ fontFamily: template.typography.body }}
-                      >
-                        {item.name}
-                      </h3>
+                  <span>ALL DISHES</span>
+                </button>
+                {rawCategories.map((cat) => {
+                  const isActive = activeCategory === cat.id || activeCategory === cat.name;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setActiveCategory(cat.id)}
+                      className={clsx(
+                        'px-3 py-1.5 text-xs font-bold border transition-all text-left flex items-center justify-between rounded-full whitespace-nowrap',
+                        isActive
+                          ? 'bg-[#E2C044] text-[#0E1A13] border-[#E2C044]'
+                          : 'bg-[#172A1F] text-[#E2C044] border-[#E2C044]/30 hover:border-[#E2C044]'
+                      )}
+                    >
+                      <span>● {cat.name}</span>
+                      <span className="text-[10px] opacity-75">({cat.items.length})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Printed Dakshin Spread (65% on Desktop) */}
+        <div className="lg:col-span-8 bg-[#172A1F] border-2 border-[#E2C044]/40 p-4 sm:p-6 rounded-lg shadow-2xl space-y-8">
+          {categories.map((cat) => (
+            <div key={cat.id} className="space-y-4">
+              <div className="flex items-center gap-2 border-b border-[#E2C044]/30 pb-1">
+                <span className="text-[#E2C044] text-xs">❖</span>
+                <h2
+                  className={clsx('font-black text-[#E2C044] uppercase tracking-widest', compact ? 'text-xs' : 'text-sm sm:text-base')}
+                  style={{ fontFamily: template.typography.heading }}
+                >
+                  {cat.name}
+                </h2>
+                <div className="flex-1 h-px bg-[#E2C044]/30" />
+              </div>
+
+              <div className="space-y-3">
+                {cat.items.map((item) => (
+                  <div key={item.id} className="group py-1.5 border-b border-[#E2C044]/15 hover:border-[#E2C044]/40 transition-all">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <DietIndicator type={item.dietType} compact={compact} color="#E2C044" />
+                        <h3
+                          className="font-bold text-xs sm:text-sm text-[#FAF3E0] group-hover:text-[#E2C044] transition-colors truncate"
+                          style={{ fontFamily: template.typography.body }}
+                        >
+                          {item.name}
+                        </h3>
+                      </div>
+
+                      {/* Dotted Leader Line */}
+                      <span className="flex-1 border-b border-dotted border-[#E2C044]/40 mx-2 hidden sm:inline-block" />
+
+                      <RenderItemPrices
+                        item={item}
+                        accentColor="#E2C044"
+                        onAddToCart={onAddToCart}
+                        isPremium={isPremium}
+                        btnStyle="text-[9px] font-bold px-2 py-0.5 bg-[#E2C044] text-[#0E1A13] rounded hover:bg-[#c9a836]"
+                      />
                     </div>
+
                     {item.description && (
-                      <p className="text-[11px] text-[#E2C044]/70 pl-5 leading-relaxed font-sans">
+                      <p className="text-[11px] text-[#E2C044]/75 pl-5 mt-0.5 leading-relaxed font-sans">
                         {item.description}
                       </p>
                     )}
                   </div>
-                  <RenderItemPrices
-                    item={item}
-                    accentColor="#E2C044"
-                    onAddToCart={onAddToCart}
-                    isPremium={isPremium}
-                    btnStyle="text-[10px] font-bold px-2 py-0.5 bg-[#E2C044] text-[#0F1E16] rounded hover:bg-[#c9a836]"
-                  />
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,77 @@
 import React from 'react';
 import { ChefHat, CheckCircle2, Download } from 'lucide-react';
 
+export type StickerThemeId = 'menusqr-walnut-gold' | 'menusqr-emerald-gold' | 'menusqr-ebony-silver' | 'menusqr-ruby-gold';
+
+export interface ThemeConfig {
+  id: StickerThemeId;
+  name: string;
+  woodBg: string;
+  badgeGrad: string;
+  badgeText: string;
+  badgeBorder: string;
+  parchmentBg: string;
+  parchmentBorder: string;
+  accentColor: string;
+  leafColor: string;
+  textDark: string;
+}
+
+export const STICKER_THEMES: ThemeConfig[] = [
+  {
+    id: 'menusqr-walnut-gold',
+    name: 'Royal Walnut & Gold',
+    woodBg: 'linear-gradient(155deg, #442a19 0%, #29170c 35%, #382113 65%, #180b05 100%)',
+    badgeGrad: 'linear-gradient(135deg, #FFE99E 0%, #D4AF37 40%, #B8860B 75%, #7A550B 100%)',
+    badgeText: '#3B2500',
+    badgeBorder: '#FFF3C4',
+    parchmentBg: 'linear-gradient(175deg, #FCF8F2 0%, #FAF4EA 50%, #F4EAD8 100%)',
+    parchmentBorder: 'rgba(212,175,55,0.45)',
+    accentColor: '#D4AF37',
+    leafColor: '#B89656',
+    textDark: '#22140A',
+  },
+  {
+    id: 'menusqr-emerald-gold',
+    name: 'Emerald & Gold',
+    woodBg: 'linear-gradient(155deg, #0c3323 0%, #061c13 35%, #0a291c 65%, #030e09 100%)',
+    badgeGrad: 'linear-gradient(135deg, #FFE99E 0%, #D4AF37 40%, #B8860B 75%, #7A550B 100%)',
+    badgeText: '#3B2500',
+    badgeBorder: '#FFF3C4',
+    parchmentBg: 'linear-gradient(175deg, #F4FBF7 0%, #EAF5EF 50%, #DCEDE3 100%)',
+    parchmentBorder: 'rgba(212,175,55,0.45)',
+    accentColor: '#D4AF37',
+    leafColor: '#4F8A6B',
+    textDark: '#0B2418',
+  },
+  {
+    id: 'menusqr-ebony-silver',
+    name: 'Midnight Ebony & Silver',
+    woodBg: 'linear-gradient(155deg, #1c212b 0%, #0e1117 35%, #161a22 65%, #07080b 100%)',
+    badgeGrad: 'linear-gradient(135deg, #FFFFFF 0%, #CBD5E1 40%, #94A3B8 75%, #475569 100%)',
+    badgeText: '#0F172A',
+    badgeBorder: '#F1F5F9',
+    parchmentBg: 'linear-gradient(175deg, #F8FAFC 0%, #F1F5F9 50%, #E2E8F0 100%)',
+    parchmentBorder: 'rgba(148,163,184,0.5)',
+    accentColor: '#64748B',
+    leafColor: '#64748B',
+    textDark: '#0F172A',
+  },
+  {
+    id: 'menusqr-ruby-gold',
+    name: 'Royal Ruby & Gold',
+    woodBg: 'linear-gradient(155deg, #3b0c16 0%, #1f050b 35%, #2d0911 65%, #0f0205 100%)',
+    badgeGrad: 'linear-gradient(135deg, #FFE99E 0%, #D4AF37 40%, #B8860B 75%, #7A550B 100%)',
+    badgeText: '#3B2500',
+    badgeBorder: '#FFF3C4',
+    parchmentBg: 'linear-gradient(175deg, #FCF5F6 0%, #FAF0F2 50%, #F5E4E7 100%)',
+    parchmentBorder: 'rgba(212,175,55,0.45)',
+    accentColor: '#D4AF37',
+    leafColor: '#A85365',
+    textDark: '#29060E',
+  },
+];
+
 export interface RoyalWalnutStickerCardProps {
   restaurantName: string;
   category?: string;
@@ -14,6 +85,7 @@ export interface RoyalWalnutStickerCardProps {
   onDownloadPNG?: () => void;
   onDownloadSVG?: () => void;
   headerText?: string;
+  themeId?: StickerThemeId;
   stickerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -28,8 +100,11 @@ export default function RoyalWalnutStickerCard({
   onDownloadPNG,
   onDownloadSVG,
   headerText = 'Scan Me for Menu',
+  themeId = 'menusqr-walnut-gold',
   stickerRef,
 }: RoyalWalnutStickerCardProps) {
+  const theme = STICKER_THEMES.find((t) => t.id === themeId) || STICKER_THEMES[0];
+
   // Extract host domain from menuUrl safely
   let domain = 'menusqr.in';
   try {
@@ -48,7 +123,7 @@ export default function RoyalWalnutStickerCard({
         ref={stickerRef}
         className="relative flex w-[380px] sm:w-[410px] min-h-[610px] flex-col items-center overflow-hidden rounded-[2.2rem] p-4 sm:p-5 box-border ring-1 ring-black/30"
         style={{
-          background: 'linear-gradient(155deg, #442a19 0%, #29170c 35%, #382113 65%, #180b05 100%)',
+          background: theme.woodBg,
           boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7), inset 0 0 35px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.15)',
         }}
       >
@@ -63,21 +138,20 @@ export default function RoyalWalnutStickerCard({
           </svg>
         </div>
 
-        {/* --- METALLIC GOLD CORNER BRACKETS --- */}
+        {/* --- METALLIC GOLD/SILVER CORNER BRACKETS --- */}
         {/* Top-Left Bracket */}
         <svg className="absolute top-0 left-0 w-16 h-16 pointer-events-none z-20" viewBox="0 0 70 70" fill="none">
           <defs>
-            <linearGradient id="goldGradTL" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id={`bracketGradTL_${theme.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#FFF2B2" />
-              <stop offset="35%" stopColor="#F0C857" />
-              <stop offset="70%" stopColor="#C49619" />
+              <stop offset="35%" stopColor={theme.accentColor} />
               <stop offset="100%" stopColor="#785600" />
             </linearGradient>
-            <filter id="shadowTL" x="-20%" y="-20%" width="150%" height="150%">
+            <filter id={`shadowTL_${theme.id}`} x="-20%" y="-20%" width="150%" height="150%">
               <feDropShadow dx="2" dy="3" stdDeviation="2.5" floodColor="#000000" floodOpacity="0.6" />
             </filter>
           </defs>
-          <path d="M 0 0 L 62 0 C 46 0 26 10 20 26 C 15 36 15 50 0 62 Z" fill="url(#goldGradTL)" filter="url(#shadowTL)" />
+          <path d="M 0 0 L 62 0 C 46 0 26 10 20 26 C 15 36 15 50 0 62 Z" fill={`url(#bracketGradTL_${theme.id})`} filter={`url(#shadowTL_${theme.id})`} />
           <path d="M 3 3 L 54 3 C 41 3 22 12 18 25 C 14 34 14 47 3 54 Z" fill="none" stroke="#FFF7D6" strokeWidth="1" opacity="0.8" />
           <circle cx="12" cy="12" r="3" fill="#3D2900" stroke="#FFF2B2" strokeWidth="0.9" />
           <circle cx="12" cy="12" r="1" fill="#FFF2B2" />
@@ -87,7 +161,7 @@ export default function RoyalWalnutStickerCard({
 
         {/* Top-Right Bracket */}
         <svg className="absolute top-0 right-0 w-16 h-16 pointer-events-none z-20 transform scale-x-[-1]" viewBox="0 0 70 70" fill="none">
-          <path d="M 0 0 L 62 0 C 46 0 26 10 20 26 C 15 36 15 50 0 62 Z" fill="url(#goldGradTL)" filter="url(#shadowTL)" />
+          <path d="M 0 0 L 62 0 C 46 0 26 10 20 26 C 15 36 15 50 0 62 Z" fill={`url(#bracketGradTL_${theme.id})`} filter={`url(#shadowTL_${theme.id})`} />
           <path d="M 3 3 L 54 3 C 41 3 22 12 18 25 C 14 34 14 47 3 54 Z" fill="none" stroke="#FFF7D6" strokeWidth="1" opacity="0.8" />
           <circle cx="12" cy="12" r="3" fill="#3D2900" stroke="#FFF2B2" strokeWidth="0.9" />
           <circle cx="12" cy="12" r="1" fill="#FFF2B2" />
@@ -97,7 +171,7 @@ export default function RoyalWalnutStickerCard({
 
         {/* Bottom-Left Bracket */}
         <svg className="absolute bottom-0 left-0 w-16 h-16 pointer-events-none z-20 transform scale-y-[-1]" viewBox="0 0 70 70" fill="none">
-          <path d="M 0 0 L 62 0 C 46 0 26 10 20 26 C 15 36 15 50 0 62 Z" fill="url(#goldGradTL)" filter="url(#shadowTL)" />
+          <path d="M 0 0 L 62 0 C 46 0 26 10 20 26 C 15 36 15 50 0 62 Z" fill={`url(#bracketGradTL_${theme.id})`} filter={`url(#shadowTL_${theme.id})`} />
           <path d="M 3 3 L 54 3 C 41 3 22 12 18 25 C 14 34 14 47 3 54 Z" fill="none" stroke="#FFF7D6" strokeWidth="1" opacity="0.8" />
           <circle cx="12" cy="12" r="3" fill="#3D2900" stroke="#FFF2B2" strokeWidth="0.9" />
           <circle cx="12" cy="12" r="1" fill="#FFF2B2" />
@@ -107,7 +181,7 @@ export default function RoyalWalnutStickerCard({
 
         {/* Bottom-Right Bracket */}
         <svg className="absolute bottom-0 right-0 w-16 h-16 pointer-events-none z-20 transform scale-x-[-1] scale-y-[-1]" viewBox="0 0 70 70" fill="none">
-          <path d="M 0 0 L 62 0 C 46 0 26 10 20 26 C 15 36 15 50 0 62 Z" fill="url(#goldGradTL)" filter="url(#shadowTL)" />
+          <path d="M 0 0 L 62 0 C 46 0 26 10 20 26 C 15 36 15 50 0 62 Z" fill={`url(#bracketGradTL_${theme.id})`} filter={`url(#shadowTL_${theme.id})`} />
           <path d="M 3 3 L 54 3 C 41 3 22 12 18 25 C 14 34 14 47 3 54 Z" fill="none" stroke="#FFF7D6" strokeWidth="1" opacity="0.8" />
           <circle cx="12" cy="12" r="3" fill="#3D2900" stroke="#FFF2B2" strokeWidth="0.9" />
           <circle cx="12" cy="12" r="1" fill="#FFF2B2" />
@@ -115,17 +189,18 @@ export default function RoyalWalnutStickerCard({
           <circle cx="11" cy="42" r="2" fill="#3D2900" stroke="#FFF2B2" strokeWidth="0.7" />
         </svg>
 
-        {/* --- HEADER SECTION: 3D Embossed Metallic Gold Badge ("Scan Me for Menu") --- */}
+        {/* --- HEADER SECTION: 3D Embossed Metallic Badge ("Scan Me for Menu") --- */}
         <div
-          className="relative z-30 mx-auto mt-1 mb-3 flex items-center justify-center px-7 py-2.5 rounded-full border border-[#FFF3C4]/70"
+          className="relative z-30 mx-auto mt-1 mb-3 flex items-center justify-center px-7 py-2.5 rounded-full border"
           style={{
-            background: 'linear-gradient(135deg, #FFE99E 0%, #D4AF37 40%, #B8860B 75%, #7A550B 100%)',
+            background: theme.badgeGrad,
+            borderColor: theme.badgeBorder,
             boxShadow: '0 6px 18px rgba(0,0,0,0.55), inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 2px rgba(0,0,0,0.4)',
           }}
         >
           <span
-            className="font-extrabold text-sm sm:text-base tracking-wide uppercase text-[#3B2500] drop-shadow-[0_1px_0_rgba(255,255,255,0.4)]"
-            style={{ fontFamily: "'Montserrat', 'Poppins', system-ui, sans-serif" }}
+            className="font-extrabold text-sm sm:text-base tracking-wide uppercase drop-shadow-[0_1px_0_rgba(255,255,255,0.4)]"
+            style={{ fontFamily: "'Montserrat', 'Poppins', system-ui, sans-serif", color: theme.badgeText }}
           >
             {headerText}
           </span>
@@ -135,8 +210,8 @@ export default function RoyalWalnutStickerCard({
         <div
           className="relative z-10 flex w-full flex-1 flex-col items-center overflow-hidden rounded-2xl p-4 sm:p-5 box-border"
           style={{
-            background: 'linear-gradient(175deg, #FCF8F2 0%, #FAF4EA 50%, #F4EAD8 100%)',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(212,175,55,0.45), inset 0 0 20px rgba(184,150,86,0.15)',
+            background: theme.parchmentBg,
+            boxShadow: `0 10px 30px rgba(0,0,0,0.45), inset 0 0 0 1px ${theme.parchmentBorder}`,
           }}
         >
           {/* Subtle Paper Noise Pattern */}
@@ -148,46 +223,42 @@ export default function RoyalWalnutStickerCard({
           />
 
           {/* Golden Frame Inner Border Line */}
-          <div className="absolute inset-2 pointer-events-none rounded-xl border border-[#D4AF37]/35" />
+          <div className="absolute inset-2 pointer-events-none rounded-xl border opacity-40" style={{ borderColor: theme.accentColor }} />
 
           {/* --- BOTANICAL WATERCOLOR LEAVES (4 CORNERS) --- */}
           {/* Top-Left Botanical Leaf */}
-          <svg className="absolute top-2 left-2 w-16 h-16 pointer-events-none opacity-85 text-[#B89656]" viewBox="0 0 100 100" fill="none">
+          <svg className="absolute top-2 left-2 w-16 h-16 pointer-events-none opacity-85" style={{ color: theme.leafColor }} viewBox="0 0 100 100" fill="none">
             <path d="M15 15 C 35 5, 65 15, 80 40 C 60 50, 45 42, 28 55 C 18 42, 12 28, 15 15 Z" fill="currentColor" fillOpacity="0.13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             <path d="M 18 18 Q 48 30 75 42" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             <path d="M 32 24 Q 40 18 50 20" stroke="currentColor" strokeWidth="0.9" />
             <path d="M 44 28 Q 54 24 64 28" stroke="currentColor" strokeWidth="0.9" />
-            <path d="M 28 32 Q 32 42 26 50" stroke="currentColor" strokeWidth="0.9" />
             <circle cx="20" cy="12" r="2.5" fill="currentColor" opacity="0.6" />
             <circle cx="12" cy="20" r="2" fill="currentColor" opacity="0.5" />
           </svg>
 
           {/* Top-Right Botanical Leaf */}
-          <svg className="absolute top-2 right-2 w-16 h-16 pointer-events-none opacity-85 text-[#B89656] transform scale-x-[-1]" viewBox="0 0 100 100" fill="none">
+          <svg className="absolute top-2 right-2 w-16 h-16 pointer-events-none opacity-85 transform scale-x-[-1]" style={{ color: theme.leafColor }} viewBox="0 0 100 100" fill="none">
             <path d="M15 15 C 35 5, 65 15, 80 40 C 60 50, 45 42, 28 55 C 18 42, 12 28, 15 15 Z" fill="currentColor" fillOpacity="0.13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             <path d="M 18 18 Q 48 30 75 42" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             <path d="M 32 24 Q 40 18 50 20" stroke="currentColor" strokeWidth="0.9" />
-            <path d="M 44 28 Q 54 24 64 28" stroke="currentColor" strokeWidth="0.9" />
             <circle cx="20" cy="12" r="2.5" fill="currentColor" opacity="0.6" />
             <circle cx="12" cy="20" r="2" fill="currentColor" opacity="0.5" />
           </svg>
 
           {/* Bottom-Left Botanical Leaf */}
-          <svg className="absolute bottom-2 left-2 w-16 h-16 pointer-events-none opacity-85 text-[#B89656] transform scale-y-[-1]" viewBox="0 0 100 100" fill="none">
+          <svg className="absolute bottom-2 left-2 w-16 h-16 pointer-events-none opacity-85 transform scale-y-[-1]" style={{ color: theme.leafColor }} viewBox="0 0 100 100" fill="none">
             <path d="M15 15 C 35 5, 65 15, 80 40 C 60 50, 45 42, 28 55 C 18 42, 12 28, 15 15 Z" fill="currentColor" fillOpacity="0.13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             <path d="M 18 18 Q 48 30 75 42" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             <path d="M 32 24 Q 40 18 50 20" stroke="currentColor" strokeWidth="0.9" />
-            <path d="M 44 28 Q 54 24 64 28" stroke="currentColor" strokeWidth="0.9" />
             <circle cx="20" cy="12" r="2.5" fill="currentColor" opacity="0.6" />
             <circle cx="12" cy="20" r="2" fill="currentColor" opacity="0.5" />
           </svg>
 
           {/* Bottom-Right Botanical Leaf */}
-          <svg className="absolute bottom-2 right-2 w-16 h-16 pointer-events-none opacity-85 text-[#B89656] transform scale-x-[-1] scale-y-[-1]" viewBox="0 0 100 100" fill="none">
+          <svg className="absolute bottom-2 right-2 w-16 h-16 pointer-events-none opacity-85 transform scale-x-[-1] scale-y-[-1]" style={{ color: theme.leafColor }} viewBox="0 0 100 100" fill="none">
             <path d="M15 15 C 35 5, 65 15, 80 40 C 60 50, 45 42, 28 55 C 18 42, 12 28, 15 15 Z" fill="currentColor" fillOpacity="0.13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             <path d="M 18 18 Q 48 30 75 42" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             <path d="M 32 24 Q 40 18 50 20" stroke="currentColor" strokeWidth="0.9" />
-            <path d="M 44 28 Q 54 24 64 28" stroke="currentColor" strokeWidth="0.9" />
             <circle cx="20" cy="12" r="2.5" fill="currentColor" opacity="0.6" />
             <circle cx="12" cy="20" r="2" fill="currentColor" opacity="0.5" />
           </svg>
@@ -196,29 +267,29 @@ export default function RoyalWalnutStickerCard({
           <div className="relative z-10 flex flex-col items-center pt-2 text-center">
             {/* MenusQR Logo Mark */}
             <div className="flex items-center gap-1.5 mb-1">
-              <div className="p-1 rounded-md bg-[#3B2500] text-[#FFE89E] shadow-sm">
+              <div className="p-1 rounded-md text-white shadow-sm" style={{ backgroundColor: theme.textDark }}>
                 <ChefHat size={16} strokeWidth={2} />
               </div>
-              <span className="text-xs font-black tracking-widest text-[#3B2500] uppercase">
-                Menus<span className="text-[#D4AF37]">QR</span>
+              <span className="text-xs font-black tracking-widest uppercase" style={{ color: theme.textDark }}>
+                Menus<span style={{ color: theme.accentColor }}>QR</span>
               </span>
             </div>
 
             {/* Restaurant Name */}
             <h2
-              className="text-2xl sm:text-3xl font-extrabold text-[#22140A] tracking-tight leading-tight max-w-[280px] break-words mt-1 mb-0.5"
-              style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
+              className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight max-w-[280px] break-words mt-1 mb-0.5"
+              style={{ fontFamily: "'Playfair Display', 'Georgia', serif", color: theme.textDark }}
             >
               {restaurantName}
             </h2>
 
             {/* Subtitle */}
-            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-[#8C6D37] opacity-90">
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] opacity-90" style={{ color: theme.leafColor }}>
               {category}
             </p>
 
             {tagline && (
-              <p className="text-xs italic text-[#6B4F26] mt-0.5 max-w-[260px] truncate">
+              <p className="text-xs italic mt-0.5 max-w-[260px] truncate opacity-80" style={{ color: theme.textDark }}>
                 {tagline}
               </p>
             )}
@@ -229,7 +300,7 @@ export default function RoyalWalnutStickerCard({
             <div
               className="relative flex h-44 w-44 sm:h-48 sm:w-48 items-center justify-center rounded-2xl bg-white p-3 shadow-[0_8px_20px_rgba(0,0,0,0.18)]"
               style={{
-                border: '3px solid #D4AF37',
+                border: `3px solid ${theme.accentColor}`,
               }}
             >
               {qrImage ? (
@@ -238,15 +309,15 @@ export default function RoyalWalnutStickerCard({
                   {/* Center Badge Icon on QR */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="bg-white p-1 rounded-lg shadow-md">
-                      <div className="bg-[#3B2500] text-[#FFE99E] p-1.5 rounded-md flex items-center justify-center">
+                      <div className="text-white p-1.5 rounded-md flex items-center justify-center" style={{ backgroundColor: theme.textDark }}>
                         <ChefHat size={16} strokeWidth={2.5} />
                       </div>
                     </div>
                   </div>
                 </>
               ) : (
-                <div className="flex h-full w-full items-center justify-center border-2 border-dashed border-[#D4AF37]/40 rounded-xl bg-[#FAF4EA]">
-                  <span className="text-xs font-semibold text-[#8C6D37]">Generating QR...</span>
+                <div className="flex h-full w-full items-center justify-center border-2 border-dashed rounded-xl bg-black/5" style={{ borderColor: theme.accentColor }}>
+                  <span className="text-xs font-semibold opacity-70" style={{ color: theme.textDark }}>Generating QR...</span>
                 </div>
               )}
             </div>
@@ -255,18 +326,18 @@ export default function RoyalWalnutStickerCard({
           {/* --- FOOTER CONTENT ON CARD --- */}
           <div className="relative z-10 flex flex-col items-center text-center mt-auto pb-1">
             <h3
-              className="text-base sm:text-lg font-extrabold text-[#22140A] tracking-tight"
-              style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
+              className="text-base sm:text-lg font-extrabold tracking-tight"
+              style={{ fontFamily: "'Playfair Display', 'Georgia', serif", color: theme.textDark }}
             >
               Scan to view our menu
             </h3>
 
-            <p className="text-xs font-medium text-[#7C5E28] tracking-wide mt-0.5">
+            <p className="text-xs font-medium tracking-wide mt-0.5 opacity-80" style={{ color: theme.leafColor }}>
               {domain}
             </p>
 
-            <div className="flex items-center justify-center gap-2 w-full mt-2 pt-1 border-t border-[#D4AF37]/30">
-              <span className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[#A88241]">
+            <div className="flex items-center justify-center gap-2 w-full mt-2 pt-1 border-t opacity-40" style={{ borderColor: theme.accentColor }}>
+              <span className="text-[9px] font-extrabold uppercase tracking-[0.2em]" style={{ color: theme.leafColor }}>
                 ONE QR — ALWAYS THE LATEST MENU
               </span>
             </div>
@@ -276,16 +347,17 @@ export default function RoyalWalnutStickerCard({
         {/* --- ACTION & STATUS BAR (ON WOODEN PANEL) --- */}
         {showStatusBadge && (
           <div
-            className="relative z-30 mx-auto mt-3 flex items-center justify-center gap-2 px-5 py-2 rounded-full border border-[#FFF3C4]/60"
+            className="relative z-30 mx-auto mt-3 flex items-center justify-center gap-2 px-5 py-2 rounded-full border"
             style={{
-              background: 'linear-gradient(135deg, #FFE99E 0%, #D4AF37 50%, #8C6200 100%)',
+              background: theme.badgeGrad,
+              borderColor: theme.badgeBorder,
               boxShadow: '0 4px 15px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.8)',
             }}
           >
             <div className="w-4 h-4 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-sm">
               <CheckCircle2 size={12} strokeWidth={3} />
             </div>
-            <span className="font-bold text-xs text-[#3A2300] tracking-wide">
+            <span className="font-bold text-xs tracking-wide" style={{ color: theme.badgeText }}>
               Your permanent QR is ready
             </span>
           </div>
@@ -298,7 +370,8 @@ export default function RoyalWalnutStickerCard({
               <button
                 type="button"
                 onClick={onDownloadPNG}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl border border-[#D4AF37]/70 bg-gradient-to-b from-[#4A2D1B] to-[#25140A] text-[#FFE89E] font-bold text-xs sm:text-sm shadow-md hover:brightness-125 transition-all active:scale-95 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl border bg-gradient-to-b from-white/10 to-black/30 font-bold text-xs sm:text-sm shadow-md hover:brightness-125 transition-all active:scale-95 cursor-pointer"
+                style={{ borderColor: theme.accentColor, color: theme.badgeText }}
               >
                 <Download size={14} /> PNG
               </button>
@@ -307,7 +380,8 @@ export default function RoyalWalnutStickerCard({
               <button
                 type="button"
                 onClick={onDownloadSVG}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl border border-[#D4AF37]/70 bg-gradient-to-b from-[#4A2D1B] to-[#25140A] text-[#FFE89E] font-bold text-xs sm:text-sm shadow-md hover:brightness-125 transition-all active:scale-95 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl border bg-gradient-to-b from-white/10 to-black/30 font-bold text-xs sm:text-sm shadow-md hover:brightness-125 transition-all active:scale-95 cursor-pointer"
+                style={{ borderColor: theme.accentColor, color: theme.badgeText }}
               >
                 <Download size={14} /> SVG
               </button>

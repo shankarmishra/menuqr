@@ -28,9 +28,12 @@ export default async function authRoutes(request, response, url) {
     
     const result = await requestAdminOtp(email, address);
     if (result) {
-      // Send email asynchronously to avoid blocking the UI response
+      console.log(`\n=========================================`);
+      console.log(`[ADMIN OTP GENERATED] Email: ${email} | OTP: ${result.otp}`);
+      console.log(`=========================================\n`);
+
+      // Send email asynchronously
       sendAdminLoginOtpEmail({ email, otp: result.otp, ownerName: 'Admin' }).catch(err => {
-        pool.query('UPDATE admin_otp_challenges SET used = true WHERE id = $1', [result.challengeId]).catch(() => {});
         console.error('[admin auth] OTP email delivery failed:', err.message);
       });
     }
@@ -317,6 +320,11 @@ export default async function authRoutes(request, response, url) {
 
     const normalizedEmail = normalizeEmail(input?.email);
     if (normalizedEmail) {
+      const { isApprovedAdminEmail } = await import('../adminAuth.js');
+      if (isApprovedAdminEmail(normalizedEmail)) {
+        throw apiError(400, 'This is an Admin account. Please log in at https://admin.menusqr.in/login');
+      }
+
       const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
       const dbUser = dbRes.rows[0];
       

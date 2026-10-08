@@ -16,108 +16,119 @@ export const BanarasiGoldTemplate: React.FC<LayoutProps> = ({
   setActiveCategory,
 }) => {
   return (
-    <div className="space-y-6 relative z-10 text-[#F3E5AB]">
-      {/* Header */}
-      <div className="text-center pb-3 border-b border-[#F3E5AB]/30">
-        <div className="text-[9px] font-serif uppercase tracking-[0.35em] text-[#F3E5AB] font-bold mb-1">
-          ✦ Banarasi Silk & Royal Feast ✦
-        </div>
-        <h1
-          className={clsx('font-black text-[#FFF5D1] tracking-wider', compact ? 'text-xl sm:text-2xl' : 'text-3xl sm:text-4xl')}
-          style={{ fontFamily: template.typography.heading }}
-        >
-          {restaurant.name}
-        </h1>
-        {restaurant.tagline && <p className="text-xs italic text-[#F3E5AB]/70 mt-1 font-serif">{restaurant.tagline}</p>}
-      </div>
-
-      {/* Built-in Art */}
-      <BanarasiGoldAtmosphere compact={compact} />
-
-      {/* Gold Silk Navigation */}
-      {!compact && rawCategories.length > 1 && (
-        <div className="flex justify-center flex-wrap gap-2 py-2">
-          <button
-            type="button"
-            onClick={() => setActiveCategory('all')}
-            className={clsx(
-              'px-3.5 py-1 text-xs font-serif tracking-widest border transition-all',
-              activeCategory === 'all'
-                ? 'bg-[#F3E5AB] text-[#190C1E] border-[#F3E5AB] font-bold'
-                : 'text-[#F3E5AB] border-[#F3E5AB]/30 hover:border-[#F3E5AB]'
-            )}
-          >
-            ALL
-          </button>
-          {rawCategories.map((cat) => {
-            const isActive = activeCategory === cat.id || activeCategory === cat.name;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setActiveCategory(cat.id)}
-                className={clsx(
-                  'px-3.5 py-1 text-xs font-serif tracking-widest border transition-all',
-                  isActive
-                    ? 'bg-[#F3E5AB] text-[#190C1E] border-[#F3E5AB] font-bold'
-                    : 'text-[#F3E5AB] border-[#F3E5AB]/30 hover:border-[#F3E5AB]'
-                )}
-              >
-                {cat.name}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Categories & Items */}
-      <div className="space-y-6">
-        {categories.map((cat) => (
-          <div key={cat.id} className="space-y-3">
-            <div className="flex items-center gap-3 border-b border-[#F3E5AB]/20 pb-1">
-              <span className="text-[#F3E5AB] text-xs">✦</span>
-              <h2
-                className={clsx('font-black text-[#F3E5AB] uppercase tracking-widest', compact ? 'text-xs' : 'text-sm')}
-                style={{ fontFamily: template.typography.heading }}
-              >
-                {cat.name}
-              </h2>
+    <div className="text-[#F3E5AB] font-serif relative z-10 space-y-6">
+      {/* Editorial Menu Spread Container */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+        
+        {/* Left Column: Silk Woven Identity (35% on Desktop) */}
+        <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#2B112B] border-2 border-[#F3E5AB]/40 p-5 rounded-md shadow-2xl">
+          <div className="text-center space-y-1 pb-3 border-b border-[#F3E5AB]/30">
+            <div className="text-[9px] font-serif uppercase tracking-[0.35em] text-[#F3E5AB] font-bold">
+              ✦ BANARASI SILK & FEAST ✦
             </div>
+            <h1
+              className={clsx('font-black text-[#FFF5D1] tracking-wider', compact ? 'text-xl' : 'text-2xl sm:text-3xl lg:text-4xl')}
+              style={{ fontFamily: template.typography.heading }}
+            >
+              {restaurant.name}
+            </h1>
+            {restaurant.tagline && <p className="text-xs italic text-[#F3E5AB]/70 font-serif">{restaurant.tagline}</p>}
+          </div>
 
-            <div className="space-y-3">
-              {cat.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="p-3 bg-[#2B1533]/80 rounded border border-[#F3E5AB]/30 hover:border-[#F3E5AB] transition-all flex justify-between items-start gap-3"
+          <BanarasiGoldAtmosphere compact={compact} />
+
+          {!compact && rawCategories.length > 1 && (
+            <div className="space-y-1.5 pt-2">
+              <span className="text-[9px] font-serif uppercase tracking-[0.3em] font-bold text-[#F3E5AB] block text-center mb-1">CATEGORIES</span>
+              <div className="flex lg:flex-col flex-wrap gap-1.5 justify-center">
+                <button
+                  type="button"
+                  onClick={() => setActiveCategory('all')}
+                  className={clsx(
+                    'px-3 py-1.5 text-xs font-serif tracking-widest border transition-all text-left flex items-center justify-between',
+                    activeCategory === 'all'
+                      ? 'bg-[#F3E5AB] text-[#1A0A18] border-[#F3E5AB] font-bold'
+                      : 'text-[#F3E5AB] border-[#F3E5AB]/30 hover:border-[#F3E5AB]'
+                  )}
                 >
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <DietIndicator type={item.dietType} compact={compact} color="#F3E5AB" />
-                      <h3
-                        className="font-bold text-xs sm:text-sm text-[#FFF5D1]"
-                        style={{ fontFamily: template.typography.body }}
-                      >
-                        {item.name}
-                      </h3>
+                  <span>ALL DISHES</span>
+                </button>
+                {rawCategories.map((cat) => {
+                  const isActive = activeCategory === cat.id || activeCategory === cat.name;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setActiveCategory(cat.id)}
+                      className={clsx(
+                        'px-3 py-1.5 text-xs font-serif tracking-widest border transition-all text-left flex items-center justify-between whitespace-nowrap',
+                        isActive
+                          ? 'bg-[#F3E5AB] text-[#1A0A18] border-[#F3E5AB] font-bold'
+                          : 'text-[#F3E5AB] border-[#F3E5AB]/30 hover:border-[#F3E5AB]'
+                      )}
+                    >
+                      <span>{cat.name}</span>
+                      <span className="text-[10px] opacity-70">({cat.items.length})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Printed Woven Spread (65% on Desktop) */}
+        <div className="lg:col-span-8 bg-[#2B112B] border-2 border-[#F3E5AB]/40 p-4 sm:p-6 rounded-md shadow-2xl space-y-8">
+          {categories.map((cat) => (
+            <div key={cat.id} className="space-y-4">
+              <div className="flex items-center gap-3 border-b border-[#F3E5AB]/30 pb-1">
+                <span className="text-[#F3E5AB] text-xs">✦</span>
+                <h2
+                  className={clsx('font-black text-[#F3E5AB] uppercase tracking-widest', compact ? 'text-xs' : 'text-sm sm:text-base')}
+                  style={{ fontFamily: template.typography.heading }}
+                >
+                  {cat.name}
+                </h2>
+                <div className="flex-1 h-px bg-[#F3E5AB]/30" />
+              </div>
+
+              <div className="space-y-3">
+                {cat.items.map((item) => (
+                  <div key={item.id} className="group py-1.5 border-b border-[#F3E5AB]/15 hover:border-[#F3E5AB]/40 transition-all">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <DietIndicator type={item.dietType} compact={compact} color="#F3E5AB" />
+                        <h3
+                          className="font-bold text-xs sm:text-sm text-[#FFF5D1] group-hover:text-[#F3E5AB] transition-colors truncate"
+                          style={{ fontFamily: template.typography.body }}
+                        >
+                          {item.name}
+                        </h3>
+                      </div>
+
+                      {/* Dotted Leader Line */}
+                      <span className="flex-1 border-b border-dotted border-[#F3E5AB]/40 mx-2 hidden sm:inline-block" />
+
+                      <RenderItemPrices
+                        item={item}
+                        accentColor="#F3E5AB"
+                        onAddToCart={onAddToCart}
+                        isPremium={isPremium}
+                        btnStyle="text-[9px] font-bold px-2 py-0.5 bg-[#F3E5AB] text-[#1A0A18] rounded hover:bg-[#d6c78a]"
+                      />
                     </div>
+
                     {item.description && (
-                      <p className="text-[11px] text-[#F3E5AB]/70 pl-5 leading-relaxed font-serif italic">
+                      <p className="text-[11px] text-[#F3E5AB]/70 pl-5 mt-0.5 leading-relaxed font-serif italic">
                         {item.description}
                       </p>
                     )}
                   </div>
-                  <RenderItemPrices
-                    item={item}
-                    accentColor="#F3E5AB"
-                    onAddToCart={onAddToCart}
-                    isPremium={isPremium}
-                    btnStyle="text-[10px] font-bold px-2 py-0.5 bg-[#F3E5AB] text-[#190C1E] rounded hover:bg-[#d6c78a]"
-                  />
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

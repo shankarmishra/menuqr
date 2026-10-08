@@ -17,7 +17,7 @@ export const DietIndicator: React.FC<{
   const isVeg = type === 'veg' || type === 'vegan';
   const borderColor = color || (isVeg ? '#2E7D32' : '#D32F2F');
   const dotColor = color || (isVeg ? '#2E7D32' : '#D32F2F');
-  const size = compact ? 'w-3 h-3 p-[1.5px]' : 'w-4 h-4 p-0.5';
+  const size = compact ? 'w-3 h-3 p-[1px]' : 'w-3.5 h-3.5 p-0.5';
 
   return (
     <span
@@ -43,11 +43,11 @@ export const RenderItemPrices: React.FC<{
 
   if (item.halfPrice || item.fullPrice) {
     return (
-      <div className="flex flex-wrap items-center gap-2 shrink-0">
+      <div className="flex flex-wrap items-center gap-1.5 shrink-0 font-mono text-xs font-bold">
         {item.halfPrice && (
           <div className="flex items-center gap-1">
-            <span className="text-[10px] opacity-70">Half</span>
-            <span className="font-mono text-xs font-bold" style={{ color: accentColor }}>{FormatPrice(item.halfPrice)}</span>
+            <span className="text-[9px] opacity-70 uppercase tracking-tighter">Half</span>
+            <span style={{ color: accentColor }}>{FormatPrice(item.halfPrice)}</span>
             {onAddToCart && isPremium && (
               <button
                 type="button"
@@ -61,8 +61,8 @@ export const RenderItemPrices: React.FC<{
         )}
         {item.fullPrice && (
           <div className="flex items-center gap-1">
-            <span className="text-[10px] opacity-70">Full</span>
-            <span className="font-mono text-xs font-bold" style={{ color: accentColor }}>{FormatPrice(item.fullPrice)}</span>
+            <span className="text-[9px] opacity-70 uppercase tracking-tighter">Full</span>
+            <span style={{ color: accentColor }}>{FormatPrice(item.fullPrice)}</span>
             {onAddToCart && isPremium && (
               <button
                 type="button"
@@ -80,7 +80,7 @@ export const RenderItemPrices: React.FC<{
 
   return (
     <div className="flex items-center gap-2 shrink-0">
-      <span className="font-mono text-xs sm:text-sm font-bold" style={{ color: accentColor }}>
+      <span className="font-mono text-xs sm:text-sm font-bold tracking-tight" style={{ color: accentColor }}>
         {FormatPrice(item.price)}
       </span>
       {onAddToCart && isPremium && (

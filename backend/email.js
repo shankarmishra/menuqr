@@ -57,11 +57,140 @@ async function getSmtpTransporter() {
   return null;
 }
 
+async function sendEmailViaResend(message, label) {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (!apiKey) return false;
+
+  const fromAddress = process.env.MAIL_FROM_ADDRESS?.trim() || 'onboarding@resend.dev';
+  const fromName = process.env.MAIL_FROM_NAME?.trim() || 'MENUSQR';
+
+  const payload = JSON.stringify({
+    from: `${fromName} <${fromAddress}>`,
+    to: [message.to],
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
+  });
+
+  const options = {
+    hostname: 'api.resend.com',
+    path: '/emails',
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload),
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let responseText = '';
+      res.on('data', chunk => responseText += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.info(`[email] ${label} sent via Resend API.`);
+          resolve(true);
+        } else {
+          console.error(`[email] Resend API rejected ${label} (${res.statusCode}): ${responseText}`);
+          reject(new Error(`Resend API rejected message (${res.statusCode})`));
+        }
+      });
+    });
+
+    req.on('error', (err) => {
+      console.error(`[email] Resend request error for ${label}:`, err.message);
+      reject(err);
+    });
+
+    req.setTimeout(10_000, () => {
+      req.destroy(new Error('Resend API request timed out.'));
+    });
+
+    req.write(payload);
+    req.end();
+  });
+}
+
+async function sendEmailViaBrevo(message, label) {
+  const apiKey = process.env.BREVO_API_KEY?.trim();
+  if (!apiKey) return false;
+
+  const senderEmail = process.env.MAIL_FROM_ADDRESS?.trim() || process.env.SMTP_USER?.trim() || 'menusqr.in@gmail.com';
+  const senderName = process.env.MAIL_FROM_NAME?.trim() || 'MENUSQR';
+
+  const payload = JSON.stringify({
+    sender: { email: senderEmail, name: senderName },
+    to: [{ email: message.to }],
+    subject: message.subject,
+    htmlContent: message.html,
+    textContent: message.text
+  });
+
+  const options = {
+    hostname: 'api.brevo.com',
+    path: '/v3/smtp/email',
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'api-key': apiKey,
+      'content-type': 'application/json',
+      'content-length': Buffer.byteLength(payload)
+    }
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      res.resume();
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.info(`[email] ${label} accepted by Brevo.`);
+          resolve(true);
+        } else {
+          console.error(`[email] Could not send ${label} via Brevo (status: ${res.statusCode}).`);
+          reject(new Error('Brevo API rejected message.'));
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      console.error(`[email] Brevo request error for ${label}:`, e.message);
+      reject(e);
+    });
+
+    req.setTimeout(Number(process.env.BREVO_REQUEST_TIMEOUT_MS) || 15_000, () => {
+      req.destroy(new Error('Brevo API request timed out.'));
+    });
+
+    req.write(payload);
+    req.end();
+  });
+}
+
 async function sendEmail(message, label) {
+  // 1. Prefer HTTPS APIs (Resend / Brevo) on Port 443 (Avoids cloud port 587 block)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await sendEmailViaResend(message, label);
+      return;
+    } catch (err) {
+      console.error(`[email] Resend API failed for ${label}:`, err.message);
+    }
+  }
+
+  if (process.env.BREVO_API_KEY) {
+    try {
+      await sendEmailViaBrevo(message, label);
+      return;
+    } catch (err) {
+      console.error(`[email] Brevo API failed for ${label}:`, err.message);
+    }
+  }
+
+  // 2. Fallback to Nodemailer SMTP
   const transporter = await getSmtpTransporter();
   const fromAddress = process.env.MAIL_FROM_ADDRESS || process.env.SMTP_USER || 'no-reply@menusqr.in';
   const fromName = process.env.MAIL_FROM_NAME || 'MENUSQR';
-  let smtpError;
 
   if (transporter) {
     try {
@@ -75,63 +204,12 @@ async function sendEmail(message, label) {
       console.info(`[email] ${label} sent successfully via SMTP.`);
       return;
     } catch (err) {
-      smtpError = err;
       console.error(`[email] Error sending ${label} via SMTP:`, err.message);
+      throw new Error(`Email delivery failed via SMTP: ${err.message}`);
     }
   }
 
-  if (!process.env.BREVO_API_KEY) {
-    throw new Error(smtpError ? 'Email delivery failed.' : 'No email delivery provider is configured.');
-  }
-  
-  const senderEmail = process.env.MAIL_FROM_ADDRESS?.trim() || process.env.SMTP_USER?.trim() || 'qevnaro@gmail.com';
-
-  const payload = JSON.stringify({
-    sender: { email: senderEmail, name: 'MENUSQR' },
-    to: [{ email: message.to }],
-    subject: message.subject,
-    htmlContent: message.html,
-    textContent: message.text
-  });
-
-  const options = {
-    hostname: 'api.brevo.com',
-    path: '/v3/smtp/email',
-    method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'api-key': process.env.BREVO_API_KEY.trim(),
-      'content-type': 'application/json',
-      'content-length': Buffer.byteLength(payload)
-    }
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      res.resume();
-      res.on('end', () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          console.info(`[email] ${label} accepted by Brevo.`);
-          resolve();
-        } else {
-          console.error(`[email] Could not send ${label} (status: ${res.statusCode}).`);
-          reject(new Error('Email provider rejected the message.'));
-        }
-      });
-    });
-    
-    req.on('error', (e) => {
-      console.error(`[email] Request error for ${label}:`, e.message);
-      reject(new Error('Email provider request failed.'));
-    });
-
-    req.setTimeout(Number(process.env.BREVO_REQUEST_TIMEOUT_MS) || 15_000, () => {
-      req.destroy(new Error('Email provider request timed out.'));
-    });
-    
-    req.write(payload);
-    req.end();
-  });
+  throw new Error('No email delivery provider (RESEND_API_KEY, BREVO_API_KEY, or SMTP_USER/PASS) is configured.');
 }
 
 // CORPORATE TRANSACTIONAL EMAIL WRAPPER (Minimal Aesthetic)

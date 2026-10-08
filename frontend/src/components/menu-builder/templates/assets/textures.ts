@@ -1,123 +1,138 @@
-// Template-specific CSS/SVG texture patterns and decorative SVG elements
+// High-visibility material textures (3% - 8% opacity) for all 15 MenusQR templates
 
 export const TEMPLATE_TEXTURES = {
-  // 01. Royal Maharaja: Velvet texture & brass arch motif
+  // 01. Royal Maharaja: Crimson/Midnight Velvet & Brass Filigree
   royalMaharaja: {
-    bg: `bg-[#1A0B13]`,
-    gradient: `bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#2A111F] via-[#1A0B13] to-[#0D0509]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='%23D4AF37' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-    borderGold: `border-[#D4AF37]/30`,
+    bg: `bg-[#180912]`,
+    gradient: `bg-[radial-gradient(circle_at_50%_0%,_var(--tw-gradient-stops))] from-[#2D1022] via-[#180912] to-[#0A0307]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D4AF37' fill-opacity='0.07' fill-rule='evenodd'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z M30 12L48 30L30 48L12 30Z'/%3E%3C/g%3E%3C/svg%3E")`,
+    textColor: `text-[#FAF3E0]`,
+    accentColor: `#D4AF37`,
   },
 
-  // 02. Rajasthani Heritage: Sandstone texture & terracotta block-print linework
+  // 02. Rajasthani Heritage: Sandstone & Block-print Terracotta Linework
   rajasthaniHeritage: {
-    bg: `bg-[#FDFBF7]`,
-    gradient: `bg-gradient-to-b from-[#F5EBE6] via-[#FDFBF7] to-[#F2E3DB]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 L60 30 L30 60 L0 30 Z M30 10 L50 30 L30 50 L10 30 Z' fill='%23C85A32' fill-opacity='0.03'/%3E%3C/svg%3E")`,
-    terracottaBorder: `border-[#C85A32]/40`,
+    bg: `bg-[#FAF2EC]`,
+    gradient: `bg-gradient-to-b from-[#F5EBE4] via-[#FAF2EC] to-[#ECE0D6]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 0 L80 40 L40 80 L0 40 Z M40 15 L65 40 L40 65 L15 40 Z M40 28 L52 40 L40 52 L28 40 Z' fill='%23C85A32' fill-opacity='0.06'/%3E%3C/svg%3E")`,
+    textColor: `text-[#2B1710]`,
+    accentColor: `#C85A32`,
   },
 
-  // 03. Mughal Luxe: Emerald velvet & gold geometric arches
+  // 03. Mughal Luxe: Emerald Velvet Marble & Gold Ogee Arch Lattice
   mughalLuxe: {
-    bg: `bg-[#0B1A15]`,
-    gradient: `bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#112921] via-[#0B1A15] to-[#050D0A]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M25 0 Q50 25 25 50 Q0 25 25 0 Z' fill='%23E5C158' fill-opacity='0.02'/%3E%3C/svg%3E")`,
-    emeraldGold: `border-[#E5C158]/35`,
+    bg: `bg-[#0A1813]`,
+    gradient: `bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#132D24] via-[#0A1813] to-[#040B08]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 Q60 30 30 60 Q0 30 30 0 Z' fill='none' stroke='%23E5C158' stroke-opacity='0.06' stroke-width='1.5'/%3E%3C/svg%3E")`,
+    textColor: `text-[#E5C158]`,
+    accentColor: `#E5C158`,
   },
 
-  // 04. Banarasi Gold: Woven silk lattice texture
+  // 04. Banarasi Gold: Deep Crimson Woven Silk Brocade Lattice
   banarasiGold: {
-    bg: `bg-[#190C1E]`,
-    gradient: `bg-gradient-to-b from-[#2B1533] via-[#190C1E] to-[#100714]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 15 L15 0 L30 15 L15 30 Z' fill='none' stroke='%23F3E5AB' stroke-opacity='0.05' stroke-width='1'/%3E%3C/svg%3E")`,
-    silkBorder: `border-[#F3E5AB]/40`,
+    bg: `bg-[#1A0A18]`,
+    gradient: `bg-gradient-to-b from-[#2F112B] via-[#1A0A18] to-[#0E050D]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 20 L20 0 L40 20 L20 40 Z M10 20 L20 10 L30 20 L20 30 Z' fill='%23F3E5AB' fill-opacity='0.07'/%3E%3C/svg%3E")`,
+    textColor: `text-[#F3E5AB]`,
+    accentColor: `#F3E5AB`,
   },
 
-  // 05. South Indian Heritage: Banana leaf green & kolam line art
+  // 05. South Indian Heritage: Banana Leaf Green & Bronze Kolam Pattern
   southIndianHeritage: {
-    bg: `bg-[#0F1E16]`,
-    gradient: `bg-gradient-to-b from-[#182B21] via-[#0F1E16] to-[#0A140F]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='12' fill='none' stroke='%23E2C044' stroke-opacity='0.04' stroke-width='1'/%3E%3Cpath d='M20 0 L20 40 M0 20 L40 20' stroke='%23E2C044' stroke-opacity='0.03' stroke-width='1'/%3E%3C/svg%3E")`,
-    bronzeBorder: `border-[#E2C044]/35`,
+    bg: `bg-[#0E1A13]`,
+    gradient: `bg-gradient-to-b from-[#172A1F] via-[#0E1A13] to-[#080F0B]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='25' cy='25' r='16' fill='none' stroke='%23E2C044' stroke-opacity='0.06' stroke-width='1.5'/%3E%3Cpath d='M25 0 L25 50 M0 25 L50 25' stroke='%23E2C044' stroke-opacity='0.05' stroke-width='1'/%3E%3C/svg%3E")`,
+    textColor: `text-[#E2C044]`,
+    accentColor: `#E2C044`,
   },
 
-  // 06. Indian Street Kitchen: Chalkboard & craft paper
+  // 06. Indian Street Kitchen: Chalkboard & Halftone Print Texture
   indianStreetKitchen: {
-    bg: `bg-[#18181B]`,
-    gradient: `bg-gradient-to-b from-[#242427] via-[#18181B] to-[#0F0F11]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23FFFFFF' fill-opacity='0.03'/%3E%3C/svg%3E")`,
-    yellowBorder: `border-[#FACC15]`,
+    bg: `bg-[#18181A]`,
+    gradient: `bg-gradient-to-b from-[#252528] via-[#18181A] to-[#0F0F10]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='3' cy='3' r='1.5' fill='%23FFFFFF' fill-opacity='0.06'/%3E%3Ccircle cx='15' cy='15' r='1.5' fill='%23FACC15' fill-opacity='0.05'/%3E%3C/svg%3E")`,
+    textColor: `text-white`,
+    accentColor: `#FACC15`,
   },
 
-  // 07. Modern India: Saffron minimalist paper
+  // 07. Modern India: Saffron Minimalist Fine Paper Grain
   modernIndia: {
-    bg: `bg-[#FAF7F2]`,
-    gradient: `bg-gradient-to-b from-[#FFFDF9] via-[#FAF7F2] to-[#F5EFE6]`,
-    overlayPattern: `none`,
-    saffronBorder: `border-[#D97706]/20`,
+    bg: `bg-[#FAF7F0]`,
+    gradient: `bg-gradient-to-b from-[#FFFDF7] via-[#FAF7F0] to-[#F3EEE3]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0 h60 v60 h-60 z' fill='none' stroke='%23D97706' stroke-opacity='0.04' stroke-width='1'/%3E%3C/svg%3E")`,
+    textColor: `text-[#2D241E]`,
+    accentColor: `#D97706`,
   },
 
-  // 08. Spice House: Earthy cardamom & cinnamon clay
+  // 08. Spice House: Earthy Cinnamon & Cardamom Clay
   spiceHouse: {
-    bg: `bg-[#1F1714]`,
-    gradient: `bg-gradient-to-b from-[#2C211D] via-[#1F1714] to-[#140F0D]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='36' height='36' viewBox='0 0 36 36' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='%23E07A5F' fill-opacity='0.02'/%3E%3C/svg%3E")`,
-    terracottaBorder: `border-[#E07A5F]/30`,
+    bg: `bg-[#1E1512]`,
+    gradient: `bg-gradient-to-b from-[#2C1F1B] via-[#1E1512] to-[#120B09]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M24 0 L48 24 L24 48 L0 24 Z' fill='%23E07A5F' fill-opacity='0.06'/%3E%3C/svg%3E")`,
+    textColor: `text-[#F5EBE6]`,
+    accentColor: `#E07A5F`,
   },
 
-  // 09. Maison Noir: Luxury dark charcoal fine-dining
+  // 09. Maison Noir: Dark Charcoal Fine Dining Paper
   maisonNoir: {
-    bg: `bg-[#0D0D0E]`,
-    gradient: `bg-gradient-to-b from-[#161618] via-[#0D0D0E] to-[#070708]`,
-    overlayPattern: `none`,
-    luxeBorder: `border-[#C5A059]/40`,
+    bg: `bg-[#0C0C0D]`,
+    gradient: `bg-gradient-to-b from-[#171719] via-[#0C0C0D] to-[#050506]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='15' cy='15' r='1' fill='%23C5A059' fill-opacity='0.08'/%3E%3C/svg%3E")`,
+    textColor: `text-[#E0E0E0]`,
+    accentColor: `#C5A059`,
   },
 
-  // 10. Ivory Dining: Alabaster paper & gold foil
+  // 10. Ivory Dining: Parchment Paper & Gold Linework
   ivoryDining: {
-    bg: `bg-[#FDFBF7]`,
-    gradient: `bg-gradient-to-b from-[#FFFDF9] via-[#FDFBF7] to-[#F4EFE6]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30 Q30 0 60 30 Q30 60 0 30 Z' fill='none' stroke='%23C5A059' stroke-opacity='0.03' stroke-width='1'/%3E%3C/svg%3E")`,
-    goldBorder: `border-[#C5A059]/30`,
+    bg: `bg-[#FDFBF5]`,
+    gradient: `bg-gradient-to-b from-[#FFFDF8] via-[#FDFBF5] to-[#F5F0E4]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30 Q30 0 60 30 Q30 60 0 30 Z' fill='none' stroke='%23C5A059' stroke-opacity='0.06' stroke-width='1.5'/%3E%3C/svg%3E")`,
+    textColor: `text-[#2C2523]`,
+    accentColor: `#C5A059`,
   },
 
-  // 11. Grand Table: Classic brass rules & navy backdrop
+  // 11. Grand Table: Classic Navy Leather & Antique Brass
   grandTable: {
-    bg: `bg-[#0C131D]`,
-    gradient: `bg-gradient-to-b from-[#141F2E] via-[#0C131D] to-[#06090F]`,
-    overlayPattern: `none`,
-    navyBrass: `border-[#C8A962]/40`,
+    bg: `bg-[#0B121C]`,
+    gradient: `bg-gradient-to-b from-[#142030] via-[#0B121C] to-[#05080E]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0 h50 v50 h-50 z' fill='none' stroke='%23C8A962' stroke-opacity='0.05' stroke-width='1'/%3E%3C/svg%3E")`,
+    textColor: `text-[#E2E8F0]`,
+    accentColor: `#C8A962`,
   },
 
-  // 12. Coffee House: Espresso paper texture
+  // 12. Coffee House: Espresso Craft Paper Grain
   coffeeHouse: {
-    bg: `bg-[#1C1613]`,
-    gradient: `bg-gradient-to-b from-[#2A211D] via-[#1C1613] to-[#120E0C]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='12' r='1' fill='%23D4A373' fill-opacity='0.04'/%3E%3C/svg%3E")`,
-    amberBorder: `border-[#D4A373]/30`,
+    bg: `bg-[#1B1411]`,
+    gradient: `bg-gradient-to-b from-[#2A1E1A] via-[#1B1411] to-[#100A08]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='16' cy='16' r='1.5' fill='%23D4A373' fill-opacity='0.07'/%3E%3C/svg%3E")`,
+    textColor: `text-[#F5EBE6]`,
+    accentColor: `#D4A373`,
   },
 
-  // 13. Paper Cafe: Craft paper grain
+  // 13. Paper Cafe: Recycled Kraft Paper & Typewriter Ink Texture
   paperCafe: {
-    bg: `bg-[#F4EBE1]`,
-    gradient: `bg-gradient-to-b from-[#FBF6F0] via-[#F4EBE1] to-[#ECE1D3]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0 h40 v40 h-40 z' fill='none' stroke='%238C6D53' stroke-opacity='0.03' stroke-width='1'/%3E%3C/svg%3E")`,
-    craftBorder: `border-[#8C6D53]/30`,
+    bg: `bg-[#F3E9DD]`,
+    gradient: `bg-gradient-to-b from-[#FAF4EC] via-[#F3E9DD] to-[#E9DAC9]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0 h40 v40 h-40 z' fill='none' stroke='%238C6D53' stroke-opacity='0.07' stroke-width='1'/%3E%3C/svg%3E")`,
+    textColor: `text-[#3A2E2B]`,
+    accentColor: `#8C6D53`,
   },
 
-  // 14. Bombay Street: Urban poster yellow accent & grain
+  // 14. Bombay Street: Urban Halftone & Poster Yellow Accent
   bombayStreet: {
-    bg: `bg-[#171717]`,
-    gradient: `bg-gradient-to-b from-[#262626] via-[#171717] to-[#0A0A0A]`,
-    overlayPattern: `none`,
-    urbanYellow: `border-[#EAB308]`,
+    bg: `bg-[#161616]`,
+    gradient: `bg-gradient-to-b from-[#252525] via-[#161616] to-[#0A0A0A]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23EAB308' fill-opacity='0.08'/%3E%3C/svg%3E")`,
+    textColor: `text-white`,
+    accentColor: `#EAB308`,
   },
 
-  // 15. Minimal Editorial: Swiss white & strict monochrome grid
+  // 15. Minimal Editorial: Swiss Fine Offset Paper Grain
   minimalEditorial: {
-    bg: `bg-[#FAFAFA]`,
-    gradient: `bg-gradient-to-b from-[#FFFFFF] via-[#FAFAFA] to-[#F0F0F0]`,
-    overlayPattern: `none`,
-    swissBorder: `border-black/15`,
+    bg: `bg-[#F9F9F9]`,
+    gradient: `bg-gradient-to-b from-[#FFFFFF] via-[#F9F9F9] to-[#EFEFEF]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0 h60 v60 h-60 z' fill='none' stroke='%23000000' stroke-opacity='0.03' stroke-width='1'/%3E%3C/svg%3E")`,
+    textColor: `text-black`,
+    accentColor: `#000000`,
   }
 };
