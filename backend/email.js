@@ -57,11 +57,14 @@ async function getSmtpTransporter() {
   return null;
 }
 
-async function sendEmailViaResend(message, label) {
+async function sendEmailViaResend(message, label, retryOnboarding = false) {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) return false;
 
-  const fromAddress = process.env.MAIL_FROM_ADDRESS?.trim() || 'onboarding@resend.dev';
+  let fromAddress = process.env.MAIL_FROM_ADDRESS?.trim() || 'onboarding@resend.dev';
+  if (fromAddress.toLowerCase().endsWith('@gmail.com') || retryOnboarding) {
+    fromAddress = 'onboarding@resend.dev';
+  }
   const fromName = process.env.MAIL_FROM_NAME?.trim() || 'MENUSQR';
 
   const payload = JSON.stringify({
@@ -87,13 +90,21 @@ async function sendEmailViaResend(message, label) {
     const req = https.request(options, (res) => {
       let responseText = '';
       res.on('data', chunk => responseText += chunk);
-      res.on('end', () => {
+      res.on('end', async () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          console.info(`[email] ${label} sent via Resend API.`);
+          console.info(`[email] ${label} sent via Resend API (${fromAddress}).`);
           resolve(true);
+        } else if (!retryOnboarding && (res.statusCode === 403 || res.statusCode === 422 || responseText.includes('domain'))) {
+          console.warn(`[email] Resend domain restriction hit (${res.statusCode}). Retrying with onboarding@resend.dev...`);
+          try {
+            await sendEmailViaResend(message, label, true);
+            resolve(true);
+          } catch (retryErr) {
+            reject(retryErr);
+          }
         } else {
           console.error(`[email] Resend API rejected ${label} (${res.statusCode}): ${responseText}`);
-          reject(new Error(`Resend API rejected message (${res.statusCode})`));
+          reject(new Error(`Resend API rejected message (${res.statusCode}): ${responseText}`));
         }
       });
     });
