@@ -3,6 +3,7 @@ import { Eye, EyeOff, KeyRound, Utensils, Mail, ShieldCheck, ArrowLeft, RefreshC
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SEO } from '../../seo/SEO';
 import { isAdminHostname } from '../../utils/hostRouting';
+import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import { loginAdmin, verifyLoginOtp, resendLoginOtp, requestForgotPassword, resetPassword, requestSuperAdminOtp, verifySuperAdminOtp } from './clientStore';
 
 interface LoginLocationState {
@@ -192,12 +193,9 @@ export default function AdminLogin() {
         
         {/* Brand Header */}
         <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="grid h-12 w-12 place-items-center rounded-xl bg-[#e8783c] text-white shadow-lg shadow-[#e8783c]/20">{isAdminPage ? <ShieldCheck size={23} /> : <Utensils size={23} />}</span>
-            <div>
-              <p className="text-xl font-extrabold">Menu<span className="text-[#f29a66]">QR</span></p>
-              <p className="mt-0.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#94a39d]">{isAdminPage ? 'Private Admin Access' : 'Restaurant Portal'}</p>
-            </div>
+          <div className="flex flex-col gap-1">
+            <MenusQRBrand size="lg" variant="light" markOnly={false} />
+            <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94a39d] pl-1">{isAdminPage ? 'Private Admin Access' : 'Restaurant Portal'}</p>
           </div>
           {mode !== 'LOGIN' && (
             <button

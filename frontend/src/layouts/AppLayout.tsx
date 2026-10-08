@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePlan } from '../lib/usePlan';
 import { Menu, LayoutDashboard, UtensilsCrossed, Palette, QrCode, CreditCard, Settings, LogOut, User, Bell, ChevronRight, Store, ChefHat, ShoppingBag } from 'lucide-react';
 import { getProfile } from '../pages/app/appStore';
+import { MenusQRBrand } from '../components/brand/MenusQRBrand';
 import clsx from 'clsx';
 
 export default function AppLayout() {
@@ -54,8 +55,7 @@ export default function AppLayout() {
   const SidebarContent = () => (
     <>
       <div className="flex items-center h-16 px-6 border-b border-white/5">
-        <ChefHat className="text-[#e8783c] h-6 w-6 mr-3" />
-        <span className="font-bold text-lg tracking-wide text-white">Menus<span className="text-[#e8783c]">QR</span></span>
+        <MenusQRBrand size="sm" variant="light" className="scale-90 origin-left" />
       </div>
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8 scrollbar-hide">
         {navGroups.map((group) => (

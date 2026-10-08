@@ -4,11 +4,9 @@ import { pool } from './db.js';
 const OTP_TTL_MS = 5 * 60 * 1000;
 const MAX_OTP_ATTEMPTS = 5;
 const OTP_HASH_KEY = process.env.ADMIN_OTP_PEPPER || process.env.JWT_SECRET || randomBytes(32);
-const APPROVED_ADMIN_EMAILS = new Set([
-  'xshankarmishra@gmail.com',
-  'qevnaro@gmail.com',
-  'menusqr.in@gmail.com',
-]);
+const defaultAdmins = ['xshankarmishra@gmail.com', 'qevnaro@gmail.com', 'menusqr.in@gmail.com'];
+const envAdmins = process.env.APPROVED_ADMIN_EMAILS ? process.env.APPROVED_ADMIN_EMAILS.split(',').map(e => e.trim()) : [];
+const APPROVED_ADMIN_EMAILS = new Set(envAdmins.length > 0 ? envAdmins : defaultAdmins);
 const APPROVED_ADMIN_EMAIL_LIST = [...APPROVED_ADMIN_EMAILS];
 const REQUEST_LIMIT = 5;
 const VERIFY_LIMIT = 20;

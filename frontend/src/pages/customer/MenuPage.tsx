@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, ChefHat, UtensilsCrossed, Clock3, Globe2, Phone, ShoppingCart, X, Plus, Minus } from 'lucide-react';
+import { Search, MapPin, UtensilsCrossed, Clock3, Globe2, Phone, ShoppingCart, X, Plus, Minus } from 'lucide-react';
+import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { getClientByMenuSlug, submitCustomerOrder, submitCustomerOrderByQr, type PublicMenuRecord } from '../admin/clientStore';
 import { useToast } from '../../components/feedback/ToastProvider';
@@ -189,8 +190,7 @@ function App() {
       <div className="customer-menu menu-expired-lock">
         <header className="menu-topbar">
           <Link className="menu-wordmark" to={`/menu/${slug}#top`} aria-label="MenusQR menu">
-            <span className="menu-brand-icon"><ChefHat size={19} strokeWidth={2} /></span>
-            <span>Menus<span className="menu-brand-accent">QR</span></span>
+            <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
           </Link>
         </header>
         <main className="menu-main menu-expired-main">
@@ -214,7 +214,7 @@ function App() {
   if (isLoading || loadError || !client) {
     return (
       <div className="customer-menu">
-        <header className="menu-topbar"><Link className="menu-wordmark" to={`/menu/${slug}#top`} aria-label="MenusQR menu"><span className="menu-brand-icon"><ChefHat size={19} strokeWidth={2} /></span><span>Menus<span className="menu-brand-accent">QR</span></span></Link></header>
+        <header className="menu-topbar"><Link className="menu-wordmark" to={`/menu/${slug}#top`} aria-label="MenusQR menu"><MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" /></Link></header>
         <main id="top" className="menu-main"><div className="menu-empty-state" role={loadError ? 'alert' : 'status'}>{loadError || 'Preparing this menu…'}</div></main>
       </div>
     );
@@ -234,8 +234,7 @@ function App() {
     } as React.CSSProperties}>
       <header className="menu-topbar">
         <Link className="menu-wordmark" to={`/menu/${slug}#top`} aria-label="MenusQR menu">
-          <span className="menu-brand-icon"><ChefHat size={19} strokeWidth={2} /></span>
-          <span>Menus<span className="menu-brand-accent">QR</span></span>
+          <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
         </Link>
         {client?.city && (
           <span className="menu-location"><MapPin size={14} />{[client.city, client.state].filter(Boolean).join(', ')}</span>
@@ -260,7 +259,7 @@ function App() {
           </div>
           <div className="menu-hero-visual">
             <div className="menu-hero-visual-bg"></div>
-            {heroImage ? <img className="menu-hero-image-new" src={heroImage} alt="Featured dish" /> : <div className="menu-hero-image-placeholder" aria-hidden="true"><ChefHat size={54} strokeWidth={1.4} /></div>}
+            {heroImage ? <img className="menu-hero-image-new" src={heroImage} alt="Featured dish" /> : <div className="menu-hero-image-placeholder" aria-hidden="true"><UtensilsCrossed size={54} strokeWidth={1.4} /></div>}
           </div>
         </motion.section>
 
