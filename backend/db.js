@@ -52,7 +52,13 @@ async function initializeSchema(client) {
       console.log('Executed schema.sql');
     }
   } catch (error) {
-    console.error('Error executing schema.sql:', error);
-    throw error;
+    // Non-fatal: schema may already be applied (e.g. duplicate key on restart)
+    if (error.code === '23505') {
+      console.warn('schema.sql: duplicate key skipped (already seeded) —', error.detail);
+    } else {
+      console.error('Error executing schema.sql:', error.message);
+      // Only throw on truly unexpected errors (not constraint violations)
+      throw error;
+    }
   }
 }
