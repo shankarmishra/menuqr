@@ -16,7 +16,9 @@ export function getSmtpTimeoutOptions(environment = process.env) {
   };
 }
 
-function getSmtpTransporter() {
+import dnsPromises from 'node:dns/promises';
+
+async function getSmtpTransporter() {
   const smtpUser = process.env.SMTP_USER?.trim();
   const smtpPass = process.env.SMTP_PASSWORD?.trim();
 
@@ -30,17 +32,25 @@ function getSmtpTransporter() {
 
   if (smtpUser && smtpPass) {
     if (!smtpTransporter) {
-      smtpTransporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
-        auth: {
-          user: smtpUser,
-          pass: smtpPass,
-        },
-        family: 4, // Force IPv4 to avoid Render ENETUNREACH errors
-        ...getSmtpTimeoutOptions(),
-      });
+      try {
+        const lookup = await dnsPromises.lookup(smtpHost, { family: 4 });
+        smtpTransporter = nodemailer.createTransport({
+          host: lookup.address,
+          port: smtpPort,
+          secure: smtpPort === 465,
+          auth: {
+            user: smtpUser,
+            pass: smtpPass,
+          },
+          tls: {
+            servername: smtpHost
+          },
+          ...getSmtpTimeoutOptions(),
+        });
+      } catch (err) {
+        console.error('[email] DNS lookup failed for SMTP host:', err.message);
+        throw err;
+      }
     }
     return smtpTransporter;
   }
@@ -48,7 +58,7 @@ function getSmtpTransporter() {
 }
 
 async function sendEmail(message, label) {
-  const transporter = getSmtpTransporter();
+  const transporter = await getSmtpTransporter();
   const fromAddress = process.env.MAIL_FROM_ADDRESS || process.env.SMTP_USER || 'no-reply@menusqr.in';
   const fromName = process.env.MAIL_FROM_NAME || 'MENUSQR';
   let smtpError;
