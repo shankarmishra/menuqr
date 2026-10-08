@@ -69,6 +69,62 @@ async function sendEmailViaResend(message, label) {
   });
 }
 
+async function sendEmailViaBrevo(message, label) {
+  const apiKey = (process.env.BREVO_API_KEY || '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').trim();
+  if (!apiKey) return false;
+
+  const senderEmail = process.env.MAIL_FROM_ADDRESS?.trim() || process.env.SMTP_USER?.trim() || 'menusqr.in@gmail.com';
+  const senderName = process.env.MAIL_FROM_NAME?.trim() || 'MENUSQR';
+
+  const payload = JSON.stringify({
+    sender: { email: senderEmail, name: senderName },
+    to: [{ email: message.to }],
+    subject: message.subject,
+    htmlContent: message.html,
+    textContent: message.text
+  });
+
+  const options = {
+    hostname: 'api.brevo.com',
+    path: '/v3/smtp/email',
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'api-key': apiKey,
+      'content-type': 'application/json',
+      'content-length': Buffer.byteLength(payload)
+    }
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let responseText = '';
+      res.on('data', chunk => responseText += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.info(`[email] ${label} sent successfully via Brevo API.`);
+          resolve(true);
+        } else {
+          console.warn(`[email] Brevo API status ${res.statusCode} for ${label}: ${responseText}`);
+          reject(new Error(`Brevo API status ${res.statusCode}: ${responseText}`));
+        }
+      });
+    });
+
+    req.on('error', (err) => {
+      console.warn(`[email] Brevo API request error for ${label}:`, err.message);
+      reject(err);
+    });
+
+    req.setTimeout(10_000, () => {
+      req.destroy(new Error('Brevo API request timed out.'));
+    });
+
+    req.write(payload);
+    req.end();
+  });
+}
+
 async function createSmtpTransporter(smtpHost, smtpPort, smtpUser, smtpPass) {
   const isSecure = Number(smtpPort) === 465;
   return nodemailer.createTransport({
@@ -91,12 +147,20 @@ async function createSmtpTransporter(smtpHost, smtpPort, smtpUser, smtpPass) {
 export async function sendEmail(message, label) {
   const errors = [];
 
-  // 1. PRIMARY: Resend HTTPS API (Port 443 — works on Render without SMTP port blocking)
+  // 1. Resend HTTPS API
   try {
     const sent = await sendEmailViaResend(message, label);
     if (sent) return;
   } catch (resendErr) {
     errors.push(`Resend: ${resendErr.message}`);
+  }
+
+  // 2. Brevo HTTPS API (Port 443 — no domain lock)
+  try {
+    const sent = await sendEmailViaBrevo(message, label);
+    if (sent) return;
+  } catch (brevoErr) {
+    errors.push(`Brevo: ${brevoErr.message}`);
   }
 
   // 2. FALLBACK: Nodemailer SMTP
