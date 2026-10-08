@@ -179,32 +179,36 @@ async function sendEmailViaBrevo(message, label) {
 }
 
 async function sendEmail(message, label) {
-  // 1. Prefer HTTPS APIs (Resend / Brevo) on Port 443 (Avoids cloud port 587 block)
+  const errors = [];
+
+  // 1. Try HTTPS APIs (Resend / Brevo) on Port 443
   if (process.env.RESEND_API_KEY) {
     try {
-      await sendEmailViaResend(message, label);
-      return;
+      const success = await sendEmailViaResend(message, label);
+      if (success) return;
     } catch (err) {
-      console.error(`[email] Resend API failed for ${label}:`, err.message);
+      console.warn(`[email] Resend API failed for ${label}: ${err.message}. Falling back to SMTP...`);
+      errors.push(`Resend: ${err.message}`);
     }
   }
 
   if (process.env.BREVO_API_KEY) {
     try {
-      await sendEmailViaBrevo(message, label);
-      return;
+      const success = await sendEmailViaBrevo(message, label);
+      if (success) return;
     } catch (err) {
-      console.error(`[email] Brevo API failed for ${label}:`, err.message);
+      console.warn(`[email] Brevo API failed for ${label}: ${err.message}. Falling back to SMTP...`);
+      errors.push(`Brevo: ${err.message}`);
     }
   }
 
-  // 2. Fallback to Nodemailer SMTP
-  const transporter = await getSmtpTransporter();
-  const fromAddress = process.env.MAIL_FROM_ADDRESS || process.env.SMTP_USER || 'no-reply@menusqr.in';
-  const fromName = process.env.MAIL_FROM_NAME || 'MENUSQR';
+  // 2. Fallback to Nodemailer SMTP (Hostinger / Gmail)
+  try {
+    const transporter = await getSmtpTransporter();
+    const fromAddress = process.env.MAIL_FROM_ADDRESS || process.env.SMTP_USER || 'no-reply@menusqr.in';
+    const fromName = process.env.MAIL_FROM_NAME || 'MENUSQR';
 
-  if (transporter) {
-    try {
+    if (transporter) {
       await transporter.sendMail({
         from: `"${fromName}" <${fromAddress}>`,
         to: message.to,
@@ -214,10 +218,14 @@ async function sendEmail(message, label) {
       });
       console.info(`[email] ${label} sent successfully via SMTP.`);
       return;
-    } catch (err) {
-      console.error(`[email] Error sending ${label} via SMTP:`, err.message);
-      throw new Error(`Email delivery failed via SMTP: ${err.message}`);
     }
+  } catch (err) {
+    console.error(`[email] Error sending ${label} via SMTP:`, err.message);
+    errors.push(`SMTP: ${err.message}`);
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Email delivery failed: ${errors.join(' | ')}`);
   }
 
   throw new Error('No email delivery provider (RESEND_API_KEY, BREVO_API_KEY, or SMTP_USER/PASS) is configured.');
