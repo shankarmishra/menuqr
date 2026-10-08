@@ -213,7 +213,7 @@ export default async function appRoutes(request, response, url) {
     requireEntitlement(authorization, 'qr_code');
     const menu = await queryPortable(pool, 'SELECT id FROM menus WHERE tenant_id = ? LIMIT 1', [user.tenantId]);
     const owner = await queryPortable(pool, "SELECT onboarding_state FROM users WHERE id = ? AND tenant_id = ?", [user.id, user.tenantId]);
-    if (!menu.rows[0] || String(owner.rows[0]?.onboarding_state).toUpperCase() !== 'COMPLETED') {
+    if (!menu.rows[0]) {
       throw apiError(409, 'Save your restaurant and menu before creating its QR.');
     }
 

@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Download, PackageCheck, QrCode, Printer, ExternalLink, Send } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import QRGenerationSequence from '../../components/qr-studio/QRGenerationSequence';
 import ScannableQRCode from '../../components/marketing/ScannableQRCode';
 import { useToast } from '../../components/feedback/ToastProvider';
-import { createPermanentQr, createStickerRequest, getProfile, getQr, getStickerRequests, type AppProfile, type AppQrData, type StickerRequest } from './appStore';
+import { createPermanentQr, createStickerRequest, getProfile, getQr, getStickerRequests, getMenu, type AppProfile, type AppQrData, type StickerRequest } from './appStore';
 
 export default function QrCenter() {
+  const navigate = useNavigate();
   const [qr, setQr] = useState<AppQrData | null>(null);
   const [profile, setProfile] = useState<AppProfile | null>(null);
   const [requests, setRequests] = useState<StickerRequest[]>([]);
+  const [menuExists, setMenuExists] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [printerOpen, setPrinterOpen] = useState(false);
@@ -27,7 +30,7 @@ export default function QrCenter() {
 
   useEffect(() => {
     let current = true;
-    Promise.allSettled([getQr(), getProfile(), getStickerRequests()]).then(([qrResult, profileResult, requestResult]) => {
+    Promise.allSettled([getQr(), getProfile(), getStickerRequests(), getMenu()]).then(([qrResult, profileResult, requestResult, menuResult]) => {
       if (!current) return;
       if (qrResult.status === 'fulfilled' && qrResult.value) setQr(qrResult.value as AppQrData);
       if (profileResult.status === 'fulfilled') {
@@ -38,6 +41,7 @@ export default function QrCenter() {
         }
       }
       if (requestResult.status === 'fulfilled') setRequests(requestResult.value);
+      if (menuResult.status === 'fulfilled' && menuResult.value?.menu) setMenuExists(true);
     }).catch(() => {
       if (current) showToast('error', 'Your QR studio could not be loaded. Please refresh.');
     }).finally(() => {
@@ -47,6 +51,11 @@ export default function QrCenter() {
   }, [showToast]);
 
   async function openPermanentQr() {
+    if (!menuExists) {
+      navigate('/onboarding');
+      return;
+    }
+    
     setSaving(true);
     try {
       const data = await createPermanentQr();
@@ -120,11 +129,12 @@ export default function QrCenter() {
             Your QR code acts as your restaurant's permanent digital identity. Set up your menu categories and items first.
           </p>
           <button type="button" disabled={saving} onClick={openPermanentQr} className="inline-flex items-center gap-2 rounded-lg bg-[#e8783c] hover:bg-[#f08b55] px-6 py-3 text-sm font-bold text-white disabled:opacity-50 transition-colors shadow-lg shadow-[#e8783c]/20 relative z-10">
-            <QrCode size={18} /> {saving ? 'Preparing...' : 'Create QR Code'}
+            <QrCode size={18} /> {!menuExists ? 'Set up your menu first' : saving ? 'Preparing...' : 'Create QR Code'}
           </button>
         </div>
       ) : (
         <div className="grid lg:grid-cols-2 gap-8">
+
           
           {/* LEFT: QR Preview & Download */}
           <div className="space-y-6">

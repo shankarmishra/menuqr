@@ -151,6 +151,7 @@ export default function Appearance() {
               restaurant={{ name: profile?.businessName || 'Your restaurant', tagline: profile?.tagline, phone: profile?.phone, address: profile?.address, logo: profile?.logoUrl }}
               categories={previewCategories}
               items={previewItems}
+              compact={true}
             />
           </div>
           

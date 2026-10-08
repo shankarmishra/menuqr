@@ -28,6 +28,9 @@ const server = createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
   const requestOrigin = request.headers.origin;
   const originAllowed = isAllowedOrigin(requestOrigin);
+  if (url.pathname !== '/api/health') {
+    console.log(`[api] (${request.method}) ${url.pathname}`);
+  }
 
   if (requestOrigin && originAllowed) {
     response.setHeader('Access-Control-Allow-Origin', requestOrigin);

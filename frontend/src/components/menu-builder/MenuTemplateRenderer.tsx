@@ -578,38 +578,41 @@ const ModernIndiaLayout: React.FC<LayoutProps> = ({ template, restaurant, catego
   const featureItem = allItemsWithImages[0];
 
   return (
-    <div className="space-y-8 bg-[#F4F4F4] text-[#111111] p-4 sm:p-8 relative overflow-hidden">
+    <div className={clsx("bg-[#F4F4F4] text-[#111111] relative overflow-hidden", compact ? "space-y-4 p-4" : "space-y-8 p-4 sm:p-8")}>
       {/* Editorial Decorative Elements */}
       <div className="absolute top-0 left-0 w-1/3 h-2 bg-[#E8783C]" />
       <div className="absolute top-8 left-8 w-px h-full bg-black/5" />
       <div className="absolute top-8 right-8 w-px h-full bg-black/5" />
       
-      <div className="pb-8 border-b-2 border-[#111111] relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+      <div className={clsx("border-b-2 border-[#111111] relative z-10 flex flex-col justify-between items-start gap-4", compact ? "pb-4" : "pb-8 sm:flex-row sm:items-end")}>
         <div>
           <span className="text-[10px] text-[#E8783C] font-mono tracking-[0.2em] uppercase font-bold mb-2 block">
             Vol. 1 — The Culinary Edit
           </span>
-          <h1 className="text-4xl sm:text-6xl font-black text-[#111111] tracking-tighter uppercase leading-none" style={{ fontFamily: template.typography.heading }}>
+          <h1 className={clsx("font-black text-[#111111] tracking-tighter uppercase leading-none break-words", compact ? "text-3xl" : "text-4xl sm:text-6xl")} style={{ fontFamily: template.typography.heading }}>
             {restaurant.name}
           </h1>
         </div>
-        <p className="text-xs sm:text-sm text-slate-500 font-serif italic max-w-[200px] text-right border-l-2 border-[#E8783C] pl-3 py-1">
+        <p className={clsx("text-slate-500 font-serif italic border-l-2 border-[#E8783C] pl-3 py-1", compact ? "text-[10px]" : "text-xs sm:text-sm max-w-[200px] text-right")}>
           {restaurant.tagline || 'Modern flavors curated for the contemporary palate.'}
         </p>
       </div>
 
-      {/* Asymmetric Magazine Feature */}
-      {featureItem && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch mb-10 z-10 relative">
-          <div className="md:col-span-7 relative group overflow-hidden bg-black h-64 md:h-96 flex items-center justify-center border border-black/10 shadow-xl">
-             <img src={featureItem.image} alt={featureItem.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700 grayscale hover:grayscale-0" />
-             <div className="absolute inset-0 border-[10px] border-[#F4F4F4] mix-blend-overlay pointer-events-none" />
-             <div className="absolute bottom-6 left-6 right-6 p-4 bg-white/95 backdrop-blur-md shadow-2xl border-l-4 border-[#E8783C]">
-                <span className="text-[10px] font-bold tracking-widest text-[#E8783C] uppercase mb-1 block">Editor's Pick</span>
-                <h3 className="text-lg font-black uppercase tracking-tight text-[#111111]">{featureItem.name}</h3>
-                <p className="text-xs text-slate-600 mt-1 line-clamp-2">{featureItem.description}</p>
-             </div>
-          </div>
+      {/* Typographic Magazine Feature instead of an image */}
+      <div className={clsx("grid grid-cols-1 items-stretch z-10 relative", compact ? "mb-6 gap-3" : "md:grid-cols-12 gap-6 mb-10")}>
+        <div className={clsx("relative group overflow-hidden bg-black flex items-center justify-center border border-black/10 shadow-xl", compact ? "h-32" : "md:col-span-7 h-64 md:h-96")}>
+           {/* Abstract Typographic Texture */}
+           <div className="absolute inset-0 overflow-hidden flex flex-wrap items-center justify-center opacity-10 pointer-events-none select-none">
+             <span className="text-[200px] font-black text-white leading-none tracking-tighter break-all">MODERN</span>
+           </div>
+           <div className="absolute inset-0 border-[10px] border-[#F4F4F4] mix-blend-overlay pointer-events-none" />
+           <div className={clsx("absolute bg-white/95 backdrop-blur-md shadow-2xl border-l-4 border-[#E8783C]", compact ? "bottom-3 left-3 right-3 p-3" : "bottom-6 left-6 right-6 p-4")}>
+              <span className="text-[10px] font-bold tracking-widest text-[#E8783C] uppercase mb-1 block">Editor's Pick</span>
+              <h3 className={clsx("font-black uppercase tracking-tight text-[#111111]", compact ? "text-sm" : "text-lg")}>The Signature Experience</h3>
+              <p className={clsx("text-slate-600 line-clamp-2", compact ? "text-[10px] mt-0.5" : "text-xs mt-1")}>Discover our chef's meticulously crafted seasonal creations.</p>
+           </div>
+        </div>
+        {!compact && (
           <div className="md:col-span-5 flex flex-col justify-between space-y-6">
             <div className="bg-[#111111] text-white p-6 sm:p-8 h-full flex flex-col justify-center border-t-4 border-[#E8783C] relative overflow-hidden">
               <span className="text-8xl font-black text-white/5 absolute -top-4 -right-4 tracking-tighter select-none pointer-events-none">01</span>
@@ -619,32 +622,32 @@ const ModernIndiaLayout: React.FC<LayoutProps> = ({ template, restaurant, catego
               </p>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Structured Category Grid */}
-      <div className={clsx('grid grid-cols-1 gap-12 z-10 relative', !featureItem ? 'md:grid-cols-2' : '')}>
+      <div className={clsx('grid grid-cols-1 z-10 relative', compact ? "gap-6" : "gap-12 md:grid-cols-2")}>
         {categories.map((cat, idx) => (
           <div key={cat.id} className="relative">
-            <div className="flex items-end gap-4 mb-6 border-b border-black/10 pb-2">
-              <span className="text-3xl font-black text-slate-200 tracking-tighter w-12">{String(idx + 1).padStart(2, '0')}</span>
-              <h2 className="text-lg sm:text-xl font-black text-[#111111] uppercase tracking-widest" style={{ fontFamily: template.typography.heading }}>
+            <div className="flex items-end gap-2 sm:gap-4 mb-4 sm:mb-6 border-b border-black/10 pb-2">
+              <span className={clsx("font-black text-slate-200 tracking-tighter w-8 sm:w-12", compact ? "text-2xl" : "text-3xl")}>{String(idx + 1).padStart(2, '0')}</span>
+              <h2 className={clsx("font-black text-[#111111] uppercase tracking-widest leading-none pb-1", compact ? "text-base" : "text-lg sm:text-xl")} style={{ fontFamily: template.typography.heading }}>
                 {cat.name}
               </h2>
             </div>
             
-            <div className={clsx('grid gap-4 sm:gap-6', featureItem ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1')}>
+            <div className="grid gap-3 sm:gap-6 grid-cols-1">
               {cat.items.map((item) => (
-                <div key={item.id} className="group relative bg-white p-4 sm:p-5 border border-slate-200 hover:border-[#111111] hover:shadow-[8px_8px_0px_0px_rgba(232,120,60,1)] transition-all duration-300">
-                  <div className="flex justify-between items-start gap-4">
+                <div key={item.id} className={clsx("group relative bg-white border border-slate-200 hover:border-[#111111] hover:shadow-[8px_8px_0px_0px_rgba(232,120,60,1)] transition-all duration-300", compact ? "p-3" : "p-4 sm:p-5")}>
+                  <div className="flex justify-between items-start gap-3 sm:gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
                         <DietIndicator type={item.dietType} compact={compact} color="#111111" />
-                        <span className="font-bold text-sm text-[#111111] uppercase tracking-tight group-hover:text-[#E8783C] transition-colors">{item.name}</span>
+                        <span className={clsx("font-bold text-[#111111] uppercase tracking-tight group-hover:text-[#E8783C] transition-colors leading-tight", compact ? "text-xs" : "text-sm")}>{item.name}</span>
                       </div>
-                      {item.description && <p className="text-xs text-slate-500 font-serif leading-relaxed line-clamp-2">{item.description}</p>}
+                      {item.description && <p className={clsx("text-slate-500 font-serif leading-relaxed line-clamp-2", compact ? "text-[10px]" : "text-xs")}>{item.description}</p>}
                     </div>
-                    <div className="bg-[#111111] text-white px-2 py-1 text-xs font-bold shrink-0 shadow-sm group-hover:bg-[#E8783C] transition-colors">
+                    <div className={clsx("bg-[#111111] text-white font-bold shrink-0 shadow-sm group-hover:bg-[#E8783C] transition-colors", compact ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-1 text-xs")}>
                       ₹{item.price}
                     </div>
                   </div>
@@ -655,9 +658,9 @@ const ModernIndiaLayout: React.FC<LayoutProps> = ({ template, restaurant, catego
         ))}
       </div>
       
-      <div className="mt-16 pt-8 border-t-4 border-[#111111] flex justify-between items-center z-10 relative">
-        <span className="font-black text-2xl tracking-tighter uppercase">{restaurant.name}</span>
-        <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#E8783C]">Curated Selection</span>
+      <div className={clsx("border-t-4 border-[#111111] flex justify-between items-center z-10 relative", compact ? "mt-8 pt-4" : "mt-16 pt-8")}>
+        <span className={clsx("font-black tracking-tighter uppercase", compact ? "text-lg" : "text-2xl")}>{restaurant.name}</span>
+        <span className={clsx("uppercase font-bold tracking-[0.2em] text-[#E8783C]", compact ? "text-[8px]" : "text-[10px]")}>Curated Selection</span>
       </div>
     </div>
   );
@@ -680,9 +683,10 @@ const SpiceHouseLayout: React.FC<LayoutProps> = ({ template, restaurant, categor
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {cat.items.map((item) => (
               <div key={item.id} className="p-3 rounded-lg bg-[#3C2923] border border-[#E68A00]/20 flex flex-col justify-between">
-                {item.image && (
-                  <img src={item.image} alt={item.name} className="w-full h-24 object-cover rounded mb-2" />
-                )}
+                <div className="w-full h-24 rounded mb-2 bg-[#2A1D18] flex items-center justify-center border border-[#E68A00]/10 overflow-hidden relative">
+                  <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#E68A00 1px, transparent 1px)', backgroundSize: '8px 8px' }}></div>
+                  <span className="text-[#E68A00]/20 font-mono text-5xl font-black italic absolute -right-2 -bottom-2">{item.name.charAt(0)}</span>
+                </div>
                 <div>
                   <div className="flex items-center gap-1.5">
                     <DietIndicator type={item.dietType} compact={compact} color="#E68A00" />
@@ -1169,15 +1173,9 @@ const FluidAbstractLayout: React.FC<LayoutProps> = ({ template, restaurant, cate
             <div className="space-y-5">
               {cat.items.map((item) => (
                 <div key={item.id} className="group flex gap-5 items-center bg-white/70 hover:bg-white p-4 rounded-3xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-10px_rgba(226,117,34,0.15)] transition-all duration-300 backdrop-blur-xl border border-white">
-                  {item.image ? (
-                    <div className="w-20 h-20 rounded-[1.5rem] overflow-hidden shrink-0 border-2 border-white shadow-md transform group-hover:scale-105 group-hover:rotate-2 transition-transform duration-500">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                    </div>
-                  ) : (
-                    <div className="w-16 h-16 rounded-[1.2rem] shrink-0 bg-gradient-to-br from-[#E27522]/10 to-[#E27522]/5 flex items-center justify-center border border-[#E27522]/20">
-                      <div className="w-6 h-6 rounded-full bg-[#E27522]/20"></div>
-                    </div>
-                  )}
+                  <div className="w-16 h-16 rounded-[1.2rem] shrink-0 bg-gradient-to-br from-[#E27522]/10 to-[#E27522]/5 flex items-center justify-center border border-[#E27522]/20 overflow-hidden relative">
+                    <span className="text-[#E27522]/20 font-serif text-4xl absolute -right-1 -bottom-2">{item.name.charAt(0)}</span>
+                  </div>
                   <div className="flex-1 min-w-0 py-1">
                     <div className="flex justify-between items-start gap-4">
                       <h3 className="font-bold text-base text-[#221A16] leading-tight group-hover:text-[#E27522] transition-colors">{item.name}</h3>
@@ -1247,12 +1245,9 @@ const DarkClipboardLayout: React.FC<LayoutProps> = ({ template, restaurant, cate
                     </div>
                     {item.description && <p className="text-[11px] text-[#888] line-clamp-2 mt-2 leading-relaxed">{item.description}</p>}
                   </div>
-                  
-                  {item.image && (
-                    <div className="w-20 h-20 rounded-full border-2 border-[#333] overflow-hidden shrink-0 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-xl z-10 bg-[#111214]">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  )}
+                  <div className="w-16 h-16 rounded-full border border-[#333] shrink-0 flex items-center justify-center bg-[#111214] relative overflow-hidden group-hover:border-[#F26D21]/30 transition-colors">
+                    <span className="text-[#333] font-black text-2xl group-hover:text-[#F26D21]/20 transition-colors">{item.name.substring(0, 2).toUpperCase()}</span>
+                  </div>
                 </div>
               ))}
             </div>

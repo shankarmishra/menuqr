@@ -10,13 +10,18 @@ export default function Dashboard() {
   const [sub, setSub] = useState<AppSubscriptionData & { contentChangesUsed?: number, contentChangesRemaining?: number, contentChangesLimit?: number } | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
+  const [menu, setMenu] = useState<any>(null);
+  const [qr, setQr] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [stickers, setStickers] = useState<StickerRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [now] = useState(() => Date.now());
   
 
-
   useEffect(() => {
+    import('./appStore').then(({ getQr }) => {
+      getQr().then(q => setQr(q)).catch(() => null);
+    });
     Promise.all([
       getProfile().catch(() => null),
       getSubscription().catch(() => null),
@@ -27,6 +32,7 @@ export default function Dashboard() {
         if (p) setProfile(p);
         if (s) setSub(s);
         if (menuData) {
+          setMenu(menuData.menu);
           setCategories(menuData.categories || []);
           setItems(menuData.categories?.flatMap((c: any) => c.items) || []);
         }
@@ -54,8 +60,10 @@ export default function Dashboard() {
   const planId = sub?.planId?.toUpperCase() || 'BASIC';
   const isActive = sub?.status === 'ACTIVE';
   
-  const daysLeft = sub?.expiresAt ? Math.ceil((new Date(sub.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
+  const daysLeft = sub?.expiresAt ? Math.ceil((new Date(sub.expiresAt).getTime() - now) / (1000 * 60 * 60 * 24)) : 0;
   const formattedExpiry = sub?.expiresAt ? new Date(sub.expiresAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
+
 
   const activeItemsCount = items.filter(i => i.isAvailable !== false).length;
   const hiddenItemsCount = items.length - activeItemsCount;
@@ -64,9 +72,7 @@ export default function Dashboard() {
   
   const pendingStickers = stickers.filter(s => s.status === 'PENDING').length;
 
-  const publicUrl = profile?.businessName 
-    ? `${window.location.origin}/${profile.businessName.toLowerCase().replace(/[^a-z0-9]/g, '-')}` 
-    : window.location.origin;
+  const publicUrl = qr?.qrId ? `${window.location.origin}/qr/${encodeURIComponent(qr.qrId)}` : profile?.menuSlug ? `${window.location.origin}/menu/${profile.menuSlug}` : '';
 
   const planFeatures = {
     BASIC: [
@@ -294,26 +300,52 @@ export default function Dashboard() {
           </div>
           
           <div className="p-6 flex-1 flex flex-col items-center justify-center bg-[#151c19]/50 relative">
-            <div className="w-44 h-44 bg-white rounded-xl p-3 shadow-2xl border border-white/10 mb-6 flex items-center justify-center">
-              <div className="w-full h-full relative" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #000 0, #000 2px, transparent 2px, transparent 4px)' }}>
-                 <div className="absolute inset-2 bg-white flex items-center justify-center">
-                    <QrCode size={90} className="text-[#151c19]" />
-                 </div>
+            {!qr?.qrId && !menu ? (
+              <div className="text-center">
+                <div className="w-20 h-20 mx-auto bg-[#1d2723] rounded-full flex items-center justify-center border border-[#2a3832] mb-4">
+                  <QrCode size={32} className="text-[#849a90]" />
+                </div>
+                <h3 className="text-white font-bold mb-2">Create Your Menu</h3>
+                <p className="text-sm text-[#849a90] mb-6">You need to set up your menu before generating a QR code.</p>
+                <Link to="/onboarding" className="inline-flex items-center justify-center gap-2 bg-[#e8783c] hover:bg-[#f08b55] text-white px-6 py-2.5 rounded-lg font-bold transition-colors">
+                  Get Started
+                </Link>
               </div>
-            </div>
-            
-            <p className="text-sm text-[#849a90] text-center font-medium mb-6">
-              This QR code never changes. <br/>You can print it once and use it forever.
-            </p>
-            
-            <div className="w-full space-y-3 mt-auto">
-              <a href={publicUrl} target="_blank" rel="noreferrer" className="w-full flex items-center justify-center gap-2 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-3 rounded-lg text-sm font-bold transition-colors">
-                 Open Preview
-              </a>
-              <Link to="/app/qr" className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#e8783c] to-[#f08b55] hover:opacity-90 text-white shadow-lg shadow-[#e8783c]/20 py-3 rounded-lg text-sm font-bold transition-opacity">
-                <Download size={16} /> Get Print Files / Stickers
-              </Link>
-            </div>
+            ) : !qr?.qrId ? (
+              <div className="text-center">
+                <div className="w-20 h-20 mx-auto bg-[#1d2723] rounded-full flex items-center justify-center border border-[#2a3832] mb-4">
+                  <QrCode size={32} className="text-[#e8783c]" />
+                </div>
+                <h3 className="text-white font-bold mb-2">Ready to Generate</h3>
+                <p className="text-sm text-[#849a90] mb-6">Your menu is ready. Generate your permanent QR code now.</p>
+                <Link to="/app/qr" className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#e8783c] to-[#f08b55] hover:opacity-90 text-white shadow-lg shadow-[#e8783c]/20 px-6 py-2.5 rounded-lg font-bold transition-opacity">
+                  Generate QR
+                </Link>
+              </div>
+            ) : (
+              <>
+                <div className="w-44 h-44 bg-white rounded-xl p-3 shadow-2xl border border-white/10 mb-6 flex items-center justify-center">
+                  <div className="w-full h-full relative" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #000 0, #000 2px, transparent 2px, transparent 4px)' }}>
+                     <div className="absolute inset-2 bg-white flex items-center justify-center">
+                        <QrCode size={90} className="text-[#151c19]" />
+                     </div>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-[#849a90] text-center font-medium mb-6">
+                  This QR code never changes. <br/>You can print it once and use it forever.
+                </p>
+                
+                <div className="w-full space-y-3 mt-auto">
+                  <a href={publicUrl} target="_blank" rel="noreferrer" className="w-full flex items-center justify-center gap-2 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-3 rounded-lg text-sm font-bold transition-colors">
+                     Open Preview
+                  </a>
+                  <Link to="/app/qr" className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#e8783c] to-[#f08b55] hover:opacity-90 text-white shadow-lg shadow-[#e8783c]/20 py-3 rounded-lg text-sm font-bold transition-opacity">
+                    <Download size={16} /> Get Print Files / Stickers
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
