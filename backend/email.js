@@ -341,6 +341,10 @@ export async function sendLoginOtpEmail({ email, otp, ownerName }) {
   if (!email) return;
   const name = ownerName ? ownerName.trim() : 'Partner';
 
+  console.log(`\n=========================================`);
+  console.log(`[DEBUG] RESTAURANT OTP CODE FOR ${email}: ${otp}`);
+  console.log(`=========================================\n`);
+
   const bodyHtml = `
     <h1 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 700; color: #111827;">Security Verification Code</h1>
     
@@ -376,6 +380,11 @@ export async function sendLoginOtpEmail({ email, otp, ownerName }) {
 
 export async function sendAdminLoginOtpEmail({ email, otp }) {
   if (!email) return;
+
+  // Added for debugging on Render since SMTP is blocked by default
+  console.log(`\n=========================================`);
+  console.log(`[DEBUG] ADMIN OTP CODE FOR ${email}: ${otp}`);
+  console.log(`=========================================\n`);
 
   const bodyHtml = `
     <h1 style="margin: 0 0 12px; font-size: 21px; line-height: 1.3; font-weight: 700; color: #17231e;">Admin sign-in code</h1>
