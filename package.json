@@ -1,4 +1,9 @@
 {
+  "name": "menuqr-root",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix frontend run build"
+  },
   "dependencies": {
     "@playwright/test": "^1.63.0"
   }

@@ -1,4 +1,7 @@
 {
+  "buildCommand": "npm --prefix frontend run build",
+  "outputDirectory": "frontend/dist",
+  "cleanUrls": true,
   "redirects": [
     {
       "source": "/admin/login",
@@ -26,9 +29,24 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/digital-qr-menu", "destination": "/digital-qr-menu/index.html" },
+    { "source": "/restaurant-qr-menu", "destination": "/restaurant-qr-menu/index.html" },
+    { "source": "/digital-menu-for-restaurants", "destination": "/digital-menu-for-restaurants/index.html" },
+    { "source": "/qr-menu-for-restaurants", "destination": "/qr-menu-for-restaurants/index.html" },
+    { "source": "/restaurant-digital-menu", "destination": "/restaurant-digital-menu/index.html" },
+    { "source": "/qr-ordering-for-restaurants", "destination": "/qr-ordering-for-restaurants/index.html" },
+    { "source": "/plans", "destination": "/plans/index.html" },
+    { "source": "/digital-menu-pricing", "destination": "/plans/index.html" },
+    { "source": "/how-it-works", "destination": "/how-it-works/index.html" },
+    { "source": "/templates", "destination": "/templates/index.html" },
+    { "source": "/about", "destination": "/about/index.html" },
+    { "source": "/contact", "destination": "/contact/index.html" },
+    { "source": "/faq", "destination": "/faq/index.html" },
+    { "source": "/privacy", "destination": "/privacy/index.html" },
+    { "source": "/privacy-policy", "destination": "/privacy/index.html" },
+    { "source": "/terms", "destination": "/terms/index.html" },
+    { "source": "/refund-cancellation", "destination": "/refund-cancellation/index.html" },
+    { "source": "/refund-policy", "destination": "/refund-cancellation/index.html" },
+    { "source": "/((?!digital-qr-menu|restaurant-qr-menu|digital-menu-for-restaurants|qr-menu-for-restaurants|restaurant-digital-menu|qr-ordering-for-restaurants|plans|digital-menu-pricing|how-it-works|templates|about|contact|faq|privacy|privacy-policy|terms|refund-cancellation|refund-policy).*)", "destination": "/index.html" }
   ]
 }
