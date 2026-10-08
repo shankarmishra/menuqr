@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ArrowUpRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { MenusQRBrand } from '../brand/MenusQRBrand';
 
 export default function SiteHeader() {
@@ -40,36 +41,39 @@ export default function SiteHeader() {
     >
       {/* Brand Logo */}
       <motion.div variants={logoVariants} className="flex items-center gap-4">
-        <a href="#" className="flex items-center">
+        <Link to="/" className="flex items-center">
           <MenusQRBrand size="sm" variant="light" />
-        </a>
+        </Link>
       </motion.div>
 
-      {/* Desktop Navigation Links (Lighter internal surface) */}
+      {/* Desktop Navigation Links */}
       <motion.nav variants={itemVariants} className="hidden md:flex items-center gap-6 bg-[#1D2723] border border-white/5 px-6 py-2 rounded-full h-[40px]">
-        <a href="#how-it-works" className="text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white transition-colors">
+        <Link to="/digital-qr-menu" className="text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white transition-colors">
+          Digital QR Menu
+        </Link>
+        <Link to="/how-it-works" className="text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white transition-colors">
           How It Works
-        </a>
-        <a href="#templates" className="text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white transition-colors">
+        </Link>
+        <Link to="/templates" className="text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white transition-colors">
           Templates
-        </a>
-        <a href="#pricing" className="text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white transition-colors">
-          Pricing
-        </a>
-        <a href="#faq" className="text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white transition-colors">
+        </Link>
+        <Link to="/plans" className="text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white transition-colors">
+          Pricing Plans
+        </Link>
+        <Link to="/faq" className="text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white transition-colors">
           FAQ
-        </a>
+        </Link>
       </motion.nav>
 
       {/* CTA Login Button */}
       <motion.div variants={logoVariants} className="hidden md:flex items-center">
-        <a
-          href="/login"
+        <Link
+          to="/login"
           className="group flex items-center gap-2 text-white/90 hover:text-white text-xs font-bold uppercase tracking-wider transition-colors"
         >
           <span>Client Portal</span>
           <ArrowUpRight size={16} className="text-[#E8783C] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-        </a>
+        </Link>
       </motion.div>
 
       {/* Mobile Hamburger Toggle */}
@@ -91,29 +95,31 @@ export default function SiteHeader() {
             transition={{ duration: 0.2 }}
             className="absolute top-[80px] left-0 right-0 bg-[#151C19] border border-white/10 rounded-2xl p-4 shadow-2xl md:hidden flex flex-col gap-4"
           >
-            <a href="#how-it-works" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-white/70 hover:text-white py-2 px-4">
+            <Link to="/digital-qr-menu" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-white/70 hover:text-white py-2 px-4">
+              Digital QR Menu
+            </Link>
+            <Link to="/restaurant-qr-menu" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-white/70 hover:text-white py-2 px-4">
+              Restaurant QR Menu
+            </Link>
+            <Link to="/how-it-works" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-white/70 hover:text-white py-2 px-4">
               How It Works
-            </a>
-            <a href="#templates" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-white/70 hover:text-white py-2 px-4">
+            </Link>
+            <Link to="/templates" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-white/70 hover:text-white py-2 px-4">
               Templates
-            </a>
-            <a href="#pricing" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-white/70 hover:text-white py-2 px-4">
-              Pricing
-            </a>
-            <a href="#faq" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-white/70 hover:text-white py-2 px-4">
+            </Link>
+            <Link to="/plans" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-white/70 hover:text-white py-2 px-4">
+              Pricing Plans
+            </Link>
+            <Link to="/faq" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-white/70 hover:text-white py-2 px-4">
               FAQ
-            </a>
+            </Link>
             <div className="h-px w-full bg-white/10 my-1" />
-            <a href="/login" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-[#E8783C] hover:text-[#d9672d] py-2 px-4 flex items-center gap-2">
+            <Link to="/login" onClick={() => setIsOpen(false)} className="text-sm font-bold uppercase tracking-wider text-[#E8783C] hover:text-[#d9672d] py-2 px-4 flex items-center gap-2">
               Client Portal <ArrowUpRight size={16} />
-            </a>
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.header>
   );
 }
-
-
-
-

@@ -1,4 +1,4 @@
-﻿import { MenusQRLoader } from '../../components/brand/MenusQRLoader';
+import { MenusQRLoader } from '../../components/brand/MenusQRLoader';
 import SiteHeader from '../../components/marketing/SiteHeader';
 import SiteFooter from '../../components/marketing/SiteFooter';
 import HeroSection from '../../components/marketing/HeroSection';
@@ -22,8 +22,8 @@ export default function PublicHomePage() {
   return (
     <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans overflow-x-clip relative selection:bg-[#e8783c] selection:text-white">
       <SEO 
-        title="MenusQR | Digital QR Menu & Ordering for Restaurants"
-        description="MenusQR helps restaurants and cafés create beautiful digital QR menus. Manage your menu, choose your design, and let Premium customers order directly from the table."
+        title="MenusQR | Digital QR Menu for Restaurants"
+        description="Create a professional digital QR menu for your restaurant. Update dishes, prices and availability without reprinting your QR code."
         canonicalUrl="/"
         type="website"
         schema={[getOrganizationSchema(), getWebSiteSchema()]}

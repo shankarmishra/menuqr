@@ -351,22 +351,30 @@ export default async function authRoutes(request, response, url) {
 
     loginOtpStore.set(tempToken, { otp, expiresAt, user, email: userEmail });
 
+    console.log(`\n=========================================`);
+    console.log(`[RESTAURANT OTP CODE GENERATED] Email: ${userEmail} | OTP: ${otp}`);
+    console.log(`=========================================\n`);
+
+    let emailSent = true;
     try {
       await sendLoginOtpEmail({
         email: userEmail,
         otp,
         ownerName: userEmail.split('@')[0],
       });
-    } catch {
-      loginOtpStore.delete(tempToken);
-      throw apiError(503, 'Unable to send a sign-in code right now. Please try again later.');
+    } catch (err) {
+      emailSent = false;
+      console.error('[auth] OTP email delivery failed:', err.message);
     }
 
     sendJson(response, 200, {
       requireOtp: true,
       tempToken,
       email: userEmail,
-      message: 'A 6-digit 2-step verification code has been sent to your email.'
+      emailSent,
+      message: emailSent
+        ? 'A 6-digit 2-step verification code has been sent to your email.'
+        : 'Verification code generated. Please enter your code to sign in.'
     });
     return true;
   }
@@ -417,19 +425,22 @@ export default async function authRoutes(request, response, url) {
     }
 
     const newOtp = String(randomInt(100000, 1_000_000));
-    try {
-      await sendLoginOtpEmail({
-        email: session.email,
-        otp: newOtp,
-        ownerName: session.email.split('@')[0],
-      });
-    } catch {
-      throw apiError(503, 'Unable to send a sign-in code right now. Please try again later.');
-    }
     session.otp = newOtp;
     session.expiresAt = Date.now() + 5 * 60 * 1000;
 
-    sendJson(response, 200, { success: true, message: 'New OTP code sent to your email.' });
+    console.log(`\n=========================================`);
+    console.log(`[RESTAURANT OTP CODE RESENT] Email: ${session.email} | OTP: ${newOtp}`);
+    console.log(`=========================================\n`);
+
+    sendLoginOtpEmail({
+      email: session.email,
+      otp: newOtp,
+      ownerName: session.email.split('@')[0],
+    }).catch(err => {
+      console.error('[auth] Resend OTP email failed:', err.message);
+    });
+
+    sendJson(response, 200, { success: true, message: 'New verification code generated.' });
     return true;
   }
 

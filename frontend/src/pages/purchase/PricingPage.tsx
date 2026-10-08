@@ -1,9 +1,15 @@
 import { Link } from 'react-router-dom';
 import SiteHeader from '../../components/marketing/SiteHeader';
+import SiteFooter from '../../components/marketing/SiteFooter';
 import { Check } from 'lucide-react';
 import { SEO } from '../../seo/SEO';
+import BreadcrumbNav from '../../components/seo/BreadcrumbNav';
+import GeoFaqSection from '../../components/seo/GeoFaqSection';
+import { getBreadcrumbSchema, getOrganizationSchema } from '../../seo/structuredData';
 
 export default function PricingPage() {
+  const breadcrumbs = [{ name: 'Plans & Pricing', path: '/plans' }];
+
   const plans = [
     {
       id: 'basic',
@@ -14,7 +20,7 @@ export default function PricingPage() {
         'Permanent Table QR Code',
         'Up to 50 Menu Items',
         'Basic Design Template',
-        'Dietary Tags',
+        'Dietary Tags (Veg/Non-Veg)',
         'Instant Customer Scan (No App)',
       ],
       highlight: false,
@@ -44,7 +50,7 @@ export default function PricingPage() {
         'Unlimited Menu Edits & Categories',
         'All Premium Design Templates',
         'Dietary Tags & Image Support',
-        'Premium Ordering System',
+        'Direct Table QR Ordering System',
         'Priority Email Support',
       ],
       highlight: true,
@@ -57,19 +63,23 @@ export default function PricingPage() {
         title="MenusQR Pricing | Digital Menu Plans for Restaurants"
         description="View MenusQR pricing plans. Basic ₹999/year, Intermediate ₹1499/year, and Premium ₹2999/year. Create your digital restaurant QR menu today."
         canonicalUrl="/plans"
+        schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs)]}
       />
       <SiteHeader />
-      <div className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#151C19] tracking-tight mb-4">
-            Simple, Transparent Pricing
+      
+      <main className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto">
+        <BreadcrumbNav items={breadcrumbs} />
+        
+        <div className="text-center mb-16 max-w-3xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-[#151C19] tracking-tight mb-4">
+            Simple Digital Menu Plans for Restaurants
           </h1>
-          <p className="text-lg text-[#151C19]/70 max-w-2xl mx-auto">
-            One permanent QR code. Unlimited menu updates. Premium restaurant tech for your business.
+          <p className="text-lg text-[#53615a] font-medium">
+            One permanent table QR code. Unlimited menu updates. Transparent yearly pricing for every food business.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
           {plans.map((plan) => (
             <div 
               key={plan.id}
@@ -123,7 +133,11 @@ export default function PricingPage() {
             </div>
           ))}
         </div>
-      </div>
+
+        <GeoFaqSection title="Pricing & Subscription FAQs" />
+      </main>
+
+      <SiteFooter />
     </div>
   );
 }

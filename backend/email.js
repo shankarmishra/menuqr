@@ -10,9 +10,9 @@ export function getSmtpTimeoutOptions(environment = process.env) {
   };
 
   return {
-    connectionTimeout: timeoutValue(environment.SMTP_CONNECTION_TIMEOUT_MS, 10_000),
-    greetingTimeout: timeoutValue(environment.SMTP_GREETING_TIMEOUT_MS, 10_000),
-    socketTimeout: timeoutValue(environment.SMTP_SOCKET_TIMEOUT_MS, 20_000),
+    connectionTimeout: timeoutValue(environment.SMTP_CONNECTION_TIMEOUT_MS, 3_000),
+    greetingTimeout: timeoutValue(environment.SMTP_GREETING_TIMEOUT_MS, 3_000),
+    socketTimeout: timeoutValue(environment.SMTP_SOCKET_TIMEOUT_MS, 5_000),
   };
 }
 

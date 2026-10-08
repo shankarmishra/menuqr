@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { DOMAIN } from './structuredData';
 
 interface SEOProps {
   title: string;
@@ -7,12 +8,11 @@ interface SEOProps {
   canonicalUrl?: string;
   type?: 'website' | 'article' | 'softwareApp';
   index?: boolean;
-  schema?: Record<string, any> | Record<string, any>[];
+  schema?: (Record<string, any> | null | undefined) | (Record<string, any> | null | undefined)[];
   image?: string;
 }
 
-const DOMAIN = import.meta.env.VITE_PUBLIC_SITE_URL || '';
-const DEFAULT_IMAGE = DOMAIN ? `${DOMAIN}/og-image.webp` : '/og-image.webp';
+const DEFAULT_IMAGE = `${DOMAIN}/og-image.webp`;
 
 export const SEO: React.FC<SEOProps> = ({ 
   title, 
@@ -23,15 +23,18 @@ export const SEO: React.FC<SEOProps> = ({
   schema,
   image = DEFAULT_IMAGE
 }) => {
-  const url = canonicalUrl ? `${DOMAIN}${canonicalUrl}` : DOMAIN;
-  
+  const url = canonicalUrl ? `${DOMAIN}${canonicalUrl.startsWith('/') ? canonicalUrl : `/${canonicalUrl}`}` : DOMAIN;
+  const filteredSchema = Array.isArray(schema) 
+    ? schema.filter(Boolean) 
+    : schema ? [schema] : [];
+
   return (
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
       
       {/* Canonical */}
-      {url && <link rel="canonical" href={url} />}
+      <link rel="canonical" href={url} />
       
       {/* Robots */}
       <meta name="robots" content={index ? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' : 'noindex, nofollow'} />
@@ -52,9 +55,9 @@ export const SEO: React.FC<SEOProps> = ({
       <meta name="twitter:image" content={image} />
       
       {/* JSON-LD Schema */}
-      {schema && (
+      {filteredSchema.length > 0 && (
         <script type="application/ld+json">
-          {JSON.stringify(Array.isArray(schema) ? schema : [schema])}
+          {JSON.stringify(filteredSchema.length === 1 ? filteredSchema[0] : filteredSchema)}
         </script>
       )}
     </Helmet>

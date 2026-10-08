@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { MenusQRBrand } from '../brand/MenusQRBrand';
 import { ArrowRight } from 'lucide-react';
 
@@ -8,24 +9,28 @@ const footerLinks = [
   {
     title: "Product",
     links: [
-      { label: "Features", href: "#features" },
-      { label: "Templates", href: "#templates" },
-      { label: "Pricing", href: "#pricing" },
+      { label: "Digital QR Menu", href: "/digital-qr-menu" },
+      { label: "Restaurant QR Menu", href: "/restaurant-qr-menu" },
+      { label: "QR Ordering System", href: "/qr-ordering-for-restaurants" },
+      { label: "Menu Templates", href: "/templates" },
+      { label: "Plans & Pricing", href: "/plans" },
     ]
   },
   {
-    title: "Support",
+    title: "Company",
     links: [
-      { label: "Help Center", href: "#" },
-      { label: "Contact Us", href: "#" },
-      { label: "Restaurant Guide", href: "#" },
+      { label: "About MenusQR", href: "/about" },
+      { label: "How It Works", href: "/how-it-works" },
+      { label: "Contact Us", href: "/contact" },
+      { label: "FAQ Center", href: "/faq" },
     ]
   },
   {
     title: "Legal",
     links: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Refund Policy", href: "/refund-cancellation" },
     ]
   }
 ];
@@ -80,37 +85,39 @@ export default function SiteFooter() {
         >
           {/* Brand & CTA */}
           <motion.div variants={itemVariants} className="lg:col-span-5 flex flex-col items-start">
-            <MenusQRBrand size="xl" variant="light" className="mb-6" />
+            <Link to="/">
+              <MenusQRBrand size="xl" variant="light" className="mb-6" />
+            </Link>
             <div className="mb-6 font-mono font-bold tracking-[0.2em] text-menusqr-orange text-xs uppercase bg-menusqr-orange/10 px-3 py-1.5 rounded-sm border border-menusqr-orange/20">
-              Digital Menu Platform
+              Digital Menu Infrastructure
             </div>
             <p className="text-menusqr-neutral-muted text-lg max-w-md leading-relaxed mb-10">
-              The premier digital menu infrastructure for food businesses. Bridge the gap between physical dining and digital convenience without requiring app installations.
+              The premier digital menu platform for restaurants, cafés, and food businesses. Permanent table QR codes with instant live menu management.
             </p>
             <div className="flex gap-4">
-              <button className="bg-menusqr-orange text-white px-6 py-3 rounded-full font-semibold hover:bg-[#d6672d] transition-colors flex items-center gap-2">
+              <Link to="/plans" className="bg-menusqr-orange text-white px-6 py-3 rounded-full font-semibold hover:bg-[#d6672d] transition-colors flex items-center gap-2">
                 Get Started <ArrowRight size={18} />
-              </button>
-              <button className="px-6 py-3 rounded-full font-semibold border border-menusqr-emerald-dark hover:bg-menusqr-emerald-dark text-white transition-colors">
-                Book a Demo
-              </button>
+              </Link>
+              <Link to="/how-it-works" className="px-6 py-3 rounded-full font-semibold border border-menusqr-emerald-dark hover:bg-menusqr-emerald-dark text-white transition-colors">
+                How It Works
+              </Link>
             </div>
           </motion.div>
 
           {/* Links Grid */}
-          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
             {footerLinks.map((column, idx) => (
               <motion.div key={idx} variants={itemVariants} className="flex flex-col">
                 <h4 className="font-semibold text-menusqr-white mb-6 tracking-wide">{column.title}</h4>
                 <ul className="space-y-4">
                   {column.links.map((link, lIdx) => (
                     <li key={lIdx}>
-                      <a 
-                        href={link.href} 
+                      <Link 
+                        to={link.href} 
                         className="text-menusqr-neutral-muted hover:text-menusqr-orange transition-colors text-sm font-medium"
                       >
                         {link.label}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -131,9 +138,7 @@ export default function SiteFooter() {
             &copy; {CURRENT_YEAR} MenusQR. All rights reserved.
           </div>
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-menusqr-white transition-colors">Twitter</a>
-            <a href="#" className="hover:text-menusqr-white transition-colors">LinkedIn</a>
-            <a href="#" className="hover:text-menusqr-white transition-colors">Instagram</a>
+            <span className="text-[#aab7b2]">Official Domain: <a href="https://menusqr.in" className="text-white hover:underline font-semibold">https://menusqr.in</a></span>
             <div className="flex items-center gap-2 ml-4 px-3 py-1.5 rounded-full bg-menusqr-emerald-dark/50 border border-menusqr-emerald-dark">
               <span className="w-2 h-2 rounded-full bg-menusqr-veg animate-pulse"></span>
               <span className="text-xs font-mono font-medium">All systems operational</span>
@@ -144,4 +149,3 @@ export default function SiteFooter() {
     </footer>
   );
 }
-

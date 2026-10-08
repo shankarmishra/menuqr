@@ -16,45 +16,80 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
   setActiveCategory,
 }) => {
   return (
-    <div className="text-[#FAF3E0] font-serif relative z-10 space-y-6">
-      {/* Editorial Menu Spread Container */}
+    <div className="text-[#FAF3E0] font-serif relative z-10 space-y-4 sm:space-y-6">
+      {/* Mobile-First Header & Masthead */}
+      <div className="text-center space-y-1.5 pb-3 border-b border-[#D4AF37]/30 bg-gradient-to-b from-[#2A111F]/90 to-[#180912]/95 border-2 border-[#D4AF37]/40 p-4 rounded-lg shadow-xl">
+        <div className="flex justify-center items-center gap-2 text-[#D4AF37]">
+          <span className="h-px w-6 bg-[#D4AF37]/60" />
+          <span className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#D4AF37]">Palace Dining</span>
+          <span className="h-px w-6 bg-[#D4AF37]/60" />
+        </div>
+        <h1
+          className={clsx(
+            'font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-[#FFF5D1] via-[#D4AF37] to-[#AA7C11]',
+            compact ? 'text-xl' : 'text-2xl sm:text-3xl lg:text-4xl'
+          )}
+          style={{ fontFamily: template.typography.heading }}
+        >
+          {restaurant.name}
+        </h1>
+        {restaurant.tagline && (
+          <p className="text-xs italic text-[#FAF3E0]/70 font-serif tracking-widest">{restaurant.tagline}</p>
+        )}
+      </div>
+
+      {/* Sticky Mobile Category Navigation Bar (Horizontally scrollable) */}
+      {!compact && rawCategories.length > 1 && (
+        <div className="sticky top-12 z-30 lg:hidden bg-[#180912]/95 backdrop-blur-md py-2 px-1 border-y border-[#D4AF37]/30 shadow-md overflow-x-auto scrollbar-none flex gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveCategory('all')}
+            className={clsx(
+              'px-3 py-1 text-xs uppercase tracking-widest border transition-all rounded-full shrink-0 font-bold',
+              activeCategory === 'all'
+                ? 'bg-[#D4AF37] text-[#180912] border-[#D4AF37]'
+                : 'text-[#D4AF37] border-[#D4AF37]/40 bg-[#180912]'
+            )}
+          >
+            ❖ All
+          </button>
+          {rawCategories.map((cat) => {
+            const isActive = activeCategory === cat.id || activeCategory === cat.name;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setActiveCategory(cat.id)}
+                className={clsx(
+                  'px-3 py-1 text-xs uppercase tracking-widest border transition-all rounded-full shrink-0 whitespace-nowrap',
+                  isActive
+                    ? 'bg-[#D4AF37] text-[#180912] border-[#D4AF37] font-bold'
+                    : 'text-[#D4AF37] border-[#D4AF37]/40 bg-[#180912]'
+                )}
+              >
+                ❖ {cat.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Main Grid: Desktop Split View / Mobile Direct Menu Flow */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         
-        {/* Left Column: Masthead & Atmospheric Visual Identity (35% on Desktop) */}
-        <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-6 bg-gradient-to-b from-[#2A111F]/90 to-[#180912]/95 border-2 border-[#D4AF37]/40 p-5 rounded-lg shadow-2xl">
-          <div className="text-center space-y-2 border-b border-[#D4AF37]/30 pb-4">
-            <div className="flex justify-center items-center gap-2 text-[#D4AF37]">
-              <span className="h-px w-6 bg-[#D4AF37]/60" />
-              <span className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#D4AF37]">Palace Dining</span>
-              <span className="h-px w-6 bg-[#D4AF37]/60" />
-            </div>
-            <h1
-              className={clsx(
-                'font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-[#FFF5D1] via-[#D4AF37] to-[#AA7C11]',
-                compact ? 'text-xl' : 'text-2xl sm:text-3xl lg:text-4xl'
-              )}
-              style={{ fontFamily: template.typography.heading }}
-            >
-              {restaurant.name}
-            </h1>
-            {restaurant.tagline && (
-              <p className="text-xs italic text-[#FAF3E0]/70 font-serif tracking-widest">{restaurant.tagline}</p>
-            )}
-          </div>
-
-          {/* Built-in Art-Directed Visual Panel */}
+        {/* Left Column (Desktop Only Sidebar - 35%) */}
+        <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-gradient-to-b from-[#2A111F]/90 to-[#180912]/95 border-2 border-[#D4AF37]/40 p-5 rounded-lg shadow-2xl">
           <RoyalMaharajaAtmosphere compact={compact} />
 
-          {/* Category Navigation List */}
           {!compact && rawCategories.length > 1 && (
             <div className="space-y-1 pt-2">
-              <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-[#D4AF37]/70 block text-center mb-2">Menu Categories</span>
-              <div className="flex lg:flex-col flex-wrap gap-1.5 justify-center">
+              <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-[#D4AF37]/70 block text-center mb-2">Categories</span>
+              <div className="flex flex-col gap-1.5">
                 <button
                   type="button"
                   onClick={() => setActiveCategory('all')}
                   className={clsx(
-                    'px-3 py-1.5 text-xs uppercase tracking-widest border transition-all text-left flex items-center justify-between rounded-sm',
+                    'px-3.5 py-2 text-xs uppercase tracking-widest border transition-all text-left flex items-center justify-between rounded-sm',
                     activeCategory === 'all'
                       ? 'bg-[#D4AF37] text-[#180912] border-[#D4AF37] font-bold shadow-md'
                       : 'text-[#D4AF37] border-[#D4AF37]/30 hover:border-[#D4AF37] bg-[#180912]/40'
@@ -70,14 +105,14 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
                       type="button"
                       onClick={() => setActiveCategory(cat.id)}
                       className={clsx(
-                        'px-3 py-1.5 text-xs uppercase tracking-widest border transition-all text-left flex items-center justify-between rounded-sm whitespace-nowrap',
+                        'px-3.5 py-2 text-xs uppercase tracking-widest border transition-all text-left flex items-center justify-between rounded-sm whitespace-nowrap',
                         isActive
                           ? 'bg-[#D4AF37] text-[#180912] border-[#D4AF37] font-bold shadow-md'
                           : 'text-[#D4AF37] border-[#D4AF37]/30 hover:border-[#D4AF37] bg-[#180912]/40'
                       )}
                     >
                       <span>❖ {cat.name}</span>
-                      <span className="text-[10px] opacity-70">({cat.items.length})</span>
+                      <span className="text-[10px] opacity-75">({cat.items.length})</span>
                     </button>
                   );
                 })}
@@ -86,15 +121,15 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
           )}
         </div>
 
-        {/* Right Column: Printed Restaurant Menu Spread (65% on Desktop) */}
+        {/* Right Column: Printed Restaurant Menu Spread (65% on Desktop, Full Width on Mobile) */}
         <div className="lg:col-span-8 bg-gradient-to-br from-[#230C19]/95 via-[#180912]/98 to-[#10040B]/95 border-2 border-[#D4AF37]/40 p-4 sm:p-6 rounded-lg shadow-2xl space-y-8">
           {categories.map((cat) => (
             <div key={cat.id} className="space-y-4">
-              {/* Ornamental Category Header */}
+              {/* Category Header */}
               <div className="flex items-center gap-3 py-2 border-b-2 border-[#D4AF37]/40">
                 <span className="text-[#D4AF37] text-xs">❖</span>
                 <h2
-                  className={clsx('font-extrabold text-[#D4AF37] uppercase tracking-[0.25em]', compact ? 'text-xs' : 'text-sm sm:text-base')}
+                  className={clsx('font-extrabold text-[#D4AF37] uppercase tracking-[0.2em]', compact ? 'text-xs' : 'text-xs sm:text-base')}
                   style={{ fontFamily: template.typography.heading }}
                 >
                   {cat.name}
@@ -102,7 +137,7 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
                 <div className="flex-1 h-px bg-gradient-to-r from-[#D4AF37]/50 to-transparent" />
               </div>
 
-              {/* Menu Item Listing with Dotted Leader Lines */}
+              {/* Menu Item Listing */}
               <div className="space-y-3">
                 {cat.items.map((item) => (
                   <div key={item.id} className="group py-1.5 border-b border-[#D4AF37]/10 hover:border-[#D4AF37]/30 transition-all">

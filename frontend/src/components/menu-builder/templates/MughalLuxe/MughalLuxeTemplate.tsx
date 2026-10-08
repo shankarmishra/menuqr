@@ -16,34 +16,71 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
   setActiveCategory,
 }) => {
   return (
-    <div className="text-[#E5C158] font-serif relative z-10 space-y-6">
-      {/* Editorial Menu Spread Container */}
+    <div className="text-[#E5C158] font-serif relative z-10 space-y-4 sm:space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-1 pb-3 border-b-2 border-[#E5C158]/50 bg-gradient-to-b from-[#132D24] to-[#0A1813] border-2 border-[#E5C158]/50 p-4 rounded-lg shadow-2xl">
+        <div className="w-12 h-6 border-t-2 border-x-2 border-[#E5C158]/60 rounded-t-full mx-auto" />
+        <h1
+          className={clsx('font-black text-[#F3E5AB] tracking-widest uppercase', compact ? 'text-xl' : 'text-2xl sm:text-3xl lg:text-4xl')}
+          style={{ fontFamily: template.typography.heading }}
+        >
+          {restaurant.name}
+        </h1>
+        {restaurant.tagline && <p className="text-xs italic text-[#E5C158]/70 font-serif">{restaurant.tagline}</p>}
+      </div>
+
+      {/* Sticky Mobile Category Bar */}
+      {!compact && rawCategories.length > 1 && (
+        <div className="sticky top-12 z-30 lg:hidden bg-[#0A1813]/95 backdrop-blur-md py-2 px-1 border-y border-[#E5C158]/40 shadow-md overflow-x-auto scrollbar-none flex gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveCategory('all')}
+            className={clsx(
+              'px-3 py-1 text-xs font-serif tracking-widest rounded-t-full border transition-all shrink-0',
+              activeCategory === 'all'
+                ? 'bg-[#E5C158] text-[#0A1813] border-[#E5C158] font-bold'
+                : 'text-[#E5C158] border-[#E5C158]/30 bg-[#0A1813]'
+            )}
+          >
+            All
+          </button>
+          {rawCategories.map((cat) => {
+            const isActive = activeCategory === cat.id || activeCategory === cat.name;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setActiveCategory(cat.id)}
+                className={clsx(
+                  'px-3 py-1 text-xs font-serif tracking-widest rounded-t-full border transition-all shrink-0 whitespace-nowrap',
+                  isActive
+                    ? 'bg-[#E5C158] text-[#0A1813] border-[#E5C158] font-bold'
+                    : 'text-[#E5C158] border-[#E5C158]/30 bg-[#0A1813]'
+                )}
+              >
+                {cat.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Grid Container */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         
-        {/* Left Column: Emerald Arch Identity (35% on Desktop) */}
-        <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-gradient-to-b from-[#132D24] to-[#0A1813] border-2 border-[#E5C158]/50 p-5 rounded-lg shadow-2xl">
-          <div className="text-center space-y-2 pb-4 border-b border-[#E5C158]/30">
-            <div className="w-12 h-6 border-t-2 border-x-2 border-[#E5C158]/60 rounded-t-full mx-auto" />
-            <h1
-              className={clsx('font-black text-[#F3E5AB] tracking-widest uppercase', compact ? 'text-xl' : 'text-2xl sm:text-3xl lg:text-4xl')}
-              style={{ fontFamily: template.typography.heading }}
-            >
-              {restaurant.name}
-            </h1>
-            {restaurant.tagline && <p className="text-xs italic text-[#E5C158]/70 font-serif">{restaurant.tagline}</p>}
-          </div>
-
+        {/* Desktop Sidebar (35%) */}
+        <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-gradient-to-b from-[#132D24] to-[#0A1813] border-2 border-[#E5C158]/50 p-5 rounded-lg shadow-2xl">
           <MughalLuxeAtmosphere compact={compact} />
 
           {!compact && rawCategories.length > 1 && (
             <div className="space-y-1.5 pt-2">
               <span className="text-[9px] font-serif uppercase tracking-[0.3em] font-bold text-[#E5C158]/80 block text-center mb-1">IMPERIAL SECTIONS</span>
-              <div className="flex lg:flex-col flex-wrap gap-1.5 justify-center">
+              <div className="flex flex-col gap-1.5">
                 <button
                   type="button"
                   onClick={() => setActiveCategory('all')}
                   className={clsx(
-                    'px-3.5 py-1.5 text-xs font-serif tracking-widest transition-all text-left flex items-center justify-between rounded-t-full border',
+                    'px-3.5 py-2 text-xs font-serif tracking-widest transition-all text-left flex items-center justify-between rounded-t-full border',
                     activeCategory === 'all'
                       ? 'bg-[#E5C158] text-[#0A1813] border-[#E5C158] font-bold shadow-md'
                       : 'text-[#E5C158] border-[#E5C158]/30 hover:border-[#E5C158] bg-[#132D24]/50'
@@ -59,7 +96,7 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
                       type="button"
                       onClick={() => setActiveCategory(cat.id)}
                       className={clsx(
-                        'px-3.5 py-1.5 text-xs font-serif tracking-widest transition-all text-left flex items-center justify-between rounded-t-full border whitespace-nowrap',
+                        'px-3.5 py-2 text-xs font-serif tracking-widest transition-all text-left flex items-center justify-between rounded-t-full border whitespace-nowrap',
                         isActive
                           ? 'bg-[#E5C158] text-[#0A1813] border-[#E5C158] font-bold shadow-md'
                           : 'text-[#E5C158] border-[#E5C158]/30 hover:border-[#E5C158] bg-[#132D24]/50'
@@ -75,14 +112,14 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
           )}
         </div>
 
-        {/* Right Column: Printed Mughal Menu Spread (65% on Desktop) */}
+        {/* Menu Content Spread (65% Desktop, 100% Mobile) */}
         <div className="lg:col-span-8 bg-gradient-to-br from-[#112921]/95 to-[#0A1813]/98 border-2 border-[#E5C158]/50 p-4 sm:p-6 rounded-lg shadow-2xl space-y-8">
           {categories.map((cat) => (
             <div key={cat.id} className="space-y-4">
               <div className="flex items-center gap-3 border-b border-[#E5C158]/30 pb-1">
                 <span className="text-[#E5C158] text-xs">❖</span>
                 <h2
-                  className={clsx('font-black text-[#F3E5AB] uppercase tracking-[0.25em]', compact ? 'text-xs' : 'text-sm sm:text-base')}
+                  className={clsx('font-black text-[#F3E5AB] uppercase tracking-[0.25em]', compact ? 'text-xs' : 'text-xs sm:text-base')}
                   style={{ fontFamily: template.typography.heading }}
                 >
                   {cat.name}

@@ -9,11 +9,27 @@ import OnboardingWizard from './pages/public/OnboardingWizard';
 import PricingPage from './pages/purchase/PricingPage';
 import PurchaseDetailsPage from './pages/purchase/PurchaseDetailsPage';
 import PurchaseReviewPage from './pages/purchase/PurchaseReviewPage';
-
 import PurchaseSuccessPage from './pages/purchase/PurchaseSuccessPage';
 import MenuPage from './pages/customer/MenuPage';
+
+// SEO Landing Pages
 import DigitalQrMenu from './pages/public/seo/DigitalQrMenu';
 import RestaurantQrMenu from './pages/public/seo/RestaurantQrMenu';
+import DigitalMenuForRestaurants from './pages/public/seo/DigitalMenuForRestaurants';
+import QrMenuForRestaurants from './pages/public/seo/QrMenuForRestaurants';
+import RestaurantDigitalMenu from './pages/public/seo/RestaurantDigitalMenu';
+import QrOrderingForRestaurants from './pages/public/seo/QrOrderingForRestaurants';
+
+// Public Marketing Pages
+import HowItWorksPage from './pages/public/HowItWorksPage';
+import TemplatesPage from './pages/public/TemplatesPage';
+import AboutPage from './pages/public/AboutPage';
+import ContactPage from './pages/public/ContactPage';
+import FaqPage from './pages/public/FaqPage';
+import PrivacyPolicyPage from './pages/public/PrivacyPolicyPage';
+import TermsPage from './pages/public/TermsPage';
+import RefundPolicyPage from './pages/public/RefundPolicyPage';
+
 import AdminLayout from './layouts/AdminLayout';
 import AppLayout from './layouts/AppLayout';
 import AdminLogin from './pages/admin/AdminLogin';
@@ -60,7 +76,7 @@ function ProtectedAdminLayout() {
     };
   }, [retry]);
 
-  if (sessionState === 'checking') return <div className="grid min-h-screen place-items-center bg-[#151c19] text-sm text-[#aab7b2]">Checking admin sessionâ€¦</div>;
+  if (sessionState === 'checking') return <div className="grid min-h-screen place-items-center bg-[#151c19] text-sm text-[#aab7b2]">Checking admin session…</div>;
   if (sessionState === 'error') return <div className="grid min-h-screen place-items-center bg-[#151c19] px-5 text-center text-sm text-rose-300"><div><p>Could not connect to the admin API.</p><button type="button" onClick={() => { setSessionState('checking'); setRetry((current) => current + 1); }} className="mt-4 rounded-lg bg-[#e8783c] px-4 py-2 font-semibold text-white">Retry</button></div></div>;
   if (sessionState === 'unauthenticated') return <Navigate to="/login" replace state={{ from: location }} />;
   return <AdminLayout />;
@@ -119,7 +135,7 @@ function PublicAppRoutes() {
   const menuSlug = menuMatch?.params.slug;
   const routeKey = menuSlug ? `menu:${menuSlug}` : 'app';
   const [menuName, setMenuName] = useState<{ slug: string; name: string }>();
-  const [loadedRoute, setLoadedRoute] = useState('');
+  const [loadedRoute, setLoadedRoute] = useState(routeKey);
   const loaderName = menuSlug
     ? menuName?.slug === menuSlug ? menuName.name : 'Preparing menu'
     : 'MenusQR';
@@ -132,18 +148,21 @@ function PublicAppRoutes() {
     if (isAdminRedirect) return;
     let isCurrent = true;
     if (menuSlug) {
+      setLoadedRoute('');
       void getClientByMenuSlug(menuSlug).then((menu) => {
         if (isCurrent) setMenuName({ slug: menuSlug, name: menu?.businessName ?? 'MenusQR' });
       }).catch(() => {
         if (isCurrent) setMenuName({ slug: menuSlug, name: 'MenusQR' });
       });
+      const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 100 : 500;
+      const timer = window.setTimeout(() => setLoadedRoute(routeKey), duration);
+      return () => {
+        isCurrent = false;
+        window.clearTimeout(timer);
+      };
+    } else {
+      setLoadedRoute(routeKey);
     }
-    const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 150 : 1100;
-    const timer = window.setTimeout(() => setLoadedRoute(routeKey), duration);
-    return () => {
-      isCurrent = false;
-      window.clearTimeout(timer);
-    };
   }, [menuSlug, routeKey, isAdminRedirect]);
 
   if (isAdminRedirect) {
@@ -159,26 +178,45 @@ function PublicAppRoutes() {
   return (
     <>
       <Routes>
+        {/* Core Public Brand & Commercial SEO Pages */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/onboarding" element={<OnboardingWizard />} />
-        <Route path="/plans" element={<PricingPage />} />
-        <Route path="/purchase/details" element={<PurchaseDetailsPage />} />
-        <Route path="/purchase/review" element={<PurchaseReviewPage />} />
-
-        <Route path="/purchase/success" element={<PurchaseSuccessPage />} />
-        
-        {/* SEO Pages */}
         <Route path="/digital-qr-menu" element={<DigitalQrMenu />} />
         <Route path="/restaurant-qr-menu" element={<RestaurantQrMenu />} />
+        <Route path="/digital-menu-for-restaurants" element={<DigitalMenuForRestaurants />} />
+        <Route path="/qr-menu-for-restaurants" element={<QrMenuForRestaurants />} />
+        <Route path="/restaurant-digital-menu" element={<RestaurantDigitalMenu />} />
+        <Route path="/qr-ordering-for-restaurants" element={<QrOrderingForRestaurants />} />
+        
+        {/* Pricing & Alias Routes */}
+        <Route path="/plans" element={<PricingPage />} />
+        <Route path="/digital-menu-pricing" element={<Navigate to="/plans" replace />} />
 
+        {/* Marketing & Support Pages */}
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/templates" element={<TemplatesPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/faq" element={<FaqPage />} />
+
+        {/* Legal Pages & Aliases */}
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/privacy-policy" element={<Navigate to="/privacy" replace />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/refund-cancellation" element={<RefundPolicyPage />} />
+        <Route path="/refund-policy" element={<Navigate to="/refund-cancellation" replace />} />
+
+        {/* Customer Onboarding & Checkout Flow */}
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/onboarding" element={<OnboardingWizard />} />
+        <Route path="/purchase/details" element={<PurchaseDetailsPage />} />
+        <Route path="/purchase/review" element={<PurchaseReviewPage />} />
+        <Route path="/purchase/success" element={<PurchaseSuccessPage />} />
+        
         {/* Customer Menu Route */}
         <Route path="/qr/:qrId" element={<QrLandingPage />} />
         <Route path="/menu/:slug" element={<MenuPage key={menuSlug} />} />
 
-
-
-
+        {/* Auth & Admin */}
         <Route path="/login" element={<AdminLogin />} />
 
         {/* App Dashboard Routes */}
@@ -245,5 +283,3 @@ export default function App() {
     </HelmetProvider>
   );
 }
-
-
