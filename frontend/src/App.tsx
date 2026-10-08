@@ -1,4 +1,4 @@
-﻿import NotFoundPage from './pages/public/NotFoundPage';
+import NotFoundPage from './pages/public/NotFoundPage';
 import { useEffect, useState } from 'react';
 import { MenusQRMark } from './components/brand/MenusQRMark';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useMatch } from 'react-router-dom';
@@ -9,7 +9,7 @@ import OnboardingWizard from './pages/public/OnboardingWizard';
 import PricingPage from './pages/purchase/PricingPage';
 import PurchaseDetailsPage from './pages/purchase/PurchaseDetailsPage';
 import PurchaseReviewPage from './pages/purchase/PurchaseReviewPage';
-import CheckoutPage from './pages/purchase/CheckoutPage';
+
 import PurchaseSuccessPage from './pages/purchase/PurchaseSuccessPage';
 import MenuPage from './pages/customer/MenuPage';
 import DigitalQrMenu from './pages/public/seo/DigitalQrMenu';
@@ -34,7 +34,7 @@ import AppQrCenter from './pages/app/QrCenter';
 import AppSubscription from './pages/app/Subscription';
 import AppSettings from './pages/app/Settings';
 import AppOrders from './pages/app/Orders';
-import SupabaseTest from './components/SupabaseTest';
+
 import FeatureGate from './components/guards/FeatureGate';
 import { ToastProvider } from './components/feedback/ToastProvider';
 import QrLandingPage from './pages/public/QrLandingPage';
@@ -163,7 +163,7 @@ function PublicAppRoutes() {
         <Route path="/plans" element={<PricingPage />} />
         <Route path="/purchase/details" element={<PurchaseDetailsPage />} />
         <Route path="/purchase/review" element={<PurchaseReviewPage />} />
-        <Route path="/checkout/:orderId" element={<CheckoutPage />} />
+
         <Route path="/purchase/success" element={<PurchaseSuccessPage />} />
         
         {/* SEO Pages */}
@@ -174,8 +174,8 @@ function PublicAppRoutes() {
         <Route path="/qr/:qrId" element={<QrLandingPage />} />
         <Route path="/menu/:slug" element={<MenuPage key={menuSlug} />} />
 
-        {/* Supabase Test Route */}
-        <Route path="/test-supabase" element={<SupabaseTest />} />
+
+
 
         <Route path="/login" element={<AdminLogin />} />
 

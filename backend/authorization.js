@@ -1,7 +1,8 @@
 export function getPlanContentLimit(planId) {
   const p = String(planId || 'BASIC').toUpperCase();
-  if (p === 'BASIC') return 20; // 20-Time Edit
-  return Infinity; // Intermediate and Premium get unlimited edits
+  if (p === 'BASIC') return 30;
+  if (p === 'INTERMEDIATE') return 100;
+  return Infinity;
 }
 
 import { pool, queryPortable } from './db.js';
@@ -110,7 +111,7 @@ export async function withContentChange(authorization, mutation) {
       }
       
       if (Number(changesUsed) >= limit) {
-        throw apiError(403, `Your 20 included menu changes have been used. Upgrade your plan to Intermediate or Premium to continue editing.`);
+        throw apiError(403, `Your ${limit} included menu changes have been used. Upgrade your plan to continue editing.`);
       }
 
       // Perform the mutation

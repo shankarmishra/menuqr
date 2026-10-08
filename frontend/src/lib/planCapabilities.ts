@@ -21,7 +21,7 @@ const BASIC_CAPABILITIES = [
 
 const INTERMEDIATE_CAPABILITIES = [
   ...BASIC_CAPABILITIES,
-  'templates_limited',
+  'templates',
   'add_item',
   'edit_item',
   'delete_item',

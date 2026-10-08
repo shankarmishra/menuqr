@@ -1,3 +1,5 @@
+process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+
 import './env.js';
 import { createServer } from 'node:http';
 
@@ -74,12 +76,15 @@ const server = createServer(async (request, response) => {
     throw apiError(404, 'API route not found.');
   } catch (error) {
     console.error(`[api] (${request.method})${url.pathname}:`, error.message);
-    const status = error.status || (error.code === '23505' ? 409 : 500);
+    const isConflict = error.code === '23505';
+    const status = error.status || (isConflict ? 409 : 500);
     sendJson(response, status, {
       error:
-        error.status || error.code === '23505'
+        error.status
           ? error.message
-          : 'The server could not complete this request.',
+          : isConflict
+            ? 'Conflict: A record with this unique identifier already exists.'
+            : 'The server could not complete this request.',
     });
   }
 });

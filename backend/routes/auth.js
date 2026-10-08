@@ -138,7 +138,7 @@ export default async function authRoutes(request, response, url) {
           console.error('Cashfree order creation response:', errText);
         }
       } catch (err) {
-        console.error('Cashfree order creation network error:', err);
+        console.error('Cashfree order creation network error:', err.message);
       }
     }
 
@@ -190,7 +190,7 @@ export default async function authRoutes(request, response, url) {
           }
         }
       } catch (err) {
-        console.error('Cashfree verification error:', err);
+        console.error('Cashfree verification error:', err.message);
       }
     }
 
@@ -237,42 +237,45 @@ export default async function authRoutes(request, response, url) {
 
     const pwdHash = await hashPassword(password);
 
-    await pool.query('BEGIN');
+    const expiresAt = new Date();
+    expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+
+    const client = await pool.connect();
+    await client.query('BEGIN');
     try {
-      await pool.query(
+      await client.query(
         'INSERT INTO clients (id, public_id, business_name, menu_slug, status) VALUES ($1, $2, $3, $4, $5)',
         [clientId, publicId, restaurantName, menuSlug, 'active']
       );
 
-      await pool.query(
+      await client.query(
         'INSERT INTO users (id, email, password_hash, role, tenant_id) VALUES ($1, $2, $3, $4, $5)',
         [userId, email, pwdHash, 'RESTAURANT_OWNER', clientId]
       );
 
-      const expiresAt = new Date();
-      expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-
-      await pool.query(
+      await client.query(
         'INSERT INTO subscriptions (id, tenant_id, plan_id, status, started_at, expires_at) VALUES ($1, $2, $3, $4, $5, $6)',
         [subscriptionId, clientId, 'PREMIUM', 'ACTIVE', new Date(), expiresAt]
       );
 
       const menuId = randomUUID();
-      await pool.query(
+      await client.query(
         'INSERT INTO menus (id, tenant_id, name) VALUES ($1, $2, $3)',
         [menuId, clientId, 'Main Menu']
       );
 
       const appSettingId = randomUUID();
-      await pool.query(
+      await client.query(
         'INSERT INTO appearance_settings (id, tenant_id, template_id, restaurant_display_name) VALUES ($1, $2, $3, $4)',
         [appSettingId, clientId, 'royal-maharaja', restaurantName]
       );
 
-      await pool.query('COMMIT');
+      await client.query('COMMIT');
     } catch (e) {
-      await pool.query('ROLLBACK');
+      await client.query('ROLLBACK');
       throw e;
+    } finally {
+      client.release();
     }
 
     paidTransactions.delete(transactionId);
@@ -286,7 +289,7 @@ export default async function authRoutes(request, response, url) {
       billingCycle: 'Yearly',
       monthlyPrice: '1499',
       password,
-    }).catch(err => console.error('[signup email error]', err));
+    }).catch(err => console.error('[signup email error]', err.message));
 
     void sendPaymentSuccessEmail({
       email,
@@ -294,7 +297,7 @@ export default async function authRoutes(request, response, url) {
       plan: 'YEARLY PREMIUM',
       amount: 1499,
       expiresAt: expiresAt.toISOString(),
-    }).catch(err => console.error('[payment email error]', err));
+    }).catch(err => console.error('[payment email error]', err.message));
 
     const user = { id: userId, role: 'RESTAURANT_OWNER', tenantId: clientId };
     const cookie = generateAuthCookie(user);
@@ -447,7 +450,7 @@ export default async function authRoutes(request, response, url) {
       email: normalizedEmail,
       otp,
       ownerName: normalizedEmail.split('@')[0],
-    }).catch(err => console.error('[Forgot password email error]', err));
+    }).catch(err => console.error('[Forgot password email error]', err.message));
 
     sendJson(response, 200, { success: true, message: 'Password reset code has been sent to your email.' });
     return true;

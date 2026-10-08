@@ -260,7 +260,7 @@ export default function Menu() {
   }
 
   // Calculate usage %
-  const isUnlimited = planId === 'PREMIUM';
+  const isUnlimited = contentChangesLimit === null;
   const usagePercentage = !isUnlimited && contentChangesLimit ? Math.min(100, Math.round(((contentChangesLimit - (contentChangesRemaining || 0)) / contentChangesLimit) * 100)) : 0;
   const usedEdits = contentChangesLimit ? contentChangesLimit - (contentChangesRemaining || 0) : 0;
 

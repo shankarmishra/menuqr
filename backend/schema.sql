@@ -46,7 +46,7 @@ ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS content_period_id VARCHAR(255
 CREATE TABLE IF NOT EXISTS subscription_content_usage (
   tenant_id VARCHAR(255) REFERENCES subscriptions(tenant_id) ON DELETE CASCADE NOT NULL,
   period_start TIMESTAMP NOT NULL,
-  changes_used INTEGER NOT NULL DEFAULT 0 CHECK (changes_used >= 0 AND changes_used <= 20),
+  changes_used INTEGER NOT NULL DEFAULT 0 CHECK (changes_used >= 0),
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (tenant_id, period_start)
 );

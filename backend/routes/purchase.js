@@ -125,7 +125,7 @@ export default async function purchaseRoutes(request, response, url) {
             }
           }
         } catch (e) {
-          console.error('Cashfree existing order fetch error:', e);
+          console.error('Cashfree existing order fetch error:', e.message);
         }
       }
 
@@ -173,7 +173,7 @@ export default async function purchaseRoutes(request, response, url) {
           console.error('Cashfree order creation response:', await cfRes.text());
         }
       } catch (err) {
-        console.error('Cashfree order creation network error:', err);
+        console.error('Cashfree order creation network error:', err.message);
       }
     }
 
@@ -443,7 +443,7 @@ export default async function purchaseRoutes(request, response, url) {
         "UPDATE orders SET provisioning_status='FAILED', updated_at=NOW() WHERE id=$1",
         [orderId]
       );
-      console.error('[Provisioning Error]', e);
+      console.error('[Provisioning Error]', e.message);
       // Payment succeeded — don't return a 500. Tell client to contact support.
       sendJson(response, 200, {
         success: true, orderId, status: 'PAID',
@@ -621,7 +621,7 @@ export default async function purchaseRoutes(request, response, url) {
       email: sourceOrder.customer_email,
       businessName: sourceOrder.business_name,
       expiresAt: newExpiry,
-    }).catch(err => console.error('[renewal email error]', err));
+    }).catch(err => console.error('[renewal email error]', err.message));
 
     sendJson(response, 200, {
       success: true,
@@ -631,140 +631,6 @@ export default async function purchaseRoutes(request, response, url) {
       expiresAt: newExpiry,
       message: 'Subscription renewed. Your existing QR code and restaurant data are unchanged.',
     });
-    return true;
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // POST /api/purchase/orders/:id/pay — Legacy mock-payment endpoint
-  // (kept for backward compat with existing CheckoutPage flow)
-  // ─────────────────────────────────────────────────────────────────────────
-  const payMatch = url.pathname.match(/^\/api\/purchase\/orders\/([^/]+)\/pay$/);
-  if (request.method === 'POST' && payMatch) {
-    if (process.env.NODE_ENV === 'production') {
-      throw apiError(403, 'Mock payment endpoint disabled in production.');
-    }
-    // Delegate to /verify logic by forwarding as a mock verify
-    const orderId = payMatch[1];
-    const input = await readJson(request);
-    // Allow the test card 4242... to pass, reject any other card
-    const cleanCard = (input.cardNumber || '').replace(/\s+/g, '');
-    if (cleanCard && cleanCard !== '4242424242424242') {
-      await pool.query("UPDATE orders SET status='FAILED' WHERE id=$1", [orderId]);
-      throw apiError(400, 'Payment declined. Use test card 4242 4242 4242 4242.');
-    }
-    // Simulate as mock verify
-    const fakeReq = { ...request, body: JSON.stringify({ mockSuccess: true }) };
-    // Re-use verify logic inline
-    const orderRes = await pool.query('SELECT * FROM orders WHERE id=$1', [orderId]);
-    const order = orderRes.rows[0];
-    if (!order) throw apiError(404, 'Order not found.');
-
-    if (order.status === 'PAID' && order.provisioning_status === 'COMPLETE') {
-      sendJson(response, 200, { success: true, orderId, status: 'PAID', provisioning_status: 'COMPLETE', alreadyProvisioned: true });
-      return true;
-    }
-
-    if (order.status !== 'PAID') {
-      await pool.query("UPDATE orders SET status='PAID', updated_at=NOW() WHERE id=$1", [orderId]);
-      const paymentId = `pay_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
-      await pool.query(
-        `INSERT INTO payments (id, order_id, gateway, transaction_id, amount, status)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
-        [paymentId, orderId, 'mock', `mock_${randomUUID()}`, order.amount, 'SUCCESS']
-      );
-    }
-
-    const provCheck = await pool.query('SELECT provisioning_status FROM orders WHERE id=$1', [orderId]);
-    if (provCheck.rows[0]?.provisioning_status === 'COMPLETE') {
-      sendJson(response, 200, { success: true, orderId, status: 'PAID', provisioning_status: 'COMPLETE', alreadyProvisioned: true });
-      return true;
-    }
-
-    await pool.query("UPDATE orders SET provisioning_status='PROCESSING', updated_at=NOW() WHERE id=$1", [orderId]);
-
-    let activationTokenRaw;
-    let provisionedTenantId;
-
-    try {
-      await pool.query('BEGIN');
-      let userId; let tenantId;
-      const userCheck = await pool.query('SELECT id, tenant_id FROM users WHERE email=$1 FOR UPDATE', [order.customer_email]);
-
-      if (userCheck.rows.length > 0) {
-        userId = userCheck.rows[0].id;
-        tenantId = userCheck.rows[0].tenant_id || null;
-      } else {
-        userId = randomUUID();
-        const orderMeta = order.metadata || {};
-        const pwdHash = orderMeta.password_hash || hashPassword(randomUUID().substring(0, 32));
-        const { raw, hashed } = generateActivationToken();
-        activationTokenRaw = raw;
-        const tokenExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
-        await pool.query(
-          `INSERT INTO users (id, email, password_hash, role, onboarding_state, activation_token_hash, activation_token_expires_at)
-           VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-          [userId, order.customer_email, pwdHash, 'RESTAURANT_OWNER', orderMeta.password_hash ? 'COMPLETED' : 'PENDING', hashed, tokenExpiry]
-        );
-      }
-
-      if (!tenantId) {
-        tenantId = randomUUID();
-        const publicId = randomUUID().split('-')[0];
-        let menuSlug = slugify(order.business_name, { lower: true, strict: true }) || 'menu';
-        const slugCheck = await pool.query('SELECT id FROM clients WHERE menu_slug=$1', [menuSlug]);
-        if (slugCheck.rows.length > 0) menuSlug = `${menuSlug}-${publicId}`;
-
-        await pool.query(
-          'INSERT INTO clients (id, public_id, business_name, menu_slug, status) VALUES ($1,$2,$3,$4,$5)',
-          [tenantId, publicId, order.business_name, menuSlug, 'active']
-        );
-        await pool.query('UPDATE users SET tenant_id=$1, updated_at=NOW() WHERE id=$2', [tenantId, userId]);
-
-        const expiresAt = new Date(); expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-        await pool.query(
-          'INSERT INTO subscriptions (id, tenant_id, plan_id, status, started_at, expires_at) VALUES ($1,$2,$3,$4,$5,$6)',
-          [randomUUID(), tenantId, order.plan_id.toUpperCase(), 'ACTIVE', new Date(), expiresAt]
-        );
-        await pool.query('INSERT INTO menus (id, tenant_id, name) VALUES ($1,$2,$3)', [randomUUID(), tenantId, 'Main Menu']);
-        await pool.query(
-          'INSERT INTO appearance_settings (id, tenant_id, template_id, restaurant_display_name) VALUES ($1,$2,$3,$4)',
-          [randomUUID(), tenantId, 'royal-maharaja', order.business_name]
-        );
-      }
-
-      provisionedTenantId = tenantId;
-      await pool.query(
-        `INSERT INTO activity_logs (tenant_id, action, description, metadata) VALUES ($1,$2,$3,$4)`,
-        [tenantId, 'ORDER_PROVISIONED', `Order ${orderId} provisioned`, JSON.stringify({ orderId })]
-      );
-      await pool.query("UPDATE orders SET provisioning_status='COMPLETE', updated_at=NOW() WHERE id=$1", [orderId]);
-      await pool.query('COMMIT');
-    } catch (e) {
-      await pool.query('ROLLBACK');
-      await pool.query("UPDATE orders SET provisioning_status='FAILED', updated_at=NOW() WHERE id=$1", [orderId]);
-      console.error('[Provisioning Error]', e);
-      sendJson(response, 200, { success: true, orderId, status: 'PAID', provisioning_status: 'FAILED', message: 'Payment received but account setup failed. Contact support.' });
-      return true;
-    }
-
-    const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
-    const clearPassword = (order.metadata || {}).clear_password;
-    void sendActivationEmail({
-      email: order.customer_email,
-      ownerName: order.customer_name,
-      businessName: order.business_name,
-      plan: planMeta.label || order.plan_id.toUpperCase(),
-      activationToken: activationTokenRaw,
-      password: clearPassword
-    }).catch(err => {
-      console.error('[activation email error]', err);
-      pool.query(
-        'INSERT INTO activity_logs (tenant_id, action, description, metadata) VALUES ($1,$2,$3,$4)',
-        [provisionedTenantId, 'EMAIL_FAILED', 'Activation email failed', JSON.stringify({ orderId, error: err.message })]
-      ).catch(() => {});
-    });
-
-    sendJson(response, 200, { success: true, orderId, status: 'PAID', provisioning_status: 'COMPLETE' });
     return true;
   }
 

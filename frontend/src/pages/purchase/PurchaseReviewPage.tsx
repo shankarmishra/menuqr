@@ -99,22 +99,23 @@ export default function PurchaseReviewPage() {
             onClick={async () => {
               const paymentSessionId = sessionStorage.getItem('paymentSessionId');
               if (paymentSessionId) {
+                const mode = import.meta.env.DEV ? 'sandbox' : 'production';
                 // Initialize Cashfree SDK
                 if (!document.getElementById('cashfree-sdk')) {
                   const script = document.createElement('script');
                   script.id = 'cashfree-sdk';
                   script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
                   script.onload = () => {
-                    const cashfree = (window as any).Cashfree({ mode: "sandbox" });
+                    const cashfree = (window as any).Cashfree({ mode });
                     cashfree.checkout({ paymentSessionId });
                   };
                   document.body.appendChild(script);
                 } else {
-                  const cashfree = (window as any).Cashfree({ mode: "sandbox" });
+                  const cashfree = (window as any).Cashfree({ mode });
                   cashfree.checkout({ paymentSessionId });
                 }
               } else {
-                navigate(`/checkout/${order.id}`);
+                alert('Payment gateway is not configured. Please contact support.');
               }
             }}
             className="flex-1 text-center bg-[#E8783C] hover:bg-[#d66a30] text-white py-4 rounded-xl font-bold transition-colors shadow-lg shadow-[#E8783C]/20"

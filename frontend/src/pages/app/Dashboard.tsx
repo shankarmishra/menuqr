@@ -149,7 +149,7 @@ export default function Dashboard() {
              <div className="bg-[#1d2723] p-4 rounded-xl border border-[#2a3832]">
                <div className="text-xs text-[#849a90] uppercase tracking-wider font-bold mb-1">Menu Edits Used</div>
                <div className="text-xl font-bold text-white">
-                 {sub?.contentChangesLimit === -1 ? 'Unlimited' : `${sub?.contentChangesUsed || 0} / ${sub?.contentChangesLimit || 0}`}
+                 {sub?.contentChangesLimit === null ? 'Unlimited' : `${sub?.contentChangesUsed || 0} / ${sub?.contentChangesLimit || 0}`}
                </div>
              </div>
              

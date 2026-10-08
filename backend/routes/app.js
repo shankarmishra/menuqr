@@ -169,56 +169,7 @@ export default async function appRoutes(request, response, url) {
     return true;
   }
 
-  if (request.method === 'POST' && url.pathname === '/api/app/subscription/renew') {
-    const input = await readJson(request);
-    const newPlanId = String(input.planId || authorization.planId).toUpperCase();
 
-    // Allow mock "instant" renewal to any plan for testing/demonstration
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-      const subRes = await queryPortable(client, 'SELECT * FROM subscriptions WHERE tenant_id = $1 FOR UPDATE', [user.tenantId]);
-      const sub = subRes.rows[0];
-      
-      const now = new Date();
-      let newExpiry;
-      let periodStart = now;
-
-      if (sub && sub.expires_at && new Date(sub.expires_at) > now) {
-        newExpiry = new Date(new Date(sub.expires_at).getTime() + 365 * 24 * 60 * 60 * 1000);
-      } else {
-        newExpiry = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-      }
-
-      if (sub) {
-        await queryPortable(
-          client,
-          'UPDATE subscriptions SET plan_id = $1, status = $2, expires_at = $3, content_period_start = $4, updated_at = CURRENT_TIMESTAMP WHERE id = $5',
-          [newPlanId, 'ACTIVE', newExpiry, periodStart, sub.id]
-        );
-      } else {
-        await queryPortable(
-          client,
-          'INSERT INTO subscriptions (id, tenant_id, plan_id, status, started_at, expires_at, content_period_start) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-          [randomUUID(), user.tenantId, newPlanId, 'ACTIVE', now, newExpiry, periodStart]
-        );
-      }
-      
-      await queryPortable(client, 'DELETE FROM subscription_content_usage WHERE tenant_id = $1', [user.tenantId]);
-
-      await queryPortable(client, 'INSERT INTO activity_logs (tenant_id, action, description) VALUES ($1, $2, $3)', [user.tenantId, 'SUBSCRIPTION_RENEWED', `Subscription renewed/upgraded to ${newPlanId} plan.`]);
-      
-      await client.query('COMMIT');
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
-    
-    sendJson(response, 200, { success: true, message: 'Subscription successfully renewed.' });
-    return true;
-  }
 
 
   if (request.method === 'GET' && url.pathname === '/api/app/qr') {
