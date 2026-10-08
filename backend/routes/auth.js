@@ -28,12 +28,11 @@ export default async function authRoutes(request, response, url) {
     
     const result = await requestAdminOtp(email, address);
     if (result) {
-      try {
-        await sendAdminLoginOtpEmail({ email, otp: result.otp, ownerName: 'Admin' });
-      } catch {
-        await pool.query('UPDATE admin_otp_challenges SET used = true WHERE id = $1', [result.challengeId]).catch(() => {});
-        console.error('[admin auth] OTP email delivery failed.');
-      }
+      // Send email asynchronously to avoid blocking the UI response
+      sendAdminLoginOtpEmail({ email, otp: result.otp, ownerName: 'Admin' }).catch(err => {
+        pool.query('UPDATE admin_otp_challenges SET used = true WHERE id = $1', [result.challengeId]).catch(() => {});
+        console.error('[admin auth] OTP email delivery failed:', err.message);
+      });
     }
     
     sendJson(response, 200, { success: true, message: 'If an admin account exists, an OTP has been sent.' });
