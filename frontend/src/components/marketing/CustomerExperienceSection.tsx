@@ -1,35 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Smartphone, Zap, Filter, HeartHandshake, Search } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import IPhoneMockup from './PremiumIPhoneMockup';
 
 export default function CustomerExperienceSection() {
   const [animationStep, setAnimationStep] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const isInView = useInView(sectionRef, { margin: '100px 0px' });
 
   // Animation sequence timeline
   useEffect(() => {
+    if (!isInView) return;
+
+    const sequence = [
+      { step: 0, duration: 1500 },
+      { step: 1, duration: 1500 },
+      { step: 2, duration: 1000 },
+      { step: 3, duration: 500 },
+      { step: 4, duration: 1000 },
+      { step: 5, duration: 3000 },
+      { step: 6, duration: 1000 },
+    ];
     let timer: ReturnType<typeof setTimeout>;
-    const sequence = async () => {
-      // Step 0: Idle list (0s to 1s)
-      setAnimationStep(0);
-      timer = setTimeout(() => setAnimationStep(1), 1500); // Scroll down
-      await new Promise(r => setTimeout(r, 3000));
-      setAnimationStep(2); // Scroll top, search focus
-      timer = setTimeout(() => setAnimationStep(3), 1000); // Type "Pa"
-      timer = setTimeout(() => setAnimationStep(4), 1500); // Type "Paneer" & filter
-      timer = setTimeout(() => setAnimationStep(5), 2500); // Click item, open sheet
-      timer = setTimeout(() => setAnimationStep(6), 5500); // Close sheet, reset
-      timer = setTimeout(() => setAnimationStep(0), 6500); // Loop
+
+    const runStep = (index: number) => {
+      const current = sequence[index];
+      setAnimationStep(current.step);
+      timer = setTimeout(() => runStep((index + 1) % sequence.length), current.duration);
     };
 
-    sequence();
-    const interval = setInterval(sequence, 7500);
-
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
-    };
-  }, []);
+    runStep(0);
+    return () => clearTimeout(timer);
+  }, [isInView]);
 
   const sampleItems = [
     { id: 1, name: 'Paneer Tikka Roll', price: '₹240', isVeg: true, category: 'Starters', cal: '320 kcal', desc: 'Charcoal-grilled paneer wrapped in a roomali roti with mint chutney.' },
@@ -44,7 +46,7 @@ export default function CustomerExperienceSection() {
   const searchQueryText = animationStep === 3 ? 'Pa' : animationStep >= 4 ? 'Paneer' : '';
 
   return (
-    <section className="py-24 md:py-24 px-6 bg-menusqr-primary relative overflow-hidden">
+    <section ref={sectionRef} className="py-24 md:py-24 px-6 bg-menusqr-primary relative overflow-hidden">
       {/* Background Soft Textures */}
       <div className="absolute inset-0 bg-gradient-to-br from-menusqr-secondary/50 to-transparent" />
       <div className="texture-paper-grain" />

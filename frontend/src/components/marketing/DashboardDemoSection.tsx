@@ -1,42 +1,35 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { ChefHat, QrCode, Palette, LayoutDashboard, Plus, Settings, TrendingUp, Search, CheckCircle2 } from 'lucide-react';
 import IPhoneMockup from './PremiumIPhoneMockup';
 import { MenuTemplateRenderer } from '../menu-builder/MenuTemplateRenderer';
 
 export default function DashboardDemoSection() {
   const [step, setStep] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const isInView = useInView(sectionRef, { margin: '100px 0px' });
 
   useEffect(() => {
-    let isSubscribed = true;
-    
-    const runSequence = async () => {
-      while (isSubscribed) {
-        // Step 0: Idle at 280
-        setStep(0);
-        await new Promise(r => setTimeout(r, 2000));
-        
-        // Step 1: Start Editing
-        setStep(1);
-        await new Promise(r => setTimeout(r, 1000));
-        
-        // Step 2: Change Price to 320
-        setStep(2);
-        await new Promise(r => setTimeout(r, 1500));
-        
-        // Step 3: Saving
-        setStep(3);
-        await new Promise(r => setTimeout(r, 1000));
-        
-        // Step 4: Saved & Preview Update
-        setStep(4);
-        await new Promise(r => setTimeout(r, 3000));
-      }
+    if (!isInView) return;
+
+    const sequence = [
+      { step: 0, duration: 2000 },
+      { step: 1, duration: 1000 },
+      { step: 2, duration: 1500 },
+      { step: 3, duration: 1000 },
+      { step: 4, duration: 3000 },
+    ];
+    let timer: ReturnType<typeof setTimeout>;
+
+    const runStep = (index: number) => {
+      const current = sequence[index];
+      setStep(current.step);
+      timer = setTimeout(() => runStep((index + 1) % sequence.length), current.duration);
     };
-    
-    runSequence();
-    return () => { isSubscribed = false; };
-  }, []);
+
+    runStep(0);
+    return () => clearTimeout(timer);
+  }, [isInView]);
 
   const getPrice = () => {
     if (step >= 2) return 320;
@@ -75,7 +68,7 @@ export default function DashboardDemoSection() {
   ];
 
   return (
-    <section className="py-16 md:py-20 px-6 bg-menusqr-primary overflow-hidden relative">
+    <section ref={sectionRef} className="py-16 md:py-20 px-6 bg-menusqr-primary overflow-hidden relative">
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-menusqr-emerald/10 to-transparent"></div>
       
       <div className="max-w-[1200px] mx-auto text-center mb-16 relative z-10">

@@ -1,139 +1,142 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
-import { DEMO_RESTAURANT } from '../../../data/menuTemplates';
+import { useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { ArrowUpRight, Sparkles } from 'lucide-react';
+import { DEMO_RESTAURANT, menuTemplates } from '../../../data/menuTemplates';
 import { MenuTemplateRenderer } from '../../menu-builder/MenuTemplateRenderer';
 
 const COMPARISON_TEMPLATES = [
-  { id: 'dark-clipboard', label: 'Dark Clipboard', desc: 'Neon & Wood' },
-  { id: 'fluid-abstract', label: 'Fluid Abstract', desc: 'Modern Organic' },
-  { id: 'chalk-bistro', label: 'Chalkboard Bistro', desc: 'Rustic Cafe' },
-  { id: 'royal-maharaja', label: 'Royal Maharaja', desc: 'Traditional Luxury' },
-  { id: 'modern-india', label: 'Modern India', desc: 'Editorial Sans' },
-  { id: 'minimal-editorial', label: 'Minimal Editorial', desc: 'Ultra Clean' },
+  { id: 'dark-clipboard', label: 'Dark Clipboard', desc: 'Neon & wood' },
+  { id: 'fluid-abstract', label: 'Fluid Abstract', desc: 'Modern organic' },
+  { id: 'chalk-bistro', label: 'Chalkboard Bistro', desc: 'Rustic cafe' },
+  { id: 'royal-maharaja', label: 'Royal Maharaja', desc: 'Traditional luxury' },
+  { id: 'modern-india', label: 'Modern India', desc: 'Editorial style' },
+  { id: 'minimal-editorial', label: 'Minimal Editorial', desc: 'Clean & simple' },
 ];
 
-export const SameMenuDifferentPersonality: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end 100%"]
-  });
-
-  const [activeIndex, setActiveIndex] = React.useState(0);
-
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    const numTemplates = COMPARISON_TEMPLATES.length;
-    const segment = 1 / numTemplates;
-    const index = Math.min(
-      Math.floor(latest / segment),
-      numTemplates - 1
-    );
-    setActiveIndex(index);
-  });
-
-  const selectedTemplateId = COMPARISON_TEMPLATES[activeIndex].id;
+export const SameMenuDifferentPersonality = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const shouldReduceMotion = useReducedMotion();
+  const selected = COMPARISON_TEMPLATES[activeIndex];
+  const selectedTemplate = menuTemplates.find((template) => template.id === selected.id);
 
   return (
-    <section ref={containerRef} className="relative min-h-[100svh] bg-menusqr-primary text-menusqr-emerald border-t border-menusqr-emerald/5 lg:h-[170vh]">
-      <div className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-4 py-10 md:flex-row lg:sticky lg:top-[96px] lg:h-[calc(100svh-96px)] lg:min-h-0 lg:py-0">
-        {/* Soft Background Accent */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] md:w-[600px] h-[300px] bg-menusqr-orange/10 rounded-full blur-[100px] md:blur-[120px] pointer-events-none" />
+    <section className="relative overflow-hidden border-y border-menusqr-emerald/10 bg-[#F7F5EF] px-5 py-16 text-menusqr-emerald sm:px-8 md:py-24">
+      <div className="pointer-events-none absolute -right-32 top-1/2 h-[28rem] w-[28rem] -translate-y-1/2 rounded-full bg-menusqr-orange/10 blur-3xl" />
+      <div className="pointer-events-none absolute -left-40 bottom-0 h-80 w-80 rounded-full bg-menusqr-emerald/5 blur-3xl" />
 
-        <div className="max-w-[1100px] w-full mx-auto grid md:grid-cols-2 gap-8 md:gap-20 relative z-10 items-center">
-          
-          {/* Left Text Column */}
-          <div className="space-y-6 md:space-y-8 text-center md:text-left order-1 md:order-1 mt-0 md:mt-0">
-            <div className="space-y-4">
-              <span className="text-xs font-mono text-menusqr-orange uppercase tracking-[0.25em] font-extrabold inline-block">
-                ONE DATASET • 3 IDENTITIES
-              </span>
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
-                Same menu.<br/>
-                <span className="text-menusqr-orange">Different personality.</span>
-              </h2>
-              <p className="text-sm sm:text-base text-menusqr-emerald/70 max-w-md mx-auto md:mx-0 leading-relaxed font-medium">
-                Your dishes, prices, and categories stay identical. Watch the visual architecture completely transform while the underlying menu data remains untouched.
-              </p>
-            </div>
-
-            {/* Desktop Interactive Steps Indicator */}
-            <div className="hidden md:flex flex-col gap-4 mt-8 relative">
-               {/* Vertical line connector */}
-               <div className="absolute left-[15px] top-4 bottom-4 w-[2px] bg-menusqr-emerald/10 z-0" />
-               {COMPARISON_TEMPLATES.map((tmpl, idx) => {
-                 const isActive = activeIndex === idx;
-                 return (
-                   <button
-                     key={tmpl.id}
-                     onClick={() => setActiveIndex(idx)}
-                     className={`flex items-center gap-6 relative z-10 text-left cursor-pointer transition-all duration-300 p-2 rounded-xl ${
-                       isActive ? 'bg-white/80 shadow-xs' : 'hover:bg-white/40'
-                     }`}
-                   >
-                     <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center border-[2px] transition-all duration-500 ${isActive ? 'bg-menusqr-orange border-menusqr-orange text-white shadow-[0_0_20px_rgba(232,120,60,0.3)] scale-110' : 'bg-white border-menusqr-emerald/20 text-menusqr-emerald/50 scale-100'}`}>
-                       <span className="text-xs font-bold">{idx + 1}</span>
-                     </div>
-                     <div className={`transition-all duration-500 ${isActive ? 'opacity-100 translate-x-1' : 'opacity-60 translate-x-0'}`}>
-                       <h4 className={`font-bold text-base transition-colors ${isActive ? 'text-menusqr-emerald' : 'text-menusqr-emerald/60'}`}>{tmpl.label}</h4>
-                       <p className="text-xs text-menusqr-emerald/60 font-medium">{tmpl.desc}</p>
-                     </div>
-                   </button>
-                 );
-               })}
-            </div>
-            
-            {/* Mobile scroll indicator */}
-            <div className="md:hidden flex justify-center items-center gap-2 mt-4">
-              {COMPARISON_TEMPLATES.map((_, idx) => (
-                <div key={idx} className={`h-1.5 rounded-full transition-all duration-300 ${activeIndex === idx ? 'w-8 bg-menusqr-orange' : 'w-2 bg-menusqr-emerald/20'}`} />
-              ))}
-            </div>
-            
-            {/* Scroll affordance text mobile */}
-            <div className="md:hidden text-xs text-menusqr-emerald/40 uppercase tracking-widest font-mono pt-2 font-semibold">
-              Scroll down ↓
-            </div>
-
+      <motion.div
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: 'easeOut' }}
+        className="relative mx-auto grid w-full max-w-[1440px] grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-24"
+      >
+        <div className="min-w-0">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-menusqr-orange/20 bg-white/80 px-3.5 py-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-menusqr-orange shadow-sm">
+            <Sparkles size={14} />
+            One menu · six unique styles
           </div>
 
-          {/* Right Phone Column */}
-          <div className="flex justify-center md:justify-end items-center order-2 md:order-2">
-            <div className="relative rounded-[46px] bg-gradient-to-br from-[#F0E1BA] via-[#BDA66D] to-[#51482E] p-[3px] shadow-[0_34px_90px_-25px_rgba(15,24,19,0.45)]">
-            <div className="w-[320px] sm:w-[360px] h-[460px] sm:h-[560px] rounded-[43px] border-[6px] border-[#222A25] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] overflow-hidden bg-black relative">
-              <div className="absolute -left-[6px] top-[135px] z-50 h-12 w-[3px] rounded-r bg-[#C2AA70]" />
-              <div className="absolute -left-[6px] top-[202px] z-50 h-10 w-[3px] rounded-r bg-[#C2AA70]" />
-              
-              {/* Phone Notch/Island */}
-              <div className="absolute top-0 inset-x-0 h-7 flex justify-center z-50 pointer-events-none">
-                <div className="w-1/3 h-5 bg-[#2A3430] rounded-b-xl" />
+          <h2 className="max-w-xl text-4xl font-black leading-[1.04] tracking-tight sm:text-5xl lg:text-6xl">
+            Same menu.
+            <span className="mt-1 block text-menusqr-orange">Different personality.</span>
+          </h2>
+          <p className="mt-5 max-w-lg text-sm font-medium leading-7 text-menusqr-emerald/70 sm:text-base">
+            Your dishes and prices stay the same. Pick a style and see your restaurant menu transform instantly.
+          </p>
+
+          <div className="mt-8 grid max-w-[680px] grid-cols-1 gap-2.5 sm:grid-cols-2">
+            {COMPARISON_TEMPLATES.map((template, index) => {
+              const isActive = activeIndex === index;
+              const colors = menuTemplates.find((item) => item.id === template.id)?.colors;
+
+              return (
+                <button
+                  key={template.id}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => setActiveIndex(index)}
+                  className={`group flex min-h-[72px] items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-menusqr-orange focus-visible:ring-offset-2 ${
+                    isActive
+                      ? 'border-menusqr-orange/50 bg-white shadow-[0_8px_24px_rgba(34,48,39,0.09)]'
+                      : 'border-menusqr-emerald/10 bg-white/55 hover:-translate-y-0.5 hover:border-menusqr-emerald/20 hover:bg-white'
+                  }`}
+                >
+                  <span
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-extrabold transition-colors duration-200 ${
+                      isActive
+                        ? 'bg-menusqr-orange text-white'
+                        : 'bg-menusqr-emerald/5 text-menusqr-emerald/55 group-hover:bg-menusqr-emerald/10'
+                    }`}
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-extrabold">{template.label}</span>
+                    <span className="mt-0.5 block text-xs font-medium text-menusqr-emerald/55">{template.desc}</span>
+                  </span>
+                  <span className="flex shrink-0 gap-1" aria-hidden="true">
+                    {[colors?.bg, colors?.accent, colors?.surface].map((color, colorIndex) => (
+                      <span
+                        key={`${template.id}-${colorIndex}`}
+                        className="h-2.5 w-2.5 rounded-full border border-black/10"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="mt-4 text-xs font-semibold text-menusqr-emerald/45">
+            Select any style to preview it on the phone.
+          </p>
+        </div>
+
+        <div className="relative mx-auto flex min-h-[560px] w-full min-w-0 items-center justify-center py-3 sm:min-h-[610px]">
+          <div className="absolute inset-x-8 top-1/2 h-3/4 -translate-y-1/2 rounded-full bg-menusqr-orange/10 blur-3xl" />
+          <div className="absolute -left-2 top-16 z-20 hidden -rotate-6 items-center gap-2 rounded-2xl border border-white/80 bg-white/90 px-3.5 py-2.5 shadow-lg sm:flex">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="text-[11px] font-extrabold text-menusqr-emerald">Live preview</span>
+          </div>
+
+          <div className="relative w-[min(360px,calc(100vw-3rem))] rounded-[42px] bg-gradient-to-br from-[#F0E1BA] via-[#BDA66D] to-[#51482E] p-[3px] shadow-[0_36px_90px_-30px_rgba(15,24,19,0.55)]">
+            <div className="relative h-[540px] overflow-hidden rounded-[39px] border-[6px] border-[#222A25] bg-black shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] sm:h-[590px]">
+              <div className="absolute -left-[6px] top-[120px] z-20 h-11 w-[3px] rounded-r bg-[#C2AA70]" />
+              <div className="absolute -left-[6px] top-[185px] z-20 h-9 w-[3px] rounded-r bg-[#C2AA70]" />
+              <div className="absolute -right-[6px] top-[150px] z-20 h-14 w-[3px] rounded-l bg-[#C2AA70]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-7 justify-center">
+                <div className="h-5 w-1/3 rounded-b-xl bg-[#2A3430]" />
               </div>
 
-              <div className="w-full h-full relative overflow-hidden bg-black pt-2">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={selectedTemplateId}
-                    initial={{ opacity: 0, scale: 0.985 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.985 }}
-                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="w-full h-full absolute inset-0"
-                  >
-                    <MenuTemplateRenderer
-                      templateId={selectedTemplateId}
-                      restaurant={DEMO_RESTAURANT}
-                      categories={DEMO_RESTAURANT.categories}
-                      items={DEMO_RESTAURANT.items}
-                      compact={false}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+              <motion.div
+                key={selected.id}
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 10, scale: 0.99 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: shouldReduceMotion ? 0 : 0.24, ease: 'easeOut' }}
+                className="h-full w-full pt-2"
+              >
+                <MenuTemplateRenderer
+                  templateId={selected.id}
+                  restaurant={DEMO_RESTAURANT}
+                  categories={DEMO_RESTAURANT.categories}
+                  items={DEMO_RESTAURANT.items}
+                  compact={false}
+                />
+              </motion.div>
             </div>
-            </div>
+          </div>
+
+          <div className="absolute -bottom-1 right-1 z-20 flex items-center gap-2 rounded-full border border-white/70 bg-white/90 py-2 pl-3.5 pr-2.5 shadow-lg">
+            <span className="text-xs font-bold text-menusqr-emerald/60">Viewing</span>
+            <span className="max-w-[150px] truncate text-xs font-extrabold text-menusqr-emerald">
+              {selectedTemplate?.name ?? selected.label}
+            </span>
+            <ArrowUpRight size={14} className="text-menusqr-orange" />
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 };
