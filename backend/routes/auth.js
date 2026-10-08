@@ -36,6 +36,46 @@ export default async function authRoutes(request, response, url) {
     return true;
   }
 
+  // SEND ALL EMAIL TYPES TEST ROUTE
+  if (request.method === 'GET' && url.pathname === '/api/test-all-emails') {
+    const to = url.searchParams.get('to') || 'xshankarmishra@gmail.com';
+    const emailObj = await import('../email.js');
+    const results = [];
+    const errors = [];
+
+    const emailTasks = [
+      { name: 'Admin Login OTP', fn: () => emailObj.sendAdminLoginOtpEmail({ email: to, otp: '849204' }) },
+      { name: 'Password Reset OTP', fn: () => emailObj.sendPasswordResetOtpEmail({ email: to, otp: '592014', ownerName: 'Shankar Mishra' }) },
+      { name: 'Restaurant Login OTP', fn: () => emailObj.sendLoginOtpEmail({ email: to, otp: '310482', ownerName: 'Shankar Mishra' }) },
+      { name: 'Client Welcome & Credentials', fn: () => emailObj.sendClientWelcomeEmail({ email: to, ownerName: 'Shankar Mishra', businessName: 'Mishra Dhaba', plan: 'YEARLY PREMIUM', billingCycle: 'Yearly', password: 'DemoPassword2026!' }) },
+      { name: 'Payment Success Receipt', fn: () => emailObj.sendPaymentSuccessEmail({ email: to, businessName: 'Mishra Dhaba', plan: 'YEARLY PREMIUM', amount: 1499, expiresAt: new Date(Date.now() + 365*86400000).toISOString() }) },
+      { name: 'Workspace Activation', fn: () => emailObj.sendActivationEmail({ email: to, ownerName: 'Shankar Mishra', businessName: 'Mishra Dhaba', plan: 'YEARLY PREMIUM', password: 'DemoPassword2026!' }) },
+      { name: 'Subscription Expiration Warning', fn: () => emailObj.sendSubscriptionWarningEmail({ email: to, businessName: 'Mishra Dhaba', daysRemaining: 7, expiresAt: new Date(Date.now() + 7*86400000).toISOString() }) },
+      { name: 'Subscription Expired Notice', fn: () => emailObj.sendSubscriptionExpiredEmail({ email: to, businessName: 'Mishra Dhaba' }) },
+      { name: 'Subscription Renewed Notice', fn: () => emailObj.sendRenewalEmail({ email: to, businessName: 'Mishra Dhaba', expiresAt: new Date(Date.now() + 365*86400000).toISOString() }) },
+      { name: 'Table Placard QR Ready Artwork', fn: () => emailObj.sendQrReadyEmail({ email: to, businessName: 'Mishra Dhaba', tagline: 'Good Food | Happy Mood', menuSlug: 'mishraa-dhaba' }) }
+    ];
+
+    for (const task of emailTasks) {
+      try {
+        await task.fn();
+        results.push({ emailType: task.name, status: 'SENT' });
+      } catch (err) {
+        console.error(`[test-all-emails] Error sending ${task.name}:`, err.message);
+        errors.push({ emailType: task.name, error: err.message });
+      }
+    }
+
+    sendJson(response, 200, {
+      success: errors.length === 0,
+      recipient: to,
+      totalSent: results.length,
+      results,
+      errors
+    });
+    return true;
+  }
+
   // NEW ADMIN ROUTES
   if (request.method === 'POST' && url.pathname === '/api/auth/admin/request-otp') {
     const input = await readJson(request);
