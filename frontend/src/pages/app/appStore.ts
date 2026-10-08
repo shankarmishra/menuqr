@@ -113,7 +113,7 @@ export interface AppMenuItem {
 }
 
 export interface AppMenuData {
-  menu: { id: string; name: string } | null;
+  menu: { id: string; name: string; menuSlug?: string } | null;
   categories: Array<{ id: string; name: string; items: AppMenuItem[] }>;
 }
 

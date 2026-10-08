@@ -398,7 +398,12 @@ export default async function appRoutes(request, response, url) {
 
   if (request.method === 'GET' && url.pathname === '/api/app/menu') {
     requireEntitlement(authorization, 'digital_menu');
-    const menuRes = await pool.query('SELECT * FROM menus WHERE tenant_id = $1 LIMIT 1', [user.tenantId]);
+    const menuRes = await pool.query(`
+      SELECT m.*, c.menu_slug as "menuSlug" 
+      FROM menus m 
+      JOIN clients c ON m.tenant_id = c.id 
+      WHERE m.tenant_id = $1 LIMIT 1
+    `, [user.tenantId]);
     const menu = menuRes.rows[0] || null;
     if (!menu) {
       sendJson(response, 200, { menu: null, categories: [] });

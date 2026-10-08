@@ -273,7 +273,7 @@ export default function Menu() {
           <p className="text-xs sm:text-sm text-[#aab7b2] mt-1">Manage your menu content, availability and presentation.</p>
         </div>
         <div className="flex items-center gap-2">
-          <a href={`/m/${menu.menu.id}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2 text-xs sm:text-sm font-semibold text-white transition-colors">
+          <a href={`/menu/${menu.menu.menuSlug || menu.menu.id}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2 text-xs sm:text-sm font-semibold text-white transition-colors">
             Preview <ExternalLink size={14} className="text-[#aab7b2]" />
           </a>
           <button onClick={() => openItemDrawer()} disabled={!canAddContent} className="inline-flex items-center gap-2 rounded-lg bg-[#e8783c] hover:bg-[#d4652a] px-3 py-2 text-xs sm:text-sm font-semibold text-white transition-colors disabled:opacity-50">
