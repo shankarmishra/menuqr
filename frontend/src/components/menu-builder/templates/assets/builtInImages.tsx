@@ -9,7 +9,7 @@ export const RoyalMaharajaAtmosphere: React.FC<{ compact?: boolean }> = ({ compa
       <svg className="w-8 h-8 text-[#D4AF37] mb-1 opacity-80" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
       </svg>
-      <span className="text-[10px] font-serif uppercase tracking-[0.4em] text-[#D4AF37]">Palace Dining &amp; Heritage Kitchen</span>
+      <span className="text-[10px] font-serif uppercase tracking-[0.4em] text-[#D4AF37]">Palace Dining {"&"} Heritage Kitchen</span>
     </div>
   </div>
 );
@@ -27,7 +27,7 @@ export const RajasthaniHeritageAtmosphere: React.FC<{ compact?: boolean }> = ({ 
 export const MughalLuxeAtmosphere: React.FC<{ compact?: boolean }> = ({ compact }) => (
   <div className={`relative overflow-hidden rounded-lg border border-[#E5C158]/30 bg-[#0C2920] p-4 text-center ${compact ? 'py-3' : 'py-6 mb-4'}`}>
     <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-[#E5C158] to-transparent opacity-60" />
-    <span className="text-[10px] font-serif uppercase tracking-[0.4em] text-[#E5C158]">Mughlai Fine Dining &amp; Cuisine</span>
+    <span className="text-[10px] font-serif uppercase tracking-[0.4em] text-[#E5C158]">Mughlai Fine Dining {"&"} Cuisine</span>
   </div>
 );
 
@@ -57,13 +57,13 @@ export const ModernIndiaAtmosphere: React.FC<{ compact?: boolean }> = ({ compact
 
 export const SpiceHouseAtmosphere: React.FC<{ compact?: boolean }> = ({ compact }) => (
   <div className={`relative overflow-hidden rounded-xl border border-[#E07A5F]/30 bg-[#2C211D] p-3 text-center ${compact ? 'py-2' : 'py-5 mb-4'}`}>
-    <span className="text-[10px] font-serif uppercase tracking-[0.3em] text-[#E07A5F]">Artisanal Spice &amp; Dining</span>
+    <span className="text-[10px] font-serif uppercase tracking-[0.3em] text-[#E07A5F]">Artisanal Spice {"&"} Dining</span>
   </div>
 );
 
 export const MaisonNoirAtmosphere: React.FC<{ compact?: boolean }> = ({ compact }) => (
   <div className={`relative overflow-hidden rounded-lg border border-[#C5A059]/40 bg-[#161618] p-4 text-center ${compact ? 'py-3' : 'py-6 mb-4'}`}>
-    <span className="text-[9px] font-mono uppercase tracking-[0.5em] text-[#C5A059]">HAUTE CUISINE &amp; EDITORIAL DINING</span>
+    <span className="text-[9px] font-mono uppercase tracking-[0.5em] text-[#C5A059]">HAUTE CUISINE {"&"} EDITORIAL DINING</span>
   </div>
 );
 
@@ -81,7 +81,7 @@ export const GrandTableAtmosphere: React.FC<{ compact?: boolean }> = ({ compact 
 
 export const CoffeeHouseAtmosphere: React.FC<{ compact?: boolean }> = ({ compact }) => (
   <div className={`relative overflow-hidden rounded-lg border border-[#D4A373]/30 bg-[#2A211D] p-3 text-center ${compact ? 'py-2' : 'py-4 mb-4'}`}>
-    <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#D4A373]">Artisanal Coffee &amp; Roastery</span>
+    <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#D4A373]">Artisanal Coffee {"&"} Roastery</span>
   </div>
 );
 

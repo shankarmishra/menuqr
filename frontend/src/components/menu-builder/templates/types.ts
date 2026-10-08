@@ -1,5 +1,4 @@
-import React from 'react';
-import { MenuTemplate } from '../../../pages/admin/clientStore';
+import type { MenuTemplate } from '../../../data/menuTemplates';
 
 export interface MenuItem {
   id: string;
