@@ -282,7 +282,7 @@ CREATE TABLE IF NOT EXISTS customer_orders (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE TABLE IF NOT EXISTS admin_users ( id VARCHAR(255) PRIMARY KEY, email VARCHAR(255) UNIQUE NOT NULL, status VARCHAR(50) DEFAULT 'active', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ); CREATE TABLE IF NOT EXISTS admin_otp_challenges ( id VARCHAR(255) PRIMARY KEY, email VARCHAR(255) NOT NULL, otp_hash VARCHAR(255) NOT NULL, expires_at TIMESTAMP NOT NULL, attempts INTEGER DEFAULT 0, max_attempts INTEGER DEFAULT 5, used BOOLEAN DEFAULT false, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ); CREATE TABLE IF NOT EXISTS admin_sessions ( id VARCHAR(255) PRIMARY KEY, admin_id VARCHAR(255) REFERENCES admin_users(id) ON DELETE CASCADE, token_hash VARCHAR(255) UNIQUE NOT NULL, expires_at TIMESTAMP NOT NULL, ip_address VARCHAR(100), user_agent TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ); INSERT INTO admin_users (id, email) VALUES ('admin-1', 'xshankarmishra@gmail.com'), ('admin-2', 'qevnaro@gmail.com'), ('admin-3', 'menusqr.in@gmail.com') ON CONFLICT (email) DO NOTHING;
+CREATE TABLE IF NOT EXISTS admin_users ( id VARCHAR(255) PRIMARY KEY, email VARCHAR(255) UNIQUE NOT NULL, status VARCHAR(50) DEFAULT 'active', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ); CREATE TABLE IF NOT EXISTS admin_otp_challenges ( id VARCHAR(255) PRIMARY KEY, email VARCHAR(255) NOT NULL, otp_hash VARCHAR(255) NOT NULL, expires_at TIMESTAMP NOT NULL, attempts INTEGER DEFAULT 0, max_attempts INTEGER DEFAULT 5, used BOOLEAN DEFAULT false, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ); CREATE TABLE IF NOT EXISTS admin_sessions ( id VARCHAR(255) PRIMARY KEY, admin_id VARCHAR(255) REFERENCES admin_users(id) ON DELETE CASCADE, token_hash VARCHAR(255) UNIQUE NOT NULL, expires_at TIMESTAMP NOT NULL, ip_address VARCHAR(100), user_agent TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ); INSERT INTO admin_users (id, email) VALUES ('admin-1', 'xshankarmishra@gmail.com'), ('admin-2', 'xshankarmishra11@gmail.com'), ('admin-3', 'qevnaro@gmail.com'), ('admin-4', 'menusqr.in@gmail.com') ON CONFLICT (email) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS admin_users (
   id VARCHAR(255) PRIMARY KEY,
@@ -347,7 +347,8 @@ EXECUTE FUNCTION revoke_admin_sessions_on_deactivation();
 
 INSERT INTO admin_users (id, email) VALUES
   ('admin-1', 'xshankarmishra@gmail.com'),
-  ('admin-2', 'qevnaro@gmail.com'),
-  ('admin-3', 'menusqr.in@gmail.com')
+  ('admin-2', 'xshankarmishra11@gmail.com'),
+  ('admin-3', 'qevnaro@gmail.com'),
+  ('admin-4', 'menusqr.in@gmail.com')
 ON CONFLICT (email) DO NOTHING;
 
