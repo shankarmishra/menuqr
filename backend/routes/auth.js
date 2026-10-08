@@ -17,6 +17,25 @@ const clientLoginLockDurationMs = 60 * 1000;
 
 export default async function authRoutes(request, response, url) {
 
+  // DIAGNOSTIC EMAIL ROUTE
+  if (request.method === 'GET' && url.pathname === '/api/test-email') {
+    const to = url.searchParams.get('to') || 'xshankarmishra@gmail.com';
+    try {
+      const { sendEmail } = await import('../email.js');
+      await sendEmail({
+        to,
+        subject: 'Diagnostic Test Email from Render Production',
+        html: '<h1>Diagnostic Email Test</h1><p>If you see this, direct SMTP delivery from Render is working 100%!</p>',
+        text: 'Diagnostic test email from Render Production'
+      }, `diagnostic test email to ${to}`);
+      sendJson(response, 200, { success: true, message: `Email sent successfully to ${to}!` });
+    } catch (err) {
+      console.error('[test-email] Failed:', err);
+      sendJson(response, 500, { success: false, error: err.message, stack: err.stack });
+    }
+    return true;
+  }
+
   // NEW ADMIN ROUTES
   if (request.method === 'POST' && url.pathname === '/api/auth/admin/request-otp') {
     const input = await readJson(request);
@@ -32,10 +51,12 @@ export default async function authRoutes(request, response, url) {
       console.log(`[ADMIN OTP GENERATED] Email: ${email} | OTP: ${result.otp}`);
       console.log(`=========================================\n`);
 
-      // Send email asynchronously
-      sendAdminLoginOtpEmail({ email, otp: result.otp, ownerName: 'Admin' }).catch(err => {
+      try {
+        await sendAdminLoginOtpEmail({ email, otp: result.otp, ownerName: 'Admin' });
+      } catch (err) {
         console.error('[admin auth] OTP email delivery failed:', err.message);
-      });
+        throw apiError(500, `Email delivery failed: ${err.message}`);
+      }
     }
     
     sendJson(response, 200, { success: true, message: 'If an admin account exists, an OTP has been sent.' });
