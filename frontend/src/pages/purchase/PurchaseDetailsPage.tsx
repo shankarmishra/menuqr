@@ -160,6 +160,7 @@ export default function PurchaseDetailsPage() {
       sessionStorage.setItem('pendingOrderId', data.orderId);
       if (data.paymentSessionId) {
         sessionStorage.setItem('paymentSessionId', data.paymentSessionId);
+        sessionStorage.setItem('cashfreeMode', data.cashfreeMode || 'sandbox');
       }
       navigate(`/purchase/review`);
     } catch (err: any) {

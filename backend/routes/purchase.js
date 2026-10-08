@@ -129,7 +129,7 @@ export default async function purchaseRoutes(request, response, url) {
         }
       }
 
-      sendJson(response, 200, { orderId: eid, amount: plan.price, status: 'PENDING_PAYMENT', paymentSessionId });
+      sendJson(response, 200, { orderId: eid, amount: plan.price, status: 'PENDING_PAYMENT', paymentSessionId, cashfreeMode: isSandbox ? 'sandbox' : 'production' });
       return true;
     }
 
@@ -194,7 +194,7 @@ export default async function purchaseRoutes(request, response, url) {
        'PENDING_PAYMENT', 'PENDING', metadataJSON]
     );
 
-    sendJson(response, 200, { orderId, amount: plan.price, status: 'PENDING_PAYMENT', paymentSessionId });
+    sendJson(response, 200, { orderId, amount: plan.price, status: 'PENDING_PAYMENT', paymentSessionId, cashfreeMode: isSandbox ? 'sandbox' : 'production' });
     return true;
   }
 

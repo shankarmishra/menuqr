@@ -99,7 +99,7 @@ export default function PurchaseReviewPage() {
             onClick={async () => {
               const paymentSessionId = sessionStorage.getItem('paymentSessionId');
               if (paymentSessionId) {
-                const mode = import.meta.env.DEV ? 'sandbox' : 'production';
+                const mode = sessionStorage.getItem('cashfreeMode') || import.meta.env.VITE_CASHFREE_MODE || (import.meta.env.DEV ? 'sandbox' : 'sandbox');
                 // Initialize Cashfree SDK
                 if (!document.getElementById('cashfree-sdk')) {
                   const script = document.createElement('script');
