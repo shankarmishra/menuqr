@@ -1,3 +1,4 @@
+import https from 'https';
 import nodemailer from 'nodemailer';
 
 let smtpTransporter = null;
@@ -13,6 +14,61 @@ export function getSmtpTimeoutOptions(environment = process.env) {
     greetingTimeout: timeoutValue(environment.SMTP_GREETING_TIMEOUT_MS, 15_000),
     socketTimeout: timeoutValue(environment.SMTP_SOCKET_TIMEOUT_MS, 30_000),
   };
+}
+
+async function sendEmailViaResend(message, label) {
+  const apiKey = (process.env.RESEND_API_KEY || 're_4QuK2Yhu_5RXLMjkoef6JnTwBUBVu5gsi').trim();
+  if (!apiKey) return false;
+
+  const fromAddress = 'onboarding@resend.dev';
+  const fromName = process.env.MAIL_FROM_NAME?.trim() || 'MENUSQR';
+
+  const payload = JSON.stringify({
+    from: `${fromName} <${fromAddress}>`,
+    to: [message.to],
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
+  });
+
+  const options = {
+    hostname: 'api.resend.com',
+    path: '/emails',
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload),
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let responseText = '';
+      res.on('data', chunk => responseText += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.info(`[email] ${label} sent successfully via Resend API.`);
+          resolve(true);
+        } else {
+          console.warn(`[email] Resend API status ${res.statusCode} for ${label}: ${responseText}`);
+          reject(new Error(`Resend API status ${res.statusCode}: ${responseText}`));
+        }
+      });
+    });
+
+    req.on('error', (err) => {
+      console.warn(`[email] Resend API request error for ${label}:`, err.message);
+      reject(err);
+    });
+
+    req.setTimeout(10_000, () => {
+      req.destroy(new Error('Resend API request timed out.'));
+    });
+
+    req.write(payload);
+    req.end();
+  });
 }
 
 async function createSmtpTransporter(smtpHost, smtpPort, smtpUser, smtpPass) {
@@ -34,62 +90,71 @@ async function createSmtpTransporter(smtpHost, smtpPort, smtpUser, smtpPass) {
 }
 
 export async function sendEmail(message, label) {
+  const errors = [];
+
+  // 1. PRIMARY: Resend HTTPS API (Port 443 — works on Render without SMTP port blocking)
+  try {
+    const sent = await sendEmailViaResend(message, label);
+    if (sent) return;
+  } catch (resendErr) {
+    errors.push(`Resend: ${resendErr.message}`);
+  }
+
+  // 2. FALLBACK: Nodemailer SMTP
   const smtpUser = process.env.SMTP_USER?.trim();
   const smtpPass = process.env.SMTP_PASSWORD?.trim();
 
-  if (!smtpUser || !smtpPass) {
-    throw new Error('SMTP credentials (SMTP_USER / SMTP_PASSWORD) are not configured.');
-  }
+  if (smtpUser && smtpPass) {
+    const fromAddress = process.env.MAIL_FROM_ADDRESS?.trim() || smtpUser || 'menusqr.in@gmail.com';
+    const fromName = process.env.MAIL_FROM_NAME?.trim() || 'MENUSQR';
 
-  const fromAddress = process.env.MAIL_FROM_ADDRESS?.trim() || smtpUser || 'menusqr.in@gmail.com';
-  const fromName = process.env.MAIL_FROM_NAME?.trim() || 'MENUSQR';
-
-  let defaultHost = 'smtp.hostinger.com';
-  if (smtpUser.toLowerCase().endsWith('@gmail.com')) {
-    defaultHost = 'smtp.gmail.com';
-  }
-
-  const smtpHost = process.env.SMTP_HOST || defaultHost;
-  // Default to Port 465 (SSL) for Gmail as Port 465 connects directly without STARTTLS delays on Render
-  const defaultPort = smtpHost === 'smtp.gmail.com' ? 465 : 587;
-  const primaryPort = Number(process.env.SMTP_PORT) || defaultPort;
-
-  // Try primary port
-  try {
-    if (!smtpTransporter) {
-      smtpTransporter = await createSmtpTransporter(smtpHost, primaryPort, smtpUser, smtpPass);
+    let defaultHost = 'smtp.hostinger.com';
+    if (smtpUser.toLowerCase().endsWith('@gmail.com')) {
+      defaultHost = 'smtp.gmail.com';
     }
-    await smtpTransporter.sendMail({
-      from: `"${fromName}" <${fromAddress}>`,
-      to: message.to,
-      subject: message.subject,
-      html: message.html,
-      text: message.text
-    });
-    console.info(`[email] ${label} sent successfully via SMTP (${smtpHost}:${primaryPort}).`);
-    return;
-  } catch (firstErr) {
-    console.warn(`[email] Primary SMTP (${smtpHost}:${primaryPort}) failed (${firstErr.message}). Attempting fallback port...`);
-    smtpTransporter = null;
 
-    const fallbackPort = primaryPort === 465 ? 587 : 465;
+    const smtpHost = process.env.SMTP_HOST || defaultHost;
+    const defaultPort = smtpHost === 'smtp.gmail.com' ? 465 : 587;
+    const primaryPort = Number(process.env.SMTP_PORT) || defaultPort;
+
     try {
-      const fallbackTransporter = await createSmtpTransporter(smtpHost, fallbackPort, smtpUser, smtpPass);
-      await fallbackTransporter.sendMail({
+      if (!smtpTransporter) {
+        smtpTransporter = await createSmtpTransporter(smtpHost, primaryPort, smtpUser, smtpPass);
+      }
+      await smtpTransporter.sendMail({
         from: `"${fromName}" <${fromAddress}>`,
         to: message.to,
         subject: message.subject,
         html: message.html,
         text: message.text
       });
-      smtpTransporter = fallbackTransporter;
-      console.info(`[email] ${label} sent successfully via fallback SMTP (${smtpHost}:${fallbackPort}).`);
+      console.info(`[email] ${label} sent successfully via SMTP (${smtpHost}:${primaryPort}).`);
       return;
-    } catch (fallbackErr) {
-      console.error(`[email] Fallback SMTP (${smtpHost}:${fallbackPort}) also failed:`, fallbackErr.message);
-      throw new Error(`SMTP Delivery Failed (${smtpHost}:${primaryPort} & ${fallbackPort}): ${firstErr.message}`);
+    } catch (firstErr) {
+      console.warn(`[email] Primary SMTP (${smtpHost}:${primaryPort}) failed (${firstErr.message}). Attempting fallback port...`);
+      smtpTransporter = null;
+
+      const fallbackPort = primaryPort === 465 ? 587 : 465;
+      try {
+        const fallbackTransporter = await createSmtpTransporter(smtpHost, fallbackPort, smtpUser, smtpPass);
+        await fallbackTransporter.sendMail({
+          from: `"${fromName}" <${fromAddress}>`,
+          to: message.to,
+          subject: message.subject,
+          html: message.html,
+          text: message.text
+        });
+        smtpTransporter = fallbackTransporter;
+        console.info(`[email] ${label} sent successfully via fallback SMTP (${smtpHost}:${fallbackPort}).`);
+        return;
+      } catch (fallbackErr) {
+        console.error(`[email] Fallback SMTP (${smtpHost}:${fallbackPort}) also failed:`, fallbackErr.message);
+        errors.push(`SMTP: ${firstErr.message}`);
+      }
     }
   }
+
+  throw new Error(`Email Delivery Failed: ${errors.join(' | ')}`);
 }
 
 // CORPORATE TRANSACTIONAL EMAIL WRAPPER (Minimal Aesthetic)
