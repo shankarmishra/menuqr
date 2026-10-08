@@ -7,6 +7,7 @@ import { getClientByMenuSlug, submitCustomerOrder, submitCustomerOrderByQr, type
 import { useToast } from '../../components/feedback/ToastProvider';
 import { menuTemplates } from '../../data/menuTemplates';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
+import { SEO } from '../../seo/SEO';
 import './MenuPage.css';
 
 export default function MenuPage() {
@@ -161,6 +162,12 @@ export default function MenuPage() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans" style={{ backgroundColor: template.colors.bg, color: template.colors.text }}>
+      <SEO 
+        title={`${client?.businessName || 'Restaurant Menu'} | MenusQR`} 
+        description={`Digital QR menu for ${client?.businessName || 'this restaurant'}.`} 
+        canonicalUrl={`/menu/${slug}`} 
+        index={false} 
+      />
       <header className="px-4 py-3 border-b border-white/10 flex items-center justify-between backdrop-blur-md sticky top-0 z-40 bg-black/40">
         <Link className="menu-wordmark flex items-center gap-2" to={`/menu/${slug}`} aria-label="MenusQR menu">
           <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
