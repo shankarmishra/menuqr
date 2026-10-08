@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, Eye, Palette, Save, Lock, Zap } from 'lucide-react';
+import { Check, Eye, Palette, Save, Lock, Zap, Smartphone, Monitor } from 'lucide-react';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import { menuTemplates } from '../../data/menuTemplates';
 import { useToast } from '../../components/feedback/ToastProvider';
@@ -11,6 +11,7 @@ export default function Appearance() {
   const [profile, setProfile] = useState<AppProfile | null>(null);
   const [sub, setSub] = useState<AppSubscriptionData | null>(null);
   const [templateId, setTemplateId] = useState('royal-maharaja');
+  const [previewMode, setPreviewMode] = useState<'phone' | 'desktop'>('phone');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const showToast = useToast();
@@ -69,9 +70,8 @@ export default function Appearance() {
     description: item.description ?? '',
     price: Number(item.price || 0),
     category: category.id,
-    dietType: item.diet_type === 'non-veg' ? 'non-veg' as const : 'veg' as const,
+    dietType: (item.diet_type === 'non-veg' ? 'non-veg' : item.diet_type === 'vegan' ? 'vegan' : 'veg') as 'veg' | 'non-veg' | 'vegan',
     available: item.is_available !== false,
-    image: item.image_url || undefined,
   })));
 
   if (isBasic) {
@@ -110,16 +110,16 @@ export default function Appearance() {
       <header className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-[#2a3832] pb-6">
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-[#e8783c]">{profile?.businessName}</p>
-          <h1 className="mt-1 text-3xl font-bold text-white">Template Library</h1>
-          <p className="mt-2 text-sm text-[#849a90]">Choose a style for your live menu. Your physical QR stays exactly the same.</p>
+          <h1 className="mt-1 text-3xl font-bold text-white">Template Catalog</h1>
+          <p className="mt-2 text-sm text-[#849a90]">Select a professionally art-directed design for your live menu. Your permanent QR code stays unchanged.</p>
         </div>
         <button type="button" onClick={saveTemplate} disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-[#e8783c] hover:bg-[#f08b55] px-6 py-2.5 text-sm font-bold text-white disabled:opacity-50 transition-colors shadow-lg shadow-[#e8783c]/20">
-          <Save size={18} /> {saving ? 'Saving...' : 'Apply Theme'}
+          <Save size={18} /> {saving ? 'Saving...' : 'Apply Design'}
         </button>
       </header>
 
-      <div className="grid lg:grid-cols-[1fr_360px] gap-10 items-start">
-        <section aria-label="Available menu themes" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid lg:grid-cols-[1fr_420px] gap-8 items-start">
+        <section aria-label="Available menu themes" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {menuTemplates.map((template) => {
             const isSelected = templateId === template.id;
             return (
@@ -128,36 +128,74 @@ export default function Appearance() {
                 type="button" 
                 onClick={() => setTemplateId(template.id)} 
                 aria-pressed={isSelected} 
-                className={`flex flex-col items-start p-5 rounded-xl border-2 text-left transition-colors ${isSelected ? 'border-[#e8783c] bg-[#e8783c]/5' : 'border-[#2a3832] bg-[#1d2723] hover:border-[#36473f]'}`}
+                className={`flex flex-col items-start rounded-xl border-2 text-left transition-all overflow-hidden ${isSelected ? 'border-[#e8783c] bg-[#e8783c]/10 ring-2 ring-[#e8783c]/50' : 'border-[#2a3832] bg-[#1d2723] hover:border-[#36473f]'}`}
               >
-                <div className="flex items-start justify-between w-full mb-3">
-                  <h3 className={`font-bold text-lg ${isSelected ? 'text-white' : 'text-[#e2e8f0]'}`}>{template.name}</h3>
-                  {isSelected && <Check size={20} className="text-[#e8783c] shrink-0" />}
+                {/* Mini Swatch Header */}
+                <div className="w-full h-10 p-3 flex items-center justify-between relative overflow-hidden" style={{ backgroundColor: template.colors.bg, color: template.colors.text }}>
+                  <span className="text-xs font-bold font-serif uppercase tracking-wider truncate" style={{ fontFamily: template.typography.heading }}>
+                    {template.name}
+                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {template.badge && (
+                      <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-black/40 text-white">
+                        {template.badge}
+                      </span>
+                    )}
+                    {isSelected && <Check size={16} className="text-[#e8783c]" />}
+                  </div>
                 </div>
-                <p className="text-sm text-[#849a90]">{template.subtitle}</p>
+
+                <div className="p-4 w-full">
+                  <p className="text-xs text-[#849a90] line-clamp-2 leading-relaxed">{template.description}</p>
+                </div>
               </button>
             );
           })}
         </section>
 
         <section aria-label="Live menu preview" className="lg:sticky lg:top-8 bg-[#1d2723] rounded-2xl p-6 border border-[#2a3832] flex flex-col items-center">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#849a90] mb-6 w-full justify-center">
-            <Eye size={16} className="text-[#e8783c]" /> Live menu preview
+          <div className="flex items-center justify-between w-full mb-4 pb-3 border-b border-[#2a3832]">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#849a90]">
+              <Eye size={16} className="text-[#e8783c]" /> Live Preview
+            </div>
+            
+            {/* Device View Toggle */}
+            <div className="flex items-center gap-1 bg-[#151c19] p-1 rounded-lg border border-[#2a3832]">
+              <button
+                type="button"
+                onClick={() => setPreviewMode('phone')}
+                className={`p-1.5 rounded text-xs font-semibold flex items-center gap-1 transition-colors ${previewMode === 'phone' ? 'bg-[#e8783c] text-white' : 'text-[#849a90] hover:text-white'}`}
+                title="Phone view"
+              >
+                <Smartphone size={14} /> Phone
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewMode('desktop')}
+                className={`p-1.5 rounded text-xs font-semibold flex items-center gap-1 transition-colors ${previewMode === 'desktop' ? 'bg-[#e8783c] text-white' : 'text-[#849a90] hover:text-white'}`}
+                title="Desktop view"
+              >
+                <Monitor size={14} /> Desktop
+              </button>
+            </div>
           </div>
           
-          <div className="w-full max-w-[340px] aspect-[9/19] rounded-[2.5rem] border-[8px] border-[#151c19] overflow-hidden shadow-2xl relative bg-black">
+          <div className={previewMode === 'phone'
+            ? 'w-full max-w-[340px] aspect-[9/18] rounded-[2.5rem] border-[8px] border-[#151c19] overflow-hidden shadow-2xl relative bg-black'
+            : 'w-full aspect-[4/3] rounded-xl border-4 border-[#151c19] overflow-hidden shadow-2xl relative bg-black max-h-[500px]'
+          }>
             <MenuTemplateRenderer
               templateId={templateId}
               restaurant={{ name: profile?.businessName || 'Your restaurant', tagline: profile?.tagline, phone: profile?.phone, address: profile?.address, logo: profile?.logoUrl }}
               categories={previewCategories}
               items={previewItems}
-              compact={true}
+              compact={previewMode === 'phone'}
             />
           </div>
           
-          <div className="flex items-center gap-2 mt-6 text-xs font-medium text-[#849a90]">
+          <div className="flex items-center gap-2 mt-4 text-xs font-medium text-[#849a90]">
             <Palette size={14} className="text-[#e8783c]" />
-            Your customers will see this design instantly
+            Your customers will see this design instantly when scanning the QR
           </div>
         </section>
       </div>

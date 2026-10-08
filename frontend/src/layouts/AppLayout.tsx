@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePlan } from '../lib/usePlan';
-import { Menu, LayoutDashboard, UtensilsCrossed, Palette, QrCode, CreditCard, Settings, LogOut, User, Bell, ChevronRight, Store, ChefHat, ShoppingBag } from 'lucide-react';
+import { Menu, LayoutDashboard, UtensilsCrossed, Palette, QrCode, CreditCard, Settings, LogOut, User, Bell, ChevronRight, Store, ShoppingBag } from 'lucide-react';
 import { getProfile } from '../pages/app/appStore';
 import { MenusQRBrand } from '../components/brand/MenusQRBrand';
 import clsx from 'clsx';

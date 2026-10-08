@@ -81,7 +81,7 @@ export default async function publicRoutes(request, response, url) {
   );
   if (request.method === 'GET' && publicMenuMatch) {
     const slug = decodeURIComponent(publicMenuMatch[1]);
-    const clientRes = await pool.query('SELECT id FROM clients WHERE menu_slug = $1', [slug]);
+    const clientRes = await pool.query('SELECT id FROM clients WHERE menu_slug = $1 OR public_id = $1 OR id = $1', [slug]);
     const client = clientRes.rows[0];
     if (!client) {
       throw apiError(404, 'This menu was not found.');

@@ -169,10 +169,13 @@ test('Basic onboarding saves real data, creates one permanent QR, edits live men
   await expect(page.getByText('Market Thali')).toBeVisible();
 
   await page.goto(`${baseURL}/app/menu`);
-  await page.getByLabel('Market Thali name').fill('Market Thali Updated');
-  await page.getByRole('button', { name: 'Save', exact: true }).last().click();
+  await page.getByRole('heading', { name: 'Market Thali' }).hover();
+  await page.getByRole('button', { name: 'Edit item' }).filter({ visible: true }).first().click();
+  await page.getByLabel(/Dish Name/).clear();
+  await page.getByLabel(/Dish Name/).fill('Market Thali Updated');
+  await page.getByRole('button', { name: 'Save Item' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Menu item updated.' })).toBeVisible();
-  await expect(page.getByText('19 of 20')).toBeVisible();
+  await expect(page.getByText('29 left')).toBeVisible();
   const savedItem = await pool.query('SELECT name FROM menu_items WHERE id = $1', [menu.rows[0].item_id]);
   expect(savedItem.rows[0].name).toBe('Market Thali Updated');
   const liveScan = await page.request.get(`${baseURL}/api/public/qr/${encodeURIComponent(qrId)}`);
@@ -216,7 +219,7 @@ test('Premium scan places server-priced order and restaurant accepts it', async 
   const page = await context.newPage();
   await page.goto(`${baseURL}/qr/${encodeURIComponent(premium.qrId!)}`);
   await expect(page.getByRole('heading', { name: premiumRestaurantName })).toBeVisible();
-  await page.getByRole('button', { name: /₹175/ }).click();
+  await page.getByRole('button', { name: '+ Add' }).first().click();
   await page.getByRole('button', { name: /Open order cart/ }).click();
   await page.getByRole('button', { name: 'Add one Grilled Paneer' }).click();
   await page.getByRole('button', { name: 'Add one Grilled Paneer' }).click();

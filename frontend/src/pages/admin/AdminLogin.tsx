@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import { Eye, EyeOff, KeyRound, Utensils, Mail, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, KeyRound, Mail, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SEO } from '../../seo/SEO';
 import { isAdminHostname } from '../../utils/hostRouting';

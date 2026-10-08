@@ -295,7 +295,7 @@ export default function Dashboard() {
         <div className="bg-[#1d2723] rounded-2xl border border-[#2a3832] overflow-hidden flex flex-col">
           <div className="p-5 border-b border-[#2a3832]">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <QrCode size={18} className="text-[#849a90]" /> Universal QR Code
+              <QrCode size={18} className="text-[#849a90]" /> {qr?.qrId ? 'Universal QR Code' : 'QR Code Setup'}
             </h2>
           </div>
           

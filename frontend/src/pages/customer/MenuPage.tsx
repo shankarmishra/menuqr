@@ -1,24 +1,21 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, UtensilsCrossed, Clock3, Globe2, Phone, ShoppingCart, X, Plus, Minus } from 'lucide-react';
+import { MapPin, Clock3, ShoppingCart, X, Plus, Minus } from 'lucide-react';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { getClientByMenuSlug, submitCustomerOrder, submitCustomerOrderByQr, type PublicMenuRecord } from '../admin/clientStore';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { menuTemplates } from '../../data/menuTemplates';
+import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import './MenuPage.css';
 
-const categoryPalette = ['#ff761a', '#ffc928', '#ff5e4d', '#34b56a', '#28a5a2', '#e56ea9', '#6785e6', '#a36be0', '#e7a52a', '#56a7dd'];
-
-function App() {
+export default function MenuPage() {
   const { slug } = useParams();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const qrId = searchParams.get('qr');
   const showToast = useToast();
   const [menuResult, setMenuResult] = useState<{ slug: string; client?: PublicMenuRecord; error?: string }>();
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
   
   // Ordering State
   const [cart, setCart] = useState<{ id: string; name: string; quantity: number; price: number; variant?: string }[]>([]);
@@ -90,9 +87,7 @@ function App() {
 
   useEffect(() => {
     let isCurrent = true;
-    if (!slug) {
-      return;
-    }
+    if (!slug) return;
     const initialMenu = (location.state as { publicMenu?: PublicMenuRecord } | null)?.publicMenu;
     if (initialMenu) {
       setMenuResult({ slug, client: initialMenu });
@@ -109,83 +104,7 @@ function App() {
     return () => { isCurrent = false; };
   }, [location.state, slug]);
 
-  const menuItems = (client?.menuItems ?? []).map((item) => ({
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      price: item.price ? `₹${Number(item.price).toLocaleString('en-IN')}` : '',
-      pricingType: item.pricingType || 'single',
-      halfPrice: item.halfPrice ? `₹${Number(item.halfPrice).toLocaleString('en-IN')}` : '',
-      fullPrice: item.fullPrice ? `₹${Number(item.fullPrice).toLocaleString('en-IN')}` : '',
-      regPrice: item.regPrice ? `₹${Number(item.regPrice).toLocaleString('en-IN')}` : '',
-      medPrice: item.medPrice ? `₹${Number(item.medPrice).toLocaleString('en-IN')}` : '',
-      largePrice: item.largePrice ? `₹${Number(item.largePrice).toLocaleString('en-IN')}` : '',
-      category: item.category,
-      type: item.dietType,
-      img: item.image,
-    }));
-  const categories = ['All', ...new Set(menuItems.map((item) => item.category))];
-  const categoryColors = new Map(categories.slice(1).map((category, index) => [
-    category,
-    categoryPalette[index] ?? `hsl(${(index * 137.508) % 360} 80% 70%)`,
-  ]));
-
-  const filteredItems = menuItems.filter((item) => {
-    const categoryMatch = activeCategory === 'All' ? true : item.category === activeCategory;
-    const searchMatch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return categoryMatch && searchMatch;
-  });
-    const heroImage = client?.heroImage
-      || menuItems.find((item) => item.img)?.img
-      || '';
-  
-    const renderDish = (item: any) => {
-      const itemColor = categoryColors.get(item.category) ?? '#ff761a';
-      return (
-        <motion.div
-          key={item.id}
-          layout
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 8 }}
-          transition={{ duration: 0.28 }}
-          className="menu-dish"
-          style={{ '--dish-bg': template.colors.surface, '--dish-ink': template.colors.text, '--dish-accent': template.colors.accent, '--dish-line': template.colors.border, '--category-color': itemColor } as React.CSSProperties}
-        >
-          <div className="menu-dish-info">
-            <h3 className="menu-dish-title">{item.name}</h3>
-            {item.description && <p className="menu-dish-description" title={item.description}>{item.description}</p>}
-            
-            {item.pricingType === 'single' && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.price)} disabled={!isPremium}>{item.price}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-            {item.pricingType === 'half-full' && (
-              <div className="menu-dish-price-variants">
-                {item.halfPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.halfPrice, 'Half')} disabled={!isPremium}><span className="variant-label">Half</span> {item.halfPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-                {item.fullPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.fullPrice, 'Full')} disabled={!isPremium}><span className="variant-label">Full</span> {item.fullPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-              </div>
-            )}
-            {item.pricingType === 'sizes' && (
-              <div className="menu-dish-price-variants">
-                {item.regPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.regPrice, 'Reg')} disabled={!isPremium}><span className="variant-label">Reg</span> {item.regPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-                {item.medPrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.medPrice, 'Med')} disabled={!isPremium}><span className="variant-label">Med</span> {item.medPrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-                {item.largePrice && <button type="button" className="menu-dish-price-btn" onClick={() => addToCart(item, item.largePrice, 'Lrg')} disabled={!isPremium}><span className="variant-label">Lrg</span> {item.largePrice}{isPremium && <Plus size={14} style={{ marginLeft: '4px' }} />}</button>}
-              </div>
-            )}
-          </div>
-          <div className="menu-dish-image-container">
-            <div className="menu-dish-image-wrap">
-              {item.img ? <img
-                src={item.img}
-                alt={item.name}
-                className="menu-dish-image"
-                loading="lazy"
-              /> : <div className="menu-dish-image-placeholder" aria-hidden="true"><UtensilsCrossed size={32} strokeWidth={1.5} /></div>}
-            </div>
-          </div>
-        </motion.div>
-      );
-    };
-
-    if (loadError === 'SUBSCRIPTION_EXPIRED') {
+  if (loadError === 'SUBSCRIPTION_EXPIRED') {
     return (
       <div className="customer-menu menu-expired-lock">
         <header className="menu-topbar">
@@ -220,127 +139,59 @@ function App() {
     );
   }
 
+  const categoriesForRenderer = (client.categories && client.categories.length > 0)
+    ? client.categories.map((cat: { id?: string; name?: string; order?: number }, idx: number) => ({ id: cat.id || `cat-${idx}`, name: cat.name || String(cat), order: cat.order ?? idx }))
+    : Array.from(new Set((client.menuItems || []).map((i) => i.category))).map((catName, idx) => ({
+        id: `cat-${idx}`,
+        name: catName,
+        order: idx,
+      }));
+
+  const itemsForRenderer = (client.menuItems || []).map((item) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description || '',
+    price: item.price ? Number(item.price) : 0,
+    halfPrice: item.halfPrice ? Number(item.halfPrice) : undefined,
+    fullPrice: item.fullPrice ? Number(item.fullPrice) : undefined,
+    category: item.category,
+    dietType: (item.dietType === 'non-veg' ? 'non-veg' : item.dietType === 'vegan' ? 'vegan' : 'veg') as 'veg' | 'non-veg' | 'vegan',
+    available: item.available !== false,
+  }));
+
   return (
-    <div className="customer-menu" style={{
-      '--menu-bg': template.colors.bg,
-      '--menu-surface': template.colors.surface,
-      '--menu-ink': template.colors.text,
-      '--menu-muted': template.colors.secondary,
-      '--menu-accent': template.colors.accent,
-      '--menu-line': template.colors.border,
-      '--menu-heading': template.colors.heading,
-      '--font-heading': template.typography.heading,
-      '--font-body': template.typography.body,
-    } as React.CSSProperties}>
-      <header className="menu-topbar">
-        <Link className="menu-wordmark" to={`/menu/${slug}#top`} aria-label="MenusQR menu">
+    <div className="min-h-screen flex flex-col font-sans" style={{ backgroundColor: template.colors.bg, color: template.colors.text }}>
+      <header className="px-4 py-3 border-b border-white/10 flex items-center justify-between backdrop-blur-md sticky top-0 z-40 bg-black/40">
+        <Link className="menu-wordmark flex items-center gap-2" to={`/menu/${slug}`} aria-label="MenusQR menu">
           <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
         </Link>
         {client?.city && (
-          <span className="menu-location"><MapPin size={14} />{[client.city, client.state].filter(Boolean).join(', ')}</span>
+          <span className="text-xs font-mono opacity-80 flex items-center gap-1"><MapPin size={12} />{[client.city, client.state].filter(Boolean).join(', ')}</span>
         )}
       </header>
 
-      <main id="top" className="menu-main">
-        <motion.section
-          className="menu-hero"
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, ease: 'easeOut' }}
-          style={{ background: template.colors.bg, color: template.colors.text }}
-        >
-          <div className="menu-hero-text">
-            <div className="menu-hero-badge">{client.category.replace(/s$/, '')}</div>
-            <h1>{client.businessName}</h1>
-            {client.city && <p>{`Made with love in ${client.city}`}</p>}
-            <div className="menu-hero-stats">
-              <span className="menu-hero-stat">🍽️ {menuItems.length} Dishes</span>
-            </div>
-          </div>
-          <div className="menu-hero-visual">
-            <div className="menu-hero-visual-bg"></div>
-            {heroImage ? <img className="menu-hero-image-new" src={heroImage} alt="Featured dish" /> : <div className="menu-hero-image-placeholder" aria-hidden="true"><UtensilsCrossed size={54} strokeWidth={1.4} /></div>}
-          </div>
-        </motion.section>
-
-        {(client.address || client.phone || client.openingHours || client.services.length > 0 || client.website) && (
-          <section className="menu-business-details" aria-label="Business details">
-            {(client.address || client.city || client.state) && <div className="menu-business-detail"><MapPin size={16} aria-hidden="true" /><span>{[client.address, client.city, client.state].filter(Boolean).join(', ')}</span></div>}
-            {client.phone && <a className="menu-business-detail" href={`tel:${client.phone.replace(/[^\d+]/g, '')}`}><Phone size={16} aria-hidden="true" /><span>{client.phone}</span></a>}
-            {client.openingHours && <div className="menu-business-detail"><Clock3 size={16} aria-hidden="true" /><span>{client.openingHours}</span></div>}
-            {client.services.length > 0 && <div className="menu-business-services">{client.services.map((service) => <span key={service}>{service}</span>)}</div>}
-            {client.website && <a className="menu-business-detail" href={client.website} target="_blank" rel="noreferrer"><Globe2 size={16} aria-hidden="true" /><span>Website</span></a>}
-          </section>
-        )}
-
-        <section className="menu-controls" aria-label="Find dishes">
-          <div className="menu-section-heading">
-            <div>
-              <span className="menu-eyebrow menu-eyebrow-light">FRESH FROM OUR KITCHEN</span>
-              <h2>Explore the menu</h2>
-            </div>
-            <span className="menu-result-count">{filteredItems.length} {filteredItems.length === 1 ? 'dish' : 'dishes'}</span>
-          </div>
-
-          <label className="menu-search">
-            <Search size={18} aria-hidden="true" />
-            <input
-              type="search"
-              placeholder="Find your favourite dish"
-              aria-label="Search menu items"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-            />
-          </label>
-
-          <div className="menu-categories" role="group" aria-label="Filter by category">
-          {categories.map((cat, index) => (
-            <motion.button
-              key={cat}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + index * 0.045 }}
-              onClick={() => setActiveCategory(cat)}
-              className={`menu-category ${activeCategory === cat ? 'is-active' : ''}`}
-              aria-pressed={activeCategory === cat}
-            >
-              {cat}
-            </motion.button>
-          ))}
-          </div>
-        </section>
-
-        <section className="menu-dishes-container" aria-label="Menu dishes">
-          <AnimatePresence mode="popLayout">
-            {activeCategory === 'All' ? (
-              categories.slice(1).map(cat => {
-                const groupItems = filteredItems.filter(i => i.category === cat);
-                if (groupItems.length === 0) return null;
-                return (
-                  <div key={cat} className="menu-category-group">
-                    <h2 className="menu-category-title" style={{ color: template.colors.heading }}>{cat}</h2>
-                    <div className="menu-dishes-grid">
-                      {groupItems.map(item => renderDish(item))}
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="menu-dishes-grid">
-                {filteredItems.map(item => renderDish(item))}
-              </div>
-            )}
-          </AnimatePresence>
-
-          {filteredItems.length === 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="menu-empty-state">
-              <UtensilsCrossed size={24} />
-              <p>No dishes found. Try another search.</p>
-            </motion.div>
-          )}
-        </section>
-        <footer className="menu-footer">Prepared with care at <strong>{client.businessName}</strong></footer>
+      <main className="flex-1">
+        <MenuTemplateRenderer
+          templateId={client.templateId || 'royal-maharaja'}
+          restaurant={{
+            name: client.businessName,
+            tagline: client.tagline,
+            phone: client.phone,
+            address: client.address,
+            city: client.city,
+            logo: client.logoUrl,
+          }}
+          categories={categoriesForRenderer}
+          items={itemsForRenderer}
+          compact={false}
+          onAddToCart={addToCart}
+          isPremium={isPremium}
+        />
       </main>
+
+      <footer className="py-6 text-center text-xs opacity-60 border-t border-white/10 mt-12">
+        Prepared with care at <strong className="opacity-100">{client.businessName}</strong>
+      </footer>
 
       {/* Cart Button */}
       {isPremium && cart.length > 0 && (
@@ -424,5 +275,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

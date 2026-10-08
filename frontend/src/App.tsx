@@ -126,18 +126,10 @@ function PublicAppRoutes() {
   const loaderCaption = menuMatch ? 'Preparing your menu' : 'Preparing your experience';
   const isLoading = loadedRoute !== routeKey;
   const adminHostname = import.meta.env.VITE_ADMIN_HOSTNAME?.trim();
-
-  if (isAdminPath(window.location.pathname)) {
-    if (!adminHostname) return <NotFoundPage />;
-    return <AdminDomainRedirect destination={getAdminRedirectUrl(
-      adminHostname,
-      window.location.pathname,
-      window.location.search,
-      window.location.hash,
-    )} />;
-  }
+  const isAdminRedirect = isAdminPath(window.location.pathname);
 
   useEffect(() => {
+    if (isAdminRedirect) return;
     let isCurrent = true;
     if (menuSlug) {
       void getClientByMenuSlug(menuSlug).then((menu) => {
@@ -152,7 +144,17 @@ function PublicAppRoutes() {
       isCurrent = false;
       window.clearTimeout(timer);
     };
-  }, [menuSlug, routeKey]);
+  }, [menuSlug, routeKey, isAdminRedirect]);
+
+  if (isAdminRedirect) {
+    if (!adminHostname) return <NotFoundPage />;
+    return <AdminDomainRedirect destination={getAdminRedirectUrl(
+      adminHostname,
+      window.location.pathname,
+      window.location.search,
+      window.location.hash,
+    )} />;
+  }
 
   return (
     <>

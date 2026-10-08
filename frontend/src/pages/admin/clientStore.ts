@@ -47,6 +47,8 @@ export interface ClientRecord {
 
 export interface PublicMenuRecord {
   businessName: string;
+  tagline?: string;
+  logoUrl?: string;
   category: ClientCategory;
   phone: string;
   address: string;
@@ -56,6 +58,7 @@ export interface PublicMenuRecord {
   openingHours: string;
   services: string[];
   heroImage?: string;
+  categories?: Array<{ id: string; name: string; order: number }>;
   menuItems: MenuItemRecord[];
   plan?: string;
   templateId?: string;
@@ -317,6 +320,8 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
   }));
   return {
     businessName: raw.restaurant.name,
+    tagline: raw.restaurant.tagline ?? '',
+    logoUrl: undefined,
     category: (raw.restaurant.category ?? 'restaurants') as ClientCategory,
     phone: raw.restaurant.phone ?? '',
     address: raw.restaurant.address ?? '',
@@ -326,6 +331,7 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     openingHours: '',
     services: [],
     heroImage: undefined,
+    categories: raw.categories,
     menuItems,
     plan: raw.plan,
     templateId: raw.templateId,
