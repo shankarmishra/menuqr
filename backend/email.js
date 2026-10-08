@@ -17,10 +17,16 @@ export function getSmtpTimeoutOptions(environment = process.env) {
 }
 
 function getSmtpTransporter() {
-  const smtpHost = process.env.SMTP_HOST || 'smtp.hostinger.com';
-  const smtpPort = Number(process.env.SMTP_PORT) || 587;
   const smtpUser = process.env.SMTP_USER?.trim();
   const smtpPass = process.env.SMTP_PASSWORD?.trim();
+
+  let defaultHost = 'smtp.hostinger.com';
+  if (smtpUser && smtpUser.toLowerCase().endsWith('@gmail.com')) {
+    defaultHost = 'smtp.gmail.com';
+  }
+
+  const smtpHost = process.env.SMTP_HOST || defaultHost;
+  const smtpPort = Number(process.env.SMTP_PORT) || 587;
 
   if (smtpUser && smtpPass) {
     if (!smtpTransporter) {
@@ -56,11 +62,11 @@ async function sendEmail(message, label) {
         html: message.html,
         text: message.text
       });
-      console.info(`[email] ${label} sent successfully via Hostinger SMTP.`);
+      console.info(`[email] ${label} sent successfully via SMTP.`);
       return;
     } catch (err) {
       smtpError = err;
-      console.error(`[email] Error sending ${label} via Hostinger SMTP:`, err.message);
+      console.error(`[email] Error sending ${label} via SMTP:`, err.message);
     }
   }
 
