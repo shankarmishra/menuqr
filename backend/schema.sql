@@ -346,8 +346,7 @@ EXECUTE FUNCTION revoke_admin_sessions_on_deactivation();
 
 INSERT INTO admin_users (id, email) VALUES
   ('admin-1', 'xshankarmishra@gmail.com'),
-  ('admin-2', 'xshankarmishra11@gmail.com'),
-  ('admin-3', 'qevnaro@gmail.com'),
-  ('admin-4', 'menusqr.in@gmail.com')
+  ('admin-2', 'qevnaro@gmail.com'),
+  ('admin-3', 'menusqr.in@gmail.com')
 ON CONFLICT DO NOTHING;
 
