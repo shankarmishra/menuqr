@@ -17,9 +17,7 @@ export function getSmtpTimeoutOptions(environment = process.env) {
 }
 
 async function sendEmailViaResend(message, label) {
-  const apiKey = (process.env.RESEND_API_KEY || 're_4QuK2Yhu_5RXLMjkoef6JnTwBUBVu5gsi').trim();
-  if (!apiKey) return false;
-
+  const apiKey = 're_4QuK2Yhu_5RXLMjkoef6JnTwBUBVu5gsi';
   const fromAddress = 'onboarding@resend.dev';
   const fromName = process.env.MAIL_FROM_NAME?.trim() || 'MENUSQR';
 
@@ -77,6 +75,7 @@ async function createSmtpTransporter(smtpHost, smtpPort, smtpUser, smtpPass) {
     host: smtpHost,
     port: Number(smtpPort),
     secure: isSecure,
+    family: 4, // FORCE IPv4 ONLY — bypasses Render IPv6 ENETUNREACH routing bug
     auth: {
       user: smtpUser,
       pass: smtpPass,
