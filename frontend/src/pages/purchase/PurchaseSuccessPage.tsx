@@ -91,7 +91,7 @@ export default function PurchaseSuccessPage() {
               >
                 Try Again
               </button>
-              <a href="mailto:support@menusqr.com" className="w-full sm:w-auto bg-white border border-gray-200 hover:bg-gray-50 text-[#151C19] px-8 py-4 rounded-xl font-bold transition-all shadow-sm">
+              <a href="mailto:support@menusqr.in" className="w-full sm:w-auto bg-white border border-gray-200 hover:bg-gray-50 text-[#151C19] px-8 py-4 rounded-xl font-bold transition-all shadow-sm">
                 Contact Support
               </a>
             </div>
@@ -155,7 +155,7 @@ export default function PurchaseSuccessPage() {
                   <>
                     <p className="mt-3 text-sm text-gray-400">Order reference: {orderId}</p>
                     <a
-                      href={`mailto:support@menusqr.com?subject=Account%20email%20not%20received&body=Order%20reference%3A%20${encodeURIComponent(orderId)}`}
+                      href={`mailto:support@menusqr.in?subject=Account%20email%20not%20received&body=Order%20reference%3A%20${encodeURIComponent(orderId)}`}
                       className="mt-3 inline-flex text-sm font-semibold text-[#ffc08d] underline underline-offset-4"
                     >
                       Contact support
