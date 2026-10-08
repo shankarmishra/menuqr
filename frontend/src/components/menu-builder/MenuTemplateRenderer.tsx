@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
-import { menuTemplates, type MenuTemplate } from '../../data/menuTemplates';
-import { getTemplateComponent, getTemplateTextureKey, TEMPLATE_TEXTURES, CategoryGroup, MenuItem } from './templates';
+import { menuTemplates } from '../../data/menuTemplates';
+import { getTemplateComponent, getTemplateTextureKey, TEMPLATE_TEXTURES, type CategoryGroup } from './templates';
 
 export interface MenuTemplateRendererProps {
   templateId: string;

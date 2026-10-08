@@ -1,5 +1,5 @@
 import React from 'react';
-import { MenuItem } from '../types';
+import type { MenuItem } from '../types';
 
 export const FormatPrice = (val: string | number | undefined): string => {
   if (val === undefined || val === null || val === '') return '';

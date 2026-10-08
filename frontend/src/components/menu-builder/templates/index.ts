@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutProps } from './types';
+import type { LayoutProps } from './types';
 import { TEMPLATE_TEXTURES } from './assets/textures';
 
 import { RoyalMaharajaTemplate } from './RoyalMaharaja/RoyalMaharajaTemplate';
@@ -90,5 +90,5 @@ export const getTemplateTextureKey = (id: string): keyof typeof TEMPLATE_TEXTURE
   }
 };
 
-export * from './types';
+export type { LayoutProps, CategoryGroup, MenuItem, RestaurantInfo } from './types';
 export * from './assets/textures';
