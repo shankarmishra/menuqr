@@ -93,8 +93,8 @@ export async function requestAdminOtp(email, ip) {
     }
 
     const dbUser = await client.query(
-      'SELECT id, status FROM admin_users WHERE email = $1 AND email = ANY($2::text[]) FOR UPDATE',
-      [normalizedEmail, APPROVED_ADMIN_EMAIL_LIST]
+      'SELECT id, status FROM admin_users WHERE email = $1 FOR UPDATE',
+      [normalizedEmail]
     );
     if (dbUser.rows.length === 0 || dbUser.rows[0].status !== 'active') {
       await client.query('COMMIT');
@@ -142,8 +142,8 @@ export async function verifyAdminOtp(email, otp, ip) {
     }
 
     const dbUser = await client.query(
-      'SELECT id, status FROM admin_users WHERE email = $1 AND email = ANY($2::text[]) FOR UPDATE',
-      [normalizedEmail, APPROVED_ADMIN_EMAIL_LIST]
+      'SELECT id, status FROM admin_users WHERE email = $1 FOR UPDATE',
+      [normalizedEmail]
     );
     if (dbUser.rows.length === 0 || dbUser.rows[0].status !== 'active') {
       await client.query('COMMIT');
@@ -221,8 +221,8 @@ export async function verifyAdminSession(token) {
     SELECT s.id AS session_id, s.admin_id, u.email, u.status, s.expires_at
     FROM admin_sessions s
     JOIN admin_users u ON s.admin_id = u.id
-    WHERE s.token_hash = $1 AND u.email = ANY($2::text[])
-  `, [tokenHash, APPROVED_ADMIN_EMAIL_LIST]);
+    WHERE s.token_hash = $1
+  `, [tokenHash]);
 
   if (res.rows.length === 0) return null;
   
