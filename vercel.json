@@ -3,50 +3,51 @@
   "buildCommand": "npm --prefix frontend run build",
   "outputDirectory": "frontend/dist",
   "cleanUrls": true,
-  "routes": [
+  "redirects": [
     {
-      "src": "/admin/login",
-      "dest": "https://admin.menusqr.in/login",
-      "status": 302,
+      "source": "/admin/login",
+      "destination": "https://admin.menusqr.in/login",
+      "permanent": false,
       "has": [{ "type": "host", "value": "menusqr.in" }]
     },
     {
-      "src": "/admin/(.*)",
-      "dest": "https://admin.menusqr.in/admin/$1",
-      "status": 302,
+      "source": "/admin/:path*",
+      "destination": "https://admin.menusqr.in/admin/:path*",
+      "permanent": false,
       "has": [{ "type": "host", "value": "menusqr.in" }]
     },
     {
-      "src": "/admin/login",
-      "dest": "https://admin.menusqr.in/login",
-      "status": 302,
+      "source": "/admin/login",
+      "destination": "https://admin.menusqr.in/login",
+      "permanent": false,
       "has": [{ "type": "host", "value": "www.menusqr.in" }]
     },
     {
-      "src": "/admin/(.*)",
-      "dest": "https://admin.menusqr.in/admin/$1",
-      "status": 302,
+      "source": "/admin/:path*",
+      "destination": "https://admin.menusqr.in/admin/:path*",
+      "permanent": false,
       "has": [{ "type": "host", "value": "www.menusqr.in" }]
     },
     {
-      "src": "/digital-menu-pricing",
-      "dest": "/plans",
-      "status": 301
+      "source": "/digital-menu-pricing",
+      "destination": "/plans",
+      "permanent": true
     },
     {
-      "src": "/privacy-policy",
-      "dest": "/privacy",
-      "status": 301
+      "source": "/privacy-policy",
+      "destination": "/privacy",
+      "permanent": true
     },
     {
-      "src": "/refund-policy",
-      "dest": "/refund-cancellation",
-      "status": 301
-    },
-    { "handle": "filesystem" },
+      "source": "/refund-policy",
+      "destination": "/refund-cancellation",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
     {
-      "src": "/.*",
-      "dest": "/index.html"
+      "source": "/((?!api/|assets/|brand/|hero/|templates/|favicon.svg|icons.svg|robots.txt|sitemap.xml|site.webmanifest|og-image.webp).*)",
+      "destination": "/index.html"
     }
   ]
 }

@@ -475,9 +475,15 @@ routes.forEach((route) => {
   if (route.path === '/') {
     fs.writeFileSync(TEMPLATE_PATH, html, 'utf-8');
   } else {
-    const targetDir = path.join(DIST_DIR, route.path.slice(1));
+    const cleanPath = route.path.slice(1);
+    const targetDir = path.join(DIST_DIR, cleanPath);
     fs.mkdirSync(targetDir, { recursive: true });
     fs.writeFileSync(path.join(targetDir, 'index.html'), html, 'utf-8');
+
+    // Also write direct .html file for Vercel cleanUrls compatibility
+    const htmlFilePath = path.join(DIST_DIR, `${cleanPath}.html`);
+    fs.mkdirSync(path.dirname(htmlFilePath), { recursive: true });
+    fs.writeFileSync(htmlFilePath, html, 'utf-8');
   }
 });
 
@@ -494,9 +500,15 @@ const spaRoutes = [
 ];
 
 spaRoutes.forEach((routePath) => {
-  const targetDir = path.join(DIST_DIR, routePath.slice(1));
+  const cleanPath = routePath.slice(1);
+  const targetDir = path.join(DIST_DIR, cleanPath);
   fs.mkdirSync(targetDir, { recursive: true });
   fs.writeFileSync(path.join(targetDir, 'index.html'), template, 'utf-8');
+
+  // Also write direct .html file for Vercel cleanUrls compatibility
+  const htmlFilePath = path.join(DIST_DIR, `${cleanPath}.html`);
+  fs.mkdirSync(path.dirname(htmlFilePath), { recursive: true });
+  fs.writeFileSync(htmlFilePath, template, 'utf-8');
 });
 
 // Also create 404.html with noindex for Vercel
