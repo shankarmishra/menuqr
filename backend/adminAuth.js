@@ -43,7 +43,7 @@ async function incrementRateLimit(client, scope, identifier, limit) {
   `, [bucketKey, limit]);
 
   const rateLimit = result.rows[0];
-  return Number(rateLimit.hits) > limit || (rateLimit.blocked_until && new Date(rateLimit.blocked_until) > new Date());
+  return Boolean(Number(rateLimit.hits) > limit || (rateLimit.blocked_until && new Date(rateLimit.blocked_until) > new Date()));
 }
 
 async function applyRateLimits(client, action, email, ip, limit) {
