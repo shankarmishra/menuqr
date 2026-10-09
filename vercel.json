@@ -46,7 +46,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!assets/|marketing/|sitemap\\.xml|robots\\.txt|favicon\\.svg|.*\\..*).*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
