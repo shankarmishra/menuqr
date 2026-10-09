@@ -430,19 +430,21 @@ export default async function authRoutes(request, response, url) {
     let userEmail = null;
 
     const normalizedEmail = normalizeEmail(input?.email);
-    if (normalizedEmail) {
-      const { isApprovedAdminEmail } = await import('../adminAuth.js');
-      if (isApprovedAdminEmail(normalizedEmail)) {
-        throw apiError(400, 'This is an Admin account. Please log in at https://admin.menusqr.in/login');
-      }
+    if (!normalizedEmail || typeof input?.password !== 'string' || !input.password) {
+      throw apiError(401, 'Incorrect credentials.');
+    }
 
-      const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
-      const dbUser = dbRes.rows[0];
-      
-      if (dbUser && dbUser.role !== 'SUPER_ADMIN' && verifyPassword(input.password, dbUser.password_hash)) {
-        user = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
-        userEmail = dbUser.email;
-      }
+    const { isApprovedAdminEmail } = await import('../adminAuth.js');
+    if (isApprovedAdminEmail(normalizedEmail)) {
+      throw apiError(400, 'This is an Admin account. Please log in at https://admin.menusqr.in/login');
+    }
+
+    const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
+    const dbUser = dbRes.rows[0];
+    
+    if (dbUser && dbUser.role !== 'SUPER_ADMIN' && verifyPassword(input.password, dbUser.password_hash)) {
+      user = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
+      userEmail = dbUser.email;
     }
 
     if (!user) {

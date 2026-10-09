@@ -13,15 +13,26 @@ const COOKIE_NAME = 'menusqr_auth';
 
 // Password Hashing (PBKDF2)
 export function hashPassword(password) {
+  if (typeof password !== 'string' || !password) {
+    throw new Error('Password must be a non-empty string.');
+  }
   const salt = randomBytes(16).toString('hex');
   const hash = pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
   return `${salt}:${hash}`;
 }
 
 export function verifyPassword(password, storedHash) {
+  if (typeof password !== 'string' || !password || typeof storedHash !== 'string' || !storedHash.includes(':')) {
+    return false;
+  }
   const [salt, originalHash] = storedHash.split(':');
-  const hash = pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-  return hash === originalHash;
+  if (!salt || !originalHash) return false;
+  try {
+    const hash = pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+    return hash === originalHash;
+  } catch (err) {
+    return false;
+  }
 }
 
 // Token Generation
