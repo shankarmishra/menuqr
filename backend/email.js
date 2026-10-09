@@ -29,15 +29,21 @@ export function maskEmail(email) {
 }
 
 export function getEmailConfig(environment = process.env) {
-  const apiKey = (environment.RESEND_API_KEY || 're_QvorQdQf_FFLwNTj9mg3QasEdYwZKTGkU').trim();
+  const apiKey = (environment.RESEND_API_KEY || '').trim();
   const rawFromAddress = (environment.EMAIL_FROM || environment.MAIL_FROM_ADDRESS || 'onboarding@resend.dev').trim();
-  const fromName = (environment.MAIL_FROM_NAME || 'MENUSQR').trim();
 
   let fromAddress = rawFromAddress;
-  if (fromAddress.includes('<') && fromAddress.includes('>')) {
-    const match = fromAddress.match(/<([^>]+)>/);
-    if (match) fromAddress = match[1].trim();
+  let extractedName = '';
+
+  if (rawFromAddress.includes('<') && rawFromAddress.includes('>')) {
+    const nameMatch = rawFromAddress.match(/^(.*?)\s*<([^>]+)>/);
+    if (nameMatch) {
+      extractedName = nameMatch[1].replace(/["']/g, '').trim();
+      fromAddress = nameMatch[2].trim();
+    }
   }
+
+  const fromName = (environment.MAIL_FROM_NAME || extractedName || 'MENUSQR').trim();
 
   return {
     apiKey,
