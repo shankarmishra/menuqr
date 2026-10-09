@@ -441,7 +441,7 @@ export default async function authRoutes(request, response, url) {
 
     const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
     const dbUser = dbRes.rows[0];
-    
+
     if (dbUser && dbUser.role !== 'SUPER_ADMIN' && verifyPassword(input.password, dbUser.password_hash)) {
       user = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
       userEmail = dbUser.email;
