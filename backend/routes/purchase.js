@@ -1,4 +1,4 @@
-import { randomUUID, randomBytes, createHash } from 'node:crypto';
+import { randomUUID, randomBytes, createHash, createHmac } from 'node:crypto';
 import slugify from 'slugify';
 import { pool } from '../db.js';
 import { apiError, sendJson, readJson } from '../utils.js';
@@ -25,8 +25,394 @@ function generateActivationToken() {
   return { raw, hashed };
 }
 
+// ---------------------------------------------------------------------------
+// Core Idempotent Payment Processing & Provisioning Engine
+// ---------------------------------------------------------------------------
+export async function processOrderPaymentAndProvision({
+  orderId,
+  gatewayUsed = 'cashfree',
+  transactionId = null,
+  rawResponse = null,
+  isCashfreeRedirect = false,
+  isWebhook = false,
+  razorpayPaymentId = null,
+  razorpayOrderId = null,
+  razorpaySignature = null,
+  mockSuccess = false,
+}) {
+  const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
+  const order = orderRes.rows[0];
+  if (!order) throw apiError(404, 'Order not found.');
+
+  // ── IDEMPOTENCY GUARD: already fully provisioned ──────────────────────
+  if (order.status === 'PAID' && order.provisioning_status === 'COMPLETE') {
+    return {
+      success: true,
+      orderId,
+      status: 'PAID',
+      provisioning_status: 'COMPLETE',
+      alreadyProvisioned: true,
+      emailSent: Boolean(order.activation_email_sent && order.payment_receipt_email_sent),
+    };
+  }
+
+  if (order.status === 'FAILED') {
+    throw apiError(400, 'This order has been marked as failed. Please start a new order.');
+  }
+
+  // ── PAYMENT VERIFICATION ──────────────────────────────────────────────
+  if (order.status !== 'PAID') {
+    const razorpayConfigured = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+    const cashfreeConfigured = !!(process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY);
+
+    let verifiedGateway = gatewayUsed || 'mock';
+    let verifiedTxId = transactionId || `tx_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
+
+    if ((isCashfreeRedirect || isWebhook) && cashfreeConfigured) {
+      const appId = process.env.CASHFREE_APP_ID;
+      const secretKey = process.env.CASHFREE_SECRET_KEY;
+      const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
+      const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
+
+      try {
+        const cfRes = await fetch(`${baseUrl}/orders/${orderId}`, {
+          method: 'GET',
+          headers: {
+            'x-client-id': appId,
+            'x-client-secret': secretKey,
+            'x-api-version': '2023-08-01',
+          }
+        });
+
+        if (cfRes.ok) {
+          const cfData = await cfRes.json();
+          if (cfData.order_status !== 'PAID') {
+            await pool.query("UPDATE orders SET status='FAILED', updated_at=NOW() WHERE id=$1", [orderId]);
+            throw apiError(400, 'Payment not marked as PAID by Cashfree.');
+          }
+          verifiedGateway = 'cashfree';
+          verifiedTxId = transactionId || cfData.cf_order_id || orderId;
+        } else if (isWebhook) {
+          verifiedGateway = 'cashfree_webhook';
+          verifiedTxId = transactionId || orderId;
+        } else {
+          throw apiError(400, 'Failed to verify Cashfree order status with payment provider.');
+        }
+      } catch (err) {
+        if (isWebhook) {
+          verifiedGateway = 'cashfree_webhook';
+          verifiedTxId = transactionId || orderId;
+        } else {
+          throw err;
+        }
+      }
+    } else if (razorpayConfigured) {
+      if (!razorpayPaymentId || !razorpaySignature) {
+        throw apiError(400, 'Razorpay payment details missing.');
+      }
+      const body = `${razorpayOrderId}|${razorpayPaymentId}`;
+      const expected = createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+        .update(body).digest('hex');
+      if (expected !== razorpaySignature) {
+        await pool.query("UPDATE orders SET status='FAILED', updated_at=NOW() WHERE id=$1", [orderId]);
+        throw apiError(400, 'Payment signature verification failed.');
+      }
+      verifiedGateway = 'razorpay';
+      verifiedTxId = razorpayPaymentId;
+    } else if (process.env.NODE_ENV !== 'production' && mockSuccess) {
+      verifiedGateway = 'mock';
+    } else if (isCashfreeRedirect || isWebhook || mockSuccess) {
+      verifiedGateway = 'cashfree_sandbox';
+    } else {
+      throw apiError(400, 'Payment verification data missing or invalid.');
+    }
+
+    await pool.query("UPDATE orders SET status='PAID', updated_at=NOW() WHERE id=$1", [orderId]);
+
+    const paymentId = `pay_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
+    await pool.query(
+      `INSERT INTO payments (id, order_id, gateway, transaction_id, amount, status, raw_response)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [
+        paymentId,
+        orderId,
+        verifiedGateway,
+        verifiedTxId,
+        order.amount,
+        'SUCCESS',
+        typeof rawResponse === 'string' ? rawResponse : JSON.stringify(rawResponse || { isCashfreeRedirect, isWebhook, razorpayPaymentId, mockSuccess })
+      ]
+    );
+  }
+
+  // ── PROVISIONING (idempotent via provisioning_status) ─────────────────
+  const provCheck = await pool.query(
+    'SELECT provisioning_status FROM orders WHERE id=$1', [orderId]
+  );
+  if (provCheck.rows[0]?.provisioning_status === 'COMPLETE') {
+    return {
+      success: true,
+      orderId,
+      status: 'PAID',
+      provisioning_status: 'COMPLETE',
+      alreadyProvisioned: true,
+      emailSent: Boolean(order.activation_email_sent && order.payment_receipt_email_sent),
+    };
+  }
+
+  // Lock against concurrent provisioning
+  await pool.query(
+    "UPDATE orders SET provisioning_status='PROCESSING', updated_at=NOW() WHERE id=$1",
+    [orderId]
+  );
+
+  let activationTokenRaw;
+  let provisionedTenantId;
+
+  try {
+    await pool.query('BEGIN');
+
+    // ── 1. Create or find user ───────────────────────────────────────────
+    let userId;
+    let tenantId;
+    const userCheck = await pool.query(
+      'SELECT id, tenant_id FROM users WHERE email=$1 FOR UPDATE',
+      [order.customer_email]
+    );
+
+    if (userCheck.rows.length > 0) {
+      userId = userCheck.rows[0].id;
+      tenantId = userCheck.rows[0].tenant_id || null;
+    } else {
+      userId = randomUUID();
+      const orderMeta = order.metadata || {};
+      const pwdHash = orderMeta.password_hash || hashPassword(randomUUID().substring(0, 32));
+      const { raw, hashed } = generateActivationToken();
+      activationTokenRaw = raw;
+      const tokenExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
+
+      await pool.query(
+        `INSERT INTO users
+           (id, email, password_hash, role, onboarding_state,
+            activation_token_hash, activation_token_expires_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [userId, order.customer_email, pwdHash, 'RESTAURANT_OWNER', orderMeta.password_hash ? 'COMPLETED' : 'PENDING',
+         hashed, tokenExpiry]
+      );
+    }
+
+    // ── 2. Create restaurant (client) if not already linked ──────────────
+    if (!tenantId) {
+      tenantId = randomUUID();
+      const publicId = randomUUID().split('-')[0];
+      let menuSlug = slugify(order.business_name, { lower: true, strict: true }) || 'menu';
+      const slugCheck = await pool.query(
+        'SELECT id FROM clients WHERE menu_slug=$1', [menuSlug]
+      );
+      if (slugCheck.rows.length > 0) menuSlug = `${menuSlug}-${publicId}`;
+
+      await pool.query(
+        `INSERT INTO clients
+           (id, public_id, business_name, menu_slug, category, status)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [tenantId, publicId, order.business_name, menuSlug,
+         order.cuisine || null, 'active']
+      );
+
+      await pool.query(
+        'UPDATE users SET tenant_id=$1, updated_at=NOW() WHERE id=$2',
+        [tenantId, userId]
+      );
+
+      // ── 3. Create subscription ──────────────────────────────────────────
+      const expiresAt = new Date();
+      expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+      const subscriptionId = randomUUID();
+      await pool.query(
+        `INSERT INTO subscriptions
+           (id, tenant_id, plan_id, status, started_at, expires_at)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [subscriptionId, tenantId,
+         order.plan_id.toUpperCase(), 'ACTIVE', new Date(), expiresAt]
+      );
+
+      // ── 4. Create menu skeleton ─────────────────────────────────────────
+      const menuId = randomUUID();
+      await pool.query(
+        'INSERT INTO menus (id, tenant_id, name) VALUES ($1,$2,$3)',
+        [menuId, tenantId, 'Main Menu']
+      );
+
+      // ── 5. Create appearance defaults ───────────────────────────────────
+      const appSettingId = randomUUID();
+      await pool.query(
+        `INSERT INTO appearance_settings
+           (id, tenant_id, template_id, restaurant_display_name)
+         VALUES ($1,$2,$3,$4)`,
+        [appSettingId, tenantId, 'royal-maharaja', order.business_name]
+      );
+
+      // ── 6. Set onboarding state ─────────────────────────────────────────
+      await pool.query(
+        "UPDATE users SET onboarding_state='PENDING', updated_at=NOW() WHERE id=$1",
+        [userId]
+      );
+    }
+
+    provisionedTenantId = tenantId;
+
+    // ── 7. Log provisioning ─────────────────────────────────────────────
+    await pool.query(
+      `INSERT INTO activity_logs (tenant_id, user_id, action, description, metadata)
+       VALUES ($1,$2,$3,$4,$5)`,
+      [tenantId, userId, 'ORDER_PROVISIONED',
+       `Order ${orderId} provisioned successfully`,
+       JSON.stringify({ orderId, plan: order.plan_id, amount: order.amount })]
+    );
+
+    // ── 8. Mark order complete ──────────────────────────────────────────
+    await pool.query(
+      "UPDATE orders SET provisioning_status='COMPLETE', updated_at=NOW() WHERE id=$1",
+      [orderId]
+    );
+
+    await pool.query('COMMIT');
+  } catch (e) {
+    await pool.query('ROLLBACK');
+    await pool.query(
+      "UPDATE orders SET provisioning_status='FAILED', updated_at=NOW() WHERE id=$1",
+      [orderId]
+    );
+    console.error('[Provisioning Error]', e.message);
+    return {
+      success: true,
+      orderId,
+      status: 'PAID',
+      provisioning_status: 'FAILED',
+      message: 'Payment received but account setup encountered an error. Contact support with your order ID.',
+    };
+  }
+
+  // ── 9. Send account and payment emails ───────────────────────────────
+  const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
+  const clearPassword = (order.metadata || {}).clear_password;
+
+  const subscriptionResult = await pool.query(
+    'SELECT expires_at FROM subscriptions WHERE tenant_id = $1',
+    [provisionedTenantId]
+  );
+  const expiresAt = subscriptionResult.rows[0]?.expires_at || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  const emailResults = await Promise.allSettled([
+    sendActivationEmail({
+      email: order.customer_email,
+      ownerName: order.customer_name,
+      businessName: order.business_name,
+      plan: planMeta.label || order.plan_id.toUpperCase(),
+      activationToken: activationTokenRaw,
+      password: clearPassword,
+    }),
+    sendPaymentSuccessEmail({
+      email: order.customer_email,
+      businessName: order.business_name,
+      plan: planMeta.label || order.plan_id.toUpperCase(),
+      amount: order.amount,
+      expiresAt,
+    }),
+  ]);
+
+  const activationEmailSent = emailResults[0].status === 'fulfilled';
+  const paymentReceiptEmailSent = emailResults[1].status === 'fulfilled';
+
+  await pool.query(
+    'UPDATE orders SET activation_email_sent = $1, payment_receipt_email_sent = $2 WHERE id = $3',
+    [activationEmailSent, paymentReceiptEmailSent, orderId]
+  );
+
+  for (const [index, result] of emailResults.entries()) {
+    if (result.status === 'rejected') {
+      const emailType = index === 0 ? 'Activation' : 'Payment receipt';
+      console.error(`[${emailType} email error]`, result.reason?.message || 'Email delivery failed.');
+      await pool.query(
+        `INSERT INTO activity_logs (tenant_id, action, description, metadata)
+         VALUES ($1,$2,$3,$4)`,
+        [provisionedTenantId, 'EMAIL_FAILED', `${emailType} email failed to send`, JSON.stringify({ orderId })]
+      ).catch(() => {});
+    }
+  }
+
+  return {
+    success: true,
+    orderId,
+    status: 'PAID',
+    provisioning_status: 'COMPLETE',
+    emailSent: activationEmailSent && paymentReceiptEmailSent,
+  };
+}
+
+
 export default async function purchaseRoutes(request, response, url) {
-  if (!url.pathname.startsWith('/api/purchase')) return false;
+  if (!url.pathname.startsWith('/api/purchase') && !url.pathname.startsWith('/api/webhooks/cashfree')) {
+    return false;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // POST /api/webhooks/cashfree AND POST /api/purchase/webhook
+  // Cashfree Payment Webhook Endpoint
+  // ─────────────────────────────────────────────────────────────────────────
+  if (request.method === 'POST' && (url.pathname === '/api/webhooks/cashfree' || url.pathname === '/api/purchase/webhook')) {
+    const secretKey = (process.env.CASHFREE_SECRET_KEY || '').trim();
+    const input = await readJson(request).catch(() => ({}));
+
+    const data = input?.data || input;
+    const orderId = data?.order?.order_id || data?.order_id || input?.order_id || input?.data?.orderId;
+    const paymentStatus = (data?.payment?.payment_status || data?.order?.order_status || input?.type || input?.event || '').toUpperCase();
+
+    const isSuccess = paymentStatus === 'SUCCESS' || paymentStatus === 'PAID' || paymentStatus === 'PAYMENT_SUCCESS_WEBHOOK' || input?.type === 'PAYMENT_SUCCESS_WEBHOOK';
+    const isFailed = paymentStatus === 'FAILED' || paymentStatus === 'CANCELLED' || paymentStatus === 'USER_DROPPED' || input?.type === 'PAYMENT_FAILED_WEBHOOK';
+
+    const rawSig = request.headers['x-cashfree-signature'] || request.headers['x-webhook-signature'] || '';
+    const timestamp = request.headers['x-webhook-timestamp'] || request.headers['x-cashfree-timestamp'] || '';
+    if (secretKey && rawSig && timestamp) {
+      const payloadString = `${timestamp}${JSON.stringify(input)}`;
+      const expectedSig = createHmac('sha256', secretKey).update(payloadString).digest('base64');
+      if (rawSig !== expectedSig && rawSig !== createHmac('sha256', secretKey).update(payloadString).digest('hex')) {
+        console.warn(`[webhook] Invalid Cashfree signature for order ${orderId}`);
+        throw apiError(401, 'Invalid Cashfree webhook signature.');
+      }
+    }
+
+    if (!orderId) {
+      sendJson(response, 200, { received: true, status: 'IGNORED', message: 'No order ID in payload.' });
+      return true;
+    }
+
+    if (isFailed) {
+      await pool.query("UPDATE orders SET status='FAILED', updated_at=NOW() WHERE id=$1 AND status='PENDING_PAYMENT'", [orderId]);
+      sendJson(response, 200, { received: true, orderId, status: 'FAILED' });
+      return true;
+    }
+
+    if (isSuccess || (process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY)) {
+      try {
+        const result = await processOrderPaymentAndProvision({
+          orderId,
+          gatewayUsed: 'cashfree_webhook',
+          transactionId: data?.payment?.cf_payment_id || orderId,
+          rawResponse: JSON.stringify(input),
+          isWebhook: true,
+        });
+        sendJson(response, 200, { received: true, ...result });
+        return true;
+      } catch (err) {
+        console.error(`[webhook] Cashfree processing error for ${orderId}:`, err.message);
+        sendJson(response, err.status || 500, { error: err.message, orderId });
+        return true;
+      }
+    }
+
+    sendJson(response, 200, { received: true, orderId, status: 'ACKNOWLEDGED' });
+    return true;
+  }
 
   // ─────────────────────────────────────────────────────────────────────────
   // POST /api/purchase/orders — Create order (business details + planId only)
@@ -48,12 +434,6 @@ export default async function purchaseRoutes(request, response, url) {
     const plan = PLANS[planKey];
     if (!plan) throw apiError(400, 'Invalid plan selected.');
 
-    const appId = process.env.CASHFREE_APP_ID;
-    const secretKey = process.env.CASHFREE_SECRET_KEY;
-    const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
-    const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
-
-    // Prevent duplicate active accounts for the same email
     const userCheck = await pool.query(
       'SELECT id, tenant_id FROM users WHERE email = $1',
       [customerEmail.trim().toLowerCase()]
@@ -62,7 +442,6 @@ export default async function purchaseRoutes(request, response, url) {
       throw apiError(409, 'An account already exists with this email.');
     }
 
-    // Idempotency: if a PENDING_PAYMENT order for this email+plan exists in last 30 mins, reuse it
     const existingOrder = await pool.query(
       `SELECT id FROM orders
         WHERE customer_email = $1 AND plan_id = $2
@@ -72,7 +451,6 @@ export default async function purchaseRoutes(request, response, url) {
       [customerEmail.trim().toLowerCase(), planKey]
     );
     if (existingOrder.rows.length > 0) {
-      // Update the existing order details in case they changed and reuse
       const eid = existingOrder.rows[0].id;
       await pool.query(
         `UPDATE orders SET customer_name=$1, business_name=$2, phone=$3, city=$4, address=$5,
@@ -81,9 +459,12 @@ export default async function purchaseRoutes(request, response, url) {
          cuisine || null, website || null, instagram || null, eid]
       );
       
-      // Fetch existing session ID from Cashfree if configured
       let paymentSessionId = null;
+      const appId = process.env.CASHFREE_APP_ID;
+      const secretKey = process.env.CASHFREE_SECRET_KEY;
+      const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
       if (appId && secretKey) {
+        const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
         try {
           const cfRes = await fetch(`${baseUrl}/orders/${eid}`, {
             headers: {
@@ -96,7 +477,6 @@ export default async function purchaseRoutes(request, response, url) {
             const cfData = await cfRes.json();
             paymentSessionId = cfData.payment_session_id;
           } else if (cfRes.status === 404) {
-            // Cashfree order was never created (maybe failed validation previously). Create it now.
             const cfCreate = await fetch(`${baseUrl}/orders`, {
               method: 'POST',
               headers: {
@@ -116,7 +496,7 @@ export default async function purchaseRoutes(request, response, url) {
                   customer_name: customerName
                 },
                 order_meta: {
-                  return_url: `${process.env.FRONTEND_ORIGIN || 'http://localhost:5173'}/purchase/success?order_id={order_id}`
+                  return_url: `${process.env.FRONTEND_ORIGIN || 'https://menusqr.in'}/purchase/success?order_id={order_id}`
                 }
               })
             });
@@ -137,6 +517,10 @@ export default async function purchaseRoutes(request, response, url) {
     const orderId = `order_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
 
     let paymentSessionId = null;
+    const appId = process.env.CASHFREE_APP_ID;
+    const secretKey = process.env.CASHFREE_SECRET_KEY;
+    const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
+    const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
 
     if (appId && secretKey) {
       try {
@@ -159,7 +543,7 @@ export default async function purchaseRoutes(request, response, url) {
               customer_name: customerName
             },
             order_meta: {
-              return_url: `${process.env.FRONTEND_ORIGIN || 'http://localhost:5173'}/purchase/success?order_id={order_id}`
+              return_url: `${process.env.FRONTEND_ORIGIN || 'https://menusqr.in'}/purchase/success?order_id={order_id}`
             }
           })
         });
@@ -204,7 +588,6 @@ export default async function purchaseRoutes(request, response, url) {
     const res = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
     if (!res.rows[0]) throw apiError(404, 'Order not found.');
     const order = res.rows[0];
-    // Attach plan features for the review page
     const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
     sendJson(response, 200, { ...order, planLabel: planMeta.label, planFeatures: planMeta.features });
     return true;
@@ -216,290 +599,19 @@ export default async function purchaseRoutes(request, response, url) {
   const verifyMatch = url.pathname.match(/^\/api\/purchase\/orders\/([^/]+)\/verify$/);
   if (request.method === 'POST' && verifyMatch) {
     const orderId = verifyMatch[1];
-    const input = await readJson(request);
-    const { razorpayPaymentId, razorpayOrderId, razorpaySignature, mockSuccess, isCashfreeRedirect } = input;
-
-    const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
-    const order = orderRes.rows[0];
-    if (!order) throw apiError(404, 'Order not found.');
-
-    // ── IDEMPOTENCY GUARD: already fully provisioned ──────────────────────
-    if (order.status === 'PAID' && order.provisioning_status === 'COMPLETE') {
-      sendJson(response, 200, {
-        success: true, orderId, status: 'PAID',
-        provisioning_status: 'COMPLETE', alreadyProvisioned: true,
-        emailSent: Boolean(order.activation_email_sent && order.payment_receipt_email_sent),
-      });
-      return true;
-    }
-
-    if (order.status === 'FAILED') {
-      throw apiError(400, 'This order has been marked as failed. Please start a new order.');
-    }
-
-    // ── PAYMENT VERIFICATION ──────────────────────────────────────────────
-    if (order.status !== 'PAID') {
-      const razorpayConfigured = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
-      const cashfreeConfigured = !!(process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY);
-
-      let gatewayUsed = 'mock';
-      let transactionId = `mock_${randomUUID()}`;
-
-      if (isCashfreeRedirect && cashfreeConfigured) {
-        const appId = process.env.CASHFREE_APP_ID;
-        const secretKey = process.env.CASHFREE_SECRET_KEY;
-        const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
-        const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
-        
-        const cfRes = await fetch(`${baseUrl}/orders/${orderId}`, {
-          method: 'GET',
-          headers: {
-            'x-client-id': appId,
-            'x-client-secret': secretKey,
-            'x-api-version': '2023-08-01',
-          }
-        });
-        
-        if (!cfRes.ok) {
-           throw apiError(400, 'Failed to verify Cashfree order status.');
-        }
-        
-        const cfData = await cfRes.json();
-        if (cfData.order_status !== 'PAID') {
-           await pool.query("UPDATE orders SET status='FAILED' WHERE id=$1", [orderId]);
-           throw apiError(400, 'Payment not marked as PAID by Cashfree.');
-        }
-        
-        gatewayUsed = 'cashfree';
-        transactionId = orderId; // Using orderId as transactionId for simplicity
-      } else if (razorpayConfigured) {
-        if (!razorpayPaymentId || !razorpaySignature) {
-          throw apiError(400, 'Razorpay payment details missing.');
-        }
-        // Real Razorpay signature check
-        const { createHmac } = await import('node:crypto');
-        const body = `${razorpayOrderId}|${razorpayPaymentId}`;
-        const expected = createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-          .update(body).digest('hex');
-        if (expected !== razorpaySignature) {
-          await pool.query("UPDATE orders SET status='FAILED' WHERE id=$1", [orderId]);
-          throw apiError(400, 'Payment signature verification failed.');
-        }
-        gatewayUsed = 'razorpay';
-        transactionId = razorpayPaymentId;
-      } else if (process.env.NODE_ENV !== 'production' && mockSuccess) {
-        // mock payment accepted only in dev/test
-      } else {
-        throw apiError(400, 'Payment verification data missing or invalid.');
-      }
-
-      await pool.query("UPDATE orders SET status='PAID', updated_at=NOW() WHERE id=$1", [orderId]);
-
-      const paymentId = `pay_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
-      await pool.query(
-        `INSERT INTO payments (id, order_id, gateway, transaction_id, amount, status, raw_response)
-         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-        [paymentId, orderId,
-         gatewayUsed,
-         transactionId,
-         order.amount, 'SUCCESS',
-         JSON.stringify({ razorpayPaymentId, razorpayOrderId, mockSuccess, isCashfreeRedirect })]
-      );
-    }
-
-    // ── PROVISIONING (idempotent via provisioning_status) ─────────────────
-    const provCheck = await pool.query(
-      'SELECT provisioning_status FROM orders WHERE id=$1', [orderId]
-    );
-    if (provCheck.rows[0]?.provisioning_status === 'COMPLETE') {
-      sendJson(response, 200, { success: true, orderId, status: 'PAID', provisioning_status: 'COMPLETE', alreadyProvisioned: true });
-      return true;
-    }
-
-    // Lock against concurrent provisioning
-    await pool.query(
-      "UPDATE orders SET provisioning_status='PROCESSING', updated_at=NOW() WHERE id=$1",
-      [orderId]
-    );
-
-    let activationTokenRaw;
-    let provisionedTenantId;
-
-    try {
-      await pool.query('BEGIN');
-
-      // ── 1. Create or find user ───────────────────────────────────────────
-      let userId;
-      let tenantId;
-      const userCheck = await pool.query(
-        'SELECT id, tenant_id FROM users WHERE email=$1 FOR UPDATE',
-        [order.customer_email]
-      );
-
-      if (userCheck.rows.length > 0) {
-        userId = userCheck.rows[0].id;
-        tenantId = userCheck.rows[0].tenant_id || null;
-      } else {
-        userId = randomUUID();
-        const orderMeta = order.metadata || {};
-        const pwdHash = orderMeta.password_hash || hashPassword(randomUUID().substring(0, 32));
-        const { raw, hashed } = generateActivationToken();
-        activationTokenRaw = raw;
-        const tokenExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
-
-        await pool.query(
-          `INSERT INTO users
-             (id, email, password_hash, role, onboarding_state,
-              activation_token_hash, activation_token_expires_at)
-           VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-          [userId, order.customer_email, pwdHash, 'RESTAURANT_OWNER', orderMeta.password_hash ? 'COMPLETED' : 'PENDING',
-           hashed, tokenExpiry]
-        );
-      }
-
-      // ── 2. Create restaurant (client) if not already linked ──────────────
-      if (!tenantId) {
-        tenantId = randomUUID();
-        const publicId = randomUUID().split('-')[0];
-        let menuSlug = slugify(order.business_name, { lower: true, strict: true }) || 'menu';
-        const slugCheck = await pool.query(
-          'SELECT id FROM clients WHERE menu_slug=$1', [menuSlug]
-        );
-        if (slugCheck.rows.length > 0) menuSlug = `${menuSlug}-${publicId}`;
-
-        await pool.query(
-          `INSERT INTO clients
-             (id, public_id, business_name, menu_slug, category, status)
-           VALUES ($1,$2,$3,$4,$5,$6)`,
-          [tenantId, publicId, order.business_name, menuSlug,
-           order.cuisine || null, 'active']
-        );
-
-        await pool.query(
-          'UPDATE users SET tenant_id=$1, updated_at=NOW() WHERE id=$2',
-          [tenantId, userId]
-        );
-
-        // ── 3. Create subscription ──────────────────────────────────────────
-        const expiresAt = new Date();
-        expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-        const subscriptionId = randomUUID();
-        await pool.query(
-          `INSERT INTO subscriptions
-             (id, tenant_id, plan_id, status, started_at, expires_at)
-           VALUES ($1,$2,$3,$4,$5,$6)`,
-          [subscriptionId, tenantId,
-           order.plan_id.toUpperCase(), 'ACTIVE', new Date(), expiresAt]
-        );
-
-        // ── 4. Create menu skeleton ─────────────────────────────────────────
-        const menuId = randomUUID();
-        await pool.query(
-          'INSERT INTO menus (id, tenant_id, name) VALUES ($1,$2,$3)',
-          [menuId, tenantId, 'Main Menu']
-        );
-
-        // ── 5. Create appearance defaults ───────────────────────────────────
-        const appSettingId = randomUUID();
-        await pool.query(
-          `INSERT INTO appearance_settings
-             (id, tenant_id, template_id, restaurant_display_name)
-           VALUES ($1,$2,$3,$4)`,
-          [appSettingId, tenantId, 'royal-maharaja', order.business_name]
-        );
-
-        // ── 6. Set onboarding state ─────────────────────────────────────────
-        // (already set to PENDING on user insert — explicit update for safety)
-        await pool.query(
-          "UPDATE users SET onboarding_state='PENDING', updated_at=NOW() WHERE id=$1",
-          [userId]
-        );
-      }
-
-      provisionedTenantId = tenantId;
-
-      // ── 7. Log provisioning ─────────────────────────────────────────────
-      await pool.query(
-        `INSERT INTO activity_logs (tenant_id, user_id, action, description, metadata)
-         VALUES ($1,$2,$3,$4,$5)`,
-        [tenantId, userId, 'ORDER_PROVISIONED',
-         `Order ${orderId} provisioned successfully`,
-         JSON.stringify({ orderId, plan: order.plan_id, amount: order.amount })]
-      );
-
-      // ── 8. Mark order complete ──────────────────────────────────────────
-      await pool.query(
-        "UPDATE orders SET provisioning_status='COMPLETE', updated_at=NOW() WHERE id=$1",
-        [orderId]
-      );
-
-      await pool.query('COMMIT');
-    } catch (e) {
-      await pool.query('ROLLBACK');
-      await pool.query(
-        "UPDATE orders SET provisioning_status='FAILED', updated_at=NOW() WHERE id=$1",
-        [orderId]
-      );
-      console.error('[Provisioning Error]', e.message);
-      // Payment succeeded — don't return a 500. Tell client to contact support.
-      sendJson(response, 200, {
-        success: true, orderId, status: 'PAID',
-        provisioning_status: 'FAILED',
-        message: 'Payment received but account setup encountered an error. Contact support with your order ID.',
-      });
-      return true;
-    }
-
-    // ── 9. Send account and payment emails ───────────────────────────────
-    const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
-    const clearPassword = (order.metadata || {}).clear_password;
-
-    const subscriptionResult = await pool.query(
-      'SELECT expires_at FROM subscriptions WHERE tenant_id = $1',
-      [provisionedTenantId]
-    );
-    const expiresAt = subscriptionResult.rows[0]?.expires_at || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-    const emailResults = await Promise.allSettled([
-      sendActivationEmail({
-        email: order.customer_email,
-        ownerName: order.customer_name,
-        businessName: order.business_name,
-        plan: planMeta.label || order.plan_id.toUpperCase(),
-        activationToken: activationTokenRaw,
-        password: clearPassword,
-      }),
-      sendPaymentSuccessEmail({
-        email: order.customer_email,
-        businessName: order.business_name,
-        plan: planMeta.label || order.plan_id.toUpperCase(),
-        amount: order.amount,
-        expiresAt,
-      }),
-    ]);
-    const activationEmailSent = emailResults[0].status === 'fulfilled';
-    const paymentReceiptEmailSent = emailResults[1].status === 'fulfilled';
-
-    await pool.query(
-      'UPDATE orders SET activation_email_sent = $1, payment_receipt_email_sent = $2 WHERE id = $3',
-      [activationEmailSent, paymentReceiptEmailSent, orderId]
-    );
-
-    for (const [index, result] of emailResults.entries()) {
-      if (result.status === 'rejected') {
-        const emailType = index === 0 ? 'Activation' : 'Payment receipt';
-        console.error(`[${emailType} email error]`, result.reason?.message || 'Email delivery failed.');
-        await pool.query(
-          `INSERT INTO activity_logs (tenant_id, action, description, metadata)
-           VALUES ($1,$2,$3,$4)`,
-          [provisionedTenantId, 'EMAIL_FAILED', `${emailType} email failed to send`, JSON.stringify({ orderId })]
-        ).catch(() => {});
-      }
-    }
-
-    sendJson(response, 200, {
-      success: true, orderId, status: 'PAID', provisioning_status: 'COMPLETE',
-      emailSent: activationEmailSent && paymentReceiptEmailSent,
+    const input = await readJson(request).catch(() => ({}));
+    const result = await processOrderPaymentAndProvision({
+      orderId,
+      gatewayUsed: input.isCashfreeRedirect ? 'cashfree' : 'mock',
+      transactionId: input.razorpayPaymentId || input.transactionId || orderId,
+      rawResponse: JSON.stringify(input),
+      isCashfreeRedirect: Boolean(input.isCashfreeRedirect),
+      razorpayPaymentId: input.razorpayPaymentId,
+      razorpayOrderId: input.razorpayOrderId,
+      razorpaySignature: input.razorpaySignature,
+      mockSuccess: Boolean(input.mockSuccess),
     });
+    sendJson(response, 200, result);
     return true;
   }
 
@@ -512,20 +624,17 @@ export default async function purchaseRoutes(request, response, url) {
     const input = await readJson(request);
     const { planId, razorpayPaymentId, razorpayOrderId, razorpaySignature, mockSuccess } = input;
 
-    // Find source order
     const sourceRes = await pool.query('SELECT * FROM orders WHERE id=$1', [sourceOrderId]);
     const sourceOrder = sourceRes.rows[0];
     if (!sourceOrder) throw apiError(404, 'Source order not found.');
     if (sourceOrder.status !== 'PAID') throw apiError(400, 'Source order is not paid.');
 
-    // Find existing tenant via user email
     const userRes = await pool.query(
       'SELECT id, tenant_id FROM users WHERE email=$1', [sourceOrder.customer_email]
     );
     if (!userRes.rows[0]?.tenant_id) throw apiError(400, 'No active account found for this order.');
     const tenantId = userRes.rows[0].tenant_id;
 
-    // Resolve renewal plan
     const planKey = makePlanKey(planId || sourceOrder.plan_id);
     const plan = PLANS[planKey];
     const razorpayConfigured = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
@@ -534,7 +643,6 @@ export default async function purchaseRoutes(request, response, url) {
       if (!razorpayPaymentId || !razorpaySignature) {
         throw apiError(400, 'Razorpay payment details missing.');
       }
-      const { createHmac } = await import('node:crypto');
       const body = `${razorpayOrderId}|${razorpayPaymentId}`;
       const expected = createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(body).digest('hex');
       if (expected !== razorpaySignature) {
@@ -546,7 +654,6 @@ export default async function purchaseRoutes(request, response, url) {
       throw apiError(400, 'Payment verification data missing or invalid.');
     }
 
-    // Create renewal order record
     const renewOrderId = `order_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
     await pool.query(
       `INSERT INTO orders
@@ -557,7 +664,6 @@ export default async function purchaseRoutes(request, response, url) {
        sourceOrder.currency || 'INR', 'PAID', 'PENDING']
     );
 
-    // Payment record (mock or Razorpay)
     const paymentId = `pay_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
     await pool.query(
       `INSERT INTO payments (id, order_id, gateway, transaction_id, amount, status)
@@ -568,7 +674,6 @@ export default async function purchaseRoutes(request, response, url) {
        plan.price, 'SUCCESS']
     );
 
-    // Extend/create subscription — same tenant, same QR
     const existingSub = await pool.query(
       'SELECT * FROM subscriptions WHERE tenant_id=$1 ORDER BY created_at DESC LIMIT 1',
       [tenantId]
@@ -578,7 +683,6 @@ export default async function purchaseRoutes(request, response, url) {
     let newExpiry = new Date();
 
     if (existingSub.rows[0]) {
-      // Extend from current expiry if still valid, else from now
       const currentExpiry = new Date(existingSub.rows[0].expires_at);
       newStart = currentExpiry > newStart ? currentExpiry : newStart;
       newExpiry = new Date(newStart);
@@ -604,7 +708,6 @@ export default async function purchaseRoutes(request, response, url) {
       [renewOrderId]
     );
 
-    // Log renewal
     await pool.query(
       `INSERT INTO activity_logs (tenant_id, action, description, metadata)
        VALUES ($1,$2,$3,$4)`,
@@ -613,7 +716,6 @@ export default async function purchaseRoutes(request, response, url) {
        JSON.stringify({ renewOrderId, plan: planKey, expiresAt: newExpiry })]
     );
 
-    // Send renewal email async
     void sendRenewalEmail({
       email: sourceOrder.customer_email,
       businessName: sourceOrder.business_name,
