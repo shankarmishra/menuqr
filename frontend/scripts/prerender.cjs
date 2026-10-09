@@ -481,6 +481,24 @@ routes.forEach((route) => {
   }
 });
 
+// Also create static SPA fallback index.html shells for dynamic routes
+const spaRoutes = [
+  '/onboarding',
+  '/purchase/success',
+  '/purchase/details',
+  '/purchase/review',
+  '/signup',
+  '/login',
+  '/app',
+  '/admin',
+];
+
+spaRoutes.forEach((routePath) => {
+  const targetDir = path.join(DIST_DIR, routePath.slice(1));
+  fs.mkdirSync(targetDir, { recursive: true });
+  fs.writeFileSync(path.join(targetDir, 'index.html'), template, 'utf-8');
+});
+
 // Also create 404.html with noindex for Vercel
 let html404 = template;
 html404 = html404.replace(/<title>.*?<\/title>/gi, `<title>404 - Page Not Found | MenusQR</title>`);
@@ -489,4 +507,5 @@ html404 = html404.replace('</head>', `<meta name="robots" content="noindex, nofo
 html404 = html404.replace('<div id="root"></div>', `<div id="root"><main class="max-w-4xl mx-auto px-6 py-20 text-center"><h1 class="text-4xl font-bold text-[#151C19]">404 - Page Not Found</h1><p class="mt-4 text-gray-600">The requested page does not exist on MenusQR.</p><a href="/" class="mt-6 inline-block bg-[#E8783C] text-white px-6 py-3 rounded-full font-bold">Go to Homepage</a></main></div>`);
 fs.writeFileSync(path.join(DIST_DIR, '404.html'), html404, 'utf-8');
 
-console.log(`Prerender complete: Generated static HTML for ${routes.length} routes + 404.html`);
+console.log(`Prerender complete: Generated static HTML for ${routes.length} marketing routes + ${spaRoutes.length} SPA shells + 404.html`);
+
