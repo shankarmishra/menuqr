@@ -3,6 +3,7 @@ import { getProfile, getSubscription, getMenu, getOrders, getStickerRequests } f
 import type { AppSubscriptionData, AppProfile, StickerRequest } from './appStore';
 import { QrCode, ArrowRight, UtensilsCrossed, Edit3, ExternalLink, Download, Sparkles, ChefHat, CheckCircle2, XCircle, Package } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ScannableQRCode from '../../components/marketing/ScannableQRCode';
 
 
 export default function Dashboard() {
@@ -324,12 +325,8 @@ export default function Dashboard() {
               </div>
             ) : (
               <>
-                <div className="w-44 h-44 bg-white rounded-xl p-3 shadow-2xl border border-white/10 mb-6 flex items-center justify-center">
-                  <div className="w-full h-full relative" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #000 0, #000 2px, transparent 2px, transparent 4px)' }}>
-                     <div className="absolute inset-2 bg-white flex items-center justify-center">
-                        <QrCode size={90} className="text-[#151c19]" />
-                     </div>
-                  </div>
+                <div className="w-48 h-48 bg-white rounded-2xl p-4 shadow-2xl border border-white/10 mb-6 flex items-center justify-center">
+                  <ScannableQRCode url={publicUrl} size={160} />
                 </div>
                 
                 <p className="text-sm text-[#849a90] text-center font-medium mb-6">
