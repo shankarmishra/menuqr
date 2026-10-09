@@ -99,6 +99,31 @@ export interface StickerRequest {
   updatedAt?: string;
 }
 
+export interface AppVariant {
+  id?: string;
+  name: string;
+  price: number;
+  isAvailable?: boolean;
+  variantGroup?: string;
+}
+
+export interface AppAddonOption {
+  id?: string;
+  name: string;
+  price: number;
+  isAvailable?: boolean;
+}
+
+export interface AppAddonGroup {
+  id?: string;
+  name: string;
+  description?: string;
+  isRequired?: boolean;
+  minSelect?: number;
+  maxSelect?: number;
+  options: AppAddonOption[];
+}
+
 export interface AppMenuItem {
   id: string;
   category_id: string;
@@ -107,14 +132,30 @@ export interface AppMenuItem {
   price?: number | string | null;
   half_price?: number | string | null;
   full_price?: number | string | null;
+  pricing_type?: 'single' | 'variants';
   image_url?: string | null;
   diet_type?: string;
   is_available?: boolean;
+  variants?: AppVariant[];
+  addon_groups?: AppAddonGroup[];
+}
+
+export interface AppMenuImportHistory {
+  id: string;
+  filename: string;
+  status: string;
+  categories_count: number;
+  items_count: number;
+  variants_count: number;
+  addons_count: number;
+  skipped_count: number;
+  created_at: string;
 }
 
 export interface AppMenuData {
-  menu: { id: string; name: string; menuSlug?: string } | null;
-  categories: Array<{ id: string; name: string; items: AppMenuItem[] }>;
+  menu: { id: string; name: string; status?: 'PUBLISHED' | 'DRAFT'; published_at?: string; menuSlug?: string } | null;
+  categories: Array<{ id: string; name: string; description?: string; items: AppMenuItem[] }>;
+  importHistory?: AppMenuImportHistory[];
 }
 
 export function getProfile(): Promise<AppProfile> {
@@ -150,6 +191,13 @@ export function getMenu(): Promise<AppMenuData> {
   return request<AppMenuData>('/menu');
 }
 
+export function publishMenu(status: 'PUBLISHED' | 'DRAFT'): Promise<{ id: string; status: string }> {
+  return request<{ id: string; status: string }>('/menu/publish', {
+    method: 'POST',
+    body: JSON.stringify({ status })
+  });
+}
+
 export function saveOnboarding(data: OnboardingPayload): Promise<{ success: boolean; menuId: string }> {
   return request<{ success: boolean; menuId: string }>('/onboarding/save', {
     method: 'POST',
@@ -157,10 +205,24 @@ export function saveOnboarding(data: OnboardingPayload): Promise<{ success: bool
   });
 }
 
-export function updateMenuItem(itemId: string, data: Partial<AppMenuItem> & { categoryId?: string; imageUrl?: string; dietType?: string; isAvailable?: boolean }): Promise<AppMenuItem> {
+export function updateMenuItem(itemId: string, data: Partial<AppMenuItem> & { categoryId?: string; imageUrl?: string; dietType?: string; isAvailable?: boolean; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[] }): Promise<AppMenuItem> {
   return request<AppMenuItem>(`/items/${encodeURIComponent(itemId)}`, {
     method: 'PUT',
     body: JSON.stringify(data),
+  });
+}
+
+export function duplicateMenuItem(itemId: string): Promise<AppMenuItem> {
+  return request<AppMenuItem>('/items/duplicate', {
+    method: 'POST',
+    body: JSON.stringify({ itemId })
+  });
+}
+
+export function bulkUpdateMenuItems(itemIds: string[], action: 'change_category' | 'change_availability' | 'adjust_price' | 'delete', payload?: any): Promise<{ success: boolean; count: number }> {
+  return request<{ success: boolean; count: number }>('/items/bulk-update', {
+    method: 'POST',
+    body: JSON.stringify({ itemIds, action, payload })
   });
 }
 
@@ -184,7 +246,7 @@ export function deleteMenuCategory(categoryId: string): Promise<void> {
   return request<void>(`/categories/${encodeURIComponent(categoryId)}`, { method: 'DELETE', body: '{}' });
 }
 
-export function createMenuItem(data: { menuId: string; categoryId: string; name: string; description?: string; price: number; imageUrl?: string; dietType?: string }): Promise<AppMenuItem> {
+export function createMenuItem(data: { menuId: string; categoryId: string; name: string; description?: string; price: number; imageUrl?: string; dietType?: string; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[] }): Promise<AppMenuItem> {
   return request<AppMenuItem>('/items', { method: 'POST', body: JSON.stringify(data) });
 }
 
@@ -194,6 +256,24 @@ export function deleteMenuItem(itemId: string): Promise<void> {
 
 export function setMenuItemAvailability(itemId: string, isAvailable: boolean): Promise<AppMenuItem> {
   return request<AppMenuItem>(`/items/${encodeURIComponent(itemId)}/availability`, { method: 'PATCH', body: JSON.stringify({ isAvailable }) });
+}
+
+export function previewMenuImport(headers: string[], rawRows: any[]): Promise<{ detectedColumns: Record<string, string>; summary: any; categories: any[]; issues: any[] }> {
+  return request('/menu/import/preview', {
+    method: 'POST',
+    body: JSON.stringify({ headers, rawRows })
+  });
+}
+
+export function executeMenuImport(categories: any[], mode: 'add' | 'update' | 'skip' = 'add', filename: string = 'menu.xlsx'): Promise<any> {
+  return request('/menu/import/execute', {
+    method: 'POST',
+    body: JSON.stringify({ categories, mode, filename })
+  });
+}
+
+export function getMenuImportHistory(): Promise<AppMenuImportHistory[]> {
+  return request<AppMenuImportHistory[]>('/menu/import/history');
 }
 
 export function getStickerRequests(): Promise<StickerRequest[]> {
@@ -211,7 +291,6 @@ export function updateSettings(data: any): Promise<any> {
   });
 }
 
-
 export async function getOrders() {
   return request<any[]>('/orders');
 }
@@ -223,3 +302,4 @@ export async function updateOrderStatus(id: string, status: string) {
   });
 }
 export function renewSubscription(planId: string): Promise<any> { return request<any>('/subscription/renew', { method: 'POST', body: JSON.stringify({ planId }) }); }
+

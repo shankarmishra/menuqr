@@ -3,6 +3,7 @@ import { enforceTenant } from '../auth.js';
 import { apiError, sendJson, readJson } from '../utils.js';
 import { randomUUID } from 'node:crypto';
 import { resolveTenantAuthorization, requireEntitlement, withContentChange, getContentUsage } from '../authorization.js';
+import { detectColumnMappings, validateAndPreviewImport, executeImportTransaction } from '../menuImporter.js';
 
 function inputText(value, maxLength = 255) {
   if (value === undefined || value === null) return '';
@@ -406,19 +407,83 @@ export default async function appRoutes(request, response, url) {
     `, [user.tenantId]);
     const menu = menuRes.rows[0] || null;
     if (!menu) {
-      sendJson(response, 200, { menu: null, categories: [] });
+      sendJson(response, 200, { menu: null, categories: [], importHistory: [] });
       return true;
     }
     
-    const categoriesRes = await pool.query('SELECT * FROM menu_categories WHERE menu_id = $1 ORDER BY sort_order', [menu.id]);
-    const itemsRes = await pool.query('SELECT * FROM menu_items WHERE menu_id = $1 ORDER BY sort_order', [menu.id]);
-    
+    const categoriesRes = await pool.query(
+      'SELECT * FROM menu_categories WHERE menu_id = $1 AND tenant_id = $2 ORDER BY sort_order',
+      [menu.id, user.tenantId]
+    );
+    const itemsRes = await pool.query(
+      'SELECT * FROM menu_items WHERE menu_id = $1 AND tenant_id = $2 ORDER BY sort_order',
+      [menu.id, user.tenantId]
+    );
+    const variantsRes = await pool.query(
+      'SELECT * FROM menu_item_variants WHERE tenant_id = $1 ORDER BY sort_order',
+      [user.tenantId]
+    );
+    const addonGroupsRes = await pool.query(
+      'SELECT * FROM menu_item_addon_groups WHERE tenant_id = $1 ORDER BY sort_order',
+      [user.tenantId]
+    );
+    const addonOptionsRes = await pool.query(
+      'SELECT * FROM menu_item_addon_options WHERE tenant_id = $1 ORDER BY sort_order',
+      [user.tenantId]
+    );
+    const historyRes = await pool.query(
+      'SELECT * FROM menu_imports WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT 10',
+      [user.tenantId]
+    );
+
     const categories = categoriesRes.rows.map(cat => ({
       ...cat,
-      items: itemsRes.rows.filter(item => item.category_id === cat.id)
+      items: itemsRes.rows
+        .filter(item => item.category_id === cat.id)
+        .map(item => {
+          const itemVariants = variantsRes.rows
+            .filter(v => v.menu_item_id === item.id)
+            .map(v => ({ id: v.id, name: v.name, price: Number(v.price), isAvailable: v.is_available, variantGroup: v.variant_group }));
+          
+          const itemAddonGroups = addonGroupsRes.rows
+            .filter(g => g.menu_item_id === item.id)
+            .map(g => ({
+              id: g.id,
+              name: g.name,
+              description: g.description,
+              isRequired: g.is_required,
+              minSelect: g.min_select,
+              maxSelect: g.max_select,
+              options: addonOptionsRes.rows
+                .filter(o => o.addon_group_id === g.id)
+                .map(o => ({ id: o.id, name: o.name, price: Number(o.price), isAvailable: o.is_available }))
+            }));
+
+          return {
+            ...item,
+            variants: itemVariants,
+            addon_groups: itemAddonGroups,
+          };
+        })
     }));
     
-    sendJson(response, 200, { menu, categories });
+    sendJson(response, 200, { menu, categories, importHistory: historyRes.rows });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/menu/publish') {
+    requireBasicContentAccess(authorization);
+    const input = await readJson(request);
+    const status = input.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED';
+    const result = await withContentChange(authorization, async (client) => {
+      const update = await queryPortable(client,
+        'UPDATE menus SET status = ?, published_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = ? RETURNING *',
+        [status, user.tenantId]
+      );
+      if (update.rowCount === 0) throw apiError(404, 'Menu not found.');
+      return update;
+    });
+    sendJson(response, 200, result.rows[0]);
     return true;
   }
 
@@ -436,7 +501,7 @@ export default async function appRoutes(request, response, url) {
       }
       const ownedMenu = await queryPortable(client, 'SELECT id FROM menus WHERE id = ? AND tenant_id = ?', [menuId, user.tenantId]);
       if (!ownedMenu.rows[0]) throw apiError(403, 'Menu does not belong to this account.');
-      const sort = await queryPortable(client, 'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM menu_categories WHERE menu_id = ?', [menuId]);
+      const sort = await queryPortable(client, 'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM menu_categories WHERE menu_id = ? AND tenant_id = ?', [menuId, user.tenantId]);
       const categoryId = randomUUID();
       await queryPortable(client,
         'INSERT INTO menu_categories (id, menu_id, tenant_id, name, description, sort_order) VALUES (?, ?, ?, ?, ?, ?)',
@@ -495,7 +560,7 @@ export default async function appRoutes(request, response, url) {
     requireBasicContentAccess(authorization);
     if (authorization.planId !== 'BASIC') requireEntitlement(authorization, 'add_item', 'Adding menu items requires an Intermediate or Premium plan.');
     const input = await readJson(request);
-    let { menuId, categoryId, name, description, price, halfPrice, fullPrice, dietType, isAvailable } = input;
+    let { menuId, categoryId, name, description, price, halfPrice, fullPrice, dietType, isAvailable, pricingType, variants, addonGroups } = input;
     name = inputText(name, 255);
     const numericPrice = Number(price);
     if (!name || !Number.isFinite(numericPrice) || numericPrice < 0) throw apiError(400, 'Check the menu item name and price.');
@@ -509,15 +574,245 @@ export default async function appRoutes(request, response, url) {
         [categoryId, menuId, user.tenantId]
       );
       if (!ownedCategory.rows[0]) throw apiError(403, 'Category does not belong to this account menu.');
-      const sort = await queryPortable(client, 'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM menu_items WHERE category_id = ?', [categoryId]);
+      const sort = await queryPortable(client, 'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM menu_items WHERE category_id = ? AND tenant_id = ?', [categoryId, user.tenantId]);
       const itemId = randomUUID();
+      const actualPricingType = pricingType || (Array.isArray(variants) && variants.length > 0 ? 'variants' : 'single');
+
       await queryPortable(client,
-        'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, half_price, full_price, image_url, diet_type, is_available, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [itemId, menuId, user.tenantId, categoryId, name, inputText(description, 2000) || null, numericPrice, halfPrice ?? null, fullPrice ?? null, inputText(input.imageUrl, 2048) || null, dietType || 'veg', isAvailable !== false, sort.rows[0].next_order]
+        'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, half_price, full_price, image_url, diet_type, is_available, sort_order, pricing_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [itemId, menuId, user.tenantId, categoryId, name, inputText(description, 2000) || null, numericPrice, halfPrice ?? null, fullPrice ?? null, inputText(input.imageUrl, 2048) || null, dietType || 'veg', isAvailable !== false, sort.rows[0].next_order, actualPricingType]
       );
+
+      if (Array.isArray(variants) && variants.length > 0) {
+        for (let vIdx = 0; vIdx < variants.length; vIdx++) {
+          const v = variants[vIdx];
+          const vPrice = Number(v.price);
+          if (inputText(v.name, 100) && Number.isFinite(vPrice) && vPrice >= 0) {
+            await queryPortable(client,
+              'INSERT INTO menu_item_variants (id, menu_item_id, tenant_id, variant_group, name, price, is_available, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+              [randomUUID(), itemId, user.tenantId, inputText(v.variantGroup, 100) || 'Portion', inputText(v.name, 100), vPrice, v.isAvailable !== false, vIdx + 1]
+            );
+          }
+        }
+      }
+
+      if (Array.isArray(addonGroups) && addonGroups.length > 0) {
+        for (let gIdx = 0; gIdx < addonGroups.length; gIdx++) {
+          const g = addonGroups[gIdx];
+          const gName = inputText(g.name, 100);
+          if (gName) {
+            const groupId = randomUUID();
+            await queryPortable(client,
+              'INSERT INTO menu_item_addon_groups (id, menu_item_id, tenant_id, name, description, is_required, min_select, max_select, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+              [groupId, itemId, user.tenantId, gName, inputText(g.description, 500) || null, Boolean(g.isRequired), Number(g.minSelect || 0), Number(g.maxSelect || 1), gIdx + 1]
+            );
+
+            if (Array.isArray(g.options)) {
+              for (let oIdx = 0; oIdx < g.options.length; oIdx++) {
+                const opt = g.options[oIdx];
+                const optName = inputText(opt.name, 100);
+                const optPrice = Number(opt.price || 0);
+                if (optName && Number.isFinite(optPrice) && optPrice >= 0) {
+                  await queryPortable(client,
+                    'INSERT INTO menu_item_addon_options (id, addon_group_id, tenant_id, name, price, is_available, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                    [randomUUID(), groupId, user.tenantId, optName, optPrice, opt.isAvailable !== false, oIdx + 1]
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+
       return queryPortable(client, 'SELECT * FROM menu_items WHERE id = ? AND tenant_id = ?', [itemId, user.tenantId]);
     });
     sendJson(response, 200, result.rows[0]);
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/items/duplicate') {
+    requireBasicContentAccess(authorization);
+    if (authorization.planId !== 'BASIC') requireEntitlement(authorization, 'add_item', 'Duplicating menu items requires an Intermediate or Premium plan.');
+    const input = await readJson(request);
+    const itemId = input.itemId;
+    if (!itemId) throw apiError(400, 'Specify the item to duplicate.');
+
+    const result = await withContentChange(authorization, async (client) => {
+      const orig = await queryPortable(client, 'SELECT * FROM menu_items WHERE id = ? AND tenant_id = ?', [itemId, user.tenantId]);
+      if (!orig.rows[0]) throw apiError(404, 'Item not found.');
+      const itemData = orig.rows[0];
+
+      const newItemId = randomUUID();
+      const nextSort = await queryPortable(client, 'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM menu_items WHERE category_id = ? AND tenant_id = ?', [itemData.category_id, user.tenantId]);
+      
+      await queryPortable(client,
+        'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, half_price, full_price, image_url, diet_type, is_available, sort_order, pricing_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [newItemId, itemData.menu_id, user.tenantId, itemData.category_id, `${itemData.name} (Copy)`, itemData.description, itemData.price, itemData.half_price, itemData.full_price, itemData.image_url, itemData.diet_type, itemData.is_available, nextSort.rows[0].next_order, itemData.pricing_type || 'single']
+      );
+
+      // Copy variants
+      const origVariants = await queryPortable(client, 'SELECT * FROM menu_item_variants WHERE menu_item_id = ? AND tenant_id = ?', [itemId, user.tenantId]);
+      for (const v of origVariants.rows) {
+        await queryPortable(client,
+          'INSERT INTO menu_item_variants (id, menu_item_id, tenant_id, variant_group, name, price, is_available, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [randomUUID(), newItemId, user.tenantId, v.variant_group, v.name, v.price, v.is_available, v.sort_order]
+        );
+      }
+
+      // Copy addon groups & options
+      const origGroups = await queryPortable(client, 'SELECT * FROM menu_item_addon_groups WHERE menu_item_id = ? AND tenant_id = ?', [itemId, user.tenantId]);
+      for (const g of origGroups.rows) {
+        const newGroupId = randomUUID();
+        await queryPortable(client,
+          'INSERT INTO menu_item_addon_groups (id, menu_item_id, tenant_id, name, description, is_required, min_select, max_select, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [newGroupId, newItemId, user.tenantId, g.name, g.description, g.is_required, g.min_select, g.max_select, g.sort_order]
+        );
+        const origOptions = await queryPortable(client, 'SELECT * FROM menu_item_addon_options WHERE addon_group_id = ? AND tenant_id = ?', [g.id, user.tenantId]);
+        for (const opt of origOptions.rows) {
+          await queryPortable(client,
+            'INSERT INTO menu_item_addon_options (id, addon_group_id, tenant_id, name, price, is_available, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [randomUUID(), newGroupId, user.tenantId, opt.name, opt.price, opt.is_available, opt.sort_order]
+          );
+        }
+      }
+
+      return queryPortable(client, 'SELECT * FROM menu_items WHERE id = ? AND tenant_id = ?', [newItemId, user.tenantId]);
+    });
+
+    sendJson(response, 200, result.rows[0]);
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/items/bulk-update') {
+    requireBasicContentAccess(authorization);
+    if (authorization.planId !== 'BASIC') requireEntitlement(authorization, 'edit_item', 'Bulk editing requires an Intermediate or Premium plan.');
+    const input = await readJson(request);
+    const { itemIds, action, payload } = input;
+    if (!Array.isArray(itemIds) || itemIds.length === 0 || !action) {
+      throw apiError(400, 'Select items and a valid bulk action.');
+    }
+
+    await withContentChange(authorization, async (client) => {
+      // Validate all items belong to tenant
+      const checkRes = await queryPortable(client,
+        'SELECT id, price FROM menu_items WHERE id = ANY(?) AND tenant_id = ?',
+        [itemIds, user.tenantId]
+      );
+      if (checkRes.rows.length !== itemIds.length) {
+        throw apiError(403, 'One or more selected items could not be verified for your account.');
+      }
+
+      if (action === 'change_category') {
+        const categoryId = payload?.categoryId;
+        const catCheck = await queryPortable(client, 'SELECT id FROM menu_categories WHERE id = ? AND tenant_id = ?', [categoryId, user.tenantId]);
+        if (!catCheck.rows[0]) throw apiError(403, 'Category not found or invalid.');
+        await queryPortable(client, 'UPDATE menu_items SET category_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(?) AND tenant_id = ?', [categoryId, itemIds, user.tenantId]);
+      } else if (action === 'change_availability') {
+        const isAvailable = Boolean(payload?.isAvailable);
+        await queryPortable(client, 'UPDATE menu_items SET is_available = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(?) AND tenant_id = ?', [isAvailable, itemIds, user.tenantId]);
+      } else if (action === 'adjust_price') {
+        const type = payload?.type; // 'flat' | 'percentage'
+        const value = Number(payload?.value);
+        if (!['flat', 'percentage'].includes(type) || !Number.isFinite(value)) {
+          throw apiError(400, 'Enter a valid price adjustment amount.');
+        }
+
+        for (const row of checkRes.rows) {
+          const currentPrice = Number(row.price || 0);
+          let newPrice = currentPrice;
+          if (type === 'flat') {
+            newPrice = currentPrice + value;
+          } else {
+            newPrice = currentPrice + (currentPrice * (value / 100));
+          }
+          if (newPrice < 0) newPrice = 0;
+          newPrice = Math.round(newPrice * 100) / 100;
+
+          await queryPortable(client, 'UPDATE menu_items SET price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?', [newPrice, row.id, user.tenantId]);
+          
+          if (type === 'percentage') {
+            const vars = await queryPortable(client, 'SELECT id, price FROM menu_item_variants WHERE menu_item_id = ? AND tenant_id = ?', [row.id, user.tenantId]);
+            for (const v of vars.rows) {
+              let vp = Number(v.price || 0);
+              vp = Math.max(0, Math.round((vp + (vp * (value / 100))) * 100) / 100);
+              await queryPortable(client, 'UPDATE menu_item_variants SET price = ? WHERE id = ? AND tenant_id = ?', [vp, v.id, user.tenantId]);
+            }
+          }
+        }
+      } else if (action === 'delete') {
+        await queryPortable(client, 'DELETE FROM menu_items WHERE id = ANY(?) AND tenant_id = ?', [itemIds, user.tenantId]);
+      } else {
+        throw apiError(400, 'Unsupported bulk action.');
+      }
+    });
+
+    sendJson(response, 200, { success: true, count: itemIds.length });
+    return true;
+  }
+
+  // SMART EXCEL/CSV IMPORT API ENDPOINTS
+  if (request.method === 'POST' && url.pathname === '/api/app/menu/import/preview') {
+    requireBasicContentAccess(authorization);
+    const input = await readJson(request);
+    const { headers, rawRows } = input;
+    if (!Array.isArray(headers) || !Array.isArray(rawRows)) {
+      throw apiError(400, 'Headers and data rows are required for preview.');
+    }
+
+    const columnMap = detectColumnMappings(headers);
+    const existingItemsRes = await pool.query('SELECT name FROM menu_items WHERE tenant_id = $1', [user.tenantId]);
+    const existingNames = existingItemsRes.rows.map(r => r.name);
+    
+    const previewData = validateAndPreviewImport(rawRows, columnMap, existingNames);
+    sendJson(response, 200, {
+      detectedColumns: columnMap,
+      ...previewData
+    });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/menu/import/execute') {
+    requireBasicContentAccess(authorization);
+    if (authorization.planId !== 'BASIC') requireEntitlement(authorization, 'menu_management', 'Menu import requires an Intermediate or Premium plan.');
+    const input = await readJson(request);
+    const { categories, mode, filename } = input;
+    if (!Array.isArray(categories) || categories.length === 0) {
+      throw apiError(400, 'No menu categories or items provided for import.');
+    }
+
+    const validModes = ['add', 'update', 'skip'];
+    const importMode = validModes.includes(mode) ? mode : 'add';
+
+    const menuResult = await queryPortable(pool, 'SELECT id FROM menus WHERE tenant_id = ? LIMIT 1', [user.tenantId]);
+    let menuId = menuResult.rows[0]?.id;
+    if (!menuId) {
+      menuId = randomUUID();
+      await queryPortable(pool, 'INSERT INTO menus (id, tenant_id, name) VALUES (?, ?, ?)', [menuId, user.tenantId, 'Main Menu']);
+    }
+
+    const client = await pool.connect();
+    let stats;
+    try {
+      await client.query('BEGIN');
+      stats = await executeImportTransaction(client, user.tenantId, menuId, categories, importMode, filename || 'uploaded_menu.xlsx');
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+
+    sendJson(response, 200, { success: true, ...stats });
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/app/menu/import/history') {
+    const historyRes = await pool.query(
+      'SELECT * FROM menu_imports WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT 20',
+      [user.tenantId]
+    );
+    sendJson(response, 200, historyRes.rows);
     return true;
   }
 
@@ -534,6 +829,7 @@ export default async function appRoutes(request, response, url) {
       if (input.name !== undefined && !name) throw apiError(400, 'Add a name for this menu item.');
       const price = input.price === undefined ? null : Number(input.price);
       if (price !== null && (!Number.isFinite(price) || price < 0)) throw apiError(400, 'Enter a valid menu item price.');
+      
       const result = await withContentChange(authorization, async (client) => {
         const existing = await queryPortable(client, 'SELECT menu_id, category_id FROM menu_items WHERE id = ? AND tenant_id = ?', [itemId, user.tenantId]);
         if (!existing.rows[0]) throw apiError(404, 'Menu item could not be found.');
@@ -543,10 +839,56 @@ export default async function appRoutes(request, response, url) {
           [categoryId, existing.rows[0].menu_id, user.tenantId]
         );
         if (!ownedCategory.rows[0]) throw apiError(403, 'Category does not belong to this account menu.');
+        
+        const pricingType = input.pricingType || (Array.isArray(input.variants) && input.variants.length > 0 ? 'variants' : 'single');
+
         await queryPortable(client,
-          'UPDATE menu_items SET category_id = ?, name = COALESCE(?, name), description = ?, price = COALESCE(?, price), half_price = COALESCE(?, half_price), full_price = COALESCE(?, full_price), image_url = COALESCE(?, image_url), diet_type = COALESCE(?, diet_type), is_available = COALESCE(?, is_available), updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
-          [categoryId, name, input.description === undefined ? null : inputText(input.description, 2000) || null, price, input.halfPrice === undefined ? null : input.halfPrice, input.fullPrice === undefined ? null : input.fullPrice, input.imageUrl === undefined ? null : inputText(input.imageUrl, 2048) || null, input.dietType === undefined ? null : input.dietType, input.isAvailable === undefined ? null : input.isAvailable !== false, itemId, user.tenantId]
+          'UPDATE menu_items SET category_id = ?, name = COALESCE(?, name), description = ?, price = COALESCE(?, price), half_price = COALESCE(?, half_price), full_price = COALESCE(?, full_price), image_url = COALESCE(?, image_url), diet_type = COALESCE(?, diet_type), is_available = COALESCE(?, is_available), pricing_type = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
+          [categoryId, name, input.description === undefined ? null : inputText(input.description, 2000) || null, price, input.halfPrice === undefined ? null : input.halfPrice, input.fullPrice === undefined ? null : input.fullPrice, input.imageUrl === undefined ? null : inputText(input.imageUrl, 2048) || null, input.dietType === undefined ? null : input.dietType, input.isAvailable === undefined ? null : input.isAvailable !== false, pricingType, itemId, user.tenantId]
         );
+
+        if (Array.isArray(input.variants)) {
+          await queryPortable(client, 'DELETE FROM menu_item_variants WHERE menu_item_id = ? AND tenant_id = ?', [itemId, user.tenantId]);
+          for (let vIdx = 0; vIdx < input.variants.length; vIdx++) {
+            const v = input.variants[vIdx];
+            const vPrice = Number(v.price);
+            if (inputText(v.name, 100) && Number.isFinite(vPrice) && vPrice >= 0) {
+              await queryPortable(client,
+                'INSERT INTO menu_item_variants (id, menu_item_id, tenant_id, variant_group, name, price, is_available, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [randomUUID(), itemId, user.tenantId, inputText(v.variantGroup, 100) || 'Portion', inputText(v.name, 100), vPrice, v.isAvailable !== false, vIdx + 1]
+              );
+            }
+          }
+        }
+
+        if (Array.isArray(input.addonGroups)) {
+          await queryPortable(client, 'DELETE FROM menu_item_addon_groups WHERE menu_item_id = ? AND tenant_id = ?', [itemId, user.tenantId]);
+          for (let gIdx = 0; gIdx < input.addonGroups.length; gIdx++) {
+            const g = input.addonGroups[gIdx];
+            const gName = inputText(g.name, 100);
+            if (gName) {
+              const groupId = randomUUID();
+              await queryPortable(client,
+                'INSERT INTO menu_item_addon_groups (id, menu_item_id, tenant_id, name, description, is_required, min_select, max_select, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [groupId, itemId, user.tenantId, gName, inputText(g.description, 500) || null, Boolean(g.isRequired), Number(g.minSelect || 0), Number(g.maxSelect || 1), gIdx + 1]
+              );
+              if (Array.isArray(g.options)) {
+                for (let oIdx = 0; oIdx < g.options.length; oIdx++) {
+                  const opt = g.options[oIdx];
+                  const optName = inputText(opt.name, 100);
+                  const optPrice = Number(opt.price || 0);
+                  if (optName && Number.isFinite(optPrice) && optPrice >= 0) {
+                    await queryPortable(client,
+                      'INSERT INTO menu_item_addon_options (id, addon_group_id, tenant_id, name, price, is_available, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                      [randomUUID(), groupId, user.tenantId, optName, optPrice, opt.isAvailable !== false, oIdx + 1]
+                    );
+                  }
+                }
+              }
+            }
+          }
+        }
+
         return queryPortable(client, 'SELECT * FROM menu_items WHERE id = ? AND tenant_id = ?', [itemId, user.tenantId]);
       });
       sendJson(response, 200, result.rows[0]);

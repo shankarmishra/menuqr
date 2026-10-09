@@ -31,26 +31,65 @@ async function getFullPublicMenuData(tenantId) {
 
   if (menu) {
     const catRes = await pool.query(
-      'SELECT * FROM menu_categories WHERE menu_id = $1 AND is_visible = true ORDER BY sort_order',
-      [menu.id]
+      'SELECT * FROM menu_categories WHERE menu_id = $1 AND tenant_id = $2 AND is_visible = true ORDER BY sort_order',
+      [menu.id, tenantId]
     );
     categories = catRes.rows.map(c => ({ id: c.id, name: c.name, order: c.sort_order }));
 
     const itemRes = await pool.query(
-      'SELECT * FROM menu_items WHERE menu_id = $1 AND is_available = true ORDER BY sort_order',
-      [menu.id]
+      'SELECT * FROM menu_items WHERE menu_id = $1 AND tenant_id = $2 AND is_available = true ORDER BY sort_order',
+      [menu.id, tenantId]
     );
+
+    const variantsRes = await pool.query(
+      'SELECT * FROM menu_item_variants WHERE tenant_id = $1 AND is_available = true ORDER BY sort_order',
+      [tenantId]
+    );
+
+    const addonGroupsRes = await pool.query(
+      'SELECT * FROM menu_item_addon_groups WHERE tenant_id = $1 ORDER BY sort_order',
+      [tenantId]
+    );
+
+    const addonOptionsRes = await pool.query(
+      'SELECT * FROM menu_item_addon_options WHERE tenant_id = $1 AND is_available = true ORDER BY sort_order',
+      [tenantId]
+    );
+
     items = itemRes.rows.map(i => {
       const cat = categories.find(c => c.id === i.category_id);
+      const itemVariants = variantsRes.rows
+        .filter(v => v.menu_item_id === i.id)
+        .map(v => ({ id: v.id, name: v.name, price: parseFloat(v.price || '0'), variantGroup: v.variant_group }));
+      
+      const itemAddonGroups = addonGroupsRes.rows
+        .filter(g => g.menu_item_id === i.id)
+        .map(g => ({
+          id: g.id,
+          name: g.name,
+          description: g.description,
+          isRequired: g.is_required,
+          minSelect: g.min_select,
+          maxSelect: g.max_select,
+          options: addonOptionsRes.rows
+            .filter(o => o.addon_group_id === g.id)
+            .map(o => ({ id: o.id, name: o.name, price: parseFloat(o.price || '0') }))
+        }));
+
       return {
         id: i.id,
         name: i.name,
         description: i.description || '',
         price: parseFloat(i.price || '0'),
+        halfPrice: i.half_price ? parseFloat(i.half_price) : null,
+        fullPrice: i.full_price ? parseFloat(i.full_price) : null,
+        pricingType: i.pricing_type || (itemVariants.length > 0 ? 'variants' : 'single'),
         category: cat ? cat.name : 'Other',
         dietType: i.diet_type || 'veg',
         available: i.is_available,
         image: i.image_url || '',
+        variants: itemVariants,
+        addonGroups: itemAddonGroups,
       };
     });
   }
