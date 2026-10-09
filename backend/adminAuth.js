@@ -46,9 +46,9 @@ async function incrementRateLimit(client, scope, identifier, limit) {
   return Boolean(Number(rateLimit.hits) > limit || (rateLimit.blocked_until && new Date(rateLimit.blocked_until) > new Date()));
 }
 
-async function applyRateLimits(client, action, email, ip, limit) {
-  const ipLimited = await incrementRateLimit(client, `${action}:ip`, ip, limit);
-  const emailLimited = await incrementRateLimit(client, `${action}:email`, email, limit);
+async function applyRateLimits(client, action, email, ip, emailLimit, ipLimit = 30) {
+  const ipLimited = await incrementRateLimit(client, `${action}:ip`, ip, ipLimit);
+  const emailLimited = await incrementRateLimit(client, `${action}:email`, email, emailLimit);
   return ipLimited || emailLimited;
 }
 
@@ -86,7 +86,7 @@ export async function requestAdminOtp(email, ip) {
     transactionOpen = true;
     await cleanExpiredRateLimits(client);
 
-    if (await applyRateLimits(client, 'request', normalizedEmail, ip, REQUEST_LIMIT)) {
+    if (await applyRateLimits(client, 'request', normalizedEmail, ip, REQUEST_LIMIT, 30)) {
       await client.query('COMMIT');
       transactionOpen = false;
       throw authError('Too many requests. Please try again later.', 429);
@@ -135,7 +135,7 @@ export async function verifyAdminOtp(email, otp, ip) {
     transactionOpen = true;
     await cleanExpiredRateLimits(client);
 
-    if (await applyRateLimits(client, 'verify', normalizedEmail, ip, VERIFY_LIMIT)) {
+    if (await applyRateLimits(client, 'verify', normalizedEmail, ip, VERIFY_LIMIT, 50)) {
       await client.query('COMMIT');
       transactionOpen = false;
       throw authError('Unable to verify sign-in. Please request a new code.', 429);
