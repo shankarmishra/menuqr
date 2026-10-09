@@ -1,50 +1,49 @@
 {
   "cleanUrls": true,
-  "redirects": [
+  "routes": [
     {
-      "source": "/admin/login",
-      "destination": "https://admin.menusqr.in/login",
-      "permanent": false,
+      "src": "/admin/login",
+      "dest": "https://admin.menusqr.in/login",
+      "status": 302,
       "has": [{ "type": "host", "value": "menusqr.in" }]
     },
     {
-      "source": "/admin/:path*",
-      "destination": "https://admin.menusqr.in/admin/:path*",
-      "permanent": false,
+      "src": "/admin/(.*)",
+      "dest": "https://admin.menusqr.in/admin/$1",
+      "status": 302,
       "has": [{ "type": "host", "value": "menusqr.in" }]
     },
     {
-      "source": "/admin/login",
-      "destination": "https://admin.menusqr.in/login",
-      "permanent": false,
+      "src": "/admin/login",
+      "dest": "https://admin.menusqr.in/login",
+      "status": 302,
       "has": [{ "type": "host", "value": "www.menusqr.in" }]
     },
     {
-      "source": "/admin/:path*",
-      "destination": "https://admin.menusqr.in/admin/:path*",
-      "permanent": false,
+      "src": "/admin/(.*)",
+      "dest": "https://admin.menusqr.in/admin/$1",
+      "status": 302,
       "has": [{ "type": "host", "value": "www.menusqr.in" }]
     },
     {
-      "source": "/digital-menu-pricing",
-      "destination": "/plans",
-      "permanent": true
+      "src": "/digital-menu-pricing",
+      "dest": "/plans",
+      "status": 301
     },
     {
-      "source": "/privacy-policy",
-      "destination": "/privacy",
-      "permanent": true
+      "src": "/privacy-policy",
+      "dest": "/privacy",
+      "status": 301
     },
     {
-      "source": "/refund-policy",
-      "destination": "/refund-cancellation",
-      "permanent": true
-    }
-  ],
-  "rewrites": [
+      "src": "/refund-policy",
+      "dest": "/refund-cancellation",
+      "status": 301
+    },
+    { "handle": "filesystem" },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/.*",
+      "dest": "/index.html"
     }
   ]
 }
