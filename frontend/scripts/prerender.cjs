@@ -163,7 +163,7 @@ const routes = [
   },
   {
     path: '/qr-menu-for-restaurants',
-    title: 'QR Menu for Restaurants | Fast Setup & Live Management | MenusQR',
+    title: 'QR Menu for Restaurants | Fast & Easy Setup | MenusQR',
     description: 'Set up a custom QR menu for your restaurant in minutes. Easy dish categorization, Veg/Non-Veg indicators, and beautiful template designs.',
     h1: 'Smart QR Menu Solutions for Every Restaurant',
     content: `
@@ -185,7 +185,7 @@ const routes = [
   },
   {
     path: '/restaurant-digital-menu',
-    title: 'Restaurant Digital Menu Software | MenusQR',
+    title: 'Restaurant Digital Menu Platform | MenusQR',
     description: "Empower your food business with MenusQR's restaurant digital menu system. Manage multiple categories, pricing, and availability with ease.",
     h1: 'Complete Restaurant Digital Menu Management',
     content: `
@@ -316,8 +316,8 @@ const routes = [
   },
   {
     path: '/about',
-    title: 'About MenusQR | Digital Menu Infrastructure for Restaurants',
-    description: 'MenusQR provides permanent table QR codes and real-time digital menu management for modern restaurants, cafés, and food businesses.',
+    title: 'About MenusQR | Digital Menu Platform for Restaurants',
+    description: 'MenusQR is dedicated to simplifying restaurant operations through permanent QR codes and live digital menu management.',
     h1: 'About MenusQR',
     content: `
       <main class="max-w-5xl mx-auto px-6 py-20">
@@ -338,7 +338,7 @@ const routes = [
   },
   {
     path: '/contact',
-    title: 'Contact MenusQR | Customer Support & Sales',
+    title: 'Contact MenusQR | Customer Support & Business Inquiries',
     description: 'Get in touch with the MenusQR team for onboarding assistance, restaurant support, or sales inquiries.',
     h1: 'Contact MenusQR Support & Sales',
     content: `
