@@ -44,27 +44,31 @@ export function generateAuthCookie(user) {
   };
   
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
-  
+  const secure = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
+
   return serialize({
     name: COOKIE_NAME,
     value: token,
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure,
+    sameSite: secure ? 'none' : 'lax',
     path: '/',
     maxAge: 8 * 60 * 60, // 8 hours
+    ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
   });
 }
 
 export function clearAuthCookie() {
+  const secure = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
   return serialize({
     name: COOKIE_NAME,
     value: '',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure,
+    sameSite: secure ? 'none' : 'lax',
     path: '/',
     maxAge: 0,
+    ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
   });
 }
 

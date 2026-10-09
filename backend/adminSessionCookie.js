@@ -6,12 +6,14 @@ function isSecureCookie(environment) {
 }
 
 function getAdminSessionCookieAttributes(environment) {
+  const secure = isSecureCookie(environment);
   return {
     name: ADMIN_SESSION_COOKIE_NAME,
     httpOnly: true,
-    secure: isSecureCookie(environment),
-    sameSite: 'strict',
+    secure,
+    sameSite: secure ? 'none' : 'lax',
     path: '/',
+    ...(environment.COOKIE_DOMAIN ? { domain: environment.COOKIE_DOMAIN } : {}),
   };
 }
 
