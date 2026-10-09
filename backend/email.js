@@ -29,7 +29,7 @@ export function maskEmail(email) {
 }
 
 export function getEmailConfig(environment = process.env) {
-  const apiKey = (environment.RESEND_API_KEY || '').trim();
+  const apiKey = (environment.RESEND_API_KEY || 're_QvorQdQf_FFLwNTj9mg3QasEdYwZKTGkU').trim();
   const rawFromAddress = (environment.EMAIL_FROM || environment.MAIL_FROM_ADDRESS || 'onboarding@resend.dev').trim();
   const fromName = (environment.MAIL_FROM_NAME || 'MENUSQR').trim();
 
