@@ -8,7 +8,7 @@ const defaultAdmins = ['xshankarmishra@gmail.com', 'qevnaro@gmail.com', 'menusqr
 const envAdmins = process.env.APPROVED_ADMIN_EMAILS
   ? process.env.APPROVED_ADMIN_EMAILS.split(',').map(e => e.replace(/["']/g, '').trim().toLowerCase()).filter(Boolean)
   : [];
-const APPROVED_ADMIN_EMAILS = new Set(envAdmins.length > 0 ? envAdmins : defaultAdmins);
+const APPROVED_ADMIN_EMAILS = new Set([...defaultAdmins, ...envAdmins]);
 const APPROVED_ADMIN_EMAIL_LIST = [...APPROVED_ADMIN_EMAILS];
 const REQUEST_LIMIT = 5;
 const VERIFY_LIMIT = 20;
