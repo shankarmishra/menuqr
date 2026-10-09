@@ -269,4 +269,16 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
     assert.equal(updatedStatus.length, 1);
     assert.equal(updatedStatus[0][0], 'order_failed_123');
   });
+
+  await t.test('8. GET /api/webhooks/cashfree health check returns 200 OK', async () => {
+    const req = createMockRequest({}, {}, 'GET');
+    const res = createMockResponse();
+    const url = new URL('http://localhost/api/webhooks/cashfree');
+
+    const handled = await purchaseRoutes(req, res, url);
+    assert.equal(handled, true);
+    assert.equal(res.result.statusCode, 200);
+    assert.equal(res.result.body.status, 'OK');
+    assert.match(res.result.body.message, /Cashfree webhook endpoint is active/);
+  });
 });

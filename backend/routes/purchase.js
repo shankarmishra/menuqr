@@ -359,6 +359,13 @@ export default async function purchaseRoutes(request, response, url) {
   // POST /api/webhooks/cashfree AND POST /api/purchase/webhook
   // Cashfree Payment Webhook Endpoint
   // ─────────────────────────────────────────────────────────────────────────
+  if (url.pathname === '/api/webhooks/cashfree' || url.pathname === '/api/purchase/webhook') {
+    if (request.method === 'GET' || request.method === 'HEAD') {
+      sendJson(response, 200, { status: 'OK', message: 'Cashfree webhook endpoint is active.', service: 'menuqr-backend' });
+      return true;
+    }
+  }
+
   if (request.method === 'POST' && (url.pathname === '/api/webhooks/cashfree' || url.pathname === '/api/purchase/webhook')) {
     const secretKey = (process.env.CASHFREE_SECRET_KEY || '').trim();
     const input = await readJson(request).catch(() => ({}));
