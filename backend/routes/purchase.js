@@ -48,6 +48,11 @@ export default async function purchaseRoutes(request, response, url) {
     const plan = PLANS[planKey];
     if (!plan) throw apiError(400, 'Invalid plan selected.');
 
+    const appId = process.env.CASHFREE_APP_ID;
+    const secretKey = process.env.CASHFREE_SECRET_KEY;
+    const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
+    const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
+
     // Prevent duplicate active accounts for the same email
     const userCheck = await pool.query(
       'SELECT id, tenant_id FROM users WHERE email = $1',
@@ -78,11 +83,7 @@ export default async function purchaseRoutes(request, response, url) {
       
       // Fetch existing session ID from Cashfree if configured
       let paymentSessionId = null;
-      const appId = process.env.CASHFREE_APP_ID;
-      const secretKey = process.env.CASHFREE_SECRET_KEY;
       if (appId && secretKey) {
-        const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
-        const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
         try {
           const cfRes = await fetch(`${baseUrl}/orders/${eid}`, {
             headers: {
@@ -136,10 +137,6 @@ export default async function purchaseRoutes(request, response, url) {
     const orderId = `order_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
 
     let paymentSessionId = null;
-    const appId = process.env.CASHFREE_APP_ID;
-    const secretKey = process.env.CASHFREE_SECRET_KEY;
-    const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
-    const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
 
     if (appId && secretKey) {
       try {

@@ -7,6 +7,10 @@ const { Pool } = pg;
 
 export let pool = null;
 
+export function setPool(p) {
+  pool = p;
+}
+
 export function queryPortable(executor, sql, values = []) {
   let parameterIndex = 0;
   const postgresSql = sql.replace(/\?/g, () => `$${++parameterIndex}`);
