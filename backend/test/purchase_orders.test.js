@@ -166,6 +166,9 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
         if (sql.includes('SELECT expires_at FROM subscriptions')) {
           return { rows: [{ expires_at: new Date() }] };
         }
+        if (sql.includes('INSERT INTO email_outbox')) {
+          return { rows: [{ id: 'outbox_mock_123', status: 'QUEUED' }] };
+        }
         return { rows: [], rowCount: 1 };
       }
     });
@@ -192,6 +195,7 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
     assert.equal(res.result.statusCode, 200);
     assert.equal(res.result.body.received, true);
     assert.equal(res.result.body.status, 'PAID');
+    assert.equal(res.result.body.emailSent, true);
   });
 
   await t.test('6. Duplicate webhook event for already provisioned order returns alreadyProvisioned: true', async () => {
