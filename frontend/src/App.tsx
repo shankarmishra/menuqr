@@ -63,15 +63,40 @@ function ProtectedAdminLayout() {
 
   useEffect(() => {
     let isCurrent = true;
-    void getAdminSession().then((session) => {
-      if (isCurrent) setSessionState(session.authenticated && session.user?.role === 'SUPER_ADMIN' ? 'authenticated' : 'unauthenticated');
-    }).catch(() => {
-      if (isCurrent) setSessionState('error');
-    });
+    let timer: number | undefined;
+
+    async function checkSession(attempt = 1) {
+      try {
+        const session = await getAdminSession();
+        if (!isCurrent) return;
+        if (session.authenticated && session.user?.role === 'SUPER_ADMIN') {
+          setSessionState('authenticated');
+        } else if (attempt === 1) {
+          timer = window.setTimeout(() => {
+            if (isCurrent) void checkSession(2);
+          }, 300);
+        } else {
+          setSessionState('unauthenticated');
+        }
+      } catch {
+        if (!isCurrent) return;
+        if (attempt === 1) {
+          timer = window.setTimeout(() => {
+            if (isCurrent) void checkSession(2);
+          }, 300);
+        } else {
+          setSessionState('error');
+        }
+      }
+    }
+
+    void checkSession(1);
+
     const handleUnauthorized = () => setSessionState('unauthenticated');
     window.addEventListener('menusqr:admin-unauthorized', handleUnauthorized);
     return () => {
       isCurrent = false;
+      if (timer) window.clearTimeout(timer);
       window.removeEventListener('menusqr:admin-unauthorized', handleUnauthorized);
     };
   }, [retry]);

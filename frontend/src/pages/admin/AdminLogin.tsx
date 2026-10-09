@@ -50,13 +50,11 @@ export default function AdminLogin() {
   function handleLoginSuccess(role?: string, onboardingState?: string) {
     if (onboardingState === 'PENDING') {
       navigate('/onboarding', { replace: true });
-      window.location.reload();
       return;
     }
     const defaultDest = role === 'SUPER_ADMIN' ? '/admin' : '/app';
     const dest = returnTo ? `${returnTo.pathname ?? defaultDest}${returnTo.search ?? ''}${returnTo.hash ?? ''}` : defaultDest;
     navigate(dest, { replace: true });
-    window.location.reload();
   }
 
   async function handleInitialLogin(event: FormEvent<HTMLFormElement>) {
