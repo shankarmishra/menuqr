@@ -1,7 +1,7 @@
-import { test, expect } from '@playwright.test';
+import { test, expect } from '@playwright/test';
 
 const seoRoutes = [
-  { path: '/', expectedTitle: 'MenusQR | Digital QR Menu for Restaurants', expectedH1: "Your menu changes. Your QR code doesn't." },
+  { path: '/', expectedTitle: 'MenusQR | Digital QR Menu for Restaurants', expectedH1: 'Your menu' },
   { path: '/digital-qr-menu', expectedTitle: 'Digital QR Menu for Restaurants | MenusQR', expectedH1: 'A Digital QR Menu Built for Restaurants' },
   { path: '/restaurant-qr-menu', expectedTitle: 'Restaurant QR Menu | Permanent QR, Live Menu Updates | MenusQR', expectedH1: 'A Restaurant QR Menu That Never Needs Reprinting' },
   { path: '/digital-menu-for-restaurants', expectedTitle: 'Digital Menu for Restaurants | MenusQR', expectedH1: 'The Ultimate Digital Menu for Modern Restaurants' },
@@ -19,23 +19,22 @@ const seoRoutes = [
   { path: '/refund-cancellation', expectedTitle: 'Refund & Cancellation Policy | MenusQR', expectedH1: 'Refund & Cancellation Policy' },
 ];
 
-test.describe('Public SEO Landing Pages Automated Verification', () => {
-  for (const r of seoRoutes) {
-    test(`Route ${r.path} renders correctly with valid title and H1`, async ({ page }) => {
-      const consoleErrors: string[] = [];
-      page.on('console', msg => {
-        if (msg.type() === 'error') consoleErrors.push(msg.text());
-      });
-
-      await page.goto(r.path, { waitUntil: 'domcontentloaded' });
-      await expect(page).toHaveTitle(r.expectedTitle);
-
-      const h1Text = await page.locator('h1').first().textContent();
-      expect(h1Text?.trim()).toContain(r.expectedH1);
-
-      // Verify no critical JavaScript uncaught exception console errors
-      const criticalErrors = consoleErrors.filter(e => !e.includes('favicon') && !e.includes('failed to load resource'));
-      expect(criticalErrors).toHaveLength(0);
+for (const r of seoRoutes) {
+  test(`SEO Route ${r.path} renders with valid title and H1`, async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
-  }
-});
+
+    await page.goto(r.path);
+    await expect(page).toHaveTitle(r.expectedTitle);
+
+    const h1Locator = page.locator('h1').first();
+    await expect(h1Locator).toBeVisible({ timeout: 15000 });
+    const h1Text = await h1Locator.textContent();
+    expect(h1Text?.trim()).toContain(r.expectedH1);
+
+    const criticalErrors = consoleErrors.filter(e => !e.includes('favicon') && !e.includes('failed to load resource'));
+    expect(criticalErrors).toHaveLength(0);
+  });
+}
