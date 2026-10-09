@@ -410,19 +410,36 @@ export default async function adminRoutes(request, response, url) {
       }
     if (request.headers['x-menusqr-import'] !== 'legacy') {
       const notif = createNewUserNotification(client);
-        await pool.query('INSERT INTO notifications (id, message, is_read, created_at) VALUES ($1, $2, $3, $4)', [notif.id, notif.message, notif.isRead, notif.createdAt]);
+      await pool.query('INSERT INTO notifications (id, message, is_read, created_at) VALUES ($1, $2, $3, $4)', [notif.id, notif.message, notif.isRead, notif.createdAt]);
       void import('../email.js')
-        .then(({ sendNewUserAlert, sendClientWelcomeEmail }) =>
-          Promise.all([
-            sendNewUserAlert(client),
-            sendClientWelcomeEmail(client),
-          ])
-        )
+        .then(({ sendClientWelcomeEmail }) => sendClientWelcomeEmail(client))
         .catch((error) => {
-          console.error('[email] Could not start registration emails:', error.message);
+          console.error('[email] Could not queue welcome email:', error.message);
         });
     }
     sendJson(response, 201, client);
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/admin/email-diagnostics') {
+    const { getEmailConfig } = await import('../email.js');
+    const outboxStats = await pool.query(`
+      SELECT status, COUNT(*) as count FROM email_outbox GROUP BY status
+    `);
+    const recentOutbox = await pool.query(`
+      SELECT id, notification_type, recipient, idempotency_key, status, attempt_count, provider_message_id, last_error, created_at, updated_at
+      FROM email_outbox ORDER BY created_at DESC LIMIT 20
+    `);
+    const recentEvents = await pool.query(`
+      SELECT * FROM email_events ORDER BY created_at DESC LIMIT 20
+    `);
+
+    sendJson(response, 200, {
+      config: getEmailConfig(),
+      outboxStats: outboxStats.rows,
+      recentOutbox: recentOutbox.rows,
+      recentEvents: recentEvents.rows,
+    });
     return true;
   }
   

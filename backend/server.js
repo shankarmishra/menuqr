@@ -10,6 +10,7 @@ dns.setDefaultResultOrder('ipv4first');
 import { connectDB, pool } from './db.js';
 import { apiError, sendJson } from './utils.js';
 import { createCorsOriginChecker } from './cors.js';
+import { startOutboxWorker, getEmailConfig } from './email.js';
 
 import authRoutes from './routes/auth.js';
 import appRoutes from './routes/app.js';
@@ -22,6 +23,7 @@ const isAllowedOrigin = createCorsOriginChecker(process.env);
 
 async function initializeStore() {
   await connectDB(process.env.DATABASE_URL);
+  startOutboxWorker();
 }
 
 const server = createServer(async (request, response) => {
@@ -37,7 +39,7 @@ const server = createServer(async (request, response) => {
     response.setHeader('Access-Control-Allow-Credentials', 'true');
     response.setHeader(
       'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, X-MenusQR-Import'
+      'Content-Type, Authorization, X-MenusQR-Import, X-Resend-Signature'
     );
     response.setHeader(
       'Access-Control-Allow-Methods',
@@ -66,7 +68,8 @@ const server = createServer(async (request, response) => {
         status: dbConnected ? 'ok' : 'degraded',
         database: 'postgresql',
         dbConnected,
-        smtpConfigured: Boolean(process.env.SMTP_USER && process.env.SMTP_PASSWORD),
+        emailProvider: 'resend',
+        resendConfigured: getEmailConfig().configured,
         cashfreeConfigured: Boolean(process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY),
         uptimeSeconds: Math.floor(process.uptime()),
         timestamp: new Date().toISOString()

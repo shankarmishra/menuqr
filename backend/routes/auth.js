@@ -1,34 +1,45 @@
 import { pool } from '../db.js';
-import { generateAuthCookie, clearAuthCookie, getAuthenticatedUser, verifyPassword } from '../auth.js';
+import { generateAuthCookie, clearAuthCookie, getAuthenticatedUser, verifyPassword, enforceSuperAdmin } from '../auth.js';
 import { apiError, sendJson, readJson, getClientIp, normalizeEmail } from '../utils.js';
 import { createAdminSessionCookieOptions, createClearedAdminSessionCookieOptions } from '../adminSessionCookie.js';
-
-import { randomUUID, randomInt } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import slugify from 'slugify';
 import { hashPassword } from '../auth.js';
-import { sendClientWelcomeEmail, sendPaymentSuccessEmail, sendLoginOtpEmail, sendAdminLoginOtpEmail, sendPasswordResetOtpEmail } from '../email.js';
+import {
+  sendClientWelcomeEmail,
+  sendPaymentSuccessEmail,
+  sendLoginOtpEmail,
+  sendAdminLoginOtpEmail,
+  sendPasswordResetOtpEmail,
+  sendEmailDirectly,
+  getEmailConfig,
+} from '../email.js';
 
 const pendingTransactions = new Set();
 const paidTransactions = new Set();
-const loginOtpStore = new Map();
 const passwordResetStore = new Map();
 const clientLoginAttempts = new Map();
 const clientLoginLockDurationMs = 60 * 1000;
 
 export default async function authRoutes(request, response, url) {
 
-  // DIAGNOSTIC EMAIL ROUTE
+  // DIAGNOSTIC EMAIL ROUTE (SUPER ADMIN PROTECTED)
   if (request.method === 'GET' && url.pathname === '/api/test-email') {
+    await enforceSuperAdmin(request);
     const to = url.searchParams.get('to') || 'xshankarmishra@gmail.com';
     try {
-      const { sendEmail } = await import('../email.js');
-      await sendEmail({
+      const result = await sendEmailDirectly({
         to,
         subject: 'Diagnostic Test Email from Render Production',
-        html: '<h1>Diagnostic Email Test</h1><p>If you see this, direct SMTP delivery from Render is working 100%!</p>',
-        text: 'Diagnostic test email from Render Production'
+        html: '<h1>Diagnostic Email Test</h1><p>If you see this, Resend HTTPS delivery is working 100%!</p>',
+        text: 'Diagnostic test email from Render Production',
       }, `diagnostic test email to ${to}`);
-      sendJson(response, 200, { success: true, message: `Email sent successfully to ${to}!` });
+
+      if (!result.ok) {
+        sendJson(response, 500, { success: false, error: result.error });
+      } else {
+        sendJson(response, 200, { success: true, message: `Email sent successfully to ${to}! Message ID: ${result.messageId}` });
+      }
     } catch (err) {
       console.error('[test-email] Failed:', err);
       sendJson(response, 500, { success: false, error: err.message, stack: err.stack });
@@ -36,8 +47,9 @@ export default async function authRoutes(request, response, url) {
     return true;
   }
 
-  // SEND ALL EMAIL TYPES TEST ROUTE
+  // SEND ALL EMAIL TYPES TEST ROUTE (SUPER ADMIN PROTECTED)
   if (request.method === 'GET' && url.pathname === '/api/test-all-emails') {
+    await enforceSuperAdmin(request);
     const to = url.searchParams.get('to') || 'xshankarmishra@gmail.com';
     const emailObj = await import('../email.js');
     const results = [];
@@ -58,8 +70,8 @@ export default async function authRoutes(request, response, url) {
 
     for (const task of emailTasks) {
       try {
-        await task.fn();
-        results.push({ emailType: task.name, status: 'SENT' });
+        const res = await task.fn();
+        results.push({ emailType: task.name, status: res?.ok !== false ? 'QUEUED_OR_SENT' : 'FAILED', messageId: res?.messageId || null });
       } catch (err) {
         console.error(`[test-all-emails] Error sending ${task.name}:`, err.message);
         errors.push({ emailType: task.name, error: err.message });
@@ -76,7 +88,41 @@ export default async function authRoutes(request, response, url) {
     return true;
   }
 
-  // NEW ADMIN ROUTES
+  // RESEND WEBHOOK ENDPOINT
+  if (request.method === 'POST' && url.pathname === '/api/webhooks/resend') {
+    const input = await readJson(request);
+    const eventType = input?.type || 'unknown';
+    const data = input?.data || {};
+    const providerMessageId = data.email_id || data.id || null;
+    const recipient = Array.isArray(data.to) ? data.to[0] : (data.to || null);
+
+    if (providerMessageId) {
+      const outboxRes = await pool.query('SELECT id FROM email_outbox WHERE provider_message_id = $1', [providerMessageId]);
+      const outboxId = outboxRes.rows[0]?.id || null;
+
+      await pool.query(`
+        INSERT INTO email_events (id, outbox_id, provider_message_id, event_type, recipient, payload)
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `, [randomUUID(), outboxId, providerMessageId, eventType, recipient, JSON.stringify(input)]);
+
+      if (outboxId) {
+        let newStatus = null;
+        if (eventType === 'email.delivered') newStatus = 'DELIVERED';
+        else if (eventType === 'email.bounced') newStatus = 'BOUNCED';
+        else if (eventType === 'email.complained') newStatus = 'FAILED';
+        else if (eventType === 'email.sent') newStatus = 'PROVIDER_ACCEPTED';
+
+        if (newStatus) {
+          await pool.query('UPDATE email_outbox SET status = $1, updated_at = NOW() WHERE id = $2', [newStatus, outboxId]);
+        }
+      }
+    }
+
+    sendJson(response, 200, { received: true });
+    return true;
+  }
+
+  // ADMIN OTP REQUEST ROUTE
   if (request.method === 'POST' && url.pathname === '/api/auth/admin/request-otp') {
     const input = await readJson(request);
     const email = input?.email?.trim().toLowerCase();
@@ -87,15 +133,10 @@ export default async function authRoutes(request, response, url) {
     
     const result = await requestAdminOtp(email, address);
     if (result) {
-      console.log(`\n=========================================`);
-      console.log(`[ADMIN OTP GENERATED] Email: ${email} | OTP: ${result.otp}`);
-      console.log(`=========================================\n`);
-
-      try {
-        await sendAdminLoginOtpEmail({ email, otp: result.otp, ownerName: 'Admin' });
-      } catch (err) {
-        console.error('[admin auth] OTP email delivery failed:', err.message);
-        throw apiError(500, `Email delivery failed: ${err.message}`);
+      const emailRes = await sendAdminLoginOtpEmail({ email, otp: result.otp });
+      if (!emailRes.ok) {
+        console.error('[admin auth] OTP email delivery failed:', emailRes.error);
+        throw apiError(500, `Email delivery failed: ${emailRes.error || 'Provider error'}`);
       }
     }
     
@@ -257,7 +298,6 @@ export default async function authRoutes(request, response, url) {
       }
     }
 
-    // Fallback/Simulated test verification
     if (!appId || !secretKey || isSandbox) {
       if (pendingTransactions.has(orderId)) {
         pendingTransactions.delete(orderId);
@@ -299,7 +339,6 @@ export default async function authRoutes(request, response, url) {
     }
 
     const pwdHash = await hashPassword(password);
-
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
@@ -343,14 +382,14 @@ export default async function authRoutes(request, response, url) {
 
     paidTransactions.delete(transactionId);
     
-    // Trigger Welcome & Payment Success Emails asynchronously
+    // Queue Welcome & Payment Success Emails in Durable Outbox Queue
     void sendClientWelcomeEmail({
+      id: clientId,
       email,
       ownerName,
       businessName: restaurantName,
       plan: 'YEARLY PREMIUM',
       billingCycle: 'Yearly',
-      monthlyPrice: '1499',
       password,
     }).catch(err => console.error('[signup email error]', err.message));
 
@@ -369,6 +408,7 @@ export default async function authRoutes(request, response, url) {
     return true;
   }
 
+  // CLIENT LOGIN ROUTE (POSTGRESQL-BACKED OTP)
   if (request.method === 'POST' && url.pathname === '/api/auth/login') {
     const address = getClientIp(request);
     const now = Date.now();
@@ -405,41 +445,38 @@ export default async function authRoutes(request, response, url) {
     
     clientLoginAttempts.delete(address);
 
-    // For Restaurant Owners: Generate 2FA OTP & Send Email
-    const otp = String(randomInt(100000, 1_000_000));
-    const tempToken = randomUUID();
-    const expiresAt = now + 5 * 60 * 1000; // 5 minutes
-
-    loginOtpStore.set(tempToken, { otp, expiresAt, user, email: userEmail });
-
-    console.log(`\n=========================================`);
-    console.log(`[RESTAURANT OTP CODE GENERATED] Email: ${userEmail} | OTP: ${otp}`);
-    console.log(`=========================================\n`);
-
-    let emailSent = true;
+    // Create PostgreSQL-backed OTP Challenge
+    const { createClientOtpChallenge, invalidateClientOtpChallenge } = await import('../clientAuth.js');
+    let challenge;
     try {
-      await sendLoginOtpEmail({
-        email: userEmail,
-        otp,
-        ownerName: userEmail.split('@')[0],
-      });
+      challenge = await createClientOtpChallenge(userEmail, address);
     } catch (err) {
-      emailSent = false;
-      console.error('[auth] OTP email delivery failed:', err.message);
+      throw apiError(err.status || 500, err.message);
+    }
+
+    // Await Resend API email delivery before reporting success!
+    const emailResult = await sendLoginOtpEmail({
+      email: userEmail,
+      otp: challenge.otp,
+      ownerName: userEmail.split('@')[0],
+    });
+
+    if (!emailResult.ok) {
+      await invalidateClientOtpChallenge(challenge.challengeId);
+      throw apiError(500, `Failed to send verification code email: ${emailResult.error || 'Provider rejected request'}`);
     }
 
     sendJson(response, 200, {
       requireOtp: true,
-      tempToken,
+      tempToken: challenge.challengeId,
       email: userEmail,
-      emailSent,
-      message: emailSent
-        ? 'A 6-digit 2-step verification code has been sent to your email.'
-        : 'Verification code generated. Please enter your code to sign in.'
+      emailSent: true,
+      message: 'A 6-digit 2-step verification code has been sent to your email.'
     });
     return true;
   }
 
+  // CLIENT OTP VERIFICATION ROUTE (POSTGRESQL-BACKED)
   if (request.method === 'POST' && url.pathname === '/api/auth/verify-login-otp') {
     const input = await readJson(request);
     const { tempToken, otp } = input || {};
@@ -448,60 +485,65 @@ export default async function authRoutes(request, response, url) {
       throw apiError(400, 'Temporary session token and OTP are required.');
     }
 
-    const session = loginOtpStore.get(tempToken);
-    if (!session) {
-      throw apiError(400, 'Invalid or expired 2FA session. Please log in again.');
+    const { verifyClientOtpChallenge } = await import('../clientAuth.js');
+    let verification;
+    try {
+      verification = await verifyClientOtpChallenge(tempToken, otp);
+    } catch (err) {
+      throw apiError(err.status || 400, err.message);
     }
 
-    if (Date.now() > session.expiresAt) {
-      loginOtpStore.delete(tempToken);
-      throw apiError(400, 'OTP code has expired. Please request a new code.');
-    }
+    const normalizedEmail = verification.email;
+    const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
+    const dbUser = dbRes.rows[0];
+    if (!dbUser) throw apiError(404, 'User account not found.');
 
-    if (session.otp !== String(otp).trim()) {
-      session.attemptCount = (session.attemptCount || 0) + 1;
-      if (session.attemptCount >= 5) {
-        loginOtpStore.delete(tempToken);
-        throw apiError(429, 'Too many failed attempts. Please log in again.');
-      }
-      throw apiError(401, 'Incorrect 2-step verification OTP code.');
-    }
-
-    loginOtpStore.delete(tempToken);
-    const sessionUser = session.user;
-
+    const sessionUser = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
     const cookie = generateAuthCookie(sessionUser);
+
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
-    response.end(JSON.stringify({ authenticated: true, role: sessionUser.role, user: sessionUser, onboardingState: sessionUser.onboarding_state }));
+    response.end(JSON.stringify({ authenticated: true, role: sessionUser.role, user: sessionUser, onboardingState: dbUser.onboarding_state }));
     return true;
   }
 
+  // CLIENT OTP RESEND ROUTE (POSTGRESQL-BACKED & AWAITED)
   if (request.method === 'POST' && url.pathname === '/api/auth/resend-login-otp') {
     const input = await readJson(request);
     const { tempToken } = input || {};
+    if (!tempToken) throw apiError(400, 'Temporary session token is required.');
 
-    const session = loginOtpStore.get(tempToken);
-    if (!session) {
-      throw apiError(400, 'Invalid or expired 2FA session.');
+    const challengeRes = await pool.query('SELECT email FROM client_otp_challenges WHERE id = $1', [tempToken]);
+    if (challengeRes.rows.length === 0) {
+      throw apiError(400, 'Invalid or expired 2FA session. Please log in again.');
     }
 
-    const newOtp = String(randomInt(100000, 1_000_000));
-    session.otp = newOtp;
-    session.expiresAt = Date.now() + 5 * 60 * 1000;
+    const userEmail = challengeRes.rows[0].email;
+    const address = getClientIp(request);
 
-    console.log(`\n=========================================`);
-    console.log(`[RESTAURANT OTP CODE RESENT] Email: ${session.email} | OTP: ${newOtp}`);
-    console.log(`=========================================\n`);
+    const { createClientOtpChallenge, invalidateClientOtpChallenge } = await import('../clientAuth.js');
+    let newChallenge;
+    try {
+      newChallenge = await createClientOtpChallenge(userEmail, address);
+    } catch (err) {
+      throw apiError(err.status || 429, err.message);
+    }
 
-    sendLoginOtpEmail({
-      email: session.email,
-      otp: newOtp,
-      ownerName: session.email.split('@')[0],
-    }).catch(err => {
-      console.error('[auth] Resend OTP email failed:', err.message);
+    const emailResult = await sendLoginOtpEmail({
+      email: userEmail,
+      otp: newChallenge.otp,
+      ownerName: userEmail.split('@')[0],
     });
 
-    sendJson(response, 200, { success: true, message: 'New verification code generated.' });
+    if (!emailResult.ok) {
+      await invalidateClientOtpChallenge(newChallenge.challengeId);
+      throw apiError(500, `Failed to send new verification code email: ${emailResult.error || 'Provider rejected request'}`);
+    }
+
+    sendJson(response, 200, {
+      success: true,
+      tempToken: newChallenge.challengeId,
+      message: 'New verification code sent to your email.'
+    });
     return true;
   }
 
@@ -514,22 +556,27 @@ export default async function authRoutes(request, response, url) {
     const normalizedEmail = normalizeEmail(email);
     const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
     if (dbRes.rows.length === 0) {
-      // Don't leak user existence, return success anyway
       sendJson(response, 200, { success: true, message: 'If an account exists with this email, a reset code has been sent.' });
       return true;
     }
 
     const dbUser = dbRes.rows[0];
-    const otp = String(randomInt(100000, 1_000_000));
-    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const { generateClientOtp, hashClientOtp } = await import('../clientAuth.js');
+    const otp = generateClientOtp();
+    const expiresAt = Date.now() + 10 * 60 * 1000;
 
-    passwordResetStore.set(normalizedEmail, { otp, expiresAt, userId: dbUser.id });
+    passwordResetStore.set(normalizedEmail, { otpHash: hashClientOtp(otp), expiresAt, userId: dbUser.id });
 
-    void sendPasswordResetOtpEmail({
+    const emailRes = await sendPasswordResetOtpEmail({
       email: normalizedEmail,
       otp,
       ownerName: normalizedEmail.split('@')[0],
-    }).catch(err => console.error('[Forgot password email error]', err.message));
+    });
+
+    if (!emailRes.ok) {
+      passwordResetStore.delete(normalizedEmail);
+      throw apiError(500, `Failed to send password reset email: ${emailRes.error || 'Provider error'}`);
+    }
 
     sendJson(response, 200, { success: true, message: 'Password reset code has been sent to your email.' });
     return true;
@@ -557,7 +604,8 @@ export default async function authRoutes(request, response, url) {
       throw apiError(400, 'Reset OTP code has expired. Please request a new code.');
     }
 
-    if (resetData.otp !== String(otp).trim()) {
+    const { matchesClientOtp } = await import('../clientAuth.js');
+    if (!matchesClientOtp(String(otp).trim(), resetData.otpHash)) {
       throw apiError(401, 'Incorrect password reset OTP code.');
     }
 
