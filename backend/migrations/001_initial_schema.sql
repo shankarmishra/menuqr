@@ -1,0 +1,57 @@
+-- Migration 001: Initial Schema and Password Resets
+-- Applies full schema for MenuQR PostgreSQL Database
+
+CREATE TABLE IF NOT EXISTS clients (
+  id VARCHAR(255) PRIMARY KEY,
+  public_id VARCHAR(255) UNIQUE NOT NULL,
+  business_name VARCHAR(255) NOT NULL,
+  menu_slug VARCHAR(255) UNIQUE,
+  category VARCHAR(255),
+  tagline VARCHAR(255),
+  status VARCHAR(50) DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS city VARCHAR(255);
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS address TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS logo_url TEXT;
+
+CREATE TABLE IF NOT EXISTS users (
+  id VARCHAR(255) PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL,
+  tenant_id VARCHAR(255) REFERENCES clients(id) ON DELETE CASCADE,
+  onboarding_state VARCHAR(50) DEFAULT 'PENDING',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id VARCHAR(255) PRIMARY KEY,
+  tenant_id VARCHAR(255) REFERENCES clients(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  plan_id VARCHAR(100) NOT NULL,
+  status VARCHAR(50) NOT NULL,
+  started_at TIMESTAMP,
+  expires_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS password_resets (
+  id VARCHAR(255) PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  otp_hash VARCHAR(255) NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  attempts INTEGER DEFAULT 0,
+  max_attempts INTEGER DEFAULT 5,
+  used BOOLEAN DEFAULT false,
+  used_at TIMESTAMP,
+  ip_address VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_password_resets_email_created
+  ON password_resets (email, created_at DESC);

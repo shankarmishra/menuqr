@@ -3,8 +3,24 @@ import { apiError, sendJson, readJson, getClientIp } from '../utils.js';
 import { resolveTenantAuthorization, requireEntitlement } from '../authorization.js';
 
 const contactRateLimits = new Map();
+const publicMenuCache = new Map();
+const PUBLIC_MENU_CACHE_TTL_MS = 60 * 1000;
+
+export function invalidatePublicMenuCache(tenantId) {
+  if (!tenantId) return;
+  publicMenuCache.delete(tenantId);
+}
+
+export function clearAllPublicMenuCaches() {
+  publicMenuCache.clear();
+}
 
 async function getFullPublicMenuData(tenantId) {
+  const cached = publicMenuCache.get(tenantId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
+
   const authorization = await resolveTenantAuthorization({ id: null, tenantId });
   if (!authorization.active) {
     return { isExpired: true };
@@ -119,7 +135,7 @@ async function getFullPublicMenuData(tenantId) {
     ];
   }
 
-  return {
+  const result = {
     isExpired: false,
     restaurant: {
       name: appearance.restaurant_display_name || client.business_name,
@@ -134,6 +150,13 @@ async function getFullPublicMenuData(tenantId) {
     categories,
     items,
   };
+
+  publicMenuCache.set(tenantId, {
+    data: result,
+    expiresAt: Date.now() + PUBLIC_MENU_CACHE_TTL_MS,
+  });
+
+  return result;
 }
 
 export default async function publicRoutes(request, response, url) {

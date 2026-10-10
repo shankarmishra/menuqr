@@ -7,6 +7,7 @@ export function getPlanContentLimit(planId) {
 
 import { pool, queryPortable } from './db.js';
 import { apiError } from './utils.js';
+import { invalidatePublicMenuCache } from './routes/public.js';
 
 export const PLAN_CAPABILITIES = {
   BASIC: ['digital_menu', 'restaurant_setup', 'qr_code', 'login', 'initial_menu_setup', 'one_time_edit'],
@@ -125,12 +126,14 @@ export async function withContentChange(authorization, mutation) {
       );
       
       await client.query('COMMIT');
+      invalidatePublicMenuCache(authorization.tenantId);
       return result;
     }
 
     if (!PLAN_CAPABILITIES[planId]) throw apiError(403, 'Your plan does not allow menu changes.');
     const result = await mutation(client);
     await client.query('COMMIT');
+    invalidatePublicMenuCache(authorization.tenantId);
     return result;
   } catch (error) {
     await client.query('ROLLBACK');

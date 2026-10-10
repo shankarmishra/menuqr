@@ -18,6 +18,8 @@ import adminRoutes from './routes/admin.js';
 import publicRoutes from './routes/public.js';
 import purchaseRoutes from './routes/purchase.js';
 
+import { randomUUID } from 'node:crypto';
+
 const port = Number(process.env.PORT || process.env.API_PORT || 3001);
 const isAllowedOrigin = createCorsOriginChecker(process.env);
 
@@ -27,11 +29,21 @@ async function initializeStore() {
 }
 
 const server = createServer(async (request, response) => {
+  const requestId = request.headers['x-request-id'] || randomUUID();
+  response.setHeader('X-Request-ID', requestId);
+  response.setHeader('X-Content-Type-Options', 'nosniff');
+  response.setHeader('X-Frame-Options', 'DENY');
+  response.setHeader('X-XSS-Protection', '1; mode=block');
+  response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true') {
+    response.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+
   const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
   const requestOrigin = request.headers.origin;
   const originAllowed = isAllowedOrigin(requestOrigin);
   if (url.pathname !== '/api/health') {
-    console.log(`[api] (${request.method}) ${url.pathname}`);
+    console.log(`[api] [req:${requestId.substring(0, 8)}] (${request.method}) ${url.pathname}`);
   }
 
   if (requestOrigin && originAllowed) {
@@ -46,6 +58,11 @@ const server = createServer(async (request, response) => {
       'GET, POST, PUT, PATCH, DELETE, OPTIONS'
     );
     response.setHeader('Vary', 'Origin');
+  } else if (requestOrigin && !originAllowed) {
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+      sendJson(response, 403, { error: 'Forbidden: Request origin is not allowed.' });
+      return;
+    }
   }
 
   if (request.method === 'OPTIONS') {

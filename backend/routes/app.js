@@ -4,6 +4,7 @@ import { apiError, sendJson, readJson } from '../utils.js';
 import { randomUUID } from 'node:crypto';
 import { resolveTenantAuthorization, requireEntitlement, withContentChange, getContentUsage } from '../authorization.js';
 import { detectColumnMappings, validateAndPreviewImport, executeImportTransaction } from '../menuImporter.js';
+import { invalidatePublicMenuCache } from './public.js';
 
 function inputText(value, maxLength = 255) {
   if (value === undefined || value === null) return '';
@@ -120,6 +121,7 @@ export default async function appRoutes(request, response, url) {
     } finally {
       client.release();
     }
+    invalidatePublicMenuCache(user.tenantId);
     sendJson(response, 200, { success: true, menuId: createdMenuId });
     return true;
   }

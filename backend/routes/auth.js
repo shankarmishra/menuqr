@@ -1,10 +1,9 @@
 import { pool } from '../db.js';
-import { generateAuthCookie, clearAuthCookie, getAuthenticatedUser, verifyPassword, enforceSuperAdmin } from '../auth.js';
+import { generateAuthCookie, clearAuthCookie, getAuthenticatedUser, verifyPassword, enforceSuperAdmin, hashPassword, isLegacyHash } from '../auth.js';
 import { apiError, sendJson, readJson, getClientIp, normalizeEmail } from '../utils.js';
 import { createAdminSessionCookieOptions, createClearedAdminSessionCookieOptions } from '../adminSessionCookie.js';
 import { randomUUID } from 'node:crypto';
 import slugify from 'slugify';
-import { hashPassword } from '../auth.js';
 import {
   sendClientWelcomeEmail,
   sendPaymentSuccessEmail,
@@ -17,7 +16,6 @@ import {
 
 const pendingTransactions = new Set();
 const paidTransactions = new Set();
-const passwordResetStore = new Map();
 const clientLoginAttempts = new Map();
 const clientLoginLockDurationMs = 60 * 1000;
 
@@ -445,6 +443,15 @@ export default async function authRoutes(request, response, url) {
     if (dbUser && dbUser.role !== 'SUPER_ADMIN' && verifyPassword(input.password, dbUser.password_hash)) {
       user = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
       userEmail = dbUser.email;
+
+      if (isLegacyHash(dbUser.password_hash)) {
+        try {
+          const upgradedHash = hashPassword(input.password);
+          await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [upgradedHash, dbUser.id]);
+        } catch (rehashErr) {
+          console.error('[auth] Failed to auto-rehash legacy password:', rehashErr.message);
+        }
+      }
     }
 
     if (!user) {
@@ -572,25 +579,27 @@ export default async function authRoutes(request, response, url) {
       return true;
     }
 
-    const dbUser = dbRes.rows[0];
-    const { generateClientOtp, hashClientOtp } = await import('../clientAuth.js');
-    const otp = generateClientOtp();
-    const expiresAt = Date.now() + 10 * 60 * 1000;
-
-    passwordResetStore.set(normalizedEmail, { otpHash: hashClientOtp(otp), expiresAt, userId: dbUser.id });
+    const address = getClientIp(request);
+    const { createPasswordResetChallenge, invalidatePasswordResetChallenge } = await import('../clientAuth.js');
+    let challenge;
+    try {
+      challenge = await createPasswordResetChallenge(normalizedEmail, address);
+    } catch (err) {
+      throw apiError(err.status || 500, err.message);
+    }
 
     const emailRes = await sendPasswordResetOtpEmail({
       email: normalizedEmail,
-      otp,
+      otp: challenge.otp,
       ownerName: normalizedEmail.split('@')[0],
     });
 
     if (!emailRes.ok) {
-      passwordResetStore.delete(normalizedEmail);
+      await invalidatePasswordResetChallenge(challenge.challengeId);
       throw apiError(500, `Failed to send password reset email: ${emailRes.error || 'Provider error'}`);
     }
 
-    sendJson(response, 200, { success: true, message: 'Password reset code has been sent to your email.' });
+    sendJson(response, 200, { success: true, message: 'If an account exists with this email, a reset code has been sent.' });
     return true;
   }
 
@@ -606,24 +615,16 @@ export default async function authRoutes(request, response, url) {
       throw apiError(400, 'Password must be at least 6 characters long.');
     }
 
-    const resetData = passwordResetStore.get(email.trim().toLowerCase());
-    if (!resetData) {
-      throw apiError(400, 'No active password reset request found. Please request a new code.');
+    const normalizedEmail = normalizeEmail(email);
+    const { verifyPasswordResetChallenge } = await import('../clientAuth.js');
+    try {
+      await verifyPasswordResetChallenge(normalizedEmail, otp);
+    } catch (err) {
+      throw apiError(err.status || 400, err.message);
     }
 
-    if (Date.now() > resetData.expiresAt) {
-      passwordResetStore.delete(email.trim().toLowerCase());
-      throw apiError(400, 'Reset OTP code has expired. Please request a new code.');
-    }
-
-    const { matchesClientOtp } = await import('../clientAuth.js');
-    if (!matchesClientOtp(String(otp).trim(), resetData.otpHash)) {
-      throw apiError(401, 'Incorrect password reset OTP code.');
-    }
-
-    const newHash = await hashPassword(newPassword);
-    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newHash, resetData.userId]);
-    passwordResetStore.delete(email.trim().toLowerCase());
+    const newHash = hashPassword(newPassword);
+    await pool.query('UPDATE users SET password_hash = $1 WHERE LOWER(email) = $2', [newHash, normalizedEmail]);
 
     sendJson(response, 200, { success: true, message: 'Password reset successfully! You can now log in.' });
     return true;

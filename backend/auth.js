@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { parseCookie as parse, stringifySetCookie as serialize } from 'cookie';
-import { randomBytes, pbkdf2Sync } from 'node:crypto';
+import { randomBytes, pbkdf2Sync, createHash } from 'node:crypto';
 import { pool, queryPortable } from './db.js';
 
 // Use a secure JWT secret from env or generate a temporary one (not ideal for production restarts, but safe for dev)
@@ -11,7 +11,7 @@ if (!JWT_SECRET) {
 }
 const COOKIE_NAME = 'menusqr_auth';
 
-// Password Hashing (PBKDF2)
+// Password Hashing (PBKDF2 with salt)
 export function hashPassword(password) {
   if (typeof password !== 'string' || !password) {
     throw new Error('Password must be a non-empty string.');
@@ -21,18 +21,37 @@ export function hashPassword(password) {
   return `${salt}:${hash}`;
 }
 
+export function isLegacyHash(storedHash) {
+  if (typeof storedHash !== 'string' || !storedHash) return false;
+  return /^[a-f0-9]{64}$/i.test(storedHash) && !storedHash.includes(':');
+}
+
 export function verifyPassword(password, storedHash) {
-  if (typeof password !== 'string' || !password || typeof storedHash !== 'string' || !storedHash.includes(':')) {
+  if (typeof password !== 'string' || !password || typeof storedHash !== 'string' || !storedHash) {
     return false;
   }
-  const [salt, originalHash] = storedHash.split(':');
-  if (!salt || !originalHash) return false;
-  try {
-    const hash = pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-    return hash === originalHash;
-  } catch (err) {
-    return false;
+
+  if (storedHash.includes(':')) {
+    const [salt, originalHash] = storedHash.split(':');
+    if (!salt || !originalHash) return false;
+    try {
+      const hash = pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+      return hash === originalHash;
+    } catch {
+      return false;
+    }
   }
+
+  if (isLegacyHash(storedHash)) {
+    try {
+      const legacyHash = createHash('sha256').update(password).digest('hex');
+      return legacyHash.toLowerCase() === storedHash.toLowerCase();
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
 }
 
 // Token Generation

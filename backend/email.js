@@ -185,10 +185,13 @@ export async function processEmailOutboxQueue() {
   try {
     await client.query('BEGIN');
 
-    // Fetch batch of up to 10 pending jobs using FOR UPDATE SKIP LOCKED
+    // Fetch batch of up to 10 pending or stuck jobs using FOR UPDATE SKIP LOCKED
     const res = await client.query(`
       SELECT * FROM email_outbox
-      WHERE status IN ('QUEUED', 'PROCESSING')
+      WHERE (
+        status = 'QUEUED'
+        OR (status = 'PROCESSING' AND updated_at <= NOW() - INTERVAL '5 minutes')
+      )
         AND next_retry_at <= NOW()
         AND attempt_count < max_attempts
       ORDER BY created_at ASC

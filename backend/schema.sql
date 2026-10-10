@@ -362,6 +362,19 @@ CREATE TABLE IF NOT EXISTS client_otp_challenges (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS password_resets (
+  id VARCHAR(255) PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  otp_hash VARCHAR(255) NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  attempts INTEGER DEFAULT 0,
+  max_attempts INTEGER DEFAULT 5,
+  used BOOLEAN DEFAULT false,
+  used_at TIMESTAMP,
+  ip_address VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS client_auth_rate_limits (
   bucket_key VARCHAR(64) PRIMARY KEY,
   window_started_at TIMESTAMP NOT NULL,
@@ -401,6 +414,8 @@ CREATE TABLE IF NOT EXISTS email_events (
 
 CREATE INDEX IF NOT EXISTS idx_client_otp_challenges_email_created
   ON client_otp_challenges (email, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_password_resets_email_created
+  ON password_resets (email, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_client_auth_rate_limits_updated_at
   ON client_auth_rate_limits (updated_at);
 CREATE INDEX IF NOT EXISTS idx_email_outbox_status_retry

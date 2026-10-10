@@ -26,11 +26,11 @@ export function matchesClientOtp(otp, storedHash) {
   return inputHash.length === expectedHash.length && timingSafeEqual(inputHash, expectedHash);
 }
 
-async function checkAndApplyClientRateLimits(client, email, ip) {
+async function checkAndApplyClientRateLimits(client, email, ip, prefix = 'client') {
   const normalizedEmail = email.trim().toLowerCase();
   
   // 1. Check 30s Cooldown
-  const cooldownKey = createHmac('sha256', OTP_HASH_KEY).update(`client_cooldown:${normalizedEmail}`).digest('hex');
+  const cooldownKey = createHmac('sha256', OTP_HASH_KEY).update(`${prefix}_cooldown:${normalizedEmail}`).digest('hex');
   const cooldownRes = await client.query(`
     SELECT last_request_at FROM client_auth_rate_limits WHERE bucket_key = $1
   `, [cooldownKey]);
@@ -44,7 +44,7 @@ async function checkAndApplyClientRateLimits(client, email, ip) {
   }
 
   // 2. Check 15-minute sliding window rate limits (IP & Email)
-  const windowKey = createHmac('sha256', OTP_HASH_KEY).update(`client_request:${normalizedEmail}:${ip}`).digest('hex');
+  const windowKey = createHmac('sha256', OTP_HASH_KEY).update(`${prefix}_request:${normalizedEmail}:${ip}`).digest('hex');
   const rateLimitRes = await client.query(`
     INSERT INTO client_auth_rate_limits (bucket_key, window_started_at, hits, last_request_at, updated_at)
     VALUES ($1, NOW(), 1, NOW(), NOW())
@@ -184,6 +184,120 @@ export async function verifyClientOtpChallenge(challengeId, otp) {
     transactionOpen = false;
 
     return { success: true, email: challenge.email };
+  } catch (error) {
+    if (transactionOpen) await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+const PASSWORD_RESET_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+export async function createPasswordResetChallenge(email, ip) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const client = await pool.connect();
+  let transactionOpen = false;
+
+  try {
+    await client.query('BEGIN');
+    transactionOpen = true;
+
+    await checkAndApplyClientRateLimits(client, normalizedEmail, ip, 'pwd_reset');
+
+    // Invalidate prior active reset challenges for this email
+    await client.query(
+      'UPDATE password_resets SET used = true WHERE LOWER(email) = $1 AND used = false',
+      [normalizedEmail]
+    );
+
+    const otp = generateClientOtp();
+    const challengeId = randomBytes(16).toString('hex');
+    const expiresAt = new Date(Date.now() + PASSWORD_RESET_TTL_MS);
+
+    await client.query(
+      'INSERT INTO password_resets (id, email, otp_hash, expires_at, max_attempts, ip_address) VALUES ($1, $2, $3, $4, $5, $6)',
+      [challengeId, normalizedEmail, hashClientOtp(otp), expiresAt, MAX_OTP_ATTEMPTS, ip]
+    );
+
+    await client.query('COMMIT');
+    transactionOpen = false;
+
+    return { challengeId, otp, email: normalizedEmail };
+  } catch (error) {
+    if (transactionOpen) await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function invalidatePasswordResetChallenge(challengeId) {
+  if (!challengeId) return;
+  await pool.query('UPDATE password_resets SET used = true WHERE id = $1', [challengeId]);
+}
+
+export async function verifyPasswordResetChallenge(email, otp) {
+  if (!email || !otp) {
+    throw authError('Email and verification code are required.', 400);
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const client = await pool.connect();
+  let transactionOpen = false;
+
+  try {
+    await client.query('BEGIN');
+    transactionOpen = true;
+
+    const res = await client.query(
+      'SELECT * FROM password_resets WHERE LOWER(email) = $1 AND used = false ORDER BY created_at DESC LIMIT 1 FOR UPDATE',
+      [normalizedEmail]
+    );
+
+    const challenge = res.rows[0];
+    if (!challenge) {
+      await client.query('COMMIT');
+      transactionOpen = false;
+      throw authError('No active password reset request found. Please request a new code.', 400);
+    }
+
+    if (new Date(challenge.expires_at) <= new Date()) {
+      await client.query('UPDATE password_resets SET used = true WHERE id = $1', [challenge.id]);
+      await client.query('COMMIT');
+      transactionOpen = false;
+      throw authError('Reset OTP code has expired. Please request a new code.', 400);
+    }
+
+    if (challenge.attempts >= challenge.max_attempts) {
+      await client.query('UPDATE password_resets SET used = true WHERE id = $1', [challenge.id]);
+      await client.query('COMMIT');
+      transactionOpen = false;
+      throw authError('Too many failed attempts. Please request a new code.', 429);
+    }
+
+    if (!matchesClientOtp(String(otp).trim(), challenge.otp_hash)) {
+      await client.query('UPDATE password_resets SET attempts = attempts + 1 WHERE id = $1', [challenge.id]);
+      await client.query('COMMIT');
+      transactionOpen = false;
+      throw authError('Incorrect password reset OTP code.', 401);
+    }
+
+    const consumed = await client.query(
+      'UPDATE password_resets SET used = true, used_at = NOW() WHERE id = $1 AND used = false RETURNING email',
+      [challenge.id]
+    );
+
+    if (consumed.rows.length === 0) {
+      await client.query('COMMIT');
+      transactionOpen = false;
+      throw authError('Password reset code already used. Please request a new code.', 400);
+    }
+
+    await client.query('COMMIT');
+    transactionOpen = false;
+
+    return { success: true, email: challenge.email, challengeId: challenge.id };
   } catch (error) {
     if (transactionOpen) await client.query('ROLLBACK');
     throw error;

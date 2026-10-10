@@ -46,6 +46,7 @@ export async function connectDB(uri) {
     const res = await client.query('SELECT NOW()');
     console.log('Connected to PostgreSQL:', res.rows[0].now);
     await initializeSchema(client);
+    await runMigrations(client);
   } finally {
     client.release();
   }
@@ -63,13 +64,53 @@ async function initializeSchema(client) {
       console.log('Executed schema.sql');
     }
   } catch (error) {
-    // Non-fatal: schema may already be applied (e.g. duplicate key on restart)
     if (error.code === '23505') {
       console.warn('schema.sql: duplicate key skipped (already seeded) —', error.detail);
     } else {
       console.error('Error executing schema.sql:', error.message);
-      // Only throw on truly unexpected errors (not constraint violations)
       throw error;
     }
+  }
+}
+
+async function runMigrations(client) {
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS applied_migrations (
+        id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const migrationsDir = path.join(__dirname, 'migrations');
+
+    if (fs.existsSync(migrationsDir)) {
+      const files = fs.readdirSync(migrationsDir)
+        .filter((f) => f.endsWith('.sql'))
+        .sort();
+
+      for (const file of files) {
+        const migrationId = file;
+        const checkRes = await client.query('SELECT id FROM applied_migrations WHERE id = $1', [migrationId]);
+        if (checkRes.rows.length === 0) {
+          const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+          await client.query('BEGIN');
+          try {
+            await client.query(sql);
+            await client.query('INSERT INTO applied_migrations (id, name) VALUES ($1, $2)', [migrationId, file]);
+            await client.query('COMMIT');
+            console.log(`Applied migration: ${file}`);
+          } catch (err) {
+            await client.query('ROLLBACK');
+            console.error(`Failed migration ${file}:`, err.message);
+            throw err;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Migration runner error:', err.message);
   }
 }
