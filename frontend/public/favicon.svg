@@ -1,22 +1,21 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <g>
-    <!-- Top Left -->
-    <rect x="8" y="8" width="18" height="6" rx="2" fill="#151C19" />
-    <rect x="8" y="8" width="6" height="22" rx="2" fill="#151C19" />
-    
-    <!-- Top Right -->
-    <rect x="38" y="8" width="18" height="6" rx="2" fill="#151C19" />
-    <rect x="50" y="8" width="6" height="22" rx="2" fill="#151C19" />
-    
-    <!-- Bottom Left -->
-    <rect x="8" y="50" width="18" height="6" rx="2" fill="#151C19" />
-    <rect x="8" y="34" width="6" height="22" rx="2" fill="#151C19" />
-    
-    <!-- Bottom Right -->
-    <rect x="38" y="50" width="18" height="6" rx="2" fill="#151C19" />
-    <rect x="50" y="34" width="6" height="22" rx="2" fill="#151C19" />
-    
-    <!-- Signature Orange Module -->
-    <rect x="28" y="24" width="8" height="8" rx="2" fill="#E8783C" />
-  </g>
+  <defs>
+    <linearGradient id="fav-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#FFC928" />
+      <stop offset="60%" stopColor="#E8783C" />
+      <stop offset="100%" stopColor="#FF5E4D" />
+    </linearGradient>
+  </defs>
+
+  {/* Dark Emerald Badge Base */}
+  <rect width="64" height="64" rx="16" fill="#151C19" />
+
+  {/* Signature M Mark */}
+  <path
+    d="M 12 50 L 25 14 L 32 32 L 39 14 L 52 50 L 44 50 L 38 28 L 32 42 L 26 28 L 20 50 Z"
+    fill="url(#fav-grad)"
+  />
+
+  {/* QR Finder Module Accent Dot */}
+  <rect x="46" y="12" width="7" height="7" rx="2" fill="#E8783C" />
 </svg>

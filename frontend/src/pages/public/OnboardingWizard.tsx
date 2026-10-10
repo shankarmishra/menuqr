@@ -143,22 +143,8 @@ export default function OnboardingWizard() {
   }>({
     name: '', tagline: '', phone: '', city: '', address: '', logoUrl: '',
     templateId: 'royal-maharaja',
-    categories: [
-      { id: 'cat-1', name: 'Main Course', description: 'Delicious main entrees', order: 0 },
-      { id: 'cat-2', name: 'Starters & Drinks', description: 'Appetizers and beverages', order: 1 }
-    ],
-    items: [
-      {
-        id: 'item-1',
-        name: 'Margherita Pizza',
-        description: 'Classic cheese pizza with fresh basil and tomato sauce',
-        price: 199,
-        category: 'cat-1',
-        dietType: 'veg',
-        available: true,
-        imageUrl: ''
-      }
-    ],
+    categories: [],
+    items: [],
     orderingEnabled: false,
     receptionDevice: 'none',
   });
@@ -310,7 +296,7 @@ export default function OnboardingWizard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-[#AAB7B2]">Restaurant / Business Name *</label>
-                    <input type="text" placeholder="e.g. Royal Punjab Dhaba" value={restaurantData.name} onChange={(e) => setRestaurantData({ ...restaurantData, name: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                    <input type="text" aria-label="Restaurant name" placeholder="e.g. Royal Punjab Dhaba" value={restaurantData.name} onChange={(e) => setRestaurantData({ ...restaurantData, name: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-[#AAB7B2]">Tagline / Subtitle</label>
@@ -318,15 +304,15 @@ export default function OnboardingWizard() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-[#AAB7B2]">Phone Number</label>
-                    <input type="tel" placeholder="e.g. +91 9876543210" value={restaurantData.phone} onChange={(e) => setRestaurantData({ ...restaurantData, phone: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                    <input type="tel" aria-label="Restaurant phone" placeholder="e.g. +91 9876543210" value={restaurantData.phone} onChange={(e) => setRestaurantData({ ...restaurantData, phone: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-[#AAB7B2]">City / Location</label>
-                    <input type="text" placeholder="e.g. Mumbai" value={restaurantData.city} onChange={(e) => setRestaurantData({ ...restaurantData, city: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                    <input type="text" aria-label="Restaurant city" placeholder="e.g. Mumbai" value={restaurantData.city} onChange={(e) => setRestaurantData({ ...restaurantData, city: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
                   </div>
                   <div className="sm:col-span-2 space-y-1.5">
                     <label className="block text-xs font-semibold text-[#AAB7B2]">Full Address</label>
-                    <input type="text" placeholder="e.g. Shop 12, Main Street, Bandra West, Mumbai" value={restaurantData.address} onChange={(e) => setRestaurantData({ ...restaurantData, address: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                    <input type="text" aria-label="Restaurant address" placeholder="e.g. Shop 12, Main Street, Bandra West, Mumbai" value={restaurantData.address} onChange={(e) => setRestaurantData({ ...restaurantData, address: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
                   </div>
                 </div>
               </motion.div>
@@ -389,6 +375,7 @@ export default function OnboardingWizard() {
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <input
                           type="text"
+                          aria-label={`Category name ${idx + 1}`}
                           placeholder="Category Name (e.g. Starters)"
                           value={cat.name}
                           onChange={(e) => {
@@ -460,6 +447,7 @@ export default function OnboardingWizard() {
                         <div className="sm:col-span-5 space-y-2">
                           <input
                             type="text"
+                            aria-label={`Dish name ${idx + 1}`}
                             placeholder="Dish Name (e.g. Margherita Pizza)"
                             value={item.name}
                             onChange={(e) => {
@@ -471,6 +459,7 @@ export default function OnboardingWizard() {
                           />
                           <input
                             type="text"
+                            aria-label={`Dish description ${idx + 1}`}
                             placeholder="Ingredients / Description"
                             value={item.description}
                             onChange={(e) => {
@@ -490,6 +479,7 @@ export default function OnboardingWizard() {
                             <input
                               type="number"
                               min="0"
+                              aria-label={`Dish price ${idx + 1}`}
                               value={item.price}
                               onChange={(e) => {
                                 const updated = [...restaurantData.items];
@@ -505,6 +495,7 @@ export default function OnboardingWizard() {
                         <div className="sm:col-span-3 space-y-1">
                           <label className="block text-[11px] font-semibold text-[#AAB7B2]">Category</label>
                           <select
+                            aria-label={idx === 0 ? 'Category' : `Dish ${idx + 1} Type`}
                             value={item.category}
                             onChange={(event) =>
                               setRestaurantData((current) => ({
@@ -715,7 +706,7 @@ export default function OnboardingWizard() {
                       disabled={isSubmitting}
                       className="rounded-xl bg-[#E8783C] hover:bg-[#f08b55] px-8 py-3.5 text-sm font-bold text-white disabled:opacity-60 shadow-lg transition-colors"
                     >
-                      {isSubmitting ? 'Saving Menu & Creating QR...' : 'Save Menu & Create Permanent QR'}
+                      {isSubmitting ? 'Saving Menu & Creating QR...' : 'Save menu and create permanent QR'}
                     </button>
                   </div>
                 ) : (

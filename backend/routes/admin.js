@@ -109,7 +109,14 @@ export default async function adminRoutes(request, response, url) {
       ...row,
       menuItems: row.menuItems,
       businessName: row.business_name,
-      menuSlug: row.menu_slug
+      menuSlug: row.menu_slug,
+      referenceCode: row.reference_code,
+      businessType: row.business_type || row.category || 'restaurant',
+      categoryOther: row.category_other,
+      state: row.state,
+      outletCount: row.outlet_count || 1,
+      emailVerified: Boolean(row.email_verified),
+      phoneVerified: Boolean(row.phone_verified),
     }));
     sendJson(response, 200, records);
     return true;
@@ -219,6 +226,113 @@ export default async function adminRoutes(request, response, url) {
       LIMIT 50
     `);
     sendJson(response, 200, res.rows);
+    return true;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // SUPER ADMIN COUPON ENGINE ENDPOINTS
+  // ─────────────────────────────────────────────────────────────────────────
+  if (request.method === 'GET' && url.pathname === '/api/admin/coupons') {
+    const planId = url.searchParams.get('planId')?.toUpperCase();
+    const status = url.searchParams.get('status')?.toUpperCase();
+    const search = url.searchParams.get('search')?.trim().toUpperCase();
+
+    let query = `SELECT * FROM coupons WHERE 1=1`;
+    const params = [];
+
+    if (planId) {
+      params.push(planId);
+      query += ` AND plan_id = $${params.length}`;
+    }
+    if (status) {
+      params.push(status);
+      query += ` AND status = $${params.length}`;
+    }
+    if (search) {
+      params.push(`%${search}%`);
+      query += ` AND code LIKE $${params.length}`;
+    }
+
+    query += ` ORDER BY created_at DESC LIMIT 200`;
+
+    const res = await pool.query(query, params);
+
+    // Also get active counts per plan
+    const countsRes = await pool.query(`
+      SELECT plan_id, COUNT(*) as count
+      FROM coupons
+      WHERE status = 'AVAILABLE' AND (expires_at IS NULL OR expires_at > NOW())
+      GROUP BY plan_id
+    `);
+
+    const activeCounts = { INTERMEDIATE: 0, PREMIUM: 0 };
+    for (const r of countsRes.rows) {
+      activeCounts[r.plan_id] = parseInt(r.count, 10);
+    }
+
+    sendJson(response, 200, { coupons: res.rows, activeCounts });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/admin/coupons/bulk-generate') {
+    const input = await readJson(request);
+    const { bulkGenerateCoupons } = await import('../coupons.js');
+    const created = await bulkGenerateCoupons({
+      planId: input.planId,
+      discountPct: input.discountPct,
+      count: input.count || 10,
+      expiryDays: input.expiryDays || null,
+      createdBy: 'SUPER_ADMIN',
+    });
+    sendJson(response, 201, { success: true, createdCount: created.length, coupons: created });
+    return true;
+  }
+
+  const disableCouponMatch = url.pathname.match(/^\/api\/admin\/coupons\/([^/]+)\/disable$/);
+  if (request.method === 'PATCH' && disableCouponMatch) {
+    const couponId = decodeURIComponent(disableCouponMatch[1]);
+    const { disableCoupon } = await import('../coupons.js');
+    const disabled = await disableCoupon(couponId);
+    sendJson(response, 200, { success: true, coupon: disabled });
+    return true;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CATEGORY-AWARE & OPERATIONAL METRICS ENDPOINT
+  // ─────────────────────────────────────────────────────────────────────────
+  if (request.method === 'GET' && url.pathname === '/api/admin/metrics') {
+    const clientsByCategory = await pool.query(`
+      SELECT COALESCE(business_type, category, 'other') as category, status, COUNT(*) as count
+      FROM clients
+      GROUP BY COALESCE(business_type, category, 'other'), status
+    `);
+
+    const subsByPlanAndCategory = await pool.query(`
+      SELECT COALESCE(c.business_type, c.category, 'other') as category, s.plan_id, s.status, COUNT(*) as count
+      FROM subscriptions s
+      JOIN clients c ON c.id = s.tenant_id
+      GROUP BY COALESCE(c.business_type, c.category, 'other'), s.plan_id, s.status
+    `);
+
+    const verificationStats = await pool.query(`
+      SELECT
+        COUNT(*) FILTER (WHERE email_verified = true) as email_verified_count,
+        COUNT(*) FILTER (WHERE email_verified = false OR email_verified IS NULL) as email_pending_count,
+        COUNT(*) FILTER (WHERE phone_verified = true) as phone_verified_count,
+        COUNT(*) FILTER (WHERE phone_verified = false OR phone_verified IS NULL) as phone_pending_count
+      FROM clients
+    `);
+
+    const couponInventory = await pool.query(`
+      SELECT status, COUNT(*) as count FROM coupons GROUP BY status
+    `);
+
+    sendJson(response, 200, {
+      clientsByCategory: clientsByCategory.rows,
+      subsByPlanAndCategory: subsByPlanAndCategory.rows,
+      verificationStats: verificationStats.rows[0] || {},
+      couponInventory: couponInventory.rows,
+    });
     return true;
   }
 

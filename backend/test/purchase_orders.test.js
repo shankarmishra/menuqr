@@ -56,7 +56,17 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
 
   t.beforeEach(() => {
     process.env.CASHFREE_SECRET_KEY = TEST_SECRET;
+    process.env.CASHFREE_APP_ID = 'test_app_id_12345';
     mockedFetchCalls = 0;
+    setPool({
+      query: async (sql) => {
+        if (sql.includes('SELECT id FROM client_otp_challenges')) return { rows: [{ id: 'chal_default_mock' }] };
+        if (sql.includes('SELECT id, tenant_id FROM users')) return { rows: [] };
+        if (sql.includes('SELECT id FROM orders')) return { rows: [] };
+        if (sql.includes('INSERT INTO orders')) return { rowCount: 1 };
+        return { rows: [] };
+      }
+    });
     global.fetch = async (url, options) => {
       mockedFetchCalls++;
       return {
@@ -126,6 +136,12 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
   await t.test('3. existing PENDING_PAYMENT order reuse executes without error', async () => {
     setPool({
       query: async (sql) => {
+        if (sql.includes('SELECT * FROM email_verification_grants')) {
+          return { rows: [{ id: 'grant_m1', token: 'vgrant_m1', email: 'john@example.com', purpose: 'checkout', used: false }] };
+        }
+        if (sql.includes('UPDATE email_verification_grants')) {
+          return { rows: [{ id: 'grant_m1' }] };
+        }
         if (sql.includes('SELECT id, tenant_id FROM users')) return { rows: [] };
         if (sql.includes('SELECT id FROM orders')) return { rows: [{ id: 'order_existing12345' }] };
         if (sql.includes('UPDATE orders SET customer_name')) return { rowCount: 1 };
@@ -137,7 +153,8 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
       customerName: 'John Doe',
       customerEmail: 'john@example.com',
       businessName: 'John Cafe',
-      planId: 'basic'
+      planId: 'basic',
+      emailVerificationToken: 'vgrant_m1'
     });
     const res = createMockResponse();
     const url = new URL('http://localhost/api/purchase/orders');
@@ -152,6 +169,12 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
   await t.test('4. new order creation executes successfully and returns 200 OK', async () => {
     setPool({
       query: async (sql) => {
+        if (sql.includes('SELECT * FROM email_verification_grants')) {
+          return { rows: [{ id: 'grant_m2', token: 'vgrant_m2', email: 'jane@example.com', purpose: 'checkout', used: false }] };
+        }
+        if (sql.includes('UPDATE email_verification_grants')) {
+          return { rows: [{ id: 'grant_m2' }] };
+        }
         if (sql.includes('SELECT id, tenant_id FROM users')) return { rows: [] };
         if (sql.includes('SELECT id FROM orders')) return { rows: [] };
         if (sql.includes('INSERT INTO orders')) return { rowCount: 1 };
@@ -163,7 +186,8 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
       customerName: 'Jane Smith',
       customerEmail: 'jane@example.com',
       businessName: 'Jane Bakery',
-      planId: 'intermediate'
+      planId: 'intermediate',
+      emailVerificationToken: 'vgrant_m2'
     });
     const res = createMockResponse();
     const url = new URL('http://localhost/api/purchase/orders');
@@ -769,6 +793,12 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
     try {
       setPool({
         query: async (sql) => {
+          if (sql.includes('SELECT * FROM email_verification_grants')) {
+            return { rows: [{ id: 'grant_m25', token: 'vgrant_m25', email: 'mocktest@example.com', purpose: 'checkout', used: false }] };
+          }
+          if (sql.includes('UPDATE email_verification_grants')) {
+            return { rows: [{ id: 'grant_m25' }] };
+          }
           if (sql.includes('SELECT id, tenant_id FROM users')) return { rows: [] };
           if (sql.includes('SELECT id FROM orders')) return { rows: [] };
           if (sql.includes('INSERT INTO orders')) return { rowCount: 1 };
@@ -780,7 +810,8 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
         customerName: 'Mock Test User',
         customerEmail: 'mocktest@example.com',
         businessName: 'Mock Bistro',
-        planId: 'basic'
+        planId: 'basic',
+        emailVerificationToken: 'vgrant_m25'
       });
       const res = createMockResponse();
       const url = new URL('http://localhost/api/purchase/orders');
@@ -900,5 +931,187 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
     assert.equal(result.lockLost, true, 'Worker must detect lock ownership loss');
     assert.equal(userInserted, false, 'Stale worker must not insert user or provision side effects');
     assert.equal(failedUpdateCount, 0, 'Stale worker must not execute FAILED update when lock lost cleanly');
+  });
+
+  await t.test('28. Order creation with mandatory email verification and unverified phone preserves phone_verified as false', async () => {
+    let insertedPhoneVerified = null;
+    let insertedEmailVerified = null;
+
+    setPool({
+      query: async (sql, params) => {
+        if (sql.includes('SELECT * FROM email_verification_grants')) {
+          return { rows: [{ id: 'grant_m28', token: 'vgrant_m28', email: 'jane@example.com', purpose: 'checkout', used: false }] };
+        }
+        if (sql.includes('UPDATE email_verification_grants')) {
+          return { rows: [{ id: 'grant_m28' }] };
+        }
+        if (sql.includes('SELECT id, tenant_id FROM users')) return { rows: [] };
+        if (sql.includes('SELECT id FROM orders')) return { rows: [] };
+        if (sql.includes('INSERT INTO orders')) {
+          insertedEmailVerified = params[20];
+          insertedPhoneVerified = params[21];
+          return { rows: [] };
+        }
+        return { rows: [] };
+      }
+    });
+
+    const req = createMockRequest({
+      customerName: 'Jane EmailOnly',
+      customerEmail: 'jane@example.com',
+      phone: '9876543210',
+      businessName: 'Jane Diner',
+      planId: 'basic',
+      city: 'Delhi',
+      address: '123 Main St',
+      password: 'password123',
+      emailVerificationToken: 'vgrant_m28',
+      phoneVerified: false
+    });
+    const res = createMockResponse();
+    const url = new URL('http://localhost/api/purchase/orders');
+
+    const handled = await purchaseRoutes(req, res, url);
+    assert.equal(handled, true);
+    assert.equal(res.result.statusCode, 200);
+    assert.equal(insertedEmailVerified, true, 'email_verified must be true when verified');
+    assert.equal(insertedPhoneVerified, false, 'phone_verified must be false when unverified');
+  });
+
+  await t.test('29. SMS helper functions return disable errors without contacting paid SMS gateway', async () => {
+    const { requestPhoneOtp, verifyPhoneOtp, sendSmsMessage } = await import('../sms.js');
+    await assert.rejects(
+      async () => requestPhoneOtp('+919876543210'),
+      (err) => err.status === 400 && err.message.includes('SMS OTP verification is disabled')
+    );
+    await assert.rejects(
+      async () => verifyPhoneOtp('+919876543210', '123456'),
+      (err) => err.status === 400 && err.message.includes('SMS OTP verification is disabled')
+    );
+    const smsRes = await sendSmsMessage({ phone: '+919876543210', message: 'test' });
+    assert.equal(smsRes.ok, false);
+    assert.match(smsRes.error, /SMS API delivery is disabled/);
+  });
+
+  await t.test('30. Submitting emailVerified: true without completing server-side OTP verification throws 400 apiError', async () => {
+    setPool({
+      query: async (sql) => {
+        if (sql.includes('SELECT id FROM client_otp_challenges')) return { rows: [] }; // No verified challenge in DB
+        return { rows: [] };
+      }
+    });
+
+    const req = createMockRequest({
+      customerName: 'Unverified Hacker',
+      customerEmail: 'unverified@example.com',
+      businessName: 'Fake Diner',
+      planId: 'basic',
+      emailVerified: true // Client lies, but server checks client_otp_challenges
+    });
+    const res = createMockResponse();
+    const url = new URL('http://localhost/api/purchase/orders');
+
+    await assert.rejects(
+      async () => purchaseRoutes(req, res, url),
+      (err) => err.status === 400 && err.message.includes('Email address must be verified via OTP')
+    );
+  });
+
+  await t.test('31. Legitimately email-verified customer can create order and proceed without SMS verification', async () => {
+    let orderInserted = false;
+    setPool({
+      query: async (sql) => {
+        if (sql.includes('SELECT * FROM email_verification_grants')) {
+          return { rows: [{ id: 'grant_no_sms_123', token: 'vgrant_valid_nosms', email: 'valid@example.com', purpose: 'checkout', used: false }] };
+        }
+        if (sql.includes('UPDATE email_verification_grants')) {
+          return { rows: [{ id: 'grant_no_sms_123' }] };
+        }
+        if (sql.includes('SELECT id, tenant_id FROM users')) return { rows: [] };
+        if (sql.includes('SELECT id FROM orders')) return { rows: [] };
+        if (sql.includes('INSERT INTO orders')) { orderInserted = true; return { rowCount: 1 }; }
+        return { rows: [] };
+      }
+    });
+
+    const req = createMockRequest({
+      customerName: 'Valid Verified Customer',
+      customerEmail: 'valid@example.com',
+      phone: '9876543210',
+      businessName: 'Valid Diner',
+      planId: 'intermediate',
+      emailVerificationToken: 'vgrant_valid_nosms',
+      phoneVerified: false
+    });
+    const res = createMockResponse();
+    const url = new URL('http://localhost/api/purchase/orders');
+
+    const handled = await purchaseRoutes(req, res, url);
+    assert.equal(handled, true);
+    assert.equal(res.result.statusCode, 200);
+    assert.equal(orderInserted, true, 'Order must be created for legitimately verified email');
+  });
+
+  await t.test('32. Submitting an invalid, expired, mismatched, or replayed emailVerificationToken is rejected with 400 apiError', async () => {
+    setPool({
+      query: async (sql) => {
+        if (sql.includes('SELECT * FROM email_verification_grants')) return { rows: [] }; // No valid grant found
+        return { rows: [] };
+      }
+    });
+
+    const req = createMockRequest({
+      customerName: 'Fake Token User',
+      customerEmail: 'fake@example.com',
+      businessName: 'Fake Diner',
+      planId: 'basic',
+      emailVerificationToken: 'vgrant_fake_invalid_token_123'
+    });
+    const res = createMockResponse();
+    const url = new URL('http://localhost/api/purchase/orders');
+
+    await assert.rejects(
+      async () => purchaseRoutes(req, res, url),
+      (err) => err.status === 400 && err.message.includes('Invalid, expired, mismatched, or already consumed email verification grant')
+    );
+  });
+
+  await t.test('33. Submitting a valid emailVerificationToken atomically consumes grant and creates order', async () => {
+    let orderInserted = false;
+    let grantConsumed = false;
+
+    setPool({
+      query: async (sql, params) => {
+        if (sql.includes('SELECT * FROM email_verification_grants')) {
+          return { rows: [{ id: 'grant_123', token: 'vgrant_valid_123', email: 'validgrant@example.com', purpose: 'checkout', used: false }] };
+        }
+        if (sql.includes('UPDATE email_verification_grants')) {
+          grantConsumed = true;
+          return { rows: [{ id: 'grant_123' }] };
+        }
+        if (sql.includes('SELECT id, tenant_id FROM users')) return { rows: [] };
+        if (sql.includes('SELECT id FROM orders')) return { rows: [] };
+        if (sql.includes('INSERT INTO orders')) { orderInserted = true; return { rowCount: 1 }; }
+        return { rows: [] };
+      }
+    });
+
+    const req = createMockRequest({
+      customerName: 'Valid Grant Customer',
+      customerEmail: 'validgrant@example.com',
+      phone: '9876543210',
+      businessName: 'Valid Grant Diner',
+      planId: 'intermediate',
+      emailVerificationToken: 'vgrant_valid_123',
+      phoneVerified: false
+    });
+    const res = createMockResponse();
+    const url = new URL('http://localhost/api/purchase/orders');
+
+    const handled = await purchaseRoutes(req, res, url);
+    assert.equal(handled, true);
+    assert.equal(res.result.statusCode, 200);
+    assert.equal(grantConsumed, true, 'Grant must be atomically consumed in DB');
+    assert.equal(orderInserted, true, 'Order must be created for valid grant token');
   });
 });

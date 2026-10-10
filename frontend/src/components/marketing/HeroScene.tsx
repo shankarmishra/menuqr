@@ -202,104 +202,129 @@ export default function HeroScene() {
                   className="absolute inset-0 bg-[#FAFAF7] flex flex-col text-left z-30 overflow-hidden"
                 >
                   {/* Restaurant Header */}
-                  <div className="bg-[#151C19] text-white p-4 pt-8 shrink-0 relative">
+                  <div className="bg-[#151C19] text-white p-3.5 pt-7 shrink-0 relative border-b border-white/10">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-extrabold text-base tracking-tight leading-none mb-1">The Garden</h3>
-                        <p className="text-[10px] text-[#E8783C] font-mono font-bold tracking-wider uppercase">
-                          TABLE #12 â€¢ DIGITAL MENU
-                        </p>
-                      </div>
-                      <span className="w-2 h-2 rounded-full bg-[#34B56A] animate-pulse" />
-                    </div>
-                  </div>
-
-                  {/* Category Pills */}
-                  <div className="bg-white border-b border-slate-200/60 px-3.5 py-2.5 flex gap-2 shrink-0 overflow-x-auto scrollbar-none">
-                    <span className="bg-[#151C19] text-white text-[10px] font-bold px-3 py-1 rounded-full shrink-0">
-                      Starters
-                    </span>
-                    <span className="bg-slate-100 text-[#626776] text-[10px] font-semibold px-3 py-1 rounded-full shrink-0">
-                      Mains
-                    </span>
-                    <span className="bg-slate-100 text-[#626776] text-[10px] font-semibold px-3 py-1 rounded-full shrink-0">
-                      Desserts
-                    </span>
-                  </div>
-
-                  {/* Food Menu Items List (Static, readable typography) */}
-                  <div className="flex-1 p-3 space-y-2.5 overflow-y-auto">
-                    {/* Item 1: Dahi Puri */}
-                    <div className="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-sm flex flex-col justify-between gap-1.5">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="w-3 h-3 border border-[#34B56A] rounded-[2px] flex items-center justify-center bg-emerald-50">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#34B56A]" />
-                            </span>
-                            <h4 className="font-bold text-[#151C19] text-xs">Dahi Puri</h4>
-                          </div>
-                          <p className="text-[9.5px] text-[#626776] leading-snug line-clamp-2">
-                            Crispy shells filled with potatoes, creamy yoghurt and sweet tamarind chutney.
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-[#E8783C] text-white flex items-center justify-center font-serif font-bold text-xs shadow-sm">
+                          RH
+                        </div>
+                        <div>
+                          <h3 className="font-extrabold text-xs tracking-tight leading-none mb-0.5 text-white">Royal Haveli</h3>
+                          <p className="text-[9px] text-[#E8783C] font-mono font-bold tracking-wider uppercase">
+                            FINE DINING • TABLE 12
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between mt-0.5 pt-1 border-t border-slate-100">
-                        <span className="font-bold text-xs text-[#151C19]">₹120</span>
-                        <button className="bg-[#151C19] text-white text-[10px] font-bold px-3 py-1 rounded-md shadow-sm">
-                          Add
-                        </button>
-                      </div>
+                      <span className="flex items-center gap-1 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#34B56A] animate-pulse" />
+                        <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wide">Live</span>
+                      </span>
                     </div>
+                  </div>
 
-                    {/* Item 2: Paneer Tikka */}
+                  {/* Category Navigation Pills */}
+                  <div className="bg-white border-b border-slate-200/80 px-3 py-2 flex gap-1.5 shrink-0 overflow-x-auto scrollbar-none">
+                    <span className="bg-[#E8783C] text-white text-[9.5px] font-bold px-2.5 py-1 rounded-full shrink-0 shadow-sm">
+                      Starters
+                    </span>
+                    <span className="bg-slate-100 text-[#4A5D54] text-[9.5px] font-semibold px-2.5 py-1 rounded-full shrink-0">
+                      Main Course
+                    </span>
+                    <span className="bg-slate-100 text-[#4A5D54] text-[9.5px] font-semibold px-2.5 py-1 rounded-full shrink-0">
+                      Biryani & Rice
+                    </span>
+                    <span className="bg-slate-100 text-[#4A5D54] text-[9.5px] font-semibold px-2.5 py-1 rounded-full shrink-0">
+                      Breads
+                    </span>
+                  </div>
+
+                  {/* Food Menu Items List */}
+                  <div className="flex-1 p-2.5 space-y-2 overflow-y-auto">
+                    {/* Item 1: Paneer Tikka Angara */}
                     <div className="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-sm flex flex-col justify-between gap-1.5">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="w-3 h-3 border border-[#34B56A] rounded-[2px] flex items-center justify-center bg-emerald-50">
+                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                            <span className="w-3 h-3 border border-[#34B56A] rounded-[2px] flex items-center justify-center bg-emerald-50 shrink-0">
                               <span className="w-1.5 h-1.5 rounded-full bg-[#34B56A]" />
                             </span>
-                            <h4 className="font-bold text-[#151C19] text-xs">Paneer Tikka</h4>
-                            <span className="text-[8px] font-bold uppercase tracking-wider bg-[#E8783C]/10 text-[#E8783C] px-1.5 py-0.2 rounded border border-[#E8783C]/20">
+                            <h4 className="font-bold text-[#151C19] text-[11.5px] leading-tight">Paneer Tikka Angara</h4>
+                            <span className="text-[7.5px] font-bold uppercase tracking-wider bg-[#E8783C]/10 text-[#E8783C] px-1.5 py-0.2 rounded border border-[#E8783C]/20">
                               BESTSELLER
                             </span>
                           </div>
-                          <p className="text-[9.5px] text-[#626776] leading-snug line-clamp-2">
-                            Cottage cheese marinated in spices and grilled in tandoor.
+                          <p className="text-[9px] text-[#55635B] leading-snug line-clamp-2">
+                            Chargrilled cottage cheese marinated in smoked chili paste & mustard oil.
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between mt-0.5 pt-1 border-t border-slate-100">
-                        <span className="font-bold text-xs text-[#151C19]">₹240</span>
-                        <button className="bg-[#151C19] text-white text-[10px] font-bold px-3 py-1 rounded-md shadow-sm">
-                          Add
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                        <span className="font-extrabold text-xs text-[#151C19]">₹385</span>
+                        <button className="bg-[#151C19] hover:bg-[#E8783C] text-white text-[9.5px] font-bold px-2.5 py-0.5 rounded-md transition-colors shadow-sm">
+                          Add +
                         </button>
                       </div>
                     </div>
 
-                    {/* Item 3: Chicken Malai */}
+                    {/* Item 2: Galouti Kebab */}
+                    <div className="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-sm flex flex-col justify-between gap-1.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                            <span className="w-3 h-3 border border-[#FF5E4D] rounded-[2px] flex items-center justify-center bg-rose-50 shrink-0">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#FF5E4D]" />
+                            </span>
+                            <h4 className="font-bold text-[#151C19] text-[11.5px] leading-tight">Awadhi Galouti Kebab</h4>
+                            <span className="text-[7.5px] font-bold uppercase tracking-wider bg-[#151C19]/10 text-[#151C19] px-1.5 py-0.2 rounded border border-[#151C19]/20">
+                              CHEF SPECIAL
+                            </span>
+                          </div>
+                          <p className="text-[9px] text-[#55635B] leading-snug line-clamp-2">
+                            Melt-in-mouth minced mutton kebabs infused with 16 royal spices & rose water.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                        <span className="font-extrabold text-xs text-[#151C19]">₹495</span>
+                        <button className="bg-[#151C19] hover:bg-[#E8783C] text-white text-[9.5px] font-bold px-2.5 py-0.5 rounded-md transition-colors shadow-sm">
+                          Add +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Item 3: Dahi Ke Sholay */}
                     <div className="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-sm flex flex-col justify-between gap-1.5">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="w-3 h-3 border border-[#FF5E4D] rounded-[2px] flex items-center justify-center bg-rose-50">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#FF5E4D]" />
+                            <span className="w-3 h-3 border border-[#34B56A] rounded-[2px] flex items-center justify-center bg-emerald-50 shrink-0">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#34B56A]" />
                             </span>
-                            <h4 className="font-bold text-[#151C19] text-xs">Chicken Malai</h4>
+                            <h4 className="font-bold text-[#151C19] text-[11.5px] leading-tight">Dahi Ke Sholay</h4>
                           </div>
-                          <p className="text-[9.5px] text-[#626776] leading-snug line-clamp-2">
-                            Tender chicken breast pieces marinated with cardamom, cream cheese, and cashew paste.
+                          <p className="text-[9px] text-[#55635B] leading-snug line-clamp-2">
+                            Crispy fried bread rolls stuffed with hung curd, coriander, and green chillies.
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between mt-0.5 pt-1 border-t border-slate-100">
-                        <span className="font-bold text-xs text-[#151C19]">₹320</span>
-                        <button className="bg-[#151C19] text-white text-[10px] font-bold px-3 py-1 rounded-md shadow-sm">
-                          Add
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                        <span className="font-extrabold text-xs text-[#151C19]">₹320</span>
+                        <button className="bg-[#151C19] hover:bg-[#E8783C] text-white text-[9.5px] font-bold px-2.5 py-0.5 rounded-md transition-colors shadow-sm">
+                          Add +
                         </button>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Floating View Order Cart Bar */}
+                  <div className="bg-[#151C19] text-white p-2.5 px-3 flex items-center justify-between shrink-0 shadow-lg border-t border-white/10">
+                    <div>
+                      <p className="text-[8px] font-bold text-white/60 uppercase tracking-wider">Your Order</p>
+                      <p className="text-[11px] font-extrabold text-white">2 items • ₹880</p>
+                    </div>
+                    <button className="bg-[#E8783C] text-white text-[9.5px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                      View Cart →
+                    </button>
                   </div>
                 </motion.div>
               ) : null}

@@ -1,13 +1,26 @@
+import { ensureCsrfToken } from '../../utils/csrf';
+
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
+  const method = (init?.method || 'GET').toUpperCase();
+  const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+  let csrfHeaders: Record<string, string> = {};
+  if (isStateChanging) {
+    const token = await ensureCsrfToken();
+    if (token) {
+      csrfHeaders['X-CSRF-Token'] = token;
+    }
+  }
+
   try {
     response = await fetch(`${apiBaseUrl}/api/app${path}`, {
       ...init,
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...csrfHeaders,
         ...init?.headers,
       },
     });

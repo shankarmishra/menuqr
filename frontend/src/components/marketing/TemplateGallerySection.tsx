@@ -21,25 +21,25 @@ function TemplateCard({
   return (
     <ScrollStackItem itemClassName="mx-auto w-full max-w-[1120px] px-4 sm:px-6">
       <motion.article
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 32, scale: 0.97 }}
-        whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
-        viewport={{ once: true, amount: 0.15 }}
-        transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+        initial={prefersReducedMotion ? false : { opacity: 0 }}
+        whileInView={prefersReducedMotion ? undefined : { opacity: 1 }}
+        viewport={{ once: true, amount: 0.1 }}
+        transition={{ duration: 0.4 }}
         data-template-id={template.id}
-        className="grid min-h-[500px] grid-cols-1 overflow-hidden rounded-lg border shadow-[0_24px_70px_rgba(0,0,0,0.28)] md:grid-cols-2"
+        className="grid min-h-[500px] grid-cols-1 overflow-hidden rounded-2xl border shadow-[0_20px_50px_rgba(0,0,0,0.3)] md:grid-cols-2"
         style={{
           backgroundColor: template.colors.bg,
           color: template.colors.text,
           borderColor: template.colors.border,
         }}
       >
-        <div className="flex min-h-[420px] items-center justify-center p-4 sm:p-6 md:min-h-[560px]">
+        <div className="flex min-h-[380px] sm:min-h-[440px] md:min-h-[520px] items-center justify-center p-4 sm:p-6 bg-black/5">
           <img
             src={`/marketing/templates/${template.id}.webp`}
             alt={`${template.name} Indian restaurant menu design`}
             loading={index < 2 ? 'eager' : 'lazy'}
             decoding="async"
-            className="max-h-[540px] w-full rounded-sm object-contain"
+            className="max-h-[480px] w-full rounded-md object-contain shadow-sm"
           />
         </div>
 

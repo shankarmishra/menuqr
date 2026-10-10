@@ -6,7 +6,8 @@ import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { pool, connectDB } from '../db.js';
-import { hashPassword, generateAuthCookie } from '../auth.js';
+import { hashPassword, generateAuthToken, generateAuthCookie } from '../auth.js';
+import { generateCsrfToken } from '../csrf.js';
 import { requestAdminOtp } from '../adminAuth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -202,7 +203,9 @@ async function createFixture(plan, status, overrides = {}) {
   );
 
   const user = { id: userId, role: 'RESTAURANT_OWNER', tenantId: clientId };
-  const cookie = generateAuthCookie(user);
+  const token = generateAuthToken(user);
+  const cookie = generateAuthCookie(token);
+  const csrfToken = generateCsrfToken(token);
   return {
     fixtureId,
     userId,
@@ -215,7 +218,9 @@ async function createFixture(plan, status, overrides = {}) {
     subscriptionId,
     sourceOrderId,
     user,
+    token,
     cookie,
+    csrfToken,
     cleanup: () => cleanupFixture(fixtureId),
   };
 }
@@ -227,7 +232,7 @@ async function login(fixture) {
   assert.equal(sessionResponse.status, 200);
   assert.equal(sessionBody.authenticated, true);
   assert.equal(sessionBody.user.role, 'RESTAURANT_OWNER');
-  return { sessionBody, cookie: fixture.cookie };
+  return { sessionBody, cookie: fixture.cookie, csrfToken: sessionBody.csrfToken || fixture.csrfToken };
 }
 
 function headers(cookie) {
@@ -235,9 +240,13 @@ function headers(cookie) {
 }
 
 async function authenticatedRequest(fixture, path, options = {}) {
+  const method = (options.method || 'GET').toUpperCase();
+  const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+  const csrfHeaders = isStateChanging && fixture.csrfToken ? { 'X-CSRF-Token': fixture.csrfToken } : {};
+
   const { response, body } = await requestJson(`${baseUrl}${path}`, {
     ...options,
-    headers: { ...headers(fixture.cookie), ...options.headers },
+    headers: { ...headers(fixture.cookie), ...csrfHeaders, ...options.headers },
   });
   return { response, body };
 }
@@ -382,7 +391,7 @@ test('expired clients can log in and complete account recovery without paid acce
 
     const renewal = await requestJson(`${baseUrl}/api/app/subscription/renew`, {
       method: 'POST',
-      headers: headers(session.cookie),
+      headers: { ...headers(session.cookie), 'X-CSRF-Token': session.csrfToken },
       body: JSON.stringify({ planId: 'PREMIUM' }),
     });
     assert.equal(renewal.response.status, 400);
@@ -595,7 +604,7 @@ test('Basic allows 20 saved content changes then blocks change 21 across login',
     assert.equal(reLogin.sessionBody.authenticated, true);
     const afterLogin = await requestJson(`${baseUrl}/api/app/items/${fixture.itemId}`, {
       method: 'PUT',
-      headers: { cookie: reLogin.cookie },
+      headers: { cookie: reLogin.cookie, 'X-CSRF-Token': reLogin.csrfToken },
       body: JSON.stringify({ name: 'Post-login Edit', price: 100 }),
     });
     assert.equal(afterLogin.response.status, 403);
@@ -657,6 +666,8 @@ test('sticker requests are tenant-owned and admins manage audited statuses', asy
   const otpChallenge = await requestAdminOtp(adminEmail, '198.51.100.72');
   const verifyRes = await requestJson(`${baseUrl}/api/auth/admin/verify-otp`, { method: 'POST', body: JSON.stringify({ email: adminEmail, otp: otpChallenge.otp }) });
   const adminCookie = verifyRes.response.headers.get('set-cookie')?.split(';')[0];
+  const adminCsrfToken = verifyRes.body.csrfToken;
+  const adminHeaders = { cookie: adminCookie, 'X-CSRF-Token': adminCsrfToken };
 
   try {
     const qr = await authenticatedRequest(tenantA, '/api/app/qr', { method: 'POST', body: '{}' });
@@ -701,7 +712,7 @@ test('sticker requests are tenant-owned and admins manage audited statuses', asy
 
     const reviewing = await requestJson(`${baseUrl}/api/admin/sticker-requests/${submitted.body.id}`, {
       method: 'PATCH',
-      headers: headers(adminCookie),
+      headers: adminHeaders,
       body: JSON.stringify({ status: 'REVIEWING', note: 'Contacted restaurant.' }),
     });
     assert.equal(reviewing.response.status, 200, `${JSON.stringify(reviewing.body)}\nServer: ${serverStderr}`);
@@ -711,7 +722,7 @@ test('sticker requests are tenant-owned and admins manage audited statuses', asy
 
     const badTransition = await requestJson(`${baseUrl}/api/admin/sticker-requests/${submitted.body.id}`, {
       method: 'PATCH',
-      headers: headers(adminCookie),
+      headers: adminHeaders,
       body: JSON.stringify({ status: 'DELIVERED' }),
     });
     assert.equal(badTransition.response.status, 409);
@@ -719,7 +730,7 @@ test('sticker requests are tenant-owned and admins manage audited statuses', asy
     for (const status of ['CONFIRMED', 'IN_PRODUCTION', 'SHIPPED', 'DELIVERED']) {
       const transition = await requestJson(`${baseUrl}/api/admin/sticker-requests/${submitted.body.id}`, {
         method: 'PATCH',
-        headers: headers(adminCookie),
+        headers: adminHeaders,
         body: JSON.stringify({ status }),
       });
       assert.equal(transition.response.status, 200, `${status}: ${JSON.stringify(transition.body)}`);
@@ -866,5 +877,55 @@ test('verified Basic renewal resets the 20-change allowance without changing QR 
     assert.equal(renewedQr.body.qrId, qr.body.qrId);
   } finally {
     await fixture.cleanup();
+  }
+});
+
+test('CSRF enforcement rejects cookie-authenticated state-changing requests missing or with invalid CSRF token', async () => {
+  const fixture = await createFixture('PREMIUM', 'ACTIVE');
+  const otherFixture = await createFixture('PREMIUM', 'ACTIVE');
+  try {
+    // 1. Missing CSRF token -> 403
+    const missingToken = await requestJson(`${baseUrl}/api/app/categories`, {
+      method: 'POST',
+      headers: { cookie: fixture.cookie },
+      body: JSON.stringify({ name: 'CSRF Missing Category', menuId: fixture.menuId }),
+    });
+    assert.equal(missingToken.response.status, 403);
+    assert.equal(missingToken.body.error, 'Forbidden: Invalid or missing CSRF token.');
+
+    // 2. Tampered CSRF token -> 403
+    const invalidToken = await requestJson(`${baseUrl}/api/app/categories`, {
+      method: 'POST',
+      headers: { cookie: fixture.cookie, 'x-csrf-token': 'invalid.tampered.token' },
+      body: JSON.stringify({ name: 'CSRF Invalid Category', menuId: fixture.menuId }),
+    });
+    assert.equal(invalidToken.response.status, 403);
+    assert.equal(invalidToken.body.error, 'Forbidden: Invalid or missing CSRF token.');
+
+    // 3. CSRF token belonging to another session -> 403
+    const wrongSessionToken = await requestJson(`${baseUrl}/api/app/categories`, {
+      method: 'POST',
+      headers: { cookie: fixture.cookie, 'x-csrf-token': otherFixture.csrfToken },
+      body: JSON.stringify({ name: 'CSRF Wrong Session Category', menuId: fixture.menuId }),
+    });
+    assert.equal(wrongSessionToken.response.status, 403);
+    assert.equal(wrongSessionToken.body.error, 'Forbidden: Invalid or missing CSRF token.');
+
+    // 4. Valid CSRF token -> 200
+    const validToken = await requestJson(`${baseUrl}/api/app/categories`, {
+      method: 'POST',
+      headers: { cookie: fixture.cookie, 'x-csrf-token': fixture.csrfToken },
+      body: JSON.stringify({ name: 'CSRF Valid Category', menuId: fixture.menuId }),
+    });
+    assert.equal(validToken.response.status, 200);
+
+    // 5. GET request with cookie does NOT require CSRF token
+    const getRequest = await requestJson(`${baseUrl}/api/app/profile`, {
+      headers: { cookie: fixture.cookie },
+    });
+    assert.equal(getRequest.response.status, 200);
+  } finally {
+    await fixture.cleanup();
+    await otherFixture.cleanup();
   }
 });

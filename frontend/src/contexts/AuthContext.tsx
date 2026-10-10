@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { setCsrfToken, getCsrfToken } from '../utils/csrf';
 
 type User = {
   id: string;
@@ -27,6 +28,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (response.ok) {
         const data = await response.json();
+        if (data.csrfToken) {
+          setCsrfToken(data.csrfToken);
+        }
         if (data.authenticated) {
           setUser(data.user || { id: 'super-admin', role: 'SUPER_ADMIN' });
         } else {
@@ -44,7 +48,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
-      await fetch(`${apiBaseUrl}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+      const csrfToken = getCsrfToken();
+      await fetch(`${apiBaseUrl}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : {},
+      });
+      setCsrfToken(null);
       setUser(null);
     } catch (e) {
       console.error(e);

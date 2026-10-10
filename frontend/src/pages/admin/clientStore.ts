@@ -87,6 +87,8 @@ export interface AdminSession {
 }
 
 const storageKey = 'menusqr.clients';
+import { ensureCsrfToken, setCsrfToken } from '../../utils/csrf';
+
 const draftStorageKey = 'menusqr.clientDrafts';
 const migrationStorageKey = 'menusqr.apiMigration.v1';
 
@@ -96,11 +98,23 @@ let migrationPromise: Promise<void> | undefined;
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const method = (init?.method || 'GET').toUpperCase();
+  const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+
+  let csrfHeaders: Record<string, string> = {};
+  if (isStateChanging) {
+    const token = await ensureCsrfToken();
+    if (token) {
+      csrfHeaders['X-CSRF-Token'] = token;
+    }
+  }
+
   const response = await fetch(`${apiBaseUrl}/api${path}`, {
     ...init,
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      ...csrfHeaders,
       ...init?.headers,
     },
   });
@@ -215,10 +229,12 @@ export async function loginAdmin(password: string, email?: string): Promise<Logi
 }
 
 export async function verifyLoginOtp(tempToken: string, otp: string): Promise<LoginResponse> {
-  return request<LoginResponse>('/auth/verify-login-otp', {
+  const res = await request<LoginResponse & { csrfToken?: string }>('/auth/verify-login-otp', {
     method: 'POST',
     body: JSON.stringify({ tempToken, otp }),
   });
+  if (res.csrfToken) setCsrfToken(res.csrfToken);
+  return res;
 }
 
 export async function resendLoginOtp(tempToken: string): Promise<{ success: boolean; message: string }> {
@@ -243,7 +259,9 @@ export async function resetPassword(email: string, otp: string, newPassword: str
 }
 
 export async function logoutAdmin(): Promise<AdminSession> {
-  return await request<AdminSession>('/auth/logout', { method: 'POST', body: '{}' });
+  const res = await request<AdminSession>('/auth/logout', { method: 'POST', body: '{}' });
+  setCsrfToken(null);
+  return res;
 }
 
 export async function requestSuperAdminOtp(email: string): Promise<{ success: boolean; message: string }> {
@@ -254,14 +272,18 @@ export async function requestSuperAdminOtp(email: string): Promise<{ success: bo
 }
 
 export async function verifySuperAdminOtp(email: string, otp: string): Promise<LoginResponse> {
-  return request<LoginResponse>('/auth/admin/verify-otp', {
+  const res = await request<LoginResponse & { csrfToken?: string }>('/auth/admin/verify-otp', {
     method: 'POST',
     body: JSON.stringify({ email, otp }),
   });
+  if (res.csrfToken) setCsrfToken(res.csrfToken);
+  return res;
 }
 
 export async function logoutSuperAdmin(): Promise<AdminSession> {
-  return await request<AdminSession>('/auth/admin/logout', { method: 'POST', body: '{}' });
+  const res = await request<AdminSession>('/auth/admin/logout', { method: 'POST', body: '{}' });
+  setCsrfToken(null);
+  return res;
 }
 
 export async function getClient(id: string): Promise<ClientRecord | undefined> {

@@ -3,7 +3,13 @@ import { pool } from './db.js';
 
 const OTP_TTL_MS = 5 * 60 * 1000;
 const MAX_OTP_ATTEMPTS = 5;
-const OTP_HASH_KEY = process.env.ADMIN_OTP_PEPPER || process.env.JWT_SECRET || randomBytes(32);
+export function getAdminOtpSecret() {
+  const secret = process.env.OTP_SECRET || process.env.ADMIN_OTP_PEPPER || process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === 'production' && (!secret || secret === 'default-secret')) {
+    throw new Error('FATAL: Production requires a properly provisioned, high-entropy OTP_SECRET / ADMIN_OTP_PEPPER environment variable.');
+  }
+  return secret || 'test-mock-admin-otp-pepper-key';
+}
 const defaultAdmins = ['xshankarmishra@gmail.com', 'qevnaro@gmail.com', 'menusqr.in@gmail.com'];
 const envAdmins = process.env.APPROVED_ADMIN_EMAILS
   ? process.env.APPROVED_ADMIN_EMAILS.split(',').map(e => e.replace(/["']/g, '').trim().toLowerCase()).filter(Boolean)
@@ -19,7 +25,7 @@ function authError(message, status) {
 }
 
 async function incrementRateLimit(client, scope, identifier, limit) {
-  const bucketKey = createHmac('sha256', OTP_HASH_KEY).update(`${scope}:${identifier || 'unknown'}`).digest('hex');
+  const bucketKey = createHmac('sha256', getAdminOtpSecret()).update(`${scope}:${identifier || 'unknown'}`).digest('hex');
   const result = await client.query(`
     INSERT INTO admin_auth_rate_limits (bucket_key, window_started_at, hits, updated_at)
     VALUES ($1, NOW(), 1, NOW())
@@ -67,7 +73,7 @@ export function isApprovedAdminEmail(email) {
 }
 
 export function hashAdminOtp(otp) {
-  return createHmac('sha256', OTP_HASH_KEY).update(String(otp)).digest('hex');
+  return createHmac('sha256', getAdminOtpSecret()).update(String(otp)).digest('hex');
 }
 
 export function matchesAdminOtp(otp, storedHash) {

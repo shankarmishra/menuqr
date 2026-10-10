@@ -328,18 +328,54 @@ export async function processOrderPaymentAndProvision({
       );
       if (slugCheck.rows.length > 0) menuSlug = `${menuSlug}-${publicId}`;
 
+      // Generate unique 5-digit numeric reference code with collision retries
+      let refCode;
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const candidate = String(Math.floor(10000 + Math.random() * 90000));
+        const check = await client.query('SELECT id FROM clients WHERE reference_code = $1', [candidate]);
+        if (check.rows.length === 0) {
+          refCode = candidate;
+          break;
+        }
+      }
+      if (!refCode) refCode = String(Math.floor(10000 + Math.random() * 90000));
+
       await client.query(
         `INSERT INTO clients
-           (id, public_id, business_name, menu_slug, category, status)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
+           (id, public_id, business_name, menu_slug, category, business_type, category_other,
+            state, outlet_count, phone, city, address, reference_code, email_verified, phone_verified, status)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
         [tenantId, publicId, order.business_name, menuSlug,
-         order.cuisine || null, 'active']
+         order.cuisine || order.business_type || 'restaurant', order.business_type || 'restaurant',
+         order.category_other || null, order.state || null, order.outlet_count || 1,
+         order.phone || null, order.city || null, order.address || null,
+         refCode, Boolean(order.email_verified), Boolean(order.phone_verified), 'active']
       );
 
       await client.query(
-        'UPDATE users SET tenant_id=$1, updated_at=NOW() WHERE id=$2',
-        [tenantId, userId]
+        'UPDATE users SET tenant_id=$1, phone=$2, email_verified=$3, phone_verified=$4, updated_at=NOW() WHERE id=$5',
+        [tenantId, order.phone || null, Boolean(order.email_verified), Boolean(order.phone_verified), userId]
       );
+
+      // Ensure permanent QR Code & Tenant QR Identity exist
+      const qrCodeId = randomUUID();
+      const qrId = `qr_${randomBytes(6).toString('hex')}`;
+      await client.query(
+        `INSERT INTO qr_codes (id, tenant_id, public_id, qr_id, destination_type, is_active)
+         VALUES ($1, $2, $3, $4, 'menu', true) ON CONFLICT DO NOTHING`,
+        [qrCodeId, tenantId, publicId, qrId]
+      );
+      await client.query(
+        `INSERT INTO tenant_qr_identity (tenant_id, qr_code_id)
+         VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+        [tenantId, qrCodeId]
+      );
+
+      // Redeem coupon if attached
+      if (order.coupon_code) {
+        const { redeemCouponForOrder } = await import('../coupons.js');
+        await redeemCouponForOrder({ orderId, client });
+      }
 
       // ── 3. Create subscription ──────────────────────────────────────────
       const expiresAt = new Date();
@@ -596,15 +632,59 @@ export default async function purchaseRoutes(request, response, url) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // POST /api/purchase/orders — Create order (business details + planId only)
+  // POST /api/purchase/coupons/validate — Validate coupon for a plan
+  // ─────────────────────────────────────────────────────────────────────────
+  if (request.method === 'POST' && url.pathname === '/api/purchase/coupons/validate') {
+    const input = await readJson(request);
+    const { code, planId } = input || {};
+    if (!code || !planId) throw apiError(400, 'Coupon code and plan ID are required.');
+
+    const planKey = makePlanKey(planId);
+    if (planKey === 'basic') {
+      throw apiError(400, 'Basic plan is not eligible for coupon discounts.');
+    }
+    const plan = PLANS[planKey];
+    if (!plan) throw apiError(400, 'Invalid plan selected.');
+
+    const normCode = String(code).trim().toUpperCase();
+    const cpnRes = await pool.query(
+      `SELECT * FROM coupons WHERE code = $1`,
+      [normCode]
+    );
+    const coupon = cpnRes.rows[0];
+    if (!coupon) throw apiError(404, 'Coupon code does not exist.');
+    if (coupon.plan_id !== planKey.toUpperCase()) {
+      throw apiError(400, `Coupon '${normCode}' is only valid for the ${coupon.plan_id} plan.`);
+    }
+    if (coupon.status === 'DISABLED') throw apiError(400, 'This coupon code has been disabled.');
+    if (coupon.status === 'REDEEMED') throw apiError(400, 'This single-use coupon has already been redeemed.');
+    if (coupon.status === 'EXPIRED' || (coupon.expires_at && new Date(coupon.expires_at) < new Date())) {
+      throw apiError(400, 'This coupon code has expired.');
+    }
+
+    const { calculateDiscount } = await import('../coupons.js');
+    const discountCalc = calculateDiscount(plan.price, coupon.discount_pct);
+
+    sendJson(response, 200, {
+      valid: true,
+      code: coupon.code,
+      planId: planKey.toUpperCase(),
+      discountPct: coupon.discount_pct,
+      ...discountCalc,
+    });
+    return true;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // POST /api/purchase/orders — Create order with coupon & business metadata
   // ─────────────────────────────────────────────────────────────────────────
   if (request.method === 'POST' && url.pathname === '/api/purchase/orders') {
     const input = await readJson(request);
     const {
       customerName, customerEmail, phone,
-      businessName, city, address, cuisine,
+      businessName, city, address, state, cuisine, businessType, categoryOther, outletCount,
       website, instagram,
-      planId, currency,
+      planId, currency, couponCode, emailVerified, phoneVerified, emailChallengeId, emailVerificationToken
     } = input;
 
     if (!customerName || !customerEmail || !businessName || !planId) {
@@ -615,87 +695,78 @@ export default async function purchaseRoutes(request, response, url) {
     const plan = PLANS[planKey];
     if (!plan) throw apiError(400, 'Invalid plan selected.');
 
+    const normalizedEmail = customerEmail.trim().toLowerCase();
+    const { consumeEmailVerificationGrant } = await import('../clientAuth.js');
+    let isServerEmailVerified = false;
+
+    if (emailVerificationToken && typeof emailVerificationToken === 'string') {
+      await consumeEmailVerificationGrant({
+        token: emailVerificationToken,
+        email: normalizedEmail,
+        purpose: 'checkout',
+      });
+      isServerEmailVerified = true;
+    }
+
+    if (!isServerEmailVerified) {
+      throw apiError(400, 'Email address must be verified via OTP before completing checkout.');
+    }
+
+    // Account Uniqueness Guard
     const userCheck = await pool.query(
-      'SELECT id, tenant_id FROM users WHERE email = $1',
+      'SELECT id, tenant_id FROM users WHERE LOWER(email) = $1',
       [customerEmail.trim().toLowerCase()]
     );
     if (userCheck.rows.length > 0 && userCheck.rows[0].tenant_id) {
-      throw apiError(409, 'An account already exists with this email.');
+      throw apiError(409, 'An account already exists with this email address. Please sign in.');
     }
 
-    const existingOrder = await pool.query(
-      `SELECT id FROM orders
-        WHERE customer_email = $1 AND plan_id = $2
-          AND status = 'PENDING_PAYMENT'
-          AND created_at > NOW() - INTERVAL '30 minutes'
-        ORDER BY created_at DESC LIMIT 1`,
-      [customerEmail.trim().toLowerCase(), planKey]
-    );
-    if (existingOrder.rows.length > 0) {
-      const eid = existingOrder.rows[0].id;
-      await pool.query(
-        `UPDATE orders SET customer_name=$1, business_name=$2, phone=$3, city=$4, address=$5,
-          cuisine=$6, website=$7, instagram=$8, updated_at=NOW() WHERE id=$9`,
-        [customerName, businessName, phone || null, city || null, address || null,
-         cuisine || null, website || null, instagram || null, eid]
-      );
-      
-      let paymentSessionId = null;
-      const appId = process.env.CASHFREE_APP_ID;
-      const secretKey = process.env.CASHFREE_SECRET_KEY;
-      const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
-      if (appId && secretKey) {
-        const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
-        try {
-          const cfRes = await fetch(`${baseUrl}/orders/${eid}`, {
-            headers: {
-              'x-client-id': appId,
-              'x-client-secret': secretKey,
-              'x-api-version': '2023-08-01',
-            }
-          });
-          if (cfRes.ok) {
-            const cfData = await cfRes.json();
-            paymentSessionId = cfData.payment_session_id;
-          } else if (cfRes.status === 404) {
-            const cfCreate = await fetch(`${baseUrl}/orders`, {
-              method: 'POST',
-              headers: {
-                'x-client-id': appId,
-                'x-client-secret': secretKey,
-                'x-api-version': '2023-08-01',
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                order_id: eid,
-                order_amount: plan.price,
-                order_currency: currency || 'INR',
-                customer_details: {
-                  customer_id: `cust_${randomUUID().substring(0, 8)}`,
-                  customer_email: customerEmail.trim().toLowerCase(),
-                  customer_phone: ((phone || '').replace(/[^0-9]/g, '').length >= 10) ? (phone || '').replace(/[^0-9]/g, '').substring(0, 15) : '9999999999',
-                  customer_name: customerName
-                },
-                order_meta: {
-                  return_url: `${process.env.FRONTEND_ORIGIN || 'https://menusqr.in'}/purchase/success?order_id={order_id}`
-                }
-              })
-            });
-            if (cfCreate.ok) {
-              const cfData = await cfCreate.json();
-              paymentSessionId = cfData.payment_session_id;
-            }
-          }
-        } catch (e) {
-          console.error('Cashfree existing order fetch error:', e.message);
+    if (phone) {
+      const { normalizePhone } = await import('../sms.js');
+      const normPhone = normalizePhone(phone);
+      if (normPhone) {
+        const phoneUserCheck = await pool.query('SELECT id FROM users WHERE phone = $1 AND tenant_id IS NOT NULL', [normPhone]);
+        if (phoneUserCheck.rows.length > 0) {
+          throw apiError(409, 'An account already exists with this phone number. Please sign in.');
         }
       }
-
-      sendJson(response, 200, { orderId: eid, amount: plan.price, status: 'PENDING_PAYMENT', paymentSessionId, cashfreeMode: isSandbox ? 'sandbox' : 'production' });
-      return true;
     }
 
-    const orderId = `order_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
+    const existingOrderCheck = await pool.query(
+      'SELECT id FROM orders WHERE LOWER(customer_email) = $1 AND LOWER(business_name) = $2 AND status = $3 LIMIT 1',
+      [customerEmail.trim().toLowerCase(), businessName.trim().toLowerCase(), 'PENDING_PAYMENT']
+    );
+    let orderId = existingOrderCheck.rows[0]?.id;
+    const isReuse = Boolean(orderId);
+
+    if (!orderId) {
+      orderId = `order_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
+    }
+
+    // Coupon discount handling
+    let finalAmount = plan.price;
+    let originalAmount = plan.price;
+    let discountPct = null;
+    let discountAmount = null;
+    let validCouponCode = null;
+
+    if (couponCode && String(couponCode).trim()) {
+      if (planKey === 'basic') {
+        throw apiError(400, 'Basic plan is not eligible for coupon discounts.');
+      }
+      const { validateAndReserveCoupon, calculateDiscount } = await import('../coupons.js');
+      const reservedCoupon = await validateAndReserveCoupon({
+        code: couponCode,
+        planId: planKey.toUpperCase(),
+        orderId,
+      });
+      const calc = calculateDiscount(plan.price, reservedCoupon.discount_pct);
+      finalAmount = calc.finalAmount;
+      originalAmount = calc.originalAmount;
+      discountPct = calc.discountPct;
+      discountAmount = calc.discountAmount;
+      validCouponCode = reservedCoupon.code;
+    }
 
     let paymentSessionId = null;
     const appId = process.env.CASHFREE_APP_ID;
@@ -715,7 +786,7 @@ export default async function purchaseRoutes(request, response, url) {
           },
           body: JSON.stringify({
             order_id: orderId,
-            order_amount: plan.price,
+            order_amount: finalAmount,
             order_currency: currency || 'INR',
             customer_details: {
               customer_id: `cust_${randomUUID().substring(0, 8)}`,
@@ -741,22 +812,55 @@ export default async function purchaseRoutes(request, response, url) {
 
     let metadataJSON = null;
     if (input.password) {
-      metadataJSON = JSON.stringify({ password_hash: hashPassword(input.password), clear_password: input.password });
+      const { hashPassword } = await import('../auth.js');
+      const pwdHash = await hashPassword(input.password);
+      metadataJSON = JSON.stringify({ password_hash: pwdHash, clear_password: input.password });
     }
 
-    await pool.query(
-      `INSERT INTO orders
-         (id, customer_name, customer_email, phone, business_name, city, address,
-          cuisine, website, instagram, plan_id, amount, currency, status, provisioning_status, metadata)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
-      [orderId, customerName, customerEmail.trim().toLowerCase(), phone || null,
-       businessName, city || null, address || null, cuisine || null,
-       website || null, instagram || null,
-       planKey, plan.price, currency || 'INR',
-       'PENDING_PAYMENT', 'PENDING', metadataJSON]
-    );
+    if (isReuse) {
+      await pool.query(
+        `UPDATE orders
+         SET customer_name = $1, phone = $2, city = $3, address = $4, state = $5,
+             cuisine = $6, business_type = $7, category_other = $8, outlet_count = $9,
+             website = $10, instagram = $11, plan_id = $12, amount = $13, original_amount = $14,
+             discount_pct = $15, discount_amount = $16, coupon_code = $17, email_verified = $18,
+             phone_verified = $19, currency = $20, metadata = COALESCE($21, metadata), updated_at = CURRENT_TIMESTAMP
+         WHERE id = $22`,
+        [customerName, phone || null, city || null, address || null, state || null,
+         cuisine || businessType || null, businessType || 'restaurant', categoryOther || null,
+         Number(outletCount) || 1, website || null, instagram || null,
+         planKey, finalAmount, originalAmount, discountPct, discountAmount, validCouponCode,
+         isServerEmailVerified, false, currency || 'INR', metadataJSON, orderId]
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO orders
+           (id, customer_name, customer_email, phone, business_name, city, address, state,
+            cuisine, business_type, category_other, outlet_count, website, instagram,
+            plan_id, amount, original_amount, discount_pct, discount_amount, coupon_code,
+            email_verified, phone_verified, currency, status, provisioning_status, metadata)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)`,
+        [orderId, customerName, customerEmail.trim().toLowerCase(), phone || null,
+         businessName, city || null, address || null, state || null,
+         cuisine || businessType || null, businessType || 'restaurant', categoryOther || null,
+         Number(outletCount) || 1, website || null, instagram || null,
+         planKey, finalAmount, originalAmount, discountPct, discountAmount, validCouponCode,
+         isServerEmailVerified, false, currency || 'INR',
+         'PENDING_PAYMENT', 'PENDING', metadataJSON]
+      );
+    }
 
-    sendJson(response, 200, { orderId, amount: plan.price, status: 'PENDING_PAYMENT', paymentSessionId, cashfreeMode: isSandbox ? 'sandbox' : 'production' });
+    sendJson(response, 200, {
+      orderId,
+      amount: finalAmount,
+      originalAmount,
+      discountAmount: discountAmount || 0,
+      discountPct: discountPct || 0,
+      couponCode: validCouponCode,
+      status: 'PENDING_PAYMENT',
+      paymentSessionId,
+      cashfreeMode: isSandbox ? 'sandbox' : 'production'
+    });
     return true;
   }
 

@@ -170,23 +170,36 @@ export default async function authRoutes(request, response, url) {
     }
 
     const { stringifySetCookie: serialize } = await import('cookie');
-    const cookie = serialize(createAdminSessionCookieOptions(result.token));
+    const { generateCsrfToken, createCsrfCookie } = await import('../csrf.js');
+    const adminCookie = serialize(createAdminSessionCookieOptions(result.token));
+    const csrfToken = generateCsrfToken(result.token);
+    const csrfCookie = createCsrfCookie(csrfToken);
     
-    response.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
-    response.end(JSON.stringify({ authenticated: true, role: 'SUPER_ADMIN', email: result.email }));
+    response.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Set-Cookie': [adminCookie, csrfCookie],
+      'Cache-Control': 'no-store'
+    });
+    response.end(JSON.stringify({ authenticated: true, role: 'SUPER_ADMIN', email: result.email, csrfToken }));
     return true;
   }
 
   if (request.method === 'POST' && url.pathname === '/api/auth/admin/logout') {
     const { stringifySetCookie: serialize, parseCookie: parse } = await import('cookie');
+    const { createClearedCsrfCookie } = await import('../csrf.js');
     const cookies = parse(request.headers.cookie || '');
     const adminToken = cookies['menusqr_admin_session'];
     if (adminToken) {
       const { clearAdminSession } = await import('../adminAuth.js');
       await clearAdminSession(adminToken);
     }
-    const cookie = serialize(createClearedAdminSessionCookieOptions());
-    response.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
+    const adminCookie = serialize(createClearedAdminSessionCookieOptions());
+    const csrfCookie = createClearedCsrfCookie();
+    response.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Set-Cookie': [adminCookie, csrfCookie],
+      'Cache-Control': 'no-store'
+    });
     response.end(JSON.stringify({ authenticated: false }));
     return true;
   }
@@ -194,20 +207,35 @@ export default async function authRoutes(request, response, url) {
   if (request.method === 'GET' && url.pathname === '/api/auth/session') {
     response.setHeader('Cache-Control', 'no-store');
     let user = await getAuthenticatedUser(request);
+    let sessionToken = null;
+    const { parseCookie: parse } = await import('cookie');
+    const cookies = parse(request.headers.cookie || '');
+    sessionToken = cookies['menusqr_auth'] || null;
+
     if (!user) {
-      const { parseCookie: parse } = await import('cookie');
-      const cookies = parse(request.headers.cookie || '');
       const adminToken = cookies['menusqr_admin_session'];
       if (adminToken) {
         const { verifyAdminSession } = await import('../adminAuth.js');
         const adminUser = await verifyAdminSession(adminToken);
-        if (adminUser) user = adminUser;
+        if (adminUser) {
+          user = adminUser;
+          sessionToken = adminToken;
+        }
       }
     }
+
+    const { generateCsrfToken, createCsrfCookie } = await import('../csrf.js');
+    const csrfToken = user ? generateCsrfToken(sessionToken || user.id) : null;
+    const setCookies = [];
+    if (csrfToken) {
+      setCookies.push(createCsrfCookie(csrfToken));
+    }
+
     sendJson(response, 200, {
       authenticated: !!user,
       user: user || null,
-    });
+      csrfToken: csrfToken || null,
+    }, setCookies.length > 0 ? { 'Set-Cookie': setCookies } : {});
     return true;
   }
 
@@ -410,9 +438,19 @@ export default async function authRoutes(request, response, url) {
     }).catch(err => console.error('[payment email error]', err.message));
 
     const user = { id: userId, role: 'RESTAURANT_OWNER', tenantId: clientId };
-    const cookie = generateAuthCookie(user);
-    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
-    response.end(JSON.stringify({ success: true, user }));
+    const { generateAuthToken } = await import('../auth.js');
+    const sessionToken = generateAuthToken(user);
+    const cookie = generateAuthCookie(sessionToken);
+    const { generateCsrfToken, createCsrfCookie } = await import('../csrf.js');
+    const csrfToken = generateCsrfToken(sessionToken);
+    const csrfCookie = createCsrfCookie(csrfToken);
+
+    response.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Set-Cookie': [cookie, csrfCookie],
+      'Cache-Control': 'no-store'
+    });
+    response.end(JSON.stringify({ success: true, user, csrfToken }));
     return true;
   }
 
@@ -440,13 +478,13 @@ export default async function authRoutes(request, response, url) {
     const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
     const dbUser = dbRes.rows[0];
 
-    if (dbUser && dbUser.role !== 'SUPER_ADMIN' && verifyPassword(input.password, dbUser.password_hash)) {
+    if (dbUser && dbUser.role !== 'SUPER_ADMIN' && (await verifyPassword(input.password, dbUser.password_hash))) {
       user = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
       userEmail = dbUser.email;
 
       if (isLegacyHash(dbUser.password_hash)) {
         try {
-          const upgradedHash = hashPassword(input.password);
+          const upgradedHash = await hashPassword(input.password);
           await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [upgradedHash, dbUser.id]);
         } catch (rehashErr) {
           console.error('[auth] Failed to auto-rehash legacy password:', rehashErr.message);
@@ -518,10 +556,26 @@ export default async function authRoutes(request, response, url) {
     if (!dbUser) throw apiError(404, 'User account not found.');
 
     const sessionUser = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
-    const cookie = generateAuthCookie(sessionUser);
+    const { generateAuthToken } = await import('../auth.js');
+    const sessionToken = generateAuthToken(sessionUser);
+    const authCookie = generateAuthCookie(sessionToken);
 
-    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
-    response.end(JSON.stringify({ authenticated: true, role: sessionUser.role, user: sessionUser, onboardingState: dbUser.onboarding_state }));
+    const { generateCsrfToken, createCsrfCookie } = await import('../csrf.js');
+    const csrfToken = generateCsrfToken(sessionToken);
+    const csrfCookie = createCsrfCookie(csrfToken);
+
+    response.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Set-Cookie': [authCookie, csrfCookie],
+      'Cache-Control': 'no-store'
+    });
+    response.end(JSON.stringify({
+      authenticated: true,
+      role: sessionUser.role,
+      user: sessionUser,
+      onboardingState: dbUser.onboarding_state,
+      csrfToken,
+    }));
     return true;
   }
 
@@ -623,7 +677,7 @@ export default async function authRoutes(request, response, url) {
       throw apiError(err.status || 400, err.message);
     }
 
-    const newHash = hashPassword(newPassword);
+    const newHash = await hashPassword(newPassword);
     await pool.query('UPDATE users SET password_hash = $1 WHERE LOWER(email) = $2', [newHash, normalizedEmail]);
 
     sendJson(response, 200, { success: true, message: 'Password reset successfully! You can now log in.' });
@@ -631,9 +685,119 @@ export default async function authRoutes(request, response, url) {
   }
 
   if (request.method === 'POST' && url.pathname === '/api/auth/logout') {
-    const cookie = clearAuthCookie();
-    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookie, 'Cache-Control': 'no-store' });
+    const { createClearedCsrfCookie } = await import('../csrf.js');
+    const authCookie = clearAuthCookie();
+    const csrfCookie = createClearedCsrfCookie();
+    response.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Set-Cookie': [authCookie, csrfCookie],
+      'Cache-Control': 'no-store'
+    });
     response.end(JSON.stringify({ authenticated: false }));
+    return true;
+  }
+
+  // ACCOUNT UNIQUENESS CHECK ENDPOINT
+  if (request.method === 'POST' && url.pathname === '/api/auth/check-unique') {
+    const input = await readJson(request);
+    const { email, phone } = input || {};
+    const normEmail = email ? normalizeEmail(email) : null;
+    const { normalizePhone } = await import('../sms.js');
+    const normPhone = phone ? normalizePhone(phone) : null;
+
+    let emailAvailable = true;
+    let phoneAvailable = true;
+
+    if (normEmail) {
+      const userRes = await pool.query('SELECT id FROM users WHERE LOWER(email) = $1', [normEmail]);
+      if (userRes.rows.length > 0) emailAvailable = false;
+    }
+
+    if (normPhone) {
+      const clientRes = await pool.query('SELECT id FROM clients WHERE phone = $1', [normPhone]);
+      const userRes = await pool.query('SELECT id FROM users WHERE phone = $1', [normPhone]);
+      if (clientRes.rows.length > 0 || userRes.rows.length > 0) phoneAvailable = false;
+    }
+
+    sendJson(response, 200, {
+      emailAvailable,
+      phoneAvailable,
+      email: normEmail,
+      phone: normPhone,
+    });
+    return true;
+  }
+
+  // ONBOARDING EMAIL OTP REQUEST & VERIFY
+  if (request.method === 'POST' && url.pathname === '/api/auth/verify-email/request-otp') {
+    const input = await readJson(request);
+    const { email } = input || {};
+    if (!email) throw apiError(400, 'Email address is required.');
+
+    const normEmail = normalizeEmail(email);
+    const address = getClientIp(request);
+
+    const { createClientOtpChallenge, invalidateClientOtpChallenge } = await import('../clientAuth.js');
+    let challenge;
+    try {
+      challenge = await createClientOtpChallenge(normEmail, address);
+    } catch (err) {
+      throw apiError(err.status || 429, err.message);
+    }
+
+    const emailResult = await sendLoginOtpEmail({
+      email: normEmail,
+      otp: challenge.otp,
+      ownerName: normEmail.split('@')[0],
+    });
+
+    if (!emailResult.ok) {
+      await invalidateClientOtpChallenge(challenge.challengeId);
+      throw apiError(500, `Failed to send email OTP: ${emailResult.error || 'Provider rejected request'}`);
+    }
+
+    sendJson(response, 200, {
+      success: true,
+      challengeId: challenge.challengeId,
+      email: normEmail,
+      message: 'Verification code sent to email.',
+    });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/auth/verify-email/verify-otp') {
+    const input = await readJson(request);
+    const { challengeId, otp } = input || {};
+    if (!challengeId || !otp) throw apiError(400, 'Challenge ID and OTP are required.');
+
+    const { verifyClientOtpChallenge } = await import('../clientAuth.js');
+    const result = await verifyClientOtpChallenge(challengeId, otp);
+    sendJson(response, 200, { verified: true, email: result.email, verificationToken: result.verificationToken });
+    return true;
+  }
+
+  // ONBOARDING PHONE OTP REQUEST & VERIFY
+  if (request.method === 'POST' && url.pathname === '/api/auth/verify-phone/request-otp') {
+    const input = await readJson(request);
+    const { phone } = input || {};
+    if (!phone) throw apiError(400, 'Phone number is required.');
+
+    const address = getClientIp(request);
+    const { requestPhoneOtp } = await import('../sms.js');
+    const result = await requestPhoneOtp(phone, address);
+    sendJson(response, 200, result);
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/auth/verify-phone/verify-otp') {
+    const input = await readJson(request);
+    const { phone, otp } = input || {};
+    if (!phone || !otp) throw apiError(400, 'Phone number and OTP code are required.');
+
+    const address = getClientIp(request);
+    const { verifyPhoneOtp } = await import('../sms.js');
+    const result = await verifyPhoneOtp(phone, otp, address);
+    sendJson(response, 200, result);
     return true;
   }
 

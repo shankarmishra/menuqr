@@ -29,7 +29,7 @@ test('Customer Login Integration & Auth Flow', async (t) => {
 
     // Insert test user with valid PBKDF2 password hash
     const testPassword = 'IntegrationTestPassword2026!';
-    const passwordHash = hashPassword(testPassword);
+    const passwordHash = await hashPassword(testPassword);
 
     await pool.query(`
       INSERT INTO users (id, email, password_hash, role, tenant_id)
@@ -48,10 +48,10 @@ test('Customer Login Integration & Auth Flow', async (t) => {
     const res = await pool.query("SELECT password_hash FROM users WHERE email = 'test_owner_integration@menusqr.in'");
     const storedHash = res.rows[0].password_hash;
 
-    assert.equal(verifyPassword('IntegrationTestPassword2026!', storedHash), true);
-    assert.equal(verifyPassword('WrongPassword123!', storedHash), false);
-    assert.equal(verifyPassword('', storedHash), false);
-    assert.equal(verifyPassword(undefined, storedHash), false);
+    assert.equal(await verifyPassword('IntegrationTestPassword2026!', storedHash), true);
+    assert.equal(await verifyPassword('WrongPassword123!', storedHash), false);
+    assert.equal(await verifyPassword('', storedHash), false);
+    assert.equal(await verifyPassword(undefined, storedHash), false);
   });
 
   await t.test('3. Test Client OTP Challenge creation and verification for happy path', async () => {

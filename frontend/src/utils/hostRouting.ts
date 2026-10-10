@@ -17,8 +17,8 @@ export function getAdminRedirectUrl(
   search = '',
   hash = '',
 ): string {
-  const isLegacyLoginPath = pathname === '/admin/login';
-  const path = isLegacyLoginPath ? '/login' : pathname;
-  const suffix = isLegacyLoginPath ? '' : `${search}${hash}`;
+  const isLoginOrRootAdminPath = pathname === '/admin' || pathname === '/admin/' || pathname === '/admin/login';
+  const path = isLoginOrRootAdminPath ? '/login' : pathname;
+  const suffix = isLoginOrRootAdminPath ? '' : `${search}${hash}`;
   return `https://${normalizeHostname(adminHostname)}${path}${suffix}`;
 }

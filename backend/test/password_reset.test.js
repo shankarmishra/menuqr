@@ -7,7 +7,7 @@ import {
   verifyPasswordResetChallenge,
   invalidatePasswordResetChallenge,
 } from '../clientAuth.js';
-import { hashPassword, verifyPassword } from '../auth.js';
+import { hashPassword } from '../auth.js';
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is required to run tests.');
@@ -26,7 +26,7 @@ test('Password Reset OTP Persistence and Security Test Suite', async (t) => {
       "INSERT INTO clients (id, public_id, business_name, menu_slug) VALUES ($1, $2, 'Reset Dhaba', $3)",
       [tenantId, randomUUID().split('-')[0], `reset-${randomUUID()}`]
     );
-    const initialHash = hashPassword('InitialPass123!');
+    const initialHash = await hashPassword('InitialPass123!');
     await pool.query(
       "INSERT INTO users (id, email, password_hash, role, tenant_id) VALUES ($1, $2, $3, 'RESTAURANT_OWNER', $4)",
       [userId, testEmail, initialHash, tenantId]
@@ -55,7 +55,6 @@ test('Password Reset OTP Persistence and Security Test Suite', async (t) => {
   });
 
   await t.test('verifyPasswordResetChallenge succeeds with correct OTP and marks challenge as used', async () => {
-    // Clear cooldown to allow new challenge
     await pool.query("DELETE FROM client_auth_rate_limits");
 
     const challenge = await createPasswordResetChallenge(testEmail, ip);
@@ -80,6 +79,32 @@ test('Password Reset OTP Persistence and Security Test Suite', async (t) => {
       },
       (err) => err.status === 400 && err.message.includes('No active password reset request')
     );
+  });
+
+  await t.test('concurrent verification requests execute atomically without double consumption', async () => {
+    await pool.query("DELETE FROM client_auth_rate_limits");
+    const challenge = await createPasswordResetChallenge(testEmail, ip);
+
+    const results = await Promise.allSettled([
+      verifyPasswordResetChallenge(testEmail, challenge.otp),
+      verifyPasswordResetChallenge(testEmail, challenge.otp),
+    ]);
+
+    const fulfilled = results.filter((r) => r.status === 'fulfilled');
+    const rejected = results.filter((r) => r.status === 'rejected');
+
+    assert.equal(fulfilled.length, 1);
+    assert.equal(rejected.length, 1);
+  });
+
+  await t.test('invalidatePasswordResetChallenge marks active challenge as used on email delivery failure', async () => {
+    await pool.query("DELETE FROM client_auth_rate_limits");
+    const challenge = await createPasswordResetChallenge(testEmail, ip);
+
+    await invalidatePasswordResetChallenge(challenge.challengeId);
+
+    const dbRes = await pool.query('SELECT used FROM password_resets WHERE id = $1', [challenge.challengeId]);
+    assert.equal(dbRes.rows[0].used, true);
   });
 
   await t.test('incorrect OTP code increments attempts and fails after 5 attempts', async () => {

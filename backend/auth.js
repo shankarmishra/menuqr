@@ -1,7 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { parseCookie as parse, stringifySetCookie as serialize } from 'cookie';
-import { randomBytes, pbkdf2Sync, createHash } from 'node:crypto';
+import { randomBytes, pbkdf2, createHash, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
 import { pool, queryPortable } from './db.js';
+
+const pbkdf2Async = promisify(pbkdf2);
 
 // Use a secure JWT secret from env or generate a temporary one (not ideal for production restarts, but safe for dev)
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -11,41 +14,72 @@ if (!JWT_SECRET) {
 }
 const COOKIE_NAME = 'menusqr_auth';
 
-// Password Hashing (PBKDF2 with salt)
-export function hashPassword(password) {
+const PBKDF2_ITERATIONS = 600000;
+const PBKDF2_KEYLEN = 32;
+const PBKDF2_DIGEST = 'sha256';
+
+// Password Hashing (OWASP recommended PBKDF2-HMAC-SHA256 600,000 iterations)
+export async function hashPassword(password) {
   if (typeof password !== 'string' || !password) {
     throw new Error('Password must be a non-empty string.');
   }
-  const salt = randomBytes(16).toString('hex');
-  const hash = pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-  return `${salt}:${hash}`;
+  const saltBuf = randomBytes(16);
+  const derivedKey = await pbkdf2Async(password, saltBuf, PBKDF2_ITERATIONS, PBKDF2_KEYLEN, PBKDF2_DIGEST);
+  return `$pbkdf2-sha256$i=${PBKDF2_ITERATIONS}$l=${PBKDF2_KEYLEN}$${saltBuf.toString('hex')}$${derivedKey.toString('hex')}`;
 }
 
 export function isLegacyHash(storedHash) {
-  if (typeof storedHash !== 'string' || !storedHash) return false;
-  return /^[a-f0-9]{64}$/i.test(storedHash) && !storedHash.includes(':');
+  if (typeof storedHash !== 'string' || !storedHash) return true;
+  return !storedHash.startsWith('$pbkdf2-sha256$');
 }
 
-export function verifyPassword(password, storedHash) {
+export async function verifyPassword(password, storedHash) {
   if (typeof password !== 'string' || !password || typeof storedHash !== 'string' || !storedHash) {
     return false;
   }
 
-  if (storedHash.includes(':')) {
-    const [salt, originalHash] = storedHash.split(':');
-    if (!salt || !originalHash) return false;
+  // 1. Current OWASP Standard Format: $pbkdf2-sha256$i=600000$l=32$<salt_hex>$<hash_hex>
+  if (storedHash.startsWith('$pbkdf2-sha256$')) {
+    const parts = storedHash.split('$');
+    if (parts.length !== 6) return false;
+    const iterationsMatch = parts[2].match(/^i=(\d+)$/);
+    const keylenMatch = parts[3].match(/^l=(\d+)$/);
+    if (!iterationsMatch || !keylenMatch) return false;
+    const iterations = parseInt(iterationsMatch[1], 10);
+    const keylen = parseInt(keylenMatch[1], 10);
+    const saltHex = parts[4];
+    const originalHashHex = parts[5];
+    if (!saltHex || !originalHashHex || iterations < 1000) return false;
+
     try {
-      const hash = pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-      return hash === originalHash;
+      const saltBuf = Buffer.from(saltHex, 'hex');
+      const expectedBuf = Buffer.from(originalHashHex, 'hex');
+      const derivedBuf = await pbkdf2Async(password, saltBuf, iterations, keylen, 'sha256');
+      return derivedBuf.length === expectedBuf.length && timingSafeEqual(derivedBuf, expectedBuf);
     } catch {
       return false;
     }
   }
 
-  if (isLegacyHash(storedHash)) {
+  // 2. Previous PBKDF2-SHA512 10,000 iterations format: <salt_hex>:<hash_hex>
+  if (storedHash.includes(':')) {
+    const [saltHex, originalHashHex] = storedHash.split(':');
+    if (!saltHex || !originalHashHex) return false;
     try {
-      const legacyHash = createHash('sha256').update(password).digest('hex');
-      return legacyHash.toLowerCase() === storedHash.toLowerCase();
+      const expectedBuf = Buffer.from(originalHashHex, 'hex');
+      const derivedBuf = await pbkdf2Async(password, saltHex, 10000, 64, 'sha512');
+      return derivedBuf.length === expectedBuf.length && timingSafeEqual(derivedBuf, expectedBuf);
+    } catch {
+      return false;
+    }
+  }
+
+  // 3. Legacy un-salted SHA-256 format (64 hex characters)
+  if (/^[a-f0-9]{64}$/i.test(storedHash)) {
+    try {
+      const inputHashBuf = createHash('sha256').update(password).digest();
+      const expectedBuf = Buffer.from(storedHash, 'hex');
+      return inputHashBuf.length === expectedBuf.length && timingSafeEqual(inputHashBuf, expectedBuf);
     } catch {
       return false;
     }
@@ -55,14 +89,17 @@ export function verifyPassword(password, storedHash) {
 }
 
 // Token Generation
-export function generateAuthCookie(user) {
+export function generateAuthToken(user) {
   const payload = {
     id: user.id,
     role: user.role,
     tenantId: user.tenantId || null,
   };
-  
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
+}
+
+export function generateAuthCookie(userOrToken) {
+  const token = typeof userOrToken === 'string' ? userOrToken : generateAuthToken(userOrToken);
   const secure = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
 
   return serialize({

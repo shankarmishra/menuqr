@@ -39,6 +39,7 @@ import QrGenerator from './pages/admin/QrGenerator';
 import Settings from './pages/admin/Settings';
 import ClientForm from './pages/admin/ClientForm';
 import Orders from './pages/admin/Orders';
+import Coupons from './pages/admin/Coupons';
 import Payments from './pages/admin/Payments';
 import StickerRequests from './pages/admin/StickerRequests';
 import { getAdminSession, getClientByMenuSlug } from './pages/admin/clientStore';
@@ -137,6 +138,7 @@ function AdminPortalRoutes() {
         <Route path="dhabas" element={<ClientList />} />
         <Route path="cafes" element={<ClientList />} />
         <Route path="orders" element={<Orders />} />
+        <Route path="coupons" element={<Coupons />} />
         <Route path="sticker-requests" element={<StickerRequests />} />
         <Route path="payments" element={<Payments />} />
         <Route path="qr" element={<QrGenerator />} />

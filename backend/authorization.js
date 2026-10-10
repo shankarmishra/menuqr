@@ -1,6 +1,6 @@
 export function getPlanContentLimit(planId) {
   const p = String(planId || 'BASIC').toUpperCase();
-  if (p === 'BASIC') return 30;
+  if (p === 'BASIC') return 20;
   if (p === 'INTERMEDIATE') return 100;
   return Infinity;
 }

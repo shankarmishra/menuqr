@@ -9,32 +9,32 @@ interface IPhoneMockupProps {
 export default function PremiumIPhoneMockup({ children, className = '' }: IPhoneMockupProps) {
   return (
     <div
-      className={`relative w-[220px] sm:w-[260px] aspect-[393/820] rounded-[38px] sm:rounded-[44px] bg-gradient-to-br from-[#E2E2E2] via-[#999999] to-[#3B3B3B] p-[2.5px] shadow-[0_25px_60px_rgba(0,0,0,0.45),0_0_20px_rgba(0,0,0,0.15)_inset] select-none ${className}`}
+      className={`relative w-[240px] sm:w-[280px] md:w-[300px] aspect-[393/820] rounded-[42px] sm:rounded-[48px] bg-gradient-to-br from-[#3D4742] via-[#1F2724] to-[#0A0D0C] p-[3px] shadow-[0_30px_70px_rgba(0,0,0,0.55),0_0_25px_rgba(0,0,0,0.25)_inset] select-none ${className}`}
     >
-      {/* Outer Metallic Bezel Highlights */}
-      <div className="absolute inset-0 rounded-[38px] sm:rounded-[44px] shadow-[inset_0_0_6px_rgba(255,255,255,0.8)] pointer-events-none z-50 mix-blend-overlay" />
+      {/* Outer Metallic Bezel Edge Highlight */}
+      <div className="absolute inset-0 rounded-[42px] sm:rounded-[48px] border border-white/20 pointer-events-none z-50" />
 
       {/* Side Buttons */}
-      <div className="absolute top-[90px] -left-[3px] w-[3px] h-[30px] bg-[#666666] rounded-l-md z-40" />
-      <div className="absolute top-[135px] -left-[3px] w-[3px] h-[48px] bg-[#666666] rounded-l-md z-40" />
-      <div className="absolute top-[195px] -left-[3px] w-[3px] h-[48px] bg-[#666666] rounded-l-md z-40" />
-      <div className="absolute top-[150px] -right-[3px] w-[3px] h-[65px] bg-[#666666] rounded-r-md z-40" />
+      <div className="absolute top-[100px] -left-[3.5px] w-[3.5px] h-[32px] bg-[#2A3430] rounded-l-md z-40" />
+      <div className="absolute top-[148px] -left-[3.5px] w-[3.5px] h-[50px] bg-[#2A3430] rounded-l-md z-40" />
+      <div className="absolute top-[210px] -left-[3.5px] w-[3.5px] h-[50px] bg-[#2A3430] rounded-l-md z-40" />
+      <div className="absolute top-[165px] -right-[3.5px] w-[3.5px] h-[70px] bg-[#2A3430] rounded-r-md z-40" />
 
       {/* Black Screen Frame */}
-      <div className="relative w-full h-full bg-black rounded-[36px] sm:rounded-[42px] p-[6px] sm:p-[7px] overflow-hidden shadow-inner">
-        {/* Dynamic Island */}
-        <div className="absolute top-[10px] left-1/2 -translate-x-1/2 w-[85px] sm:w-[95px] h-[24px] sm:h-[26px] bg-black rounded-full z-50 flex items-center justify-end px-2.5 shadow-md border border-white/10">
-          <div className="w-3.5 h-3.5 rounded-full bg-[#0d0d0d] border border-white/10 flex items-center justify-center">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#1e1e60] blur-[0.5px]" />
+      <div className="relative w-full h-full bg-[#0A0D0C] rounded-[39px] sm:rounded-[45px] p-[6px] sm:p-[8px] overflow-hidden shadow-inner">
+        {/* Dynamic Island Cutout */}
+        <div className="absolute top-[11px] left-1/2 -translate-x-1/2 w-[88px] sm:w-[98px] h-[25px] sm:h-[27px] bg-[#0A0D0C] rounded-full z-50 flex items-center justify-end px-2.5 shadow-md border border-white/10">
+          <div className="w-3.5 h-3.5 rounded-full bg-[#151C19] border border-white/10 flex items-center justify-center">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#1e2e45]" />
           </div>
         </div>
 
         {/* Inner Phone Screen Display */}
-        <div className="relative w-full h-full bg-[#FAFAF7] rounded-[30px] sm:rounded-[36px] overflow-hidden flex flex-col">
+        <div className="relative w-full h-full bg-[#FAFAF7] rounded-[33px] sm:rounded-[39px] overflow-hidden flex flex-col">
           {children}
 
-          {/* Glass Glare Overlay */}
-          <div className="absolute top-0 left-0 w-[200%] h-[200%] -translate-x-[40%] -translate-y-[40%] bg-gradient-to-b from-white/15 to-transparent rotate-[28deg] pointer-events-none z-40 mix-blend-screen" />
+          {/* Subtle Glass Reflection Overlay */}
+          <div className="absolute top-0 left-0 w-[200%] h-[200%] -translate-x-[45%] -translate-y-[45%] bg-gradient-to-b from-white/10 via-white/5 to-transparent rotate-[25deg] pointer-events-none z-40 mix-blend-screen" />
         </div>
       </div>
     </div>

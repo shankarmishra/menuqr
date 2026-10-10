@@ -172,6 +172,10 @@ export default async function appRoutes(request, response, url) {
     return true;
   }
 
+  if (request.method === 'POST' && url.pathname === '/api/app/subscription/renew') {
+    throw apiError(400, 'Please use the checkout page to renew your subscription. Free renewals are not allowed.');
+  }
+
 
 
 

@@ -4,25 +4,49 @@
     {
       "source": "/admin/login",
       "destination": "https://admin.menusqr.in/login",
-      "permanent": false,
-      "has": [{ "type": "host", "value": "menusqr.in" }]
-    },
-    {
-      "source": "/admin/:path*",
-      "destination": "https://admin.menusqr.in/admin/:path*",
-      "permanent": false,
+      "permanent": true,
       "has": [{ "type": "host", "value": "menusqr.in" }]
     },
     {
       "source": "/admin/login",
       "destination": "https://admin.menusqr.in/login",
-      "permanent": false,
+      "permanent": true,
+      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+    },
+    {
+      "source": "/admin",
+      "destination": "https://admin.menusqr.in/login",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "menusqr.in" }]
+    },
+    {
+      "source": "/admin",
+      "destination": "https://admin.menusqr.in/login",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+    },
+    {
+      "source": "/admin/",
+      "destination": "https://admin.menusqr.in/login",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "menusqr.in" }]
+    },
+    {
+      "source": "/admin/",
+      "destination": "https://admin.menusqr.in/login",
+      "permanent": true,
       "has": [{ "type": "host", "value": "www.menusqr.in" }]
     },
     {
       "source": "/admin/:path*",
       "destination": "https://admin.menusqr.in/admin/:path*",
-      "permanent": false,
+      "permanent": true,
+      "has": [{ "type": "host", "value": "menusqr.in" }]
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://admin.menusqr.in/admin/:path*",
+      "permanent": true,
       "has": [{ "type": "host", "value": "www.menusqr.in" }]
     },
     {
@@ -43,8 +67,8 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!api/|assets/|brand/|hero/|templates/|favicon.svg|icons.svg|robots.txt|sitemap.xml|site.webmanifest|og-image.webp).*)",
-      "destination": "/index.html"
+      "source": "/:path*",
+      "destination": "/index"
     }
   ]
 }

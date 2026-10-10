@@ -1,11 +1,17 @@
-import { randomBytes, randomInt, createHmac, timingSafeEqual } from 'node:crypto';
+import { randomBytes, randomInt, createHmac, createHash, timingSafeEqual } from 'node:crypto';
 import { pool } from './db.js';
 
 const OTP_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const RESEND_COOLDOWN_MS = 30 * 1000; // 30 seconds
 const MAX_OTP_ATTEMPTS = 5;
 const REQUEST_LIMIT = 5; // 5 requests per 15 min window
-const OTP_HASH_KEY = process.env.ADMIN_OTP_PEPPER || process.env.JWT_SECRET || 'menusqr-default-client-otp-pepper-key';
+export function getClientOtpSecret() {
+  const secret = process.env.OTP_SECRET || process.env.ADMIN_OTP_PEPPER || process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === 'production' && (!secret || secret === 'menusqr-default-client-otp-pepper-key' || secret === 'default-secret')) {
+    throw new Error('FATAL: Production requires a properly provisioned, high-entropy OTP_SECRET environment variable.');
+  }
+  return secret || 'test-mock-client-otp-pepper-key';
+}
 
 function authError(message, status) {
   return Object.assign(new Error(message), { status });
@@ -16,7 +22,7 @@ export function generateClientOtp() {
 }
 
 export function hashClientOtp(otp) {
-  return createHmac('sha256', OTP_HASH_KEY).update(String(otp)).digest('hex');
+  return createHmac('sha256', getClientOtpSecret()).update(String(otp)).digest('hex');
 }
 
 export function matchesClientOtp(otp, storedHash) {
@@ -30,7 +36,7 @@ async function checkAndApplyClientRateLimits(client, email, ip, prefix = 'client
   const normalizedEmail = email.trim().toLowerCase();
   
   // 1. Check 30s Cooldown
-  const cooldownKey = createHmac('sha256', OTP_HASH_KEY).update(`${prefix}_cooldown:${normalizedEmail}`).digest('hex');
+  const cooldownKey = createHmac('sha256', getClientOtpSecret()).update(`${prefix}_cooldown:${normalizedEmail}`).digest('hex');
   const cooldownRes = await client.query(`
     SELECT last_request_at FROM client_auth_rate_limits WHERE bucket_key = $1
   `, [cooldownKey]);
@@ -44,7 +50,7 @@ async function checkAndApplyClientRateLimits(client, email, ip, prefix = 'client
   }
 
   // 2. Check 15-minute sliding window rate limits (IP & Email)
-  const windowKey = createHmac('sha256', OTP_HASH_KEY).update(`${prefix}_request:${normalizedEmail}:${ip}`).digest('hex');
+  const windowKey = createHmac('sha256', getClientOtpSecret()).update(`${prefix}_request:${normalizedEmail}:${ip}`).digest('hex');
   const rateLimitRes = await client.query(`
     INSERT INTO client_auth_rate_limits (bucket_key, window_started_at, hits, last_request_at, updated_at)
     VALUES ($1, NOW(), 1, NOW(), NOW())
@@ -180,10 +186,21 @@ export async function verifyClientOtpChallenge(challengeId, otp) {
       throw authError('Verification code already used. Please log in again.', 400);
     }
 
+    const grantId = `grant_${randomBytes(12).toString('hex')}`;
+    const verificationToken = `vgrant_${randomBytes(24).toString('hex')}`;
+    const tokenHash = hashGrantToken(verificationToken);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min TTL
+
+    await client.query(
+      `INSERT INTO email_verification_grants (id, token, email, purpose, expires_at)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [grantId, tokenHash, challenge.email, 'checkout', expiresAt]
+    );
+
     await client.query('COMMIT');
     transactionOpen = false;
 
-    return { success: true, email: challenge.email };
+    return { success: true, email: challenge.email, verificationToken };
   } catch (error) {
     if (transactionOpen) await client.query('ROLLBACK');
     throw error;
@@ -304,4 +321,68 @@ export async function verifyPasswordResetChallenge(email, otp) {
   } finally {
     client.release();
   }
+}
+
+export function hashGrantToken(token) {
+  if (!token || typeof token !== 'string') return '';
+  return createHash('sha256').update(token.trim()).digest('hex');
+}
+
+const VERIFICATION_GRANT_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+export async function createEmailVerificationGrant(email, purpose = 'checkout', dbClient = null) {
+  const normEmail = String(email || '').trim().toLowerCase();
+  const grantId = `grant_${randomBytes(12).toString('hex')}`;
+  const token = `vgrant_${randomBytes(24).toString('hex')}`;
+  const tokenHash = hashGrantToken(token);
+  const expiresAt = new Date(Date.now() + VERIFICATION_GRANT_TTL_MS);
+  const executor = dbClient || pool;
+
+  await executor.query(
+    `INSERT INTO email_verification_grants (id, token, email, purpose, expires_at)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [grantId, tokenHash, normEmail, purpose, expiresAt]
+  );
+
+  return { token, email: normEmail, expiresAt };
+}
+
+export async function consumeEmailVerificationGrant({ token, email, purpose = 'checkout', client = null }) {
+  if (!token || typeof token !== 'string' || !token.trim()) {
+    throw authError('A valid email verification grant token is required.', 400);
+  }
+  if (!email || typeof email !== 'string' || !email.trim()) {
+    throw authError('Customer email is required for verification grant consumption.', 400);
+  }
+
+  const normEmail = email.trim().toLowerCase();
+  const normToken = token.trim();
+  const tokenHash = hashGrantToken(normToken);
+  const executor = client || pool;
+
+  const res = await executor.query(
+    `SELECT * FROM email_verification_grants
+     WHERE (token = $1 OR token = $2) AND LOWER(email) = $3 AND purpose = $4 AND used = false AND expires_at > NOW()
+     FOR UPDATE`,
+    [tokenHash, normToken, normEmail, purpose]
+  );
+
+  const grant = res.rows[0];
+  if (!grant) {
+    throw authError('Invalid, expired, mismatched, or already consumed email verification grant. Please verify your email.', 400);
+  }
+
+  const updateRes = await executor.query(
+    `UPDATE email_verification_grants
+     SET used = true, used_at = NOW()
+     WHERE id = $1 AND used = false
+     RETURNING id`,
+    [grant.id]
+  );
+
+  if (updateRes.rows.length === 0) {
+    throw authError('Email verification grant already consumed by another concurrent request.', 400);
+  }
+
+  return grant;
 }

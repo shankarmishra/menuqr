@@ -85,6 +85,8 @@ export interface RoyalWalnutStickerCardProps {
   onDownloadPNG?: () => void;
   onDownloadSVG?: () => void;
   headerText?: string;
+  footerText?: string;
+  isModal?: boolean;
   themeId?: StickerThemeId;
   stickerRef?: React.RefObject<HTMLDivElement | null>;
 }
@@ -100,6 +102,8 @@ export default function RoyalWalnutStickerCard({
   onDownloadPNG,
   onDownloadSVG,
   headerText = 'Scan Me for Menu',
+  footerText = 'Scan to view our menu',
+  isModal = false,
   themeId = 'menusqr-walnut-gold',
   stickerRef,
 }: RoyalWalnutStickerCardProps) {
@@ -121,7 +125,7 @@ export default function RoyalWalnutStickerCard({
       {/* WOODEN TABLE TENT CARD FRAME */}
       <div
         ref={stickerRef}
-        className="relative flex w-[380px] sm:w-[410px] min-h-[610px] flex-col items-center overflow-hidden rounded-[2.2rem] p-4 sm:p-5 box-border ring-1 ring-black/30"
+        className={`${isModal ? 'qr-print-sticker ' : ''}relative flex w-[380px] sm:w-[410px] min-h-[610px] flex-col items-center overflow-hidden rounded-[2.2rem] p-4 sm:p-5 box-border ring-1 ring-black/30`}
         style={{
           background: theme.woodBg,
           boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7), inset 0 0 35px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.15)',
@@ -305,7 +309,7 @@ export default function RoyalWalnutStickerCard({
             >
               {qrImage ? (
                 <>
-                  <img src={qrImage} alt="Menu QR Code" className="h-full w-full object-contain" />
+                  <img src={qrImage} alt="Permanent restaurant menu QR code" className="h-full w-full object-contain" />
                   {/* Center Badge Icon on QR */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="bg-white p-1 rounded-lg shadow-md">
@@ -329,7 +333,7 @@ export default function RoyalWalnutStickerCard({
               className="text-base sm:text-lg font-extrabold tracking-tight"
               style={{ fontFamily: "'Playfair Display', 'Georgia', serif", color: theme.textDark }}
             >
-              Scan to view our menu
+              {footerText}
             </h3>
 
             <p className="text-xs font-medium tracking-wide mt-0.5 opacity-80" style={{ color: theme.leafColor }}>

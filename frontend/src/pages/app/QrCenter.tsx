@@ -16,6 +16,7 @@ export default function QrCenter() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
   const [qrImage, setQrImage] = useState<string>('');
 
   const stickerRef = useRef<HTMLDivElement>(null);
@@ -206,6 +207,8 @@ export default function QrCenter() {
                 {/* --- FULL PHYSICAL ROYAL WALNUT QR STICKER CARD --- */}
                 <div className="scale-90 sm:scale-95 transform-gpu transition-all">
                   <RoyalWalnutStickerCard
+                    headerText="Scan Me for Menu"
+                    footerText="Scan Table QR Code"
                     stickerRef={stickerRef}
                     restaurantName={restaurantName}
                     category="DIGITAL MENU"
@@ -236,21 +239,21 @@ export default function QrCenter() {
                       onClick={() => void downloadPNG()}
                       className="flex items-center justify-center gap-1.5 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-3 px-3 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                     >
-                      <Download size={14} /> PNG
+                      <Download size={14} /> Download Image
                     </button>
                     <button
                       type="button"
                       onClick={() => void downloadSVG()}
                       className="flex items-center justify-center gap-1.5 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-3 px-3 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                     >
-                      <Download size={14} /> SVG
+                      <Download size={14} /> Download Vector
                     </button>
                     <button
                       type="button"
-                      onClick={() => window.print()}
-                      className="flex items-center justify-center gap-1.5 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-3 px-3 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                      onClick={() => setShowPrintModal(true)}
+                      className="flex items-center justify-center gap-1.5 bg-[#e8783c] hover:bg-[#f08b55] text-white border border-[#e8783c] py-3 px-3 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                     >
-                      <Printer size={14} /> Print
+                      <Printer size={14} /> Print Ready
                     </button>
                   </div>
                 </div>
@@ -269,7 +272,7 @@ export default function QrCenter() {
                 </div>
                 {!showRequestForm && (
                   <button type="button" onClick={() => setShowRequestForm(true)} className="text-xs font-bold text-[#e8783c] hover:text-[#f08b55] cursor-pointer">
-                    + Order New
+                    Order New +
                   </button>
                 )}
               </div>
@@ -286,23 +289,23 @@ export default function QrCenter() {
                     
                     <div className="grid gap-3">
                       <label className="text-xs font-semibold text-[#849a90]">Quantity (Stickers / Stands)
-                        <input type="number" min="1" max="10000" required value={quantity} onChange={(e) => setQuantity(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
+                        <input type="number" aria-label="Quantity" min="1" max="10000" required value={quantity} onChange={(e) => setQuantity(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
                       </label>
                       <label className="text-xs font-semibold text-[#849a90]">Contact Person
-                        <input required value={contactName} onChange={(e) => setContactName(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
+                        <input required aria-label="Contact name" value={contactName} onChange={(e) => setContactName(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
                       </label>
                       <label className="text-xs font-semibold text-[#849a90]">Phone Number
-                        <input required type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
+                        <input required aria-label="Contact phone" type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
                       </label>
                       <label className="text-xs font-semibold text-[#849a90]">Email Address
-                        <input required type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
+                        <input required aria-label="Contact email" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
                       </label>
                       <label className="text-xs font-semibold text-[#849a90]">Full Delivery Address
-                        <textarea required rows={2} value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
+                        <textarea required aria-label="Delivery address" rows={2} value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
                       </label>
                       <div className="grid grid-cols-2 gap-3">
                         <label className="text-xs font-semibold text-[#849a90]">City
-                          <input required value={deliveryCity} onChange={(e) => setDeliveryCity(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
+                          <input required aria-label="City" value={deliveryCity} onChange={(e) => setDeliveryCity(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
                         </label>
                         <label className="text-xs font-semibold text-[#849a90]">State
                           <input value={deliveryState} onChange={(e) => setDeliveryState(e.target.value)} className="mt-1 w-full rounded-lg border border-[#36473f] bg-[#1d2723] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c]" />
@@ -311,7 +314,7 @@ export default function QrCenter() {
                     </div>
                     
                     <button type="submit" disabled={saving} className="w-full mt-2 rounded-xl bg-gradient-to-r from-[#e8783c] to-[#f08b55] hover:brightness-110 px-5 py-3 text-sm font-extrabold text-white disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#e8783c]/20 cursor-pointer">
-                      <Send size={16} /> {saving ? 'Submitting Order...' : 'Submit Order Request'}
+                      <Send size={16} /> {saving ? 'Submitting Order...' : 'Submit Request'}
                     </button>
                   </form>
                 ) : (
@@ -345,7 +348,54 @@ export default function QrCenter() {
         </div>
       )}
 
-      {/* MODAL IS NOT NEEDED ANYMORE AS THE FULL ARTWORK IS ALREADY DISPLAYED ON THE PAGE */}
+      {/* PRINT READY STICKER MODAL OVERLAY */}
+      {showPrintModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-[#151c19] border border-white/15 rounded-3xl p-6 sm:p-8 max-w-lg w-full flex flex-col items-center text-center space-y-6 shadow-2xl relative">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#e8783c]">Print-Ready Artwork</p>
+              <h2 className="text-xl sm:text-2xl font-black text-white mt-1">Print-Ready QR Artwork</h2>
+            </div>
+            <div className="scale-95 sm:scale-100">
+              <RoyalWalnutStickerCard
+                isModal={true}
+                headerText="Scan Me for Menu"
+                footerText="Scan to view our menu"
+                restaurantName={restaurantName}
+                category="DIGITAL MENU"
+                menuUrl={menuUrl}
+                qrImage={qrImage}
+                showStatusBadge={true}
+                showDownloadButtons={false}
+              />
+            </div>
+
+            <div className="flex items-center justify-center gap-3 w-full pt-2">
+              <button
+                type="button"
+                onClick={() => void downloadPNG()}
+                className="flex-1 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-2.5 px-4 rounded-xl text-xs font-bold transition-colors"
+              >
+                PNG
+              </button>
+              <button
+                type="button"
+                onClick={() => void downloadSVG()}
+                className="flex-1 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-2.5 px-4 rounded-xl text-xs font-bold transition-colors"
+              >
+                SVG
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowPrintModal(false)}
+                className="flex-1 bg-[#e8783c] hover:bg-[#f08b55] text-white py-2.5 px-4 rounded-xl text-xs font-bold transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

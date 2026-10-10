@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Utensils, Store, Coffee, QrCode, Settings, Menu, X, Bell, ClipboardPlus, LogOut, Trash2, Receipt, CreditCard, PackageCheck } from 'lucide-react';
+import { LayoutDashboard, Utensils, Store, Coffee, QrCode, Settings, Menu, X, Bell, ClipboardPlus, LogOut, Trash2, Receipt, CreditCard, PackageCheck, Tag } from 'lucide-react';
 import { clearNotifications, getApiHealth, getNotifications, logoutSuperAdmin, markNotificationRead, type AdminNotification } from '../pages/admin/clientStore';
 import { MenusQRBrand } from '../components/brand/MenusQRBrand';
 import '../App.css';
@@ -13,6 +13,7 @@ const navItems = [
   { path: '/admin/dhabas', icon: Store, label: 'Dhabas' },
   { path: '/admin/cafes', icon: Coffee, label: 'Cafes' },
   { path: '/admin/orders', icon: Receipt, label: 'Orders' },
+  { path: '/admin/coupons', icon: Tag, label: 'Coupons' },
   { path: '/admin/sticker-requests', icon: PackageCheck, label: 'Sticker requests' },
   { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
   { path: '/admin/qr', icon: QrCode, label: 'QR Generator' },

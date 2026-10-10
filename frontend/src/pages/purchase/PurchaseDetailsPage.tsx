@@ -36,10 +36,36 @@ export default function PurchaseDetailsPage() {
     customerEmail: '',
     phone: '',
     businessName: '',
+    businessType: 'restaurant',
+    categoryOther: '',
     city: '',
+    state: '',
     address: '',
-    password: ''
+    outletCount: 1,
+    password: '',
+    couponCode: '',
   });
+
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [emailVerificationToken, setEmailVerificationToken] = useState('');
+
+  // Email Verification State
+  const [emailOtpSending, setEmailOtpSending] = useState(false);
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [emailChallengeId, setEmailChallengeId] = useState('');
+  const [emailOtpInput, setEmailOtpInput] = useState('');
+  const [emailOtpVerifying, setEmailOtpVerifying] = useState(false);
+
+  // Coupon State
+  const [couponValidating, setCouponValidating] = useState(false);
+  const [couponApplied, setCouponApplied] = useState<{
+    code: string;
+    discountPct: number;
+    originalAmount: number;
+    discountAmount: number;
+    finalAmount: number;
+  } | null>(null);
+  const [couponError, setCouponError] = useState('');
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -64,14 +90,14 @@ export default function PurchaseDetailsPage() {
           if (data && data.address) {
             const addr = data.address;
             const city = addr.city || addr.town || addr.village || addr.county || addr.state_district || '';
+            const state = addr.state || '';
             
-            // Format a nicer display address if possible, else use full display_name
             const parts = [
               addr.amenity || addr.shop || addr.building,
               addr.road,
               addr.suburb || addr.neighbourhood,
               city,
-              addr.state,
+              state,
               addr.postcode
             ].filter(Boolean);
             
@@ -80,6 +106,7 @@ export default function PurchaseDetailsPage() {
             setFormData(prev => ({
               ...prev,
               city: city,
+              state: state,
               address: displayAddress
             }));
             
@@ -105,6 +132,94 @@ export default function PurchaseDetailsPage() {
     );
   };
 
+  const handleSendEmailOtp = async () => {
+    if (!formData.customerEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customerEmail)) {
+      setValidationErrors(prev => ({ ...prev, customerEmail: 'Valid email address is required to send verification code' }));
+      return;
+    }
+    setEmailOtpSending(true);
+    setError('');
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/auth/verify-email/request-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.customerEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send email verification OTP.');
+      setEmailChallengeId(data.challengeId);
+      setEmailOtpSent(true);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setEmailOtpSending(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    if (!emailOtpInput || emailOtpInput.length !== 6) return;
+    setEmailOtpVerifying(true);
+    setError('');
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/auth/verify-email/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ challengeId: emailChallengeId, otp: emailOtpInput }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Invalid OTP code.');
+      setEmailVerified(true);
+      if (data.verificationToken) {
+        setEmailVerificationToken(data.verificationToken);
+      }
+      setEmailOtpSent(false);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setEmailOtpVerifying(false);
+    }
+  };
+
+
+
+  const handleApplyCoupon = async () => {
+    setCouponError('');
+    if (planId === 'basic') {
+      setCouponError('Basic plan is not eligible for coupon discounts.');
+      return;
+    }
+    if (!formData.couponCode.trim()) {
+      setCouponError('Please enter a coupon code.');
+      return;
+    }
+
+    setCouponValidating(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/purchase/coupons/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: formData.couponCode.trim(),
+          planId: planId.toUpperCase(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Invalid coupon code.');
+      setCouponApplied({
+        code: data.code,
+        discountPct: data.discountPct,
+        originalAmount: data.originalAmount,
+        discountAmount: data.discountAmount,
+        finalAmount: data.finalAmount,
+      });
+    } catch (err: any) {
+      setCouponApplied(null);
+      setCouponError(err.message);
+    } finally {
+      setCouponValidating(false);
+    }
+  };
+
   const validateForm = () => {
     const errors: Record<string, string> = {};
     if (!formData.customerName.trim()) errors.customerName = 'Name is required';
@@ -126,6 +241,9 @@ export default function PurchaseDetailsPage() {
     if (!formData.businessName.trim()) errors.businessName = 'Restaurant name is required';
     if (!formData.city.trim()) errors.city = 'City is required';
     if (!formData.address.trim()) errors.address = 'Address is required';
+    if (formData.businessType === 'other' && !formData.categoryOther.trim()) {
+      errors.categoryOther = 'Please specify your business type';
+    }
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -146,13 +264,18 @@ export default function PurchaseDetailsPage() {
         body: JSON.stringify({
           ...formData,
           planId: planId.toUpperCase(),
-          currency: 'INR'
+          currency: 'INR',
+          couponCode: couponApplied?.code || formData.couponCode || null,
+          emailVerificationToken,
+          emailVerified,
+          emailChallengeId,
+          phoneVerified: false,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 409 || data.error?.toLowerCase().includes('already exists')) {
-          throw new Error('An account already exists with this email address. Please login or use a different email.');
+          throw new Error('An account already exists with this email or phone number. Please log in.');
         }
         throw new Error(data.error || 'Failed to create order');
       }
@@ -170,7 +293,7 @@ export default function PurchaseDetailsPage() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (validationErrors[name]) {
@@ -179,6 +302,7 @@ export default function PurchaseDetailsPage() {
   };
 
   const plan = PLANS[planId] || PLANS['premium'];
+  const finalPrice = couponApplied ? couponApplied.finalAmount : plan.price;
 
   return (
     <div className="min-h-screen bg-[#FAFAF7] flex flex-col">
@@ -218,7 +342,7 @@ export default function PurchaseDetailsPage() {
               <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Owner Name</label>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Owner Name *</label>
                     <input
                       type="text"
                       name="customerName"
@@ -233,7 +357,23 @@ export default function PurchaseDetailsPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Email Address</label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold text-[#151C19]">Email Address *</label>
+                      {emailVerified ? (
+                        <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                          <CheckCircle2 size={12} /> Verified
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleSendEmailOtp}
+                          disabled={emailOtpSending}
+                          className="text-[11px] font-semibold text-[#E8783C] hover:underline disabled:opacity-50"
+                        >
+                          {emailOtpSending ? 'Sending OTP...' : 'Verify Email'}
+                        </button>
+                      )}
+                    </div>
                     <input
                       type="email"
                       name="customerEmail"
@@ -245,12 +385,36 @@ export default function PurchaseDetailsPage() {
                       placeholder="john@example.com"
                     />
                     {validationErrors.customerEmail && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.customerEmail}</p>}
+
+                    {emailOtpSent && !emailVerified && (
+                      <div className="mt-2 p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs">
+                        <p className="font-semibold text-amber-800 mb-1.5">Enter 6-digit code sent to {formData.customerEmail}:</p>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            maxLength={6}
+                            value={emailOtpInput}
+                            onChange={(e) => setEmailOtpInput(e.target.value)}
+                            className="w-28 px-3 py-1 border rounded-lg text-center font-mono font-bold"
+                            placeholder="123456"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleVerifyEmailOtp}
+                            disabled={emailOtpVerifying || emailOtpInput.length !== 6}
+                            className="px-3 py-1 bg-[#E8783C] text-white font-bold rounded-lg disabled:opacity-50"
+                          >
+                            {emailOtpVerifying ? 'Checking...' : 'Confirm'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Phone Number</label>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Phone Number *</label>
                     <input
                       type="tel"
                       name="phone"
@@ -265,7 +429,7 @@ export default function PurchaseDetailsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Restaurant Name</label>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Restaurant / Business Name *</label>
                     <input
                       type="text"
                       name="businessName"
@@ -282,7 +446,62 @@ export default function PurchaseDetailsPage() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">City</label>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Business Category *</label>
+                    <select
+                      name="businessType"
+                      value={formData.businessType}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm font-medium"
+                    >
+                      <option value="restaurant">Restaurant</option>
+                      <option value="dhaba">Dhaba</option>
+                      <option value="cafe">Café / Coffee Shop</option>
+                      <option value="hotel_restaurant">Hotel / Resort Restaurant</option>
+                      <option value="bakery">Bakery</option>
+                      <option value="qsr">Fast Food / QSR</option>
+                      <option value="cloud_kitchen">Cloud Kitchen</option>
+                      <option value="food_truck">Food Truck</option>
+                      <option value="canteen_mess">Canteen / Mess</option>
+                      <option value="catering">Catering Service</option>
+                      <option value="sweet_shop">Sweet Shop</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  {formData.businessType === 'other' ? (
+                    <div>
+                      <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Specify Business Type *</label>
+                      <input
+                        type="text"
+                        name="categoryOther"
+                        value={formData.categoryOther}
+                        onChange={handleInputChange}
+                        className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm ${
+                          validationErrors.categoryOther ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
+                        }`}
+                        placeholder="e.g. Ice Cream Parlor"
+                      />
+                      {validationErrors.categoryOther && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.categoryOther}</p>}
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Number of Outlets</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        name="outletCount"
+                        value={formData.outletCount}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm font-medium"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">City *</label>
                     <input
                       type="text"
                       name="city"
@@ -297,7 +516,19 @@ export default function PurchaseDetailsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Create Password</label>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">State / Region</label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm"
+                      placeholder="e.g. Maharashtra"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#151C19] mb-1.5">Create Password *</label>
                     <input
                       type="password"
                       name="password"
@@ -314,7 +545,7 @@ export default function PurchaseDetailsPage() {
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-[#151C19]">Address</label>
+                    <label className="block text-xs font-semibold text-[#151C19]">Address *</label>
                     <button
                       type="button"
                       onClick={handleGetLocation}
@@ -343,6 +574,56 @@ export default function PurchaseDetailsPage() {
                   />
                   {validationErrors.address && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.address}</p>}
                 </div>
+              </div>
+
+              {/* Coupon Section (Eligible Plans Only) */}
+              <div className="mt-8 pt-6 border-t border-gray-100">
+                <h4 className="text-xs font-bold text-[#151C19] uppercase tracking-wider mb-2">Discount Coupon</h4>
+                {planId === 'basic' ? (
+                  <p className="text-xs text-gray-400 font-medium italic">Basic plan is not eligible for coupon discounts.</p>
+                ) : (
+                  <div>
+                    <div className="flex gap-2 max-w-md">
+                      <input
+                        type="text"
+                        name="couponCode"
+                        value={formData.couponCode}
+                        onChange={(e) => {
+                          setFormData(prev => ({ ...prev, couponCode: e.target.value.toUpperCase() }));
+                          setCouponError('');
+                        }}
+                        placeholder="Enter discount code (e.g. MQ15-ABCD-1234)"
+                        className="flex-1 px-4 py-2 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white text-sm uppercase font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={couponValidating || !formData.couponCode.trim()}
+                        className="px-5 py-2 bg-[#151C19] hover:bg-black text-white font-bold rounded-xl text-sm transition-all disabled:opacity-50"
+                      >
+                        {couponValidating ? 'Checking...' : 'Apply'}
+                      </button>
+                    </div>
+
+                    {couponError && <p className="text-xs text-rose-500 font-semibold mt-2">{couponError}</p>}
+
+                    {couponApplied && (
+                      <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 text-emerald-800 font-semibold">
+                          <CheckCircle2 size={16} className="text-emerald-600" />
+                          <span>Coupon <strong>{couponApplied.code}</strong> applied ({couponApplied.discountPct}% OFF)</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => { setCouponApplied(null); setFormData(prev => ({ ...prev, couponCode: '' })); }}
+                          className="text-rose-600 font-bold hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="mt-10">
@@ -379,14 +660,24 @@ export default function PurchaseDetailsPage() {
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm sticky top-32">
               <h3 className="text-lg font-bold text-[#151C19] mb-6 border-b border-gray-100 pb-4">Order Summary</h3>
               
-              <div className="flex items-end justify-between mb-8">
+              <div className="flex items-end justify-between mb-4">
                 <div>
                   <p className="text-[#151C19]/60 font-medium mb-1 uppercase tracking-wide text-xs">Selected Plan</p>
                   <h4 className="text-2xl font-black text-[#151C19]">{plan.label}</h4>
                 </div>
                 <div className="text-right">
-                  <span className="text-3xl font-black text-[#151C19]">₹{plan.price}</span>
-                  <span className="text-[#151C19]/60 font-medium text-sm block">/ year</span>
+                  {couponApplied ? (
+                    <div>
+                      <span className="text-sm line-through text-gray-400 block">₹{plan.price}</span>
+                      <span className="text-3xl font-black text-[#E8783C]">₹{finalPrice}</span>
+                      <span className="text-xs font-bold text-emerald-600 block">Save ₹{couponApplied.discountAmount} ({couponApplied.discountPct}%)</span>
+                    </div>
+                  ) : (
+                    <div>
+                      <span className="text-3xl font-black text-[#151C19]">₹{plan.price}</span>
+                      <span className="text-[#151C19]/60 font-medium text-sm block">/ year</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

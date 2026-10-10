@@ -20,6 +20,9 @@ import purchaseRoutes from './routes/purchase.js';
 
 import { randomUUID } from 'node:crypto';
 
+import { parseCookie as parse } from 'cookie';
+import { verifyCsrfToken } from './csrf.js';
+
 const port = Number(process.env.PORT || process.env.API_PORT || 3001);
 const isAllowedOrigin = createCorsOriginChecker(process.env);
 
@@ -41,7 +44,9 @@ const server = createServer(async (request, response) => {
 
   const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
   const requestOrigin = request.headers.origin;
+  const referer = request.headers.referer;
   const originAllowed = isAllowedOrigin(requestOrigin);
+
   if (url.pathname !== '/api/health') {
     console.log(`[api] [req:${requestId.substring(0, 8)}] (${request.method}) ${url.pathname}`);
   }
@@ -51,7 +56,7 @@ const server = createServer(async (request, response) => {
     response.setHeader('Access-Control-Allow-Credentials', 'true');
     response.setHeader(
       'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, X-MenusQR-Import, X-Resend-Signature'
+      'Content-Type, Authorization, X-CSRF-Token, X-MenusQR-Import, X-Resend-Signature'
     );
     response.setHeader(
       'Access-Control-Allow-Methods',
@@ -62,6 +67,38 @@ const server = createServer(async (request, response) => {
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
       sendJson(response, 403, { error: 'Forbidden: Request origin is not allowed.' });
       return;
+    }
+  }
+
+  // Referer Defense-in-Depth
+  if (referer && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+    try {
+      const refererOrigin = new URL(referer).origin;
+      if (!isAllowedOrigin(refererOrigin)) {
+        sendJson(response, 403, { error: 'Forbidden: Request referrer is not allowed.' });
+        return;
+      }
+    } catch {
+      sendJson(response, 403, { error: 'Forbidden: Invalid request referrer.' });
+      return;
+    }
+  }
+
+  // CSRF Token Validation for Cookie-Authenticated State-Changing Requests
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method) && !url.pathname.startsWith('/api/webhooks/')) {
+    const cookies = parse(request.headers.cookie || '');
+    const sessionToken = cookies['menusqr_auth'] || cookies['menusqr_admin_session'];
+    const csrfCookie = cookies['menusqr_csrf'];
+
+    if (sessionToken) {
+      const csrfTokenHeader = request.headers['x-csrf-token'] || request.headers['X-CSRF-Token'];
+      const isValidHmacToken = csrfTokenHeader && verifyCsrfToken(csrfTokenHeader, sessionToken);
+      const isValidDoubleSubmitToken = csrfTokenHeader && csrfCookie && csrfTokenHeader === csrfCookie;
+
+      if (!isValidHmacToken && !isValidDoubleSubmitToken) {
+        sendJson(response, 403, { error: 'Forbidden: Invalid or missing CSRF token.' });
+        return;
+      }
     }
   }
 
