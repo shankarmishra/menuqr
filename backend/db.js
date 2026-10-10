@@ -8,8 +8,15 @@ const { Pool } = pg;
 export let pool = null;
 
 export function setPool(p) {
+  if (p && typeof p.query === 'function' && typeof p.connect !== 'function') {
+    p.connect = async () => ({
+      query: (sql, values) => p.query(sql, values),
+      release: () => {},
+    });
+  }
   pool = p;
 }
+
 
 export function queryPortable(executor, sql, values = []) {
   let parameterIndex = 0;

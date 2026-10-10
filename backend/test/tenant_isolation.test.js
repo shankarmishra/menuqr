@@ -143,4 +143,33 @@ test('Tenant Data Isolation & Cross-Restaurant Security Test Suite', async (t) =
       client.release();
     }
   });
+
+  await t.test('4. Real PostgreSQL database atomic concurrency test on orders table', async () => {
+    const orderId = `test-order-${randomUUID()}`;
+    await pool.query(
+      `INSERT INTO orders (id, customer_name, customer_email, business_name, plan_id, amount, status, provisioning_status)
+       VALUES ($1, 'Test Customer', 'realpg_concurrent@example.com', 'Real PG Diner', 'basic', 999.00, 'PENDING_PAYMENT', 'PENDING')`,
+      [orderId]
+    );
+
+    try {
+      // Execute two simultaneous atomic lock updates against real PostgreSQL
+      const queryStr = `UPDATE orders
+                        SET provisioning_status='PROCESSING', updated_at=NOW()
+                        WHERE id=$1
+                          AND provisioning_status != 'COMPLETE'
+                          AND (provisioning_status != 'PROCESSING' OR updated_at < NOW() - INTERVAL '5 minutes')
+                        RETURNING status, provisioning_status`;
+
+      const [res1, res2] = await Promise.all([
+        pool.query(queryStr, [orderId]),
+        pool.query(queryStr, [orderId])
+      ]);
+
+      const successCount = (res1.rowCount || 0) + (res2.rowCount || 0);
+      assert.equal(successCount, 1, 'Exactly one PostgreSQL transaction must acquire the atomic processing lock');
+    } finally {
+      await pool.query('DELETE FROM orders WHERE id = $1', [orderId]);
+    }
+  });
 });

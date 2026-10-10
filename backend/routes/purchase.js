@@ -1,7 +1,7 @@
-import { randomUUID, randomBytes, createHash, createHmac } from 'node:crypto';
+import { randomUUID, randomBytes, createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import slugify from 'slugify';
 import { pool } from '../db.js';
-import { apiError, sendJson, readJson } from '../utils.js';
+import { apiError, sendJson, readJson, readJsonWithRaw } from '../utils.js';
 import { hashPassword } from '../auth.js';
 import { sendActivationEmail, sendPaymentSuccessEmail, sendRenewalEmail } from '../email.js';
 
@@ -15,7 +15,7 @@ const PLANS = {
 };
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Helpers & Signature Verification
 // ---------------------------------------------------------------------------
 function makePlanKey(raw) { return (raw || '').toLowerCase().trim(); }
 
@@ -23,6 +23,25 @@ function generateActivationToken() {
   const raw = randomBytes(32).toString('hex');
   const hashed = createHash('sha256').update(raw).digest('hex');
   return { raw, hashed };
+}
+
+export function safeCompareSignatures(providedSig, expectedSig) {
+  if (typeof providedSig !== 'string' || typeof expectedSig !== 'string') return false;
+  const bufA = Buffer.from(providedSig);
+  const bufB = Buffer.from(expectedSig);
+  if (bufA.length !== bufB.length || bufA.length === 0) return false;
+  return timingSafeEqual(bufA, bufB);
+}
+
+export function verifyCashfreeWebhookSignature({ rawText, timestamp, signature, secretKey }) {
+  if (!secretKey || !timestamp || !signature || rawText === undefined || rawText === null) {
+    return false;
+  }
+  const payloadToSign = `${timestamp}${rawText}`;
+  const expectedBase64 = createHmac('sha256', secretKey).update(payloadToSign).digest('base64');
+  const expectedHex = createHmac('sha256', secretKey).update(payloadToSign).digest('hex');
+
+  return safeCompareSignatures(signature, expectedBase64) || safeCompareSignatures(signature, expectedHex);
 }
 
 // ---------------------------------------------------------------------------
@@ -35,11 +54,17 @@ export async function processOrderPaymentAndProvision({
   rawResponse = null,
   isCashfreeRedirect = false,
   isWebhook = false,
+  webhookVerified = false,
   razorpayPaymentId = null,
   razorpayOrderId = null,
   razorpaySignature = null,
   mockSuccess = false,
+  payloadAmount = null,
+  payloadCurrency = null,
+  payloadEmail = null,
 }) {
+  const workerLockToken = randomUUID();
+
   const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
   const order = orderRes.rows[0];
   if (!order) throw apiError(404, 'Order not found.');
@@ -56,8 +81,58 @@ export async function processOrderPaymentAndProvision({
     };
   }
 
-  if (order.status === 'FAILED') {
-    throw apiError(400, 'This order has been marked as failed. Please start a new order.');
+  // ── AMOUNT, CURRENCY & CUSTOMER VERIFICATION ───────────────────────────
+  const expectedAmount = Number(order.amount);
+  const checkAmount = payloadAmount !== null && payloadAmount !== undefined ? Number(payloadAmount) : null;
+  if (checkAmount !== null) {
+    if (!Number.isFinite(checkAmount) || checkAmount <= 0) {
+      throw apiError(400, 'Invalid payment amount.');
+    }
+    const expectedPaise = Math.round(expectedAmount * 100);
+    const checkPaise = Math.round(checkAmount * 100);
+    if (checkPaise !== expectedPaise) {
+      throw apiError(400, `Payment amount mismatch: received ${checkAmount}, expected ${expectedAmount}.`);
+    }
+  }
+
+  const expectedCurrency = (order.currency || 'INR').toUpperCase();
+  const checkCurrency = payloadCurrency ? String(payloadCurrency).toUpperCase() : null;
+  if (checkCurrency && checkCurrency !== expectedCurrency) {
+    throw apiError(400, `Payment currency mismatch: received ${checkCurrency}, expected ${expectedCurrency}.`);
+  }
+
+  const checkEmail = payloadEmail ? String(payloadEmail).trim().toLowerCase() : null;
+  if (checkEmail && checkEmail !== order.customer_email.trim().toLowerCase()) {
+    throw apiError(400, `Payment customer email mismatch.`);
+  }
+
+  // ── CONCURRENCY LOCK & STALE RECOVERY WITH FENCING TOKEN ─────────────────
+  if (order.status !== 'PAID' || order.provisioning_status !== 'COMPLETE') {
+    const lockRes = await pool.query(
+      `UPDATE orders
+       SET provisioning_status='PROCESSING',
+           updated_at=NOW(),
+           metadata = COALESCE(metadata, '{}'::jsonb) || jsonb_build_object('lock_token', $2::text)
+       WHERE id=$1
+         AND provisioning_status != 'COMPLETE'
+         AND (provisioning_status != 'PROCESSING' OR updated_at < NOW() - INTERVAL '5 minutes')
+       RETURNING status, provisioning_status`,
+      [orderId, workerLockToken]
+    );
+    if (lockRes.rowCount === 0) {
+      const reCheck = await pool.query('SELECT status, provisioning_status, activation_email_sent, payment_receipt_email_sent FROM orders WHERE id = $1', [orderId]);
+      const current = reCheck.rows[0];
+      if (current && (current.status === 'PAID' || current.provisioning_status === 'PROCESSING' || current.provisioning_status === 'COMPLETE')) {
+        return {
+          success: true,
+          orderId,
+          status: current.status || 'PAID',
+          provisioning_status: current.provisioning_status || 'PROCESSING',
+          alreadyProvisioned: true,
+          emailSent: Boolean(current?.activation_email_sent && current?.payment_receipt_email_sent),
+        };
+      }
+    }
   }
 
   // ── PAYMENT VERIFICATION ──────────────────────────────────────────────
@@ -86,24 +161,42 @@ export async function processOrderPaymentAndProvision({
 
         if (cfRes.ok) {
           const cfData = await cfRes.json();
+          if (cfData.order_status === 'ACTIVE') {
+            throw apiError(400, 'Payment is pending or incomplete with Cashfree. Order status: ACTIVE.');
+          }
           if (cfData.order_status !== 'PAID') {
-            await pool.query("UPDATE orders SET status='FAILED', updated_at=NOW() WHERE id=$1", [orderId]);
+            await pool.query("UPDATE orders SET status='FAILED', updated_at=NOW() WHERE id=$1 AND status != 'PAID'", [orderId]);
             throw apiError(400, 'Payment not marked as PAID by Cashfree.');
+          }
+          if (cfData.order_amount !== undefined && cfData.order_amount !== null) {
+            const cfAmount = Number(cfData.order_amount);
+            if (!Number.isFinite(cfAmount) || cfAmount <= 0) {
+              throw apiError(400, 'Invalid payment amount from provider.');
+            }
+            const expectedPaise = Math.round(expectedAmount * 100);
+            const cfPaise = Math.round(cfAmount * 100);
+            if (cfPaise !== expectedPaise) {
+              throw apiError(400, `Payment amount mismatch: received ${cfData.order_amount}, expected ${expectedAmount}.`);
+            }
+          }
+          if (cfData.order_currency && cfData.order_currency.toUpperCase() !== expectedCurrency) {
+            throw apiError(400, `Payment currency mismatch: received ${cfData.order_currency}, expected ${expectedCurrency}.`);
           }
           verifiedGateway = 'cashfree';
           verifiedTxId = transactionId || cfData.cf_order_id || orderId;
-        } else if (isWebhook) {
+        } else if (isWebhook && webhookVerified) {
           verifiedGateway = 'cashfree_webhook';
           verifiedTxId = transactionId || orderId;
         } else {
           throw apiError(400, 'Failed to verify Cashfree order status with payment provider.');
         }
       } catch (err) {
-        if (isWebhook) {
+        if (err.status) throw err;
+        if (isWebhook && webhookVerified) {
           verifiedGateway = 'cashfree_webhook';
           verifiedTxId = transactionId || orderId;
         } else {
-          throw err;
+          throw apiError(400, `Payment verification failed: ${err.message}`);
         }
       }
     } else if (razorpayConfigured) {
@@ -114,14 +207,14 @@ export async function processOrderPaymentAndProvision({
       const expected = createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
         .update(body).digest('hex');
       if (expected !== razorpaySignature) {
-        await pool.query("UPDATE orders SET status='FAILED', updated_at=NOW() WHERE id=$1", [orderId]);
+        await pool.query("UPDATE orders SET status='FAILED', updated_at=NOW() WHERE id=$1 AND status != 'PAID'", [orderId]);
         throw apiError(400, 'Payment signature verification failed.');
       }
       verifiedGateway = 'razorpay';
       verifiedTxId = razorpayPaymentId;
     } else if (process.env.NODE_ENV !== 'production' && mockSuccess) {
       verifiedGateway = 'mock';
-    } else if (isCashfreeRedirect || isWebhook || mockSuccess) {
+    } else if (!cashfreeConfigured && !razorpayConfigured && (isCashfreeRedirect || (isWebhook && webhookVerified) || mockSuccess)) {
       verifiedGateway = 'cashfree_sandbox';
     } else {
       throw apiError(400, 'Payment verification data missing or invalid.');
@@ -146,9 +239,7 @@ export async function processOrderPaymentAndProvision({
   }
 
   // ── PROVISIONING (idempotent via provisioning_status) ─────────────────
-  const provCheck = await pool.query(
-    'SELECT provisioning_status FROM orders WHERE id=$1', [orderId]
-  );
+  const provCheck = await pool.query('SELECT provisioning_status, activation_email_sent, payment_receipt_email_sent FROM orders WHERE id=$1', [orderId]);
   if (provCheck.rows[0]?.provisioning_status === 'COMPLETE') {
     return {
       success: true,
@@ -156,26 +247,52 @@ export async function processOrderPaymentAndProvision({
       status: 'PAID',
       provisioning_status: 'COMPLETE',
       alreadyProvisioned: true,
-      emailSent: Boolean(order.activation_email_sent && order.payment_receipt_email_sent),
+      emailSent: Boolean(provCheck.rows[0].activation_email_sent && provCheck.rows[0].payment_receipt_email_sent),
     };
   }
-
-  // Lock against concurrent provisioning
-  await pool.query(
-    "UPDATE orders SET provisioning_status='PROCESSING', updated_at=NOW() WHERE id=$1",
-    [orderId]
-  );
 
   let activationTokenRaw;
   let provisionedTenantId;
 
+  const client = await pool.connect();
   try {
-    await pool.query('BEGIN');
+    await client.query('BEGIN');
+
+    // ── FENCING CHECK: Verify lock ownership under row lock FOR UPDATE ───
+    const lockCheck = await client.query(
+      "SELECT provisioning_status, metadata->>'lock_token' as lock_token FROM orders WHERE id=$1 FOR UPDATE",
+      [orderId]
+    );
+    const activeOrder = lockCheck.rows[0];
+
+    if (activeOrder?.provisioning_status === 'COMPLETE') {
+      await client.query('ROLLBACK').catch(() => {});
+      return {
+        success: true,
+        orderId,
+        status: 'PAID',
+        provisioning_status: 'COMPLETE',
+        alreadyProvisioned: true,
+      };
+    }
+
+    const activeLockToken = activeOrder?.lock_token;
+    if (activeLockToken && activeLockToken !== workerLockToken) {
+      await client.query('ROLLBACK').catch(() => {});
+      console.warn(`[Provisioning Lock Lost] Worker ${workerLockToken} lost lock to worker ${activeLockToken} for order ${orderId}`);
+      return {
+        success: true,
+        orderId,
+        status: 'PAID',
+        provisioning_status: 'PROCESSING',
+        lockLost: true,
+      };
+    }
 
     // ── 1. Create or find user ───────────────────────────────────────────
     let userId;
     let tenantId;
-    const userCheck = await pool.query(
+    const userCheck = await client.query(
       'SELECT id, tenant_id FROM users WHERE email=$1 FOR UPDATE',
       [order.customer_email]
     );
@@ -191,7 +308,7 @@ export async function processOrderPaymentAndProvision({
       activationTokenRaw = raw;
       const tokenExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
 
-      await pool.query(
+      await client.query(
         `INSERT INTO users
            (id, email, password_hash, role, onboarding_state,
             activation_token_hash, activation_token_expires_at)
@@ -206,12 +323,12 @@ export async function processOrderPaymentAndProvision({
       tenantId = randomUUID();
       const publicId = randomUUID().split('-')[0];
       let menuSlug = slugify(order.business_name, { lower: true, strict: true }) || 'menu';
-      const slugCheck = await pool.query(
+      const slugCheck = await client.query(
         'SELECT id FROM clients WHERE menu_slug=$1', [menuSlug]
       );
       if (slugCheck.rows.length > 0) menuSlug = `${menuSlug}-${publicId}`;
 
-      await pool.query(
+      await client.query(
         `INSERT INTO clients
            (id, public_id, business_name, menu_slug, category, status)
          VALUES ($1,$2,$3,$4,$5,$6)`,
@@ -219,7 +336,7 @@ export async function processOrderPaymentAndProvision({
          order.cuisine || null, 'active']
       );
 
-      await pool.query(
+      await client.query(
         'UPDATE users SET tenant_id=$1, updated_at=NOW() WHERE id=$2',
         [tenantId, userId]
       );
@@ -228,7 +345,7 @@ export async function processOrderPaymentAndProvision({
       const expiresAt = new Date();
       expiresAt.setFullYear(expiresAt.getFullYear() + 1);
       const subscriptionId = randomUUID();
-      await pool.query(
+      await client.query(
         `INSERT INTO subscriptions
            (id, tenant_id, plan_id, status, started_at, expires_at)
          VALUES ($1,$2,$3,$4,$5,$6)`,
@@ -238,14 +355,14 @@ export async function processOrderPaymentAndProvision({
 
       // ── 4. Create menu skeleton ─────────────────────────────────────────
       const menuId = randomUUID();
-      await pool.query(
+      await client.query(
         'INSERT INTO menus (id, tenant_id, name) VALUES ($1,$2,$3)',
         [menuId, tenantId, 'Main Menu']
       );
 
       // ── 5. Create appearance defaults ───────────────────────────────────
       const appSettingId = randomUUID();
-      await pool.query(
+      await client.query(
         `INSERT INTO appearance_settings
            (id, tenant_id, template_id, restaurant_display_name)
          VALUES ($1,$2,$3,$4)`,
@@ -253,7 +370,7 @@ export async function processOrderPaymentAndProvision({
       );
 
       // ── 6. Set onboarding state ─────────────────────────────────────────
-      await pool.query(
+      await client.query(
         "UPDATE users SET onboarding_state='PENDING', updated_at=NOW() WHERE id=$1",
         [userId]
       );
@@ -262,7 +379,7 @@ export async function processOrderPaymentAndProvision({
     provisionedTenantId = tenantId;
 
     // ── 7. Log provisioning ─────────────────────────────────────────────
-    await pool.query(
+    await client.query(
       `INSERT INTO activity_logs (tenant_id, user_id, action, description, metadata)
        VALUES ($1,$2,$3,$4,$5)`,
       [tenantId, userId, 'ORDER_PROVISIONED',
@@ -270,18 +387,37 @@ export async function processOrderPaymentAndProvision({
        JSON.stringify({ orderId, plan: order.plan_id, amount: order.amount })]
     );
 
-    // ── 8. Mark order complete ──────────────────────────────────────────
-    await pool.query(
-      "UPDATE orders SET provisioning_status='COMPLETE', updated_at=NOW() WHERE id=$1",
-      [orderId]
+    // ── 8. Mark order complete with lock ownership fencing ──────────────
+    const completeRes = await client.query(
+      `UPDATE orders
+       SET provisioning_status='COMPLETE', updated_at=NOW()
+       WHERE id=$1
+         AND (metadata->>'lock_token' = $2 OR metadata->>'lock_token' IS NULL)`,
+      [orderId, workerLockToken]
     );
 
-    await pool.query('COMMIT');
+    if (completeRes.rowCount === 0) {
+      await client.query('ROLLBACK').catch(() => {});
+      console.warn(`[Provisioning Lock Lost] Lock token check failed at completion for order ${orderId}`);
+      return {
+        success: true,
+        orderId,
+        status: 'PAID',
+        provisioning_status: 'PROCESSING',
+        lockLost: true,
+      };
+    }
+
+    await client.query('COMMIT');
   } catch (e) {
-    await pool.query('ROLLBACK');
+    await client.query('ROLLBACK').catch(() => {});
     await pool.query(
-      "UPDATE orders SET provisioning_status='FAILED', updated_at=NOW() WHERE id=$1",
-      [orderId]
+      `UPDATE orders
+       SET provisioning_status='FAILED', updated_at=NOW()
+       WHERE id=$1
+         AND (metadata->>'lock_token' = $2 OR metadata->>'lock_token' IS NULL)
+         AND provisioning_status != 'COMPLETE'`,
+      [orderId, workerLockToken]
     );
     console.error('[Provisioning Error]', e.message);
     return {
@@ -291,7 +427,10 @@ export async function processOrderPaymentAndProvision({
       provisioning_status: 'FAILED',
       message: 'Payment received but account setup encountered an error. Contact support with your order ID.',
     };
+  } finally {
+    client.release();
   }
+
 
   // ── 9. Send account and payment emails ───────────────────────────────
   const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
@@ -368,7 +507,32 @@ export default async function purchaseRoutes(request, response, url) {
 
   if (request.method === 'POST' && (url.pathname === '/api/webhooks/cashfree' || url.pathname === '/api/purchase/webhook')) {
     const secretKey = (process.env.CASHFREE_SECRET_KEY || '').trim();
-    const input = await readJson(request).catch(() => ({}));
+    if (!secretKey) {
+      console.error('[webhook] Server misconfiguration: CASHFREE_SECRET_KEY is missing.');
+      throw apiError(500, 'Webhook processing unavailable: CASHFREE_SECRET_KEY is missing.');
+    }
+
+    const rawSig = request.headers['x-cashfree-signature'] || request.headers['x-webhook-signature'] || '';
+    const timestamp = request.headers['x-webhook-timestamp'] || request.headers['x-cashfree-timestamp'] || '';
+
+    if (!rawSig || !timestamp) {
+      console.warn('[webhook] Rejection: Missing Cashfree signature or timestamp header.');
+      throw apiError(401, 'Missing Cashfree webhook signature or timestamp header.');
+    }
+
+    const { parsed: input, rawText } = await readJsonWithRaw(request);
+
+    const isValidSignature = verifyCashfreeWebhookSignature({
+      rawText,
+      timestamp,
+      signature: rawSig,
+      secretKey,
+    });
+
+    if (!isValidSignature) {
+      console.warn('[webhook] Rejection: Invalid Cashfree webhook signature.');
+      throw apiError(401, 'Invalid Cashfree webhook signature.');
+    }
 
     const data = input?.data || input;
     const orderId = data?.order?.order_id || data?.order_id || input?.order_id || input?.data?.orderId;
@@ -376,17 +540,6 @@ export default async function purchaseRoutes(request, response, url) {
 
     const isSuccess = paymentStatus === 'SUCCESS' || paymentStatus === 'PAID' || paymentStatus === 'PAYMENT_SUCCESS_WEBHOOK' || input?.type === 'PAYMENT_SUCCESS_WEBHOOK';
     const isFailed = paymentStatus === 'FAILED' || paymentStatus === 'CANCELLED' || paymentStatus === 'USER_DROPPED' || input?.type === 'PAYMENT_FAILED_WEBHOOK';
-
-    const rawSig = request.headers['x-cashfree-signature'] || request.headers['x-webhook-signature'] || '';
-    const timestamp = request.headers['x-webhook-timestamp'] || request.headers['x-cashfree-timestamp'] || '';
-    if (secretKey && rawSig && timestamp) {
-      const payloadString = `${timestamp}${JSON.stringify(input)}`;
-      const expectedSig = createHmac('sha256', secretKey).update(payloadString).digest('base64');
-      if (rawSig !== expectedSig && rawSig !== createHmac('sha256', secretKey).update(payloadString).digest('hex')) {
-        console.warn(`[webhook] Invalid Cashfree signature for order ${orderId}`);
-        throw apiError(401, 'Invalid Cashfree webhook signature.');
-      }
-    }
 
     if (!orderId) {
       sendJson(response, 200, { received: true, status: 'IGNORED', message: 'No order ID in payload.' });
@@ -399,14 +552,35 @@ export default async function purchaseRoutes(request, response, url) {
       return true;
     }
 
-    if (isSuccess || (process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY)) {
+    if (isSuccess) {
       try {
+        const payloadAmount = data?.payment?.payment_amount ?? data?.order?.order_amount ?? null;
+        const payloadCurrency = data?.payment?.payment_currency ?? data?.order?.order_currency ?? null;
+        const payloadEmail = data?.customer_details?.customer_email ?? data?.customer?.customer_email ?? null;
+
+        const hasTransactionDetails = Boolean(
+          (data?.payment?.payment_amount !== undefined && data?.payment?.payment_amount !== null) ||
+          data?.payment?.payment_status
+        );
+
+        if (!hasTransactionDetails) {
+          const cashfreeConfigured = !!(process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY);
+          if (!cashfreeConfigured) {
+            console.warn(`[webhook] Rejection for order ${orderId}: Missing Cashfree transaction payment details in payload.`);
+            throw apiError(400, 'Missing Cashfree transaction payment details in webhook payload.');
+          }
+        }
+
         const result = await processOrderPaymentAndProvision({
           orderId,
           gatewayUsed: 'cashfree_webhook',
           transactionId: data?.payment?.cf_payment_id || orderId,
-          rawResponse: JSON.stringify(input),
+          rawResponse: rawText,
           isWebhook: true,
+          webhookVerified: true,
+          payloadAmount,
+          payloadCurrency,
+          payloadEmail,
         });
         sendJson(response, 200, { received: true, ...result });
         return true;
