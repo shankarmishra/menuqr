@@ -253,7 +253,7 @@ export const HeritageParchmentFrame: React.FC<{
     <div
       className={clsx(
         'relative w-full rounded-2xl sm:rounded-3xl shadow-[0_24px_60px_rgba(22,62,54,0.35)] bg-[#163E36] text-[#244740] overflow-hidden',
-        compact ? 'p-2 sm:p-2.5' : 'p-3 sm:p-4 lg:p-5',
+        compact ? 'p-1.5' : 'p-3 sm:p-5 lg:p-6',
         className
       )}
     >
@@ -293,55 +293,59 @@ export const HeritageParchmentFrame: React.FC<{
         )}
 
         {/* Secondary Thin Gold Rule */}
-        <div className={clsx("rounded-lg border border-[#D4AE68] pointer-events-none absolute", compact ? "inset-1" : "inset-1 sm:inset-1.5")} />
+        <div className={clsx("rounded-lg border border-[#D4AE68] pointer-events-none absolute", compact ? "inset-0.5" : "inset-1 sm:inset-1.5")} />
 
         {/* Sawtooth Chevron Bands along edges */}
-        <div className={clsx("absolute top-2.5 h-1.5 pointer-events-none overflow-hidden", compact ? "inset-x-7" : "inset-x-9 sm:inset-x-12")}>
+        <div className={clsx("absolute top-2 h-1 pointer-events-none overflow-hidden", compact ? "inset-x-6" : "inset-x-9 sm:inset-x-12")}>
           <SawtoothBorderStrip />
         </div>
-        <div className={clsx("absolute bottom-2.5 h-1.5 pointer-events-none overflow-hidden", compact ? "inset-x-7" : "inset-x-9 sm:inset-x-12")}>
+        <div className={clsx("absolute bottom-2 h-1 pointer-events-none overflow-hidden", compact ? "inset-x-6" : "inset-x-9 sm:inset-x-12")}>
           <SawtoothBorderStrip />
         </div>
-        <div className={clsx("absolute left-2.5 w-1.5 pointer-events-none overflow-hidden", compact ? "inset-y-7" : "inset-y-9 sm:inset-y-12")}>
+        <div className={clsx("absolute left-2 w-1 pointer-events-none overflow-hidden", compact ? "inset-y-6" : "inset-y-9 sm:inset-y-12")}>
           <SawtoothBorderStrip vertical />
         </div>
-        <div className={clsx("absolute right-2.5 w-1.5 pointer-events-none overflow-hidden", compact ? "inset-y-7" : "inset-y-9 sm:inset-y-12")}>
+        <div className={clsx("absolute right-2 w-1 pointer-events-none overflow-hidden", compact ? "inset-y-6" : "inset-y-9 sm:inset-y-12")}>
           <SawtoothBorderStrip vertical />
         </div>
 
         {/* Four Symmetrical Corner Rosettes */}
-        <div className="absolute top-1 left-1 z-20">
-          <HeritageFloralCorner size={compact ? 22 : 38} rotation={0} />
+        <div className="absolute top-0.5 left-0.5 z-20">
+          <HeritageFloralCorner size={compact ? 24 : 38} rotation={0} />
         </div>
-        <div className="absolute top-1 right-1 z-20">
-          <HeritageFloralCorner size={compact ? 22 : 38} rotation={90} />
+        <div className="absolute top-0.5 right-0.5 z-20">
+          <HeritageFloralCorner size={compact ? 24 : 38} rotation={90} />
         </div>
-        <div className="absolute bottom-1 right-1 z-20">
-          <HeritageFloralCorner size={compact ? 22 : 38} rotation={180} />
+        <div className="absolute bottom-0.5 right-0.5 z-20">
+          <HeritageFloralCorner size={compact ? 24 : 38} rotation={180} />
         </div>
-        <div className="absolute bottom-1 left-1 z-20">
-          <HeritageFloralCorner size={compact ? 22 : 38} rotation={270} />
+        <div className="absolute bottom-0.5 left-0.5 z-20">
+          <HeritageFloralCorner size={compact ? 24 : 38} rotation={270} />
         </div>
 
-        {/* Perimeter Floral Strips */}
-        <div className={clsx("absolute top-4 h-5 pointer-events-none overflow-hidden flex items-center justify-around opacity-95", compact ? "inset-x-7" : "inset-x-9 sm:inset-x-14")}>
-          <RepeatingFloralStrip />
-        </div>
-        <div className={clsx("absolute bottom-4 h-5 pointer-events-none overflow-hidden flex items-center justify-around opacity-95 transform rotate-180", compact ? "inset-x-7" : "inset-x-9 sm:inset-x-14")}>
-          <RepeatingFloralStrip />
-        </div>
-        <div className={clsx("absolute left-4 w-5 pointer-events-none overflow-hidden flex flex-col items-center justify-around opacity-95", compact ? "inset-y-7" : "inset-y-9 sm:inset-y-14")}>
-          <RepeatingFloralStrip vertical />
-        </div>
-        <div className={clsx("absolute right-4 w-5 pointer-events-none overflow-hidden flex flex-col items-center justify-around opacity-95 transform rotate-180", compact ? "inset-y-7" : "inset-y-9 sm:inset-y-14")}>
-          <RepeatingFloralStrip vertical />
-        </div>
+        {/* Perimeter Floral Strips (Desktop only to prevent mobile cramping) */}
+        {!compact && (
+          <>
+            <div className="absolute top-4 inset-x-9 sm:inset-x-14 h-5 pointer-events-none overflow-hidden flex items-center justify-around opacity-95">
+              <RepeatingFloralStrip />
+            </div>
+            <div className="absolute bottom-4 inset-x-9 sm:inset-x-14 h-5 pointer-events-none overflow-hidden flex items-center justify-around opacity-95 transform rotate-180">
+              <RepeatingFloralStrip />
+            </div>
+            <div className="absolute left-4 inset-y-9 sm:inset-y-14 w-5 pointer-events-none overflow-hidden flex flex-col items-center justify-around opacity-95">
+              <RepeatingFloralStrip vertical />
+            </div>
+            <div className="absolute right-4 inset-y-9 sm:inset-y-14 w-5 pointer-events-none overflow-hidden flex flex-col items-center justify-around opacity-95 transform rotate-180">
+              <RepeatingFloralStrip vertical />
+            </div>
+          </>
+        )}
 
         {/* Inner Content Protective Dotted Hairline Rule */}
-        <div className={clsx("rounded-md border border-dashed border-[#D76C3C]/45 pointer-events-none absolute", compact ? "inset-5" : "inset-8 sm:inset-9")} />
+        <div className={clsx("rounded-md border border-dashed border-[#D76C3C]/45 pointer-events-none absolute", compact ? "inset-1.5" : "inset-8 sm:inset-9")} />
 
         {/* Inner Content Area */}
-        <div className={clsx("relative z-10 w-full flex-1", compact ? "px-5 pt-7 pb-6" : "px-9 sm:px-11 lg:px-12 pt-11 pb-10 sm:pt-12 sm:pb-11")}>{children}</div>
+        <div className={clsx("relative z-10 w-full flex-1", compact ? "px-2.5 py-3" : "px-9 sm:px-11 lg:px-12 pt-11 pb-10 sm:pt-12 sm:pb-11")}>{children}</div>
       </div>
     </div>
   );
@@ -353,14 +357,15 @@ export const HeritageParchmentFrame: React.FC<{
 export const ScallopedArchFrame: React.FC<{
   children?: React.ReactNode;
   className?: string;
-}> = ({ children, className = '' }) => (
-  <div className={clsx('relative w-full max-w-[420px] mx-auto flex flex-col items-center justify-center', className)}>
+  compact?: boolean;
+}> = ({ children, className = '', compact = false }) => (
+  <div className={clsx('relative w-full max-w-[440px] mx-auto flex flex-col items-center justify-center', className)}>
     <svg
       viewBox="0 0 400 540"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="absolute inset-0 w-full h-full pointer-events-none select-none filter drop-shadow-[0_12px_28px_rgba(27,73,66,0.22)]"
-      preserveAspectRatio="xMidYMid meet"
+      preserveAspectRatio="none"
       aria-hidden="true"
     >
       <defs>
@@ -478,7 +483,14 @@ export const ScallopedArchFrame: React.FC<{
     </svg>
 
     {/* Arch Content Area */}
-    <div className="relative z-10 w-full px-5 sm:px-8 py-3">{children}</div>
+    <div
+      className={clsx(
+        'relative z-10 w-full flex flex-col items-center justify-center text-center',
+        compact ? 'px-6 pt-9 pb-10' : 'px-8 sm:px-12 pt-12 sm:pt-16 pb-14 sm:pb-18'
+      )}
+    >
+      {children}
+    </div>
   </div>
 );
 
@@ -694,17 +706,13 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
   activeCategory,
   setActiveCategory,
 }) => {
-  // Mobile / Desktop View Mode Switcher
-  // When compact (e.g. phone mockups on landing page & mobile), default to 'menu' so food items and prices are showcased immediately
-  const [activeViewTab, setActiveViewTab] = useState<'both' | 'cover' | 'menu'>(
-    compact ? 'menu' : 'both'
-  );
+  // Mobile / Desktop View Mode Switcher: "Cover" vs "Menu" vs "All"
+  const [activeViewTab, setActiveViewTab] = useState<'both' | 'cover' | 'menu'>('both');
 
   // Filtered categories
   const displayCategories = categories.length > 0 ? categories : rawCategories;
 
-  // Smartly categorize items:
-  // Identify actual bread category for S M L matrix
+  // Smartly identify bread category for S M L tabular matrix
   const breadCategory = displayCategories.find((cat) =>
     /bread|roti|naan|paratha|kulcha/i.test(cat.name)
   );
@@ -715,228 +723,256 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
   // Other non-bread categories
   const otherCategories = nonBreadCategories.slice(1);
 
+  // Whether a single category is filtered
+  const isFiltered = activeCategory !== 'all';
+  const selectedCategory = isFiltered
+    ? rawCategories.find((c) => c.id === activeCategory || c.name === activeCategory)
+    : null;
+
   return (
-    <div className="w-full select-text font-serif text-[#244740] relative space-y-6 sm:space-y-8">
-      {/* Top View Mode Switcher */}
-      <div className="flex items-center justify-center gap-1.5 p-1 bg-[#163E36]/90 rounded-full border border-[#D4AE68]/60 shadow-lg mx-auto max-w-[280px]">
-        <button
-          type="button"
-          onClick={() => setActiveViewTab('menu')}
-          className={clsx(
-            'px-3.5 py-1 rounded-full text-[10.5px] font-sans font-bold uppercase tracking-wider transition-all',
-            activeViewTab === 'menu'
-              ? 'bg-[#D97036] text-white shadow-sm'
-              : 'text-[#FCF5E9] hover:text-white'
-          )}
-        >
-          Menu
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveViewTab('cover')}
-          className={clsx(
-            'px-3.5 py-1 rounded-full text-[10.5px] font-sans font-bold uppercase tracking-wider transition-all',
-            activeViewTab === 'cover'
-              ? 'bg-[#D97036] text-white shadow-sm'
-              : 'text-[#FCF5E9] hover:text-white'
-          )}
-        >
-          Cover
-        </button>
-        {!compact && (
+    <div
+      className={clsx(
+        'w-full select-text font-serif text-[#244740] relative max-w-4xl mx-auto',
+        compact ? 'space-y-3' : 'space-y-6 sm:space-y-8'
+      )}
+    >
+      {/* ═══════════════════════════════════════════════════════════════════════
+          VIEW MODE TOGGLE SWITCHER: [❖ COVER] [❖ MENU] [❖ ALL]
+          ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="pt-2 pb-1.5 flex items-center justify-center sticky top-2 z-40">
+        <div className="flex items-center gap-1 p-1 bg-[#163E36]/95 backdrop-blur-md rounded-full border border-[#D4AE68]/60 shadow-xl">
+          <button
+            type="button"
+            onClick={() => setActiveViewTab('cover')}
+            className={clsx(
+              'px-3.5 py-1 rounded-full text-xs font-serif font-bold uppercase tracking-wider transition-all cursor-pointer',
+              activeViewTab === 'cover'
+                ? 'bg-[#D97036] text-white shadow-md'
+                : 'text-[#FCF5E9]/80 hover:text-white hover:bg-[#D4AE68]/20'
+            )}
+          >
+            ❖ Cover
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveViewTab('menu')}
+            className={clsx(
+              'px-3.5 py-1 rounded-full text-xs font-serif font-bold uppercase tracking-wider transition-all cursor-pointer',
+              activeViewTab === 'menu'
+                ? 'bg-[#D97036] text-white shadow-md'
+                : 'text-[#FCF5E9]/80 hover:text-white hover:bg-[#D4AE68]/20'
+            )}
+          >
+            ❖ Menu
+          </button>
           <button
             type="button"
             onClick={() => setActiveViewTab('both')}
             className={clsx(
-              'px-3.5 py-1 rounded-full text-[10.5px] font-sans font-bold uppercase tracking-wider transition-all',
+              'px-3.5 py-1 rounded-full text-xs font-serif font-bold uppercase tracking-wider transition-all cursor-pointer',
               activeViewTab === 'both'
-                ? 'bg-[#D97036] text-white shadow-sm'
-                : 'text-[#FCF5E9] hover:text-white'
+                ? 'bg-[#D97036] text-white shadow-md'
+                : 'text-[#FCF5E9]/80 hover:text-white hover:bg-[#D4AE68]/20'
             )}
           >
-            Spread View
+            ❖ All
           </button>
-        )}
+        </div>
       </div>
 
-      {/* SPREAD CONTAINER (Side-by-Side on Desktop when "both" is active, or Single View) */}
-      <div
-        className={clsx(
-          'w-full',
-          activeViewTab === 'both' && !compact
-            ? 'grid grid-cols-1 lg:grid-cols-2 gap-8 items-start max-w-7xl mx-auto'
-            : 'max-w-3xl mx-auto space-y-8'
-        )}
-      >
-        {/* ========================================================================= */}
-        {/* PAGE ONE: THE ORNATE COVER (HERITAGE PARCHMENT SCALLOPED ARCH) */}
-        {/* ========================================================================= */}
-        {(activeViewTab === 'both' || activeViewTab === 'cover') && (
-          <section aria-label="Menu Front Cover" className="w-full">
-            <HeritageParchmentFrame compact={compact} hasBackgroundLace={true}>
-              <div className="text-center flex flex-col justify-between py-2 sm:py-3 min-h-[480px] sm:min-h-[580px]">
-                {/* Central Scalloped Arch Frame */}
-                <div className="relative my-auto max-w-[420px] mx-auto w-full px-1">
-                  <ScallopedArchFrame>
-                    <div className="relative flex flex-col items-center justify-center px-4 pt-10 sm:pt-12 pb-14 sm:pb-16 text-center space-y-2.5 sm:space-y-3">
-                      {/* Top Radiant Blooming Lotus Crest */}
-                      <BloomingLotusEmblem size={compact ? 50 : 62} className="mb-0.5" />
+      {/* ═══════════════════════════════════════════════════════════════════════
+          PAGE ONE: FRONT COVER PAGE (THE ORNATE SCALLOPED ARCH OF ROYAL HAVELI)
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {(activeViewTab === 'both' || activeViewTab === 'cover') && (
+        <section aria-label="Menu Front Cover" className="w-full flex justify-center">
+          <div className="w-full max-w-md sm:max-w-lg">
+            <HeritageParchmentFrame compact={compact} hasBackgroundLace={true} className="text-center relative">
+              <ScallopedArchFrame compact={compact}>
+                <div className="flex flex-col items-center justify-center space-y-2 sm:space-y-3 relative w-full">
+                  {/* Top Blooming Lotus Crest with Symmetrical Gold Connector Lines */}
+                  <div className="flex items-center justify-center gap-2.5">
+                    <span className="h-px w-8 sm:w-14 bg-gradient-to-r from-transparent to-[#D4AE68]" />
+                    <BloomingLotusEmblem size={compact ? 36 : 46} />
+                    <span className="h-px w-8 sm:w-14 bg-gradient-to-l from-transparent to-[#D4AE68]" />
+                  </div>
 
-                      {/* Indian Cuisine Menu Title */}
-                      <p className="font-serif uppercase tracking-[0.28em] text-[10px] sm:text-xs text-[#1B4942] font-black">
-                        {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} MENU` : 'INDIAN CUISINE MENU'}
+                  {/* Subtitle / Edition */}
+                  <p className="font-serif uppercase tracking-[0.25em] text-[9px] sm:text-[10.5px] text-[#D97036] font-bold">
+                    {restaurant.cuisine ? `${restaurant.cuisine.split(' ')[0].toUpperCase()} CUISINE MENU` : 'INDIAN CUISINE MENU'}
+                  </p>
+
+                  {/* Restaurant Title in Elegant Signature Calligraphy */}
+                  <div className="space-y-0.5 px-2 max-w-[92%] mx-auto">
+                    <h1
+                      className={clsx(
+                        'font-bold tracking-wide leading-tight text-[#1B4942] drop-shadow-xs whitespace-normal break-normal text-balance',
+                        "font-['Caveat',cursive]",
+                        compact
+                          ? 'text-2xl sm:text-3xl'
+                          : restaurant.name.length > 24
+                          ? 'text-2xl sm:text-3xl md:text-4xl'
+                          : 'text-3xl sm:text-4xl lg:text-4xl'
+                      )}
+                    >
+                      {toTitleCase(restaurant.name)}
+                    </h1>
+
+                    {/* Tagline / Subtitle */}
+                    {restaurant.tagline && (
+                      <p
+                        className={clsx(
+                          'font-serif italic tracking-wide text-[#D97036] font-medium',
+                          compact ? 'text-[10px]' : 'text-xs sm:text-sm'
+                        )}
+                      >
+                        {restaurant.tagline}
                       </p>
+                    )}
+                  </div>
 
-                      {/* Restaurant Title in Elegant Signature Calligraphy */}
-                      <div className="space-y-0.5 px-2 max-w-[88%] mx-auto">
-                        <h1
-                          className={clsx(
-                            'font-bold tracking-wide leading-snug text-[#1B4942] drop-shadow-xs whitespace-normal break-normal text-balance',
-                            "font-['Caveat',cursive]",
-                            restaurant.name.length > 24
-                              ? 'text-3xl sm:text-4xl'
-                              : restaurant.name.length > 14
-                              ? 'text-3xl sm:text-4xl lg:text-5xl'
-                              : 'text-4xl sm:text-5xl lg:text-6xl'
-                          )}
-                        >
-                          {toTitleCase(restaurant.name)}
-                        </h1>
+                  {/* Decorative Plaque Cartouche (Orange Pill with Tabs) */}
+                  <PlaqueCartouche
+                    text={restaurant.tagline ? 'EXECUTIVE CHEF SELECTION' : 'AUTHENTIC RECIPES'}
+                    compact={compact}
+                  />
 
-                        {/* Tagline / Subtitle */}
-                        {restaurant.tagline && (
-                          <p
-                            className={clsx(
-                              'font-serif italic tracking-wide text-[#D97036] font-medium pt-0.5',
-                              compact ? 'text-[11px]' : 'text-xs sm:text-sm'
-                            )}
-                          >
-                            {restaurant.tagline}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Decorative Plaque Cartouche (Orange Pill with Tabs) */}
-                      <PlaqueCartouche
-                        text={restaurant.tagline ? 'EXECUTIVE CHEF SELECTION' : 'AUTHENTIC RECIPES'}
-                        compact={compact}
-                      />
-
-                      {/* Address & Contact Metadata */}
-                      <div className="space-y-0.5 text-center pt-1 text-[#6E6657]">
-                        {restaurant.address && (
-                          <p className="font-sans text-[8px] sm:text-[9.5px] uppercase tracking-[0.18em] font-medium">
-                            {restaurant.address}
-                          </p>
-                        )}
-                        <p className="font-sans text-[7.5px] sm:text-[9px] text-[#6E6657] tracking-wider">
-                          more info {restaurant.city ? `www.${restaurant.city.toLowerCase().replace(/\s+/g, '')}food.com` : 'www.example.com'}
-                        </p>
-                        <p className="font-mono text-[8px] sm:text-[9.5px] text-[#1B4942] tracking-wider font-bold pt-0.5">
-                          call {restaurant.phone || '+0123-456-789'}
-                        </p>
-                      </div>
-
-                      {/* Symmetrical Botanical Flowering Shrubs at Arch Base */}
-                      <div className="absolute bottom-2 left-1.5 sm:bottom-3 sm:left-3 pointer-events-none z-10">
-                        <BotanicalShrub size={compact ? 38 : 50} />
-                      </div>
-                      <div className="absolute bottom-2 right-1.5 sm:bottom-3 sm:right-3 pointer-events-none z-10">
-                        <BotanicalShrub size={compact ? 38 : 50} flip />
-                      </div>
-                    </div>
-                  </ScallopedArchFrame>
-                </div>
-
-                {/* Cover Bottom Footer Line */}
-                <div className="pt-2 sm:pt-2.5 flex flex-col items-center gap-0.5">
-                  <div className="flex items-center justify-center gap-2 text-[#D4AE68] text-xs">
-                    <span className="w-8 h-px bg-[#D4AE68]/60" />
-                    <span className="text-[9px] uppercase font-serif tracking-[0.25em] text-[#1B4942] font-bold">
-                      Royal Haveli Cuisine
-                    </span>
-                    <span className="w-8 h-px bg-[#D4AE68]/60" />
+                  {/* Address & Contact Metadata */}
+                  <div className="text-center text-[#6E6657] pt-1 space-y-0.5">
+                    <p className="font-sans text-[8px] sm:text-[9.5px] tracking-wider uppercase font-semibold text-[#1B4942]">
+                      {restaurant.address || '123 Royal Haveli Marg, Heritage City'}
+                    </p>
+                    <p className="font-sans text-[7.5px] sm:text-[8.5px] tracking-wider text-[#6E6657]">
+                      {restaurant.city ? `more info www.${restaurant.city.toLowerCase().replace(/\s+/g, '')}food.com` : 'more info www.example.com'}
+                    </p>
+                    <p className="font-sans text-[7.5px] sm:text-[8.5px] tracking-wider text-[#6E6657]">
+                      call {restaurant.phone || '+0123-456-789'}
+                    </p>
                   </div>
                 </div>
+              </ScallopedArchFrame>
+
+              {/* Symmetrical Botanical Flowering Shrubs in Bottom Corners outside the Arch */}
+              <div className="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 pointer-events-none opacity-85 z-20">
+                <BotanicalShrub size={compact ? 28 : 38} />
+              </div>
+              <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 pointer-events-none opacity-85 z-20">
+                <BotanicalShrub size={compact ? 28 : 38} flip />
               </div>
             </HeritageParchmentFrame>
-          </section>
-        )}
+          </div>
+        </section>
+      )}
 
-        {/* ========================================================================= */}
-        {/* PAGE TWO: THE INTERIOR MENU SPREAD (MATCHING USER REFERENCE) */}
-        {/* ========================================================================= */}
-        {(activeViewTab === 'both' || activeViewTab === 'menu') && (
-          <section aria-label="Menu Interior Spread" className="w-full space-y-4 sm:space-y-6">
-            {/* Sticky Mobile Category Navigation Bar */}
-            {rawCategories.length > 1 && (
-              <div className="sticky top-12 z-30 bg-[#FCF5E9]/95 backdrop-blur-md py-2 px-3 rounded-2xl border border-[#1B4942]/30 shadow-md overflow-x-auto scrollbar-none flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveCategory('all')}
-                  className={clsx(
-                    'px-3.5 py-1.5 text-xs font-serif tracking-widest rounded-full border transition-all shrink-0 font-bold',
-                    activeCategory === 'all'
-                      ? 'bg-[#D97036] text-white border-[#D97036] shadow-sm'
-                      : 'bg-[#FCF5E9] text-[#1B4942] border-[#1B4942]/40 hover:border-[#1B4942]'
-                  )}
-                >
-                  ❖ All
-                </button>
-                {rawCategories.map((cat) => {
-                  const isActive = activeCategory === cat.id || activeCategory === cat.name;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => setActiveCategory(cat.id)}
+      {/* ═══════════════════════════════════════════════════════════════════════
+          PAGE TWO: INTERIOR MENU SPREAD (CONTINUOUS OPULENT BOOKLET PAGE)
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {(activeViewTab === 'both' || activeViewTab === 'menu') && (
+        <section aria-label="Interior Menu Spread" className="w-full space-y-4">
+          {/* Sticky Category Quick Filter Pills */}
+          {rawCategories.length > 1 && (
+            <div className="sticky top-14 z-30 bg-[#163E36]/95 backdrop-blur-md py-2 px-3 rounded-full border border-[#D4AE68]/45 shadow-xl flex items-center gap-1.5 overflow-x-auto scrollbar-none max-w-2xl mx-auto">
+              <button
+                type="button"
+                onClick={() => setActiveCategory('all')}
+                className={clsx(
+                  'px-3.5 py-1 text-xs font-serif tracking-widest rounded-full transition-all shrink-0 font-bold cursor-pointer',
+                  activeCategory === 'all'
+                    ? 'bg-[#D97036] text-white shadow-sm'
+                    : 'text-[#FCF5E9] hover:bg-[#D4AE68]/20'
+                )}
+              >
+                ❖ All Dishes
+              </button>
+              {rawCategories.map((cat) => {
+                const isActive = activeCategory === cat.id || activeCategory === cat.name;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={clsx(
+                      'px-3 py-1 text-xs font-serif tracking-widest rounded-full transition-all shrink-0 whitespace-nowrap font-bold cursor-pointer',
+                      isActive
+                        ? 'bg-[#D97036] text-white shadow-sm'
+                        : 'text-[#FCF5E9] hover:bg-[#D4AE68]/20'
+                    )}
+                  >
+                    ❖ {cat.name} ({cat.items.length})
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* UNIFIED INTERIOR BOOKLET SHEET */}
+          <HeritageParchmentFrame compact={compact}>
+            <div className="space-y-6 sm:space-y-8">
+              {/* VIEW A: FILTERED SINGLE CATEGORY VIEW */}
+              {isFiltered && selectedCategory && (
+                <div className="space-y-4">
+                  <div className="text-center space-y-1 pb-2">
+                    <h2
                       className={clsx(
-                        'px-3.5 py-1.5 text-xs font-serif tracking-widest rounded-full border transition-all shrink-0 whitespace-nowrap font-bold',
-                        isActive
-                          ? 'bg-[#D97036] text-white border-[#D97036] shadow-sm'
-                          : 'bg-[#FCF5E9] text-[#1B4942] border-[#1B4942]/40 hover:border-[#1B4942]'
+                        'font-black text-[#D97036] uppercase tracking-[0.22em] inline-block px-4 py-1 rounded bg-[#FCF5E9] border border-[#D4AE68]/50 shadow-xs',
+                        compact ? 'text-xs' : 'text-sm sm:text-base'
                       )}
+                      style={{ fontFamily: template.typography.heading }}
                     >
-                      ❖ {cat.name}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                      ❖ {selectedCategory.name} ❖
+                    </h2>
+                    <OrnateSectionDivider />
+                  </div>
 
-            {/* HARMONIOUS INTERIOR PARCHMENT MENU SPREAD */}
-            <HeritageParchmentFrame compact={compact}>
-              <div className="space-y-5 sm:space-y-7">
-                {/* SECTION 1: PRIMARY CATEGORY (Split Layout: 5 Photo Stack on Left, Dish Rows on Right) */}
-                {firstCategory && (
-                  <div className="space-y-3">
-                    {/* Category Header */}
-                    <div className="pb-1 border-b border-[#D4AE68]/50">
-                      <h2
-                        className={clsx(
-                          'font-black text-[#D97036] uppercase tracking-[0.22em]',
-                          compact ? 'text-base' : 'text-lg sm:text-xl'
-                        )}
-                        style={{ fontFamily: template.typography.heading }}
-                      >
-                        {firstCategory.name}
-                      </h2>
+                  {/bread|roti|naan|paratha|kulcha/i.test(selectedCategory.name) ? (
+                    <BreadVariantSection
+                      category={selectedCategory}
+                      template={template}
+                      compact={compact}
+                      onAddToCart={onAddToCart}
+                      isPremium={isPremium}
+                    />
+                  ) : (
+                    <div className="space-y-1.5">
+                      {selectedCategory.items.map((item, idx) => (
+                        <DishRow
+                          key={item.id}
+                          item={item}
+                          index={idx + 1}
+                          template={template}
+                          compact={compact}
+                          onAddToCart={onAddToCart}
+                          isPremium={isPremium}
+                        />
+                      ))}
                     </div>
+                  )}
+                </div>
+              )}
 
-                    {/* Editorial Split: Stack on Top/Left, Dish Rows */}
-                    <div
-                      className={clsx(
-                        'grid gap-4 lg:gap-5 items-start',
-                        compact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-12'
-                      )}
-                    >
-                      {/* Left Column: Numbered Editorial Food Photos */}
-                      <div className={clsx('w-full', compact ? 'w-full' : 'md:col-span-5')}>
-                        <PhotoCardStack items={firstCategory.items} compact={compact} />
+              {/* VIEW B: COMPLETE CONTINUOUS MENU SPREAD (ALL CATEGORIES) */}
+              {!isFiltered && (
+                <>
+                  {/* 1. PRIMARY CATEGORY (STARTERS / MAINS) WITH 5-PHOTO STACK */}
+                  {firstCategory && (
+                    <div className="space-y-4">
+                      {/* Overall Signature Photo Showcase across the TOP */}
+                      <PhotoCardStack items={firstCategory.items} compact={compact} />
+
+                      <div className="text-center space-y-1 pb-2 pt-1">
+                        <h2
+                          className={clsx(
+                            'font-black text-[#D97036] uppercase tracking-[0.22em] inline-block px-4 py-1 rounded bg-[#FCF5E9] border border-[#D4AE68]/50 shadow-xs',
+                            compact ? 'text-xs' : 'text-sm sm:text-base'
+                          )}
+                          style={{ fontFamily: template.typography.heading }}
+                        >
+                          ❖ {firstCategory.name} ❖
+                        </h2>
+                        <OrnateSectionDivider />
                       </div>
 
-                      {/* Right Column: Dish Rows with Clean Price Alignment */}
-                      <div className={clsx('w-full space-y-1.5 min-w-0', compact ? 'w-full' : 'md:col-span-7')}>
+                      {/* Full Width Dish Rows */}
+                      <div className="w-full space-y-1 min-w-0">
                         {firstCategory.items.map((item, idx) => (
                           <DishRow
                             key={item.id}
@@ -950,88 +986,90 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
                         ))}
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* SECTION 2: BREAD SELECTION (Tabular S M L Matrix) */}
-                {breadCategory && (
-                  <div className="space-y-2.5 pt-3 border-t border-[#D4AE68]/45">
-                    {/* Category Header */}
-                    <div className="pb-1 border-b border-[#D4AE68]/50">
-                      <h2
-                        className={clsx(
-                          'font-black text-[#D97036] uppercase tracking-[0.22em]',
-                          compact ? 'text-base' : 'text-lg sm:text-xl'
-                        )}
-                        style={{ fontFamily: template.typography.heading }}
-                      >
-                        {breadCategory.name}
-                      </h2>
-                    </div>
-
-                    {/* Multi-Variant S M L Columns */}
-                    <BreadVariantSection
-                      category={breadCategory}
-                      template={template}
-                      compact={compact}
-                      onAddToCart={onAddToCart}
-                      isPremium={isPremium}
-                    />
-                  </div>
-                )}
-
-                {/* SECTION 3: ADDITIONAL CATEGORIES (Starters, Curries, Drinks, Desserts) */}
-                {otherCategories.length > 0 && (
-                  <div className="space-y-5 pt-3 border-t border-[#D4AE68]/45">
-                    {otherCategories.map((cat) => (
-                      <div key={cat.id} className="space-y-2">
-                        <div className="pb-1 border-b border-[#D76C3C]/40 flex items-center justify-between">
-                          <h3
-                            className={clsx(
-                              'font-black text-[#D97036] uppercase tracking-wider',
-                              compact ? 'text-sm' : 'text-base'
-                            )}
-                            style={{ fontFamily: template.typography.heading }}
-                          >
-                            {cat.name}
-                          </h3>
-                          <span className="text-[10px] font-sans font-semibold text-[#6E6657]">
-                            {cat.items.length} items
-                          </span>
-                        </div>
-
-                        <div className="space-y-1">
-                          {cat.items.map((item, idx) => (
-                            <DishRow
-                              key={item.id}
-                              item={item}
-                              index={idx + 1}
-                              template={template}
-                              compact={compact}
-                              onAddToCart={onAddToCart}
-                              isPremium={isPremium}
-                            />
-                          ))}
-                        </div>
+                  {/* 2. TANDOORI BREAD SELECTION (TABULAR S M L MATRIX) */}
+                  {breadCategory && (
+                    <div className="space-y-3 pt-4 border-t border-[#D4AE68]/40">
+                      <div className="text-center space-y-1 pb-1">
+                        <h2
+                          className={clsx(
+                            'font-black text-[#D97036] uppercase tracking-[0.22em] inline-block px-4 py-1 rounded bg-[#FCF5E9] border border-[#D4AE68]/50 shadow-xs',
+                            compact ? 'text-xs' : 'text-sm sm:text-base'
+                          )}
+                          style={{ fontFamily: template.typography.heading }}
+                        >
+                          ❖ {breadCategory.name} ❖
+                        </h2>
+                        <OrnateSectionDivider />
                       </div>
-                    ))}
-                  </div>
-                )}
 
-                {/* Bottom Interior Location & Reservation Footer */}
-                <div className="pt-4 border-t border-[#D4AE68]/50 text-center space-y-0.5 text-xs text-[#6E6657]">
-                  <p className="font-sans text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-medium text-[#1B4942]">
-                    {restaurant.address || '123 LOCATION NAME, CITY NAME'}
-                  </p>
-                  <p className="font-sans text-[8.5px] sm:text-[9.5px]">
-                    more info {restaurant.city ? `www.${restaurant.city.toLowerCase().replace(/\s+/g, '')}food.com` : 'www.example.com'} | {restaurant.phone || '+0123-456-789'}
-                  </p>
+                      <BreadVariantSection
+                        category={breadCategory}
+                        template={template}
+                        compact={compact}
+                        onAddToCart={onAddToCart}
+                        isPremium={isPremium}
+                      />
+                    </div>
+                  )}
+
+                  {/* 3. ADDITIONAL CATEGORIES (CURRIES, RICE, DESSERTS, DRINKS) */}
+                  {otherCategories.map((cat) => (
+                    <div key={cat.id} className="space-y-3 pt-4 border-t border-[#D4AE68]/40">
+                      <div className="text-center space-y-1 pb-1">
+                        <h2
+                          className={clsx(
+                            'font-black text-[#D97036] uppercase tracking-[0.22em] inline-block px-4 py-1 rounded bg-[#FCF5E9] border border-[#D4AE68]/50 shadow-xs',
+                            compact ? 'text-xs' : 'text-sm sm:text-base'
+                          )}
+                          style={{ fontFamily: template.typography.heading }}
+                        >
+                          ❖ {cat.name} ❖
+                        </h2>
+                        <OrnateSectionDivider />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        {cat.items.map((item, idx) => (
+                          <DishRow
+                            key={item.id}
+                            item={item}
+                            index={idx + 1}
+                            template={template}
+                            compact={compact}
+                            onAddToCart={onAddToCart}
+                            isPremium={isPremium}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {/* 4. CLOSING RESERVATIONS & LOCATION FOOTER */}
+              <div className="pt-5 border-t border-[#D4AE68]/50 text-center space-y-2">
+                <OrnateSectionDivider />
+                <h3 className="font-serif font-black text-sm uppercase tracking-[0.2em] text-[#1B4942]">
+                  {restaurant.name}
+                </h3>
+                <p className="font-sans text-[9.5px] sm:text-[10.5px] uppercase tracking-[0.2em] font-medium text-[#D97036]">
+                  {restaurant.address || '123 ROYAL HAVELI MARG, HERITAGE CITY'}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-3 text-[9px] sm:text-[10px] text-[#6E6657] pt-1 font-sans">
+                  <span>✦ Open Daily: 12:00 PM – 11:30 PM</span>
+                  <span>✦ Reservations: {restaurant.phone || '+0123-456-789'}</span>
+                  <span>✦ {restaurant.city ? `www.${restaurant.city.toLowerCase().replace(/\s+/g, '')}food.com` : 'www.example.com'}</span>
                 </div>
+                <p className="text-[8.5px] sm:text-[9.5px] font-serif italic text-[#1B4942]/75 pt-1">
+                  Handcrafted Royal Haveli Cuisine • Authentic Indian Spices
+                </p>
               </div>
-            </HeritageParchmentFrame>
-          </section>
-        )}
-      </div>
+            </div>
+          </HeritageParchmentFrame>
+        </section>
+      )}
     </div>
   );
 };
@@ -1054,18 +1092,21 @@ const PhotoCardStack: React.FC<{
   });
 
   return (
-    <>
+    <div className="w-full pb-2">
       {/* Horizontal Scroll Gallery (visible on small screens OR when compact) */}
       <div
         className={clsx(
-          'gap-2.5 overflow-x-auto pb-2 scrollbar-none snap-x my-1.5',
+          'gap-2.5 overflow-x-auto pb-2 scrollbar-none snap-x my-1',
           compact ? 'flex' : 'flex md:hidden'
         )}
       >
         {photoList.map((photo) => (
           <div
             key={photo.num}
-            className="w-24 sm:w-28 shrink-0 snap-start rounded-lg overflow-hidden border border-[#D4AE68] shadow-xs relative aspect-[4/3] bg-[#FCF5E9]"
+            className={clsx(
+              'shrink-0 snap-start rounded-lg overflow-hidden border border-[#D4AE68] shadow-xs relative aspect-[4/3] bg-[#FCF5E9]',
+              compact ? 'w-24 sm:w-28' : 'w-32 sm:w-36'
+            )}
           >
             <img
               src={photo.url}
@@ -1076,20 +1117,20 @@ const PhotoCardStack: React.FC<{
                 (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
               }}
             />
-            <span className="absolute top-1 left-1 px-1 py-0.2 rounded bg-[#D97036] text-white font-mono text-[7.5px] font-bold shadow-xs">
+            <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-[#D97036] text-white font-mono text-[8.5px] font-bold shadow-xs">
               {photo.num}
             </span>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent pointer-events-none" />
-            <span className="absolute bottom-1 inset-x-1 text-[8px] font-serif uppercase tracking-wider text-white font-bold truncate">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+            <span className="absolute bottom-1.5 inset-x-1.5 text-[9px] font-serif uppercase tracking-wider text-white font-bold truncate">
               {photo.name}
             </span>
           </div>
         ))}
       </div>
 
-      {/* Desktop Vertical 5-Photo Column (visible on md+ only when NOT compact) */}
+      {/* Desktop Horizontal 5-Photo Grid Row across the TOP (visible on md+ only when NOT compact) */}
       {!compact && (
-        <div className="hidden md:flex flex-col space-y-2">
+        <div className="hidden md:grid grid-cols-5 gap-3.5 mb-2">
           {photoList.map((photo) => (
             <div
               key={photo.num}
@@ -1104,23 +1145,23 @@ const PhotoCardStack: React.FC<{
                   (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent pointer-events-none" />
-              <span className="absolute top-1.5 left-1.5 px-1.5 py-0.2 rounded bg-[#D97036] text-white font-mono text-[9px] font-bold shadow-xs border border-white/40">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+              <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-[#D97036] text-white font-mono text-[9px] font-bold shadow-xs border border-white/40">
                 {photo.num}
               </span>
-              <span className="absolute bottom-1 left-1.5 right-1.5 text-[9.5px] font-serif uppercase tracking-wider text-white font-bold drop-shadow-sm truncate">
+              <span className="absolute bottom-1.5 left-1.5 right-1.5 text-[9.5px] font-serif uppercase tracking-wider text-white font-bold drop-shadow-sm truncate">
                 {photo.name}
               </span>
             </div>
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 };
 
 // ============================================================================
-// HELPER COMPONENT: DISH ROW WITH NUMBER BADGE, TEAL POPULAR PILL & PRICE
+// HELPER COMPONENT: DISH ROW WITH NUMBER BADGE, TEAL POPULAR PILL & PINNED PRICE
 // ============================================================================
 const DishRow: React.FC<{
   item: MenuItem;
@@ -1134,53 +1175,70 @@ const DishRow: React.FC<{
   const displayPrice = item.price ? `₹${item.price}` : '—';
 
   return (
-    <div className="group py-2 border-b border-[#D4AE68]/25 hover:border-[#D76C3C]/50 transition-colors">
-      <div className="flex items-start justify-between gap-3">
-        {/* Left: Badge, Diet, Title, Tags, Description */}
-        <div className="flex items-start gap-2 min-w-0 flex-1">
-          {/* Orange Number Badge */}
-          <span className="shrink-0 w-4 h-4 rounded-full bg-[#D97036] text-white flex items-center justify-center font-mono text-[8px] font-bold mt-0.5 shadow-2xs">
+    <div className="group/dish py-1.5 sm:py-2.5 border-b border-[#D4AE68]/25 hover:border-[#D76C3C]/50 transition-colors">
+      <div className="flex items-start justify-between gap-1.5 sm:gap-3">
+        {/* Left: Number Badge + Diet Indicator + Title & Description Column */}
+        <div className="flex items-start gap-1.5 sm:gap-2 min-w-0 flex-1">
+          {/* Circular Number Badge: Top-anchored to first line of text */}
+          <span
+            className={clsx(
+              'shrink-0 rounded-full bg-[#D97036] text-white flex items-center justify-center font-mono font-bold shadow-2xs mt-0.5',
+              compact ? 'w-3.5 h-3.5 text-[7px]' : 'w-4 h-4 sm:w-4.5 sm:h-4.5 text-[8px] sm:text-[8.5px]'
+            )}
+          >
             {formattedIndex}
           </span>
 
-          <DietIndicator
-            type={item.dietType}
-            compact={compact}
-            color={item.dietType === 'non-veg' ? '#C85A32' : '#386450'}
-            className="mt-0.5 shrink-0"
-          />
+          {/* Diet Indicator: Top-anchored to first line of text */}
+          <div className="shrink-0 mt-0.5">
+            <DietIndicator
+              type={item.dietType}
+              compact={compact}
+              color={item.dietType === 'non-veg' ? '#C85A32' : '#386450'}
+            />
+          </div>
 
+          {/* Title + Pill Badges + Description Column */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h4
                 className={clsx(
-                  'font-bold text-[#1B4942] group-hover:text-[#D97036] transition-colors leading-snug',
-                  compact ? 'text-xs' : 'text-sm'
+                  'font-bold text-[#1B4942] group-hover/dish:text-[#D97036] transition-colors leading-snug',
+                  compact ? 'text-xs' : 'text-sm sm:text-base'
                 )}
                 style={{ fontFamily: template.typography.body }}
               >
                 {item.name}
               </h4>
 
-              {/* Popular or Special Pill Badge in Deep Teal */}
               {(item.isBestseller || index === 1) && (
-                <span className="text-[7.5px] font-sans font-bold uppercase tracking-wider px-1.5 py-0.2 rounded-full bg-[#1B4942] text-[#FCF5E9] shadow-2xs shrink-0">
+                <span
+                  className={clsx(
+                    'font-sans font-bold uppercase tracking-wider rounded-full bg-[#1B4942] text-[#FCF5E9] shadow-2xs shrink-0',
+                    compact ? 'text-[6.5px] px-1 py-0.2' : 'text-[7.5px] sm:text-[8px] px-1.5 py-0.5'
+                  )}
+                >
                   POPULAR
                 </span>
               )}
               {index === 2 && !item.isBestseller && (
-                <span className="text-[7.5px] font-sans font-bold uppercase tracking-wider px-1.5 py-0.2 rounded-full bg-[#386450] text-[#FCF5E9] shadow-2xs shrink-0">
+                <span
+                  className={clsx(
+                    'font-sans font-bold uppercase tracking-wider rounded-full bg-[#386450] text-[#FCF5E9] shadow-2xs shrink-0',
+                    compact ? 'text-[6.5px] px-1 py-0.2' : 'text-[7.5px] sm:text-[8px] px-1.5 py-0.5'
+                  )}
+                >
                   SPECIAL
                 </span>
               )}
             </div>
 
-            {/* Description */}
+            {/* Description: Takes full available horizontal width */}
             {item.description && (
               <p
                 className={clsx(
-                  'text-[#6E6657] mt-0.5 leading-relaxed font-serif italic',
-                  compact ? 'text-[9.5px] line-clamp-2' : 'text-[11px]'
+                  'text-[#6E6657] font-serif italic mt-0.5 pr-1',
+                  compact ? 'text-[9.5px] leading-snug line-clamp-2' : 'text-xs sm:text-[13px] leading-relaxed'
                 )}
               >
                 {item.description}
@@ -1189,9 +1247,14 @@ const DishRow: React.FC<{
           </div>
         </div>
 
-        {/* Right: Pinned Price */}
-        <div className="shrink-0 flex items-center gap-1.5 pl-2 text-right pt-0.5">
-          <span className="font-serif font-black text-xs sm:text-sm text-[#1B4942] tracking-wider whitespace-nowrap">
+        {/* Right: Pinned Price Badge + Add to Cart */}
+        <div className="shrink-0 flex items-center gap-1.5 pl-1.5 self-start mt-0.5">
+          <span
+            className={clsx(
+              'font-serif font-black text-[#1B4942] tracking-wider whitespace-nowrap bg-[#FCF5E9] rounded border border-[#D4AE68]/60 shadow-2xs group-hover/dish:border-[#D97036] group-hover/dish:text-[#D97036] transition-colors',
+              compact ? 'text-[11px] px-1.5 py-0.5' : 'text-sm sm:text-base px-2.5 py-0.5'
+            )}
+          >
             {displayPrice}
           </span>
 
@@ -1199,10 +1262,10 @@ const DishRow: React.FC<{
             <button
               type="button"
               onClick={() => onAddToCart(item, String(item.price || ''))}
-              className="text-[9px] font-bold px-1.5 py-0.5 bg-[#D97036] text-white rounded hover:bg-[#b65023] transition-colors cursor-pointer"
+              className="text-[9px] font-bold px-2 py-0.5 bg-[#D97036] text-white rounded hover:bg-[#b65023] transition-colors cursor-pointer shrink-0"
               aria-label={`Add ${item.name} to order`}
             >
-              +
+              + ADD
             </button>
           )}
         </div>
@@ -1224,9 +1287,21 @@ const BreadVariantSection: React.FC<{
   return (
     <div className="space-y-1.5 w-full">
       {/* S M L Table Header Row */}
-      <div className="flex items-center justify-between pb-1 border-b border-[#D4AE68]/50 text-[10px] font-serif uppercase tracking-widest text-[#6E6657] font-bold">
-        <span>Bread Selection</span>
-        <div className="grid grid-cols-3 gap-2 w-32 sm:w-44 text-center font-black text-[#1B4942]">
+      <div
+        className={clsx(
+          'flex items-center justify-between pb-1.5 border-b border-[#D4AE68]/50 font-serif uppercase tracking-widest text-[#6E6657] font-bold',
+          compact ? 'text-[8.5px]' : 'text-[10px] sm:text-[11px]'
+        )}
+      >
+        <span className="flex items-center gap-1.5 pl-0.5">
+          <span className="text-[#D97036]">❖</span> Bread Selection
+        </span>
+        <div
+          className={clsx(
+            'grid grid-cols-3 text-center font-black text-[#1B4942]',
+            compact ? 'w-24 gap-0.5 text-[8.5px]' : 'w-32 sm:w-44 gap-1 sm:gap-2 text-xs sm:text-sm'
+          )}
+        >
           <span>S</span>
           <span>M</span>
           <span>L</span>
@@ -1244,25 +1319,43 @@ const BreadVariantSection: React.FC<{
           return (
             <div
               key={item.id}
-              className="flex items-center justify-between py-1.5 border-b border-[#D4AE68]/20 hover:border-[#D76C3C]/40 transition-colors"
+              className="flex items-center justify-between py-1.5 sm:py-2 border-b border-[#D4AE68]/20 hover:border-[#D76C3C]/40 transition-colors group/bread"
             >
-              <div className="flex items-center gap-1.5 min-w-0 flex-1 pr-2">
-                <DietIndicator type={item.dietType} compact={compact} color="#386450" />
+              <div className="flex items-center gap-1.5 min-w-0 flex-1 pr-1.5">
+                <div className="shrink-0">
+                  <DietIndicator type={item.dietType} compact={compact} color="#386450" />
+                </div>
                 <span
-                  className="font-bold text-xs sm:text-sm text-[#1B4942] truncate"
+                  className={clsx(
+                    'font-bold text-[#1B4942] group-hover/bread:text-[#D97036] transition-colors leading-snug',
+                    compact ? 'text-[11px]' : 'text-xs sm:text-sm'
+                  )}
                   style={{ fontFamily: template.typography.body }}
                 >
                   {item.name}
                 </span>
               </div>
 
+              {/* Dotted Leader: ONLY when NOT compact on desktop/tablet */}
+              {!compact && (
+                <div className="hidden sm:block flex-1 border-b border-dotted border-[#D4AE68]/45 mx-2 self-center translate-y-0.5" />
+              )}
+
               {/* Price Multi-Columns */}
-              <div className="grid grid-cols-3 gap-2 w-32 sm:w-44 text-center font-serif text-xs font-black text-[#1B4942] shrink-0">
+              <div
+                className={clsx(
+                  'grid grid-cols-3 text-center font-serif font-black text-[#1B4942] shrink-0',
+                  compact ? 'w-24 gap-0.5 text-[10px]' : 'w-32 sm:w-44 gap-1 sm:gap-2 text-xs sm:text-sm'
+                )}
+              >
                 <button
                   type="button"
                   disabled={!isPremium || !onAddToCart}
                   onClick={() => onAddToCart?.(item, String(sPrice), 'Small')}
-                  className={clsx(isPremium && onAddToCart && 'hover:text-[#D97036] hover:underline cursor-pointer')}
+                  className={clsx(
+                    'py-0.5 rounded hover:bg-[#D97036]/10 transition-colors',
+                    isPremium && onAddToCart && 'hover:text-[#D97036] cursor-pointer'
+                  )}
                 >
                   ₹{sPrice}
                 </button>
@@ -1270,7 +1363,10 @@ const BreadVariantSection: React.FC<{
                   type="button"
                   disabled={!isPremium || !onAddToCart}
                   onClick={() => onAddToCart?.(item, String(mPrice), 'Medium')}
-                  className={clsx(isPremium && onAddToCart && 'hover:text-[#D97036] hover:underline cursor-pointer')}
+                  className={clsx(
+                    'py-0.5 rounded hover:bg-[#D97036]/10 transition-colors',
+                    isPremium && onAddToCart && 'hover:text-[#D97036] cursor-pointer'
+                  )}
                 >
                   ₹{mPrice}
                 </button>
@@ -1278,7 +1374,10 @@ const BreadVariantSection: React.FC<{
                   type="button"
                   disabled={!isPremium || !onAddToCart}
                   onClick={() => onAddToCart?.(item, String(lPrice), 'Large')}
-                  className={clsx(isPremium && onAddToCart && 'hover:text-[#D97036] hover:underline cursor-pointer')}
+                  className={clsx(
+                    'py-0.5 rounded hover:bg-[#D97036]/10 transition-colors',
+                    isPremium && onAddToCart && 'hover:text-[#D97036] cursor-pointer'
+                  )}
                 >
                   ₹{lPrice}
                 </button>

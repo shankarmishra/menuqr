@@ -204,24 +204,17 @@ body {
   background-position: center;
 }
 
-/* Template Gallery Card Smooth Scroll-Reveal */
+/* ============================================================================
+   Template Gallery Card Styles for React Bits ScrollStack
+   ============================================================================ */
+
 .template-reveal-card {
-  opacity: 0;
-  transform: translateY(35px);
-  transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1), transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+  opacity: 1;
+  transform: none;
 }
 
 .template-reveal-card.is-revealed {
   opacity: 1;
-  transform: translateY(0);
-  will-change: auto;
+  transform: none;
 }
 
-/* Fallback if JavaScript is completely disabled */
-@media (scripting: none) {
-  .template-reveal-card {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}

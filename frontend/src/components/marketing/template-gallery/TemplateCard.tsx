@@ -28,39 +28,14 @@ export function TemplateCard({
   style,
 }: TemplateCardProps) {
   const cardRef = useRef<HTMLElement>(null);
-  const [isRevealed, setIsRevealed] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(true);
   const theme = getTemplateCardTheme(template);
 
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
-
-    // Fallback if IntersectionObserver is unsupported
-    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
-      el.classList.add('is-revealed');
-      setIsRevealed(true);
-      return;
-    }
-
-    // Trigger when the card is noticeably entering the visible viewport (~196px in view)
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            (entry.target as HTMLElement).classList.add('is-revealed');
-            setIsRevealed(true);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '0px 0px -120px 0px',
-      }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
+    el.classList.add('is-revealed');
+    setIsRevealed(true);
   }, []);
 
   const colors = [
@@ -70,6 +45,36 @@ export function TemplateCard({
     template.colors.secondary || '#073D34',
   ];
 
+  // CSS Custom Properties mapped for template-specific identity across the whole card
+  const themeVariables: React.CSSProperties = {
+    '--card-bg': theme.cardBg,
+    '--card-border': theme.cardBorder,
+    '--card-shadow': theme.cardShadow,
+    '--stage-bg': theme.stageBg,
+    '--stage-glow': theme.stageGlow,
+    '--floor-reflection': theme.floorReflection,
+    '--phone-screen-bg': theme.phoneScreenBg,
+    '--editorial-bg': theme.editorialBg,
+    '--index-color': theme.indexColor,
+    '--badge-bg': theme.badgeBg,
+    '--badge-text': theme.badgeText,
+    '--badge-border': theme.badgeBorder,
+    '--pill-bg': theme.categoryPillBg,
+    '--pill-text': theme.categoryPillText,
+    '--pill-border': theme.categoryPillBorder,
+    '--heading-color': theme.headingColor,
+    '--subtitle-color': theme.subtitleColor,
+    '--desc-color': theme.descriptionColor,
+    '--specs-label': theme.specsLabelColor,
+    '--specs-value': theme.specsValueColor,
+    '--specs-border': theme.specsBorder,
+    '--palette-label': theme.paletteLabelColor,
+    '--cta-bg': theme.ctaBg,
+    '--cta-text': theme.ctaText,
+    '--cta-hover-bg': theme.ctaHoverBg,
+    ...style,
+  } as React.CSSProperties;
+
   return (
     <article
       ref={cardRef}
@@ -78,11 +83,11 @@ export function TemplateCard({
       aria-label={`${template.name} menu template card, ${index + 1} of ${total}`}
       className={`template-reveal-card ${isRevealed ? 'is-revealed' : ''} group relative grid w-full max-w-[1240px] mx-auto grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[24px] sm:rounded-[32px] md:rounded-[36px] border shadow-2xl ${className}`}
       style={{
-        background: theme.cardBg,
-        borderColor: theme.cardBorder,
-        boxShadow: theme.cardShadow,
+        background: 'var(--card-bg)',
+        borderColor: 'var(--card-border)',
+        boxShadow: 'var(--card-shadow)',
         pointerEvents: 'auto',
-        ...style,
+        ...themeVariables,
       }}
     >
       {/* ═══════════════════════════════════════════════════════════════════
@@ -90,44 +95,46 @@ export function TemplateCard({
           ═══════════════════════════════════════════════════════════════════ */}
       <div
         className="relative flex min-h-[220px] sm:min-h-[300px] md:min-h-[560px] lg:min-h-[620px] w-full items-center justify-center p-2 sm:p-5 md:p-8 lg:p-10 overflow-hidden"
-        style={{ background: theme.stageBg }}
+        style={{ background: 'var(--stage-bg)' }}
       >
         {/* Ambient Glow matching template accent */}
         <div
           className="absolute inset-0 pointer-events-none opacity-30 filter blur-3xl scale-75"
-          style={{ backgroundColor: theme.stageGlow }}
+          style={{ backgroundColor: 'var(--stage-glow)' }}
         />
         {/* Floor contact reflection */}
         <div
           className="absolute bottom-0 inset-x-0 h-20 md:h-28 pointer-events-none"
-          style={{ background: `linear-gradient(to top, ${theme.floorReflection}, transparent)` }}
+          style={{ background: 'linear-gradient(to top, var(--floor-reflection), transparent)' }}
         />
 
-        <div
-          className="relative shadow-[0_30px_70px_rgba(0,0,0,0.7)] rounded-[45px] sm:rounded-[50px] z-10 scale-[0.68] sm:scale-[0.82] md:scale-100 origin-center my-[-30px] sm:my-[-15px] md:my-0"
-          style={{ transformStyle: 'preserve-3d' }}
-        >
-          <PremiumIPhoneMockup
-            className="!w-[230px] sm:!w-[260px] md:!w-[290px] lg:!w-[315px]"
-            badgeText="Live Menu Preview"
-            statusBarTheme={isTemplateDark(template) ? 'light' : 'dark'}
-            homeIndicatorTheme={isTemplateDark(template) ? 'light' : 'dark'}
-            screenStyle={{ backgroundColor: theme.phoneScreenBg }}
-            screenClassName=""
+        <div className="relative z-10 flex items-center justify-center">
+          <div
+            className="relative shadow-[0_30px_70px_rgba(0,0,0,0.7)] rounded-[45px] sm:rounded-[50px] scale-[0.68] sm:scale-[0.82] md:scale-100 origin-center my-[-30px] sm:my-[-15px] md:my-0"
+            style={{ transformStyle: 'preserve-3d' }}
           >
-            <div
-              className="h-full w-full overflow-y-auto overflow-x-hidden p-1 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-              style={{ backgroundColor: theme.phoneScreenBg }}
+            <PremiumIPhoneMockup
+              className="!w-[230px] sm:!w-[260px] md:!w-[290px] lg:!w-[315px]"
+              badgeText="Live Menu Preview"
+              statusBarTheme={isTemplateDark(template) ? 'light' : 'dark'}
+              homeIndicatorTheme={isTemplateDark(template) ? 'light' : 'dark'}
+              screenStyle={{ backgroundColor: theme.phoneScreenBg }}
+              screenClassName=""
             >
-              <MenuTemplateRenderer
-                templateId={template.id}
-                restaurant={DEMO_RESTAURANT}
-                categories={DEMO_RESTAURANT.categories}
-                items={DEMO_RESTAURANT.items}
-                compact={true}
-              />
-            </div>
-          </PremiumIPhoneMockup>
+              <div
+                className="h-full w-full overflow-y-auto overflow-x-hidden p-1 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                style={{ backgroundColor: theme.phoneScreenBg }}
+              >
+                <MenuTemplateRenderer
+                  templateId={template.id}
+                  restaurant={DEMO_RESTAURANT}
+                  categories={DEMO_RESTAURANT.categories}
+                  items={DEMO_RESTAURANT.items}
+                  compact={true}
+                />
+              </div>
+            </PremiumIPhoneMockup>
+          </div>
         </div>
       </div>
 
@@ -136,14 +143,14 @@ export function TemplateCard({
           ═══════════════════════════════════════════════════════════════════ */}
       <div
         className="flex flex-col justify-between px-4 py-4 sm:px-8 sm:py-7 md:px-10 md:py-9 lg:px-12 lg:py-11"
-        style={{ background: theme.editorialBg }}
+        style={{ background: 'var(--editorial-bg)' }}
       >
         <div>
           {/* Top Index & Badge Header */}
           <div className="flex items-center justify-between mb-2 sm:mb-3">
             <p
               className="font-mono text-[11px] sm:text-xs md:text-[13px] font-bold uppercase tracking-widest"
-              style={{ color: theme.indexColor }}
+              style={{ color: 'var(--index-color)' }}
             >
               Design {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
             </p>
@@ -151,9 +158,9 @@ export function TemplateCard({
               <span
                 className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] md:text-[11px] font-bold uppercase tracking-wider border shadow-sm"
                 style={{
-                  backgroundColor: theme.badgeBg,
-                  color: theme.badgeText,
-                  borderColor: theme.badgeBorder,
+                  backgroundColor: 'var(--badge-bg)',
+                  color: 'var(--badge-text)',
+                  borderColor: 'var(--badge-border)',
                 }}
               >
                 {template.badge}
@@ -168,9 +175,9 @@ export function TemplateCard({
                 key={category}
                 className="px-2 py-0.5 text-[9px] sm:text-[10px] md:text-[11px] font-bold uppercase tracking-wider rounded-md border"
                 style={{
-                  backgroundColor: theme.categoryPillBg,
-                  color: theme.categoryPillText,
-                  borderColor: theme.categoryPillBorder,
+                  backgroundColor: 'var(--pill-bg)',
+                  color: 'var(--pill-text)',
+                  borderColor: 'var(--pill-border)',
                 }}
               >
                 {category}
@@ -183,7 +190,7 @@ export function TemplateCard({
             className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight"
             style={{
               fontFamily: template.typography.heading,
-              color: theme.headingColor,
+              color: 'var(--heading-color)',
             }}
           >
             {template.name}
@@ -191,14 +198,14 @@ export function TemplateCard({
 
           <p
             className="mt-0.5 sm:mt-1 md:mt-2 text-[11px] sm:text-xs md:text-sm font-medium font-serif italic"
-            style={{ color: theme.subtitleColor }}
+            style={{ color: 'var(--subtitle-color)' }}
           >
             {template.subtitle}
           </p>
 
           <p
             className="mt-2 sm:mt-3 md:mt-4 max-w-xl text-[11px] sm:text-xs md:text-sm lg:text-base leading-relaxed font-normal line-clamp-2 sm:line-clamp-3 md:line-clamp-none"
-            style={{ color: theme.descriptionColor }}
+            style={{ color: 'var(--desc-color)' }}
           >
             {template.description}
           </p>
@@ -206,49 +213,49 @@ export function TemplateCard({
           {/* Design Specs Grid */}
           <dl
             className="mt-3 sm:mt-5 md:mt-6 grid grid-cols-2 gap-x-3 sm:gap-x-4 md:gap-x-5 gap-y-2 sm:gap-y-2.5 md:gap-y-3 border-t pt-2.5 sm:pt-4 md:pt-5 text-[10px] sm:text-xs md:text-sm"
-            style={{ borderColor: theme.specsBorder }}
+            style={{ borderColor: 'var(--specs-border)' }}
           >
             <div>
               <dt
                 className="mb-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider"
-                style={{ color: theme.specsLabelColor }}
+                style={{ color: 'var(--specs-label)' }}
               >
                 Menu layout
               </dt>
-              <dd className="font-medium truncate" style={{ color: theme.specsValueColor }}>
+              <dd className="font-medium truncate" style={{ color: 'var(--specs-value)' }}>
                 {getLayoutLabel(template)}
               </dd>
             </div>
             <div>
               <dt
                 className="mb-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider"
-                style={{ color: theme.specsLabelColor }}
+                style={{ color: 'var(--specs-label)' }}
               >
                 Item style
               </dt>
-              <dd className="font-medium truncate" style={{ color: theme.specsValueColor }}>
+              <dd className="font-medium truncate" style={{ color: 'var(--specs-value)' }}>
                 {getItemStyleLabel(template)}
               </dd>
             </div>
             <div>
               <dt
                 className="mb-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider"
-                style={{ color: theme.specsLabelColor }}
+                style={{ color: 'var(--specs-label)' }}
               >
                 Typography
               </dt>
-              <dd className="font-medium truncate" style={{ color: theme.specsValueColor }}>
+              <dd className="font-medium truncate" style={{ color: 'var(--specs-value)' }}>
                 {getTypographyLabel(template)}
               </dd>
             </div>
             <div>
               <dt
                 className="mb-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider"
-                style={{ color: theme.specsLabelColor }}
+                style={{ color: 'var(--specs-label)' }}
               >
                 Craft motif
               </dt>
-              <dd className="font-medium truncate" style={{ color: theme.specsValueColor }}>
+              <dd className="font-medium truncate" style={{ color: 'var(--specs-value)' }}>
                 {template.decorations.motif}
               </dd>
             </div>
@@ -258,12 +265,12 @@ export function TemplateCard({
         {/* Palette & CTA Footer */}
         <div
           className="mt-3 sm:mt-5 md:mt-6 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 pt-2.5 sm:pt-4 border-t"
-          style={{ borderColor: theme.specsBorder }}
+          style={{ borderColor: 'var(--specs-border)' }}
         >
           <div className="flex items-center gap-1.5 sm:gap-2.5" aria-label="Template color palette">
             <span
               className="text-[9px] sm:text-[10px] font-mono font-bold uppercase mr-1"
-              style={{ color: theme.paletteLabelColor }}
+              style={{ color: 'var(--palette-label)' }}
             >
               Palette
             </span>
@@ -281,8 +288,8 @@ export function TemplateCard({
             to={`/templates#${template.id}`}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 hover:scale-105 shadow-md shadow-black/20 font-sans cursor-pointer"
             style={{
-              backgroundColor: theme.ctaBg,
-              color: theme.ctaText,
+              backgroundColor: 'var(--cta-bg)',
+              color: 'var(--cta-text)',
             }}
           >
             <span>Explore Menu</span>

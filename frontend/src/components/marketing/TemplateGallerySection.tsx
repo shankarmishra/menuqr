@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
 import { menuTemplates, type MenuTemplate } from '../../data/menuTemplates';
 import { TemplateCard } from './template-gallery/TemplateCard';
+import ScrollStack, { ScrollStackItem } from '../ui/ScrollStack';
 
 // Featured signature templates for the "Menus with a point of view" showcase
 const SIGNATURE_TEMPLATE_IDS = [
@@ -43,28 +44,28 @@ export default function TemplateGallerySection() {
   }, [activeCategory, signatureTemplates]);
 
   return (
-    <section id="templates" className="relative overflow-clip bg-[#050807] pt-24 pb-20 md:pt-32 md:pb-28 scroll-mt-24">
-      {/* Ambient luxury glows */}
+    <section id="templates" className="relative overflow-x-clip bg-[#FAFAF7] pt-24 pb-20 md:pt-32 md:pb-28 scroll-mt-24 border-t border-menusqr-emerald/10">
+      {/* Ambient luxury light glows */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 right-[10%] w-[60vw] h-[60vw] bg-[#D7B66D]/5 blur-[160px] rounded-full translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 left-[10%] w-[50vw] h-[50vw] bg-[#064F43]/20 blur-[120px] rounded-full -translate-x-1/2 translate-y-1/2" />
+        <div className="absolute top-0 right-[10%] w-[50vw] h-[50vw] bg-[#E8783C]/5 blur-[160px] rounded-full translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 left-[10%] w-[50vw] h-[50vw] bg-[#064F43]/5 blur-[140px] rounded-full -translate-x-1/2 translate-y-1/2" />
       </div>
 
       <div className="max-w-[1800px] mx-auto w-full relative z-10">
         {/* HEADER & FILTER OPTIONS */}
         <div className="px-6 md:px-16 flex flex-col xl:flex-row xl:items-end justify-between gap-8 mb-12 md:mb-16">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 text-[#D7B66D] text-[12px] font-bold uppercase tracking-widest border border-[#D7B66D]/30 mb-6 backdrop-blur-md shadow-lg shadow-[#D7B66D]/5">
-              <Sparkles size={14} className="text-[#D7B66D]" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-menusqr-emerald text-[12px] font-bold uppercase tracking-widest border border-menusqr-emerald/15 mb-6 shadow-xs">
+              <Sparkles size={14} className="text-menusqr-orange" />
               <span>Signature Heritage Collection</span>
             </div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight mb-5">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-menusqr-emerald tracking-tight leading-tight mb-5">
               Menus with a{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D7B66D] via-[#EBD69A] to-[#F5EBDD] font-serif italic font-normal pr-4">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D78F45] via-menusqr-orange to-[#B3521E] font-serif italic font-normal pr-4">
                 point of view.
               </span>
             </h2>
-            <p className="text-white/60 text-lg sm:text-xl max-w-xl font-light leading-relaxed">
+            <p className="text-menusqr-neutral-sec text-lg sm:text-xl max-w-xl font-normal leading-relaxed">
               10 signature templates. Each structurally re-renders your menu with unique typography, spacing, and layout logic.
             </p>
           </div>
@@ -78,8 +79,8 @@ export default function TemplateGallerySection() {
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[13px] font-bold tracking-wide uppercase transition-all duration-300 cursor-pointer ${
                   activeCategory === cat
-                    ? 'bg-[#D7B66D] text-[#064F43] shadow-[0_8px_20px_-6px_rgba(215,182,109,0.5)] scale-105'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
+                    ? 'bg-menusqr-emerald text-[#FAF8F5] shadow-[0_8px_20px_-6px_rgba(6,79,67,0.35)] scale-105'
+                    : 'bg-white text-menusqr-emerald/70 hover:bg-white/90 hover:text-menusqr-emerald border border-menusqr-emerald/15 shadow-xs'
                 }`}
               >
                 {cat}
@@ -88,17 +89,34 @@ export default function TemplateGallerySection() {
           </div>
         </div>
 
-        {/* NATURAL CONTINUOUS PAGE SCROLL: 10 TEMPLATES IN NORMAL DOCUMENT FLOW */}
-        <div className="flex flex-col gap-10 sm:gap-14 md:gap-16 lg:gap-20 px-4 sm:px-6 md:px-12 max-w-[1360px] mx-auto w-full relative z-10">
+        {/* TEMPLATE SHOWCASE LIST: REACT BITS SCROLLSTACK */}
+        <ScrollStack
+          key={activeCategory}
+          className="relative z-10 max-w-[1360px] mx-auto w-full px-4 sm:px-6 md:px-12"
+          useWindowScroll={true}
+          itemDistance={130}
+          itemStackDistance={28}
+          stackPosition="100px"
+          itemScale={0.035}
+          baseScale={0.82}
+          dimAmount={0.16}
+          blurAmount={0}
+          tiltAmount={0}
+          rotationAmount={0}
+          holdDistance={260}
+          smoothScroll={false}
+          snap={false}
+        >
           {filteredTemplates.map((template, index) => (
-            <TemplateCard
-              key={template.id}
-              template={template}
-              index={index}
-              total={filteredTemplates.length}
-            />
+            <ScrollStackItem key={template.id}>
+              <TemplateCard
+                template={template}
+                index={index}
+                total={filteredTemplates.length}
+              />
+            </ScrollStackItem>
           ))}
-        </div>
+        </ScrollStack>
       </div>
     </section>
   );
