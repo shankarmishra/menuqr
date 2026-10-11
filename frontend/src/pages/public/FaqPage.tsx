@@ -10,7 +10,8 @@ export default function FaqPage() {
   const breadcrumbs = [{ name: 'FAQ', path: '/faq' }];
 
   return (
-    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans">
+    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans relative overflow-x-clip">
+      <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="MenusQR FAQ | Frequently Asked Questions"
         description="Find answers to common questions about MenusQR digital menus, permanent QR codes, instant price updates, and direct table ordering."
@@ -19,7 +20,7 @@ export default function FaqPage() {
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto">
+      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl md:text-5xl font-extrabold text-[#151C19] mb-6 tracking-tight">

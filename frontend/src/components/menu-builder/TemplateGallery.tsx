@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Sparkles, Check, Eye, Layers } from 'lucide-react';
 import { menuTemplates, TEMPLATE_FILTER_CATEGORIES, DEMO_RESTAURANT } from '../../data/menuTemplates';
@@ -47,7 +47,7 @@ export default function TemplateGallery({
             Menu Template Studio
           </h1>
           <p className="text-[#8A9AAC] mt-2 max-w-xl">
-            Choose from 20 architecturally distinct menu designs. Pick a template to instantly apply your restaurant's menu content, branding, and prices.
+            Choose from 10 architecturally distinct menu designs. Pick a template to instantly apply your restaurant's menu content, branding, and prices.
           </p>
         </div>
       </div>

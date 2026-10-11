@@ -1,408 +1,895 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, MotionConfig, useReducedMotion } from 'framer-motion';
-import { QrCode, Sparkles, ShieldCheck, Zap, Layers, CheckCircle2, Scan, ShoppingBag } from 'lucide-react';
-import { MenuTemplateRenderer } from '../menu-builder/MenuTemplateRenderer';
+import {
+  QrCode, Sparkles, TrendingUp,
+  CheckCircle2, Flame, RefreshCw, ShoppingBag,
+  Check, UtensilsCrossed, Plus
+} from 'lucide-react';
+import PremiumIPhoneMockup from './PremiumIPhoneMockup';
 
-const MOCK_RESTAURANT = {
-  name: 'The Rustic Spatula',
-  tagline: 'Farm to table goodness',
-};
+/* ──────────────────────────────────────────────────────────────────────────
+   INTERACTIVE LIVE-SYNC SIMULATOR
+   "One permanent code. Infinite digital updates."
+   Featuring:
+   - Compact Premium Light-Theme Owner Dashboard
+   - High-End Floating Premium iPhone 16 Pro Mockup (from "Same menu" section)
+   - Real-Time Dynamic Pricing, Sold-Out Toggles, Chef's Specials & Theme Shifts
+   ────────────────────────────────────────────────────────────────────────── */
 
-const MOCK_CATEGORIES = [
-  { id: 'c1', name: 'Starters', order: 1 },
-  { id: 'c2', name: 'Mains', order: 2 },
-];
+interface SimulatorState {
+  isPeakPrice: boolean;
+  isWingsSoldOut: boolean;
+  isChefSpecial: boolean;
+  isNightTheme: boolean;
+  lastAction: string;
+  latencyMs: number;
+}
 
-const MOCK_ITEMS = [
-  { id: 'i1', name: 'Truffle Fries', price: 299, category: 'c1', dietType: 'veg' as const, available: true, isBestseller: true, description: 'Crispy fries with truffle oil and parmesan.' },
-  { id: 'i2', name: 'Spicy Wings', price: 449, category: 'c1', dietType: 'non-veg' as const, available: true, description: 'Signature hot wings with blue cheese dip.' },
-  { id: 'i3', name: 'Mushroom Risotto', price: 699, category: 'c2', dietType: 'veg' as const, available: true, description: 'Creamy arborio rice with wild mushrooms.' },
-  { id: 'i4', name: 'Grilled Salmon', price: 899, category: 'c2', dietType: 'non-veg' as const, available: true, description: 'Fresh salmon with asparagus and lemon butter.' },
-];
-
-const STEPS = [
-  {
-    id: 'print-once',
-    stepNumber: '01',
-    title: 'Print it once.',
-    subtitle: 'Permanent Hardware Fixture',
-    description: 'Your physical QR code is a permanent fixture. No more reprinting for price changes, out-of-stock items, or new menu additions.',
-    icon: ShieldCheck,
-    badge: 'Zero Reprinting Costs',
-    color: '#1A2B24',
-    features: ['Permanent acrylic or wood QR stands', 'Dynamic backend link routing', 'Zero print re-orders forever']
-  },
-  {
-    id: 'instant-access',
-    stepNumber: '02',
-    title: 'Instant Access.',
-    subtitle: 'Zero App Downloads',
-    description: 'Customers scan with their native smartphone camera. No app downloads, no registration walls, no friction.',
-    icon: Zap,
-    badge: '1.2s Average Load Time',
-    color: '#E8783C',
-    features: ['Native iOS & Android camera scan', 'PWA instant web loading', 'No App Store download required']
-  },
-  {
-    id: 'live-experience',
-    stepNumber: '03',
-    title: 'A Live Experience.',
-    subtitle: 'Real-Time Brand Identity',
-    description: 'Beautiful, always up-to-date digital menus that reflect your brand identity, respect dietary tags, and drive guest ordering.',
-    icon: Layers,
-    badge: '100% Live Updates',
-    color: '#2D5A3D',
-    features: ['Instant item availability toggles', 'Dietary (Veg/Non-Veg) badges', '15 architectural themes']
-  }
-];
+const CATEGORIES = ['All', 'Starters', 'Mains', 'Drinks'];
 
 export default function PhysicalQrSection() {
-  const [activeStep, setActiveStep] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
   const prefersReducedMotion = useReducedMotion();
+  const [isHovered, setIsHovered] = useState(false);
+  const [pulseKey, setPulseKey] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [cartItems, setCartItems] = useState<string[]>(['dish-1', 'dish-3']);
 
-  // Auto-cycle tabs every 6 seconds if user doesn't interact
+  // Simulator state controlled by the manager dashboard
+  const [simState, setSimState] = useState<SimulatorState>({
+    isPeakPrice: false,
+    isWingsSoldOut: false,
+    isChefSpecial: true,
+    isNightTheme: false, // Default to elegant warm daylight bistro theme
+    lastAction: 'Initial setup synced',
+    latencyMs: 14,
+  });
+
+  // Action trigger helper with realistic latency
+  const triggerAction = (updater: (prev: SimulatorState) => SimulatorState, actionName: string) => {
+    const lat = Math.floor(Math.random() * 8) + 11; // 11ms to 18ms
+    setSimState((prev) => ({
+      ...updater(prev),
+      lastAction: actionName,
+      latencyMs: lat,
+    }));
+    setPulseKey((k) => k + 1);
+  };
+
+  const toggleCart = (id: string) => {
+    setCartItems((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  // Auto-demonstration cycle if visitor doesn't interact
+  const autoDemoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const demoStepRef = useRef(0);
+
   useEffect(() => {
     if (isHovered || prefersReducedMotion) return;
-    const timer = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % STEPS.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [isHovered, prefersReducedMotion]);
+
+    autoDemoTimer.current = setInterval(() => {
+      demoStepRef.current = (demoStepRef.current + 1) % 4;
+      if (demoStepRef.current === 0) {
+        triggerAction(
+          (s) => ({ ...s, isPeakPrice: !s.isPeakPrice }),
+          'Peak Price Surge (+₹50)'
+        );
+      } else if (demoStepRef.current === 1) {
+        triggerAction(
+          (s) => ({ ...s, isWingsSoldOut: !s.isWingsSoldOut }),
+          simState.isWingsSoldOut ? 'Wings Restocked In-Menu' : 'Kitchen 86’d: Wings Sold Out'
+        );
+      } else if (demoStepRef.current === 2) {
+        triggerAction(
+          (s) => ({ ...s, isChefSpecial: !s.isChefSpecial }),
+          'Chef’s Daily Special Pushed'
+        );
+      } else {
+        triggerAction(
+          (s) => ({ ...s, isNightTheme: !s.isNightTheme }),
+          'Menu Ambience Shift Pushed'
+        );
+      }
+    }, 4500);
+
+    return () => {
+      if (autoDemoTimer.current) clearInterval(autoDemoTimer.current);
+    };
+  }, [isHovered, prefersReducedMotion, simState.isWingsSoldOut]);
+
+  // Dynamic theme colors inside phone
+  const theme = simState.isNightTheme
+    ? {
+        bg: '#0E1612',
+        surface: '#15221B',
+        text: '#F5EBDD',
+        subtext: 'rgba(245, 235, 221, 0.65)',
+        border: 'rgba(215, 182, 109, 0.25)',
+        accent: '#E8783C',
+        gold: '#F1D99D',
+      }
+    : {
+        bg: '#FAF8F5',
+        surface: '#FFFFFF',
+        text: '#1A2B24',
+        subtext: '#687770',
+        border: 'rgba(26, 43, 36, 0.1)',
+        accent: '#E8783C',
+        gold: '#D97706',
+      };
 
   return (
     <MotionConfig reducedMotion="user">
-    <section className="py-14 md:py-20 bg-[#F6F6F2] relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute inset-0 texture-fine-noise pointer-events-none opacity-[0.15]" />
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#E8783C]/5 to-transparent rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-[#1A2B24]/5 to-transparent rounded-full blur-[120px] pointer-events-none" />
-      
-      <div className="max-w-[1360px] mx-auto px-6 md:px-12 relative z-10">
-        
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10 md:mb-14">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#1A2B24] text-[12px] font-bold uppercase tracking-widest mb-6 shadow-sm border border-black/5">
-            <QrCode size={14} className="text-[#E8783C]" />
-            <span>Physical Dining × Digital Presence</span>
+      <section className="py-16 md:py-24 bg-[#F6F6F2] relative overflow-hidden">
+        {/* Subtle noise and ambient backdrops */}
+        <div className="absolute inset-0 texture-fine-noise pointer-events-none opacity-[0.12]" />
+        <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-[#E8783C]/7 to-transparent rounded-full blur-[130px] pointer-events-none" />
+        <div className="absolute bottom-10 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-[#1A2B24]/6 to-transparent rounded-full blur-[150px] pointer-events-none" />
+
+        <div className="max-w-[1340px] mx-auto px-5 sm:px-8 md:px-12 relative z-10">
+
+          {/* ── Section Header ── */}
+          <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-[#1A2B24] text-[11px] font-black uppercase tracking-widest mb-5 shadow-sm border border-black/6"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34B56A] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34B56A]" />
+              </span>
+              <span>Interactive Live-Sync Simulator</span>
+            </motion.div>
+
+            <motion.h2
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.05 }}
+              className="text-3xl sm:text-4xl md:text-[54px] font-extrabold text-[#1A2B24] tracking-tight leading-[1.1]"
+            >
+              One permanent code.{' '}
+              <span className="text-[#E8783C] italic font-serif font-normal block sm:inline">
+                Infinite digital updates.
+              </span>
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-gray-600 text-base md:text-lg mt-4 leading-relaxed font-medium"
+            >
+              Click any control on the manager deck to test live updates. Watch the guest's phone update in real time with <strong className="text-[#1A2B24] font-bold">zero reprint costs</strong>.
+            </motion.p>
           </div>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-[#1A2B24] tracking-tight leading-tight">
-            One permanent code.{' '}
-            <span className="text-[#E8783C] italic font-serif font-normal block sm:inline">
-              Infinite digital updates.
-            </span>
-          </h2>
-          <p className="text-gray-500 text-lg md:text-xl mt-6 leading-relaxed font-medium">
-            Eliminate reprinting costs forever. Bridge the gap between physical dining tables and real-time digital menus.
-          </p>
-        </div>
 
-        {/* 2-Column Split Showcase */}
-        <div 
-          className="grid grid-cols-1 xl:grid-cols-12 gap-8 xl:gap-12 items-center"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          
-          {/* Left Column: Interactive Step Selector Cards */}
-          <div className="xl:col-span-5 space-y-5">
-            {STEPS.map((step, idx) => {
-              const isActive = activeStep === idx;
-              const Icon = step.icon;
-              return (
-                <div
-                  key={step.id}
-                  onClick={() => setActiveStep(idx)}
-                  className={`cursor-pointer rounded-[2rem] p-7 transition-all duration-500 relative border ${
-                    isActive
-                      ? 'bg-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] border-[#1A2B24]/10 ring-1 ring-black/5 scale-[1.02] z-10'
-                      : 'bg-white/40 hover:bg-white/80 border-transparent hover:border-black/5 scale-100 z-0'
-                  }`}
-                >
-                  <div className="flex items-start gap-5">
-                    <div
-                      className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-500 ${
-                        isActive ? 'bg-[#1A2B24] text-white shadow-xl shadow-[#1A2B24]/20' : 'bg-gray-100/80 text-gray-400'
-                      }`}
-                    >
-                      <Icon size={24} strokeWidth={isActive ? 2 : 1.5} />
+          {/* ── Main Simulator Sandbox (2 Columns) ── */}
+          <div
+            className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+
+            {/* ══════════════════════════════════════════════════════════
+                LEFT: COMPACT PREMIUM LIGHT-THEME OWNER DASHBOARD
+               ══════════════════════════════════════════════════════════ */}
+            <div className="lg:col-span-5 flex flex-col justify-center">
+              <div className="bg-white/95 backdrop-blur-md border border-[#1A2B24]/10 rounded-[2rem] p-6 sm:p-7 shadow-[0_20px_50px_-15px_rgba(26,43,36,0.08)] relative overflow-hidden">
+
+                {/* Dashboard Header */}
+                <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-[#E8783C]/10 flex items-center justify-center text-[#E8783C] shrink-0">
+                      <QrCode size={16} />
                     </div>
-
-                    <div className="flex-1 min-w-0 pt-0.5">
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-xs font-black tracking-[0.2em] text-[#E8783C] uppercase">
-                          Step {step.stepNumber}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-black text-[#1A2B24] tracking-tight">Manager Control Deck</span>
+                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-[#34B56A]/15 text-[#16803C]">
+                          LIVE
                         </span>
-                        {isActive && (
-                          <motion.span 
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-[#E8783C]/10 text-[#E8783C] border border-[#E8783C]/20"
-                          >
-                            {step.badge}
-                          </motion.span>
-                        )}
                       </div>
-
-                      <h3 className={`text-2xl font-extrabold tracking-tight transition-colors duration-300 ${isActive ? 'text-[#1A2B24]' : 'text-gray-500'}`}>
-                        {step.title}
-                      </h3>
-
-                      <AnimatePresence>
-                        {isActive && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                            className="overflow-hidden"
-                          >
-                            <p className="text-gray-600 text-sm mt-3 leading-relaxed font-medium pr-4">
-                              {step.description}
-                            </p>
-                            <div className="mt-5 pt-5 border-t border-gray-100 space-y-3">
-                              {step.features.map((feat, fIdx) => (
-                                <div key={fIdx} className="flex items-start gap-3 text-[13px] font-bold text-gray-700">
-                                  <div className="mt-0.5 w-4 h-4 rounded-full bg-[#1A2B24]/5 flex items-center justify-center shrink-0">
-                                    <CheckCircle2 size={12} className="text-[#E8783C]" />
-                                  </div>
-                                  <span>{feat}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      <p className="text-[10px] text-gray-500 font-medium">Broadcasting to Table #12 Placard</p>
                     </div>
                   </div>
 
-                  {/* Active Progress Bar */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeIndicator"
-                      className="absolute left-0 top-8 bottom-8 w-1.5 bg-[#E8783C] rounded-r-full shadow-[0_0_10px_rgba(232,120,60,0.5)]"
-                    />
-                  )}
+                  <div className="text-right">
+                    <span className="text-[9px] uppercase font-bold tracking-wider text-gray-400 block">Latency</span>
+                    <span className="text-[11px] font-mono font-black text-[#E8783C] flex items-center justify-end gap-0.5">
+                      <Sparkles size={10} /> {simState.latencyMs}ms
+                    </span>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
 
-          {/* Right Column: Dynamic Premium Stage Showcase */}
-          <motion.div
-            data-qr-story-scene
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 36, scale: 0.96 }}
-            whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-            className="xl:col-span-7 flex justify-center items-center h-full min-h-[600px]"
-          >
-            <div className="relative w-full max-w-[500px] aspect-square xl:aspect-[4/4.5] bg-gradient-to-br from-[#121E19] to-[#0A110D] rounded-[3rem] p-8 text-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] flex flex-col justify-center items-center overflow-hidden border border-white/10 group">
-              
-              {/* Dynamic Glow Background based on step */}
-              <motion.div 
-                animate={{ 
-                  backgroundColor: activeStep === 0 ? 'rgba(232,120,60,0.15)' : activeStep === 1 ? 'rgba(52,181,106,0.15)' : 'rgba(232,120,60,0.1)'
-                }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-[80px] pointer-events-none transition-colors duration-1000" 
-              />
+                {/* Micro Action Controls Header */}
+                <div className="my-3.5 flex items-center justify-between text-[11px] font-bold text-gray-500 px-1">
+                  <span>Interactive Live Actions:</span>
+                  <span className="text-[9px] font-black text-[#E8783C] uppercase tracking-wider">Click to Test</span>
+                </div>
 
-              <div className="pointer-events-none absolute inset-x-4 top-1/2 z-20 flex -translate-y-1/2 items-center justify-between" aria-hidden="true">
-                <div className="flex flex-col items-center gap-1 rounded-xl border border-white/15 bg-[#17211d]/90 p-2 text-[#F1D99D] shadow-lg backdrop-blur-sm">
-                  <QrCode size={24} strokeWidth={1.5} />
-                  <span className="text-[7px] font-bold uppercase tracking-wider">Same QR</span>
-                </div>
-                <div className="absolute left-12 right-12 top-1/2 h-px -translate-y-1/2 overflow-hidden bg-white/15">
-                  <motion.div
-                    data-qr-link-pulse
-                    className="h-full w-1/3 bg-gradient-to-r from-transparent via-[#F1D99D] to-transparent shadow-[0_0_12px_rgba(241,217,157,0.8)]"
-                    animate={{ x: ['-100%', '300%'] }}
-                    transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
-                  />
-                </div>
-                <div className="flex flex-col items-center gap-1 rounded-xl border border-white/15 bg-[#17211d]/90 p-2 text-[#F1D99D] shadow-lg backdrop-blur-sm">
-                  <ShoppingBag size={24} strokeWidth={1.5} />
-                  <span className="text-[7px] font-bold uppercase tracking-wider">Live Menu</span>
-                </div>
-              </div>
+                {/* Compact Interactive Controls */}
+                <div className="space-y-2.5">
 
-              {/* Stage Content Switch */}
-              <AnimatePresence mode="wait">
-                {activeStep === 0 && (
-                  /* STEP 1: PHYSICAL ACRYLIC QR STAND ON TABLE (3D Isometric) */
-                  <motion.div
-                    key="step-0"
-                    initial={{ opacity: 0, y: 40, rotateX: 20, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -40, rotateX: -20, scale: 0.9, filter: 'blur(12px)' }}
-                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                    className="flex flex-col items-center justify-center text-center w-full h-full relative z-10 perspective-[1000px]"
+                  {/* 1. Dynamic Pricing Toggle */}
+                  <div
+                    onClick={() => triggerAction(
+                      (s) => ({ ...s, isPeakPrice: !s.isPeakPrice }),
+                      simState.isPeakPrice ? 'Reset: Truffle Fries ₹299' : 'Surge: Truffle Fries ₹349'
+                    )}
+                    className={`cursor-pointer rounded-xl p-3 transition-all duration-300 border flex items-center justify-between group ${
+                      simState.isPeakPrice
+                        ? 'bg-[#E8783C]/8 border-[#E8783C]/40 shadow-sm'
+                        : 'bg-gray-50/70 hover:bg-gray-50 border-gray-200/80 hover:border-gray-300'
+                    }`}
                   >
-                     <motion.div 
-                        animate={{ y: [0, -12, 0] }}
-                        transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                        className="relative bg-[#FAFAF7] text-[#1A2B24] p-8 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8)] border-b-[16px] border-[#D4D4D0] max-w-[300px] w-full flex flex-col items-center transform-gpu"
-                     >
-                       <div className="absolute inset-0 bg-gradient-to-tr from-black/5 to-transparent rounded-[2.5rem] pointer-events-none" />
-                       
-                       <div className="w-48 h-48 bg-white p-3.5 rounded-[1.5rem] shadow-[inset_0_4px_16px_rgba(0,0,0,0.08)] mb-6 relative overflow-hidden ring-1 ring-black/5">
-                         <QrCode className="w-full h-full text-[#1A2B24]" strokeWidth={1.5} />
-                         {/* Scanner laser sweep */}
-                         <motion.div 
-                           animate={{ top: ['-20%', '120%'] }}
-                           transition={{ repeat: Infinity, duration: 3, ease: 'linear', delay: 0.5 }}
-                           className="absolute left-0 right-0 h-1 bg-[#E8783C] shadow-[0_0_24px_4px_rgba(232,120,60,0.5)] opacity-80"
-                         />
-                       </div>
-                       
-                       <div className="h-1.5 w-20 bg-gradient-to-r from-[#E8783C] to-[#F1A679] rounded-full mb-3" />
-                       <span className="text-[12px] font-black uppercase tracking-[0.25em] text-[#1A2B24]/80">
-                         TABLE #12
-                       </span>
-                     </motion.div>
-                     
-                     {/* 3D Drop Shadow */}
-                     <div className="w-72 h-8 bg-black/60 rounded-[100%] blur-[20px] mt-10 opacity-70" />
-                  </motion.div>
-                )}
-
-                {activeStep === 1 && (
-                  /* STEP 2: NATIVE CAMERA SCANNER VIEW */
-                  <motion.div
-                    key="step-1"
-                    initial={{ opacity: 0, scale: 0.85, y: 50 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 1.1, filter: 'blur(12px)' }}
-                    transition={{ type: "spring", stiffness: 220, damping: 22 }}
-                    className="flex flex-col items-center justify-center text-center w-full h-full relative z-10"
-                  >
-                    <div className="w-[300px] h-[560px] bg-black rounded-[3.5rem] p-3 border-[6px] border-gray-800 shadow-[0_40px_100px_rgba(0,0,0,0.5)] relative flex flex-col overflow-hidden">
-                      {/* Dynamic Island / Notch */}
-                      <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-8 bg-black rounded-full z-40" />
-                      
-                      <div className="relative w-full h-full bg-slate-900 rounded-[2.5rem] flex flex-col items-center justify-center p-4 overflow-hidden">
-                         {/* Camera background blur simulation */}
-                         <div className="absolute inset-0 bg-[#2D3A34] opacity-80" />
-                         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=600&auto=format&fit=crop')] bg-cover bg-center opacity-40 blur-md mix-blend-overlay" />
-
-                        {/* Scanner Viewfinder Box */}
-                        <motion.div 
-                           initial={{ scale: 1.3, opacity: 0 }}
-                           animate={{ scale: 1, opacity: 1 }}
-                           transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 15 }}
-                           className="w-52 h-52 border-2 border-white/30 rounded-3xl relative flex items-center justify-center z-10 backdrop-blur-sm"
-                        >
-                          <div className="absolute -top-1.5 -left-1.5 w-10 h-10 border-t-[5px] border-l-[5px] border-[#E8783C] rounded-tl-2xl" />
-                          <div className="absolute -top-1.5 -right-1.5 w-10 h-10 border-t-[5px] border-r-[5px] border-[#E8783C] rounded-tr-2xl" />
-                          <div className="absolute -bottom-1.5 -left-1.5 w-10 h-10 border-b-[5px] border-l-[5px] border-[#E8783C] rounded-bl-2xl" />
-                          <div className="absolute -bottom-1.5 -right-1.5 w-10 h-10 border-b-[5px] border-r-[5px] border-[#E8783C] rounded-br-2xl" />
-                          <Scan size={56} className="text-white/20" strokeWidth={1} />
-
-                          {/* Dynamic Bouncing Laser */}
-                          <motion.div
-                            animate={{ y: [-100, 100, -100] }}
-                            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-                            className="absolute left-0 right-0 h-1 bg-[#E8783C] shadow-[0_0_30px_5px_rgba(232,120,60,0.6)]"
-                          />
-                        </motion.div>
-
-                        {/* Instant Scan NFC/QR Toast Notification */}
-                        <motion.div
-                          initial={{ y: 60, opacity: 0, scale: 0.9 }}
-                          animate={{ y: 0, opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.8, type: "spring", stiffness: 300, damping: 20 }}
-                          className="absolute bottom-10 bg-white/95 text-[#1A2B24] px-5 py-4 rounded-[1.5rem] text-sm font-bold shadow-2xl flex items-center gap-4 backdrop-blur-xl border border-white/20 z-20 w-[92%]"
-                        >
-                          <div className="w-10 h-10 rounded-full bg-[#E8783C]/10 flex items-center justify-center text-[#E8783C] shrink-0">
-                            <Sparkles size={18} />
-                          </div>
-                          <div className="flex flex-col items-start">
-                             <span className="text-[9px] text-gray-500 uppercase tracking-widest font-black mb-0.5">NFC / QR Detected</span>
-                             <span className="text-[14px]">Open Menu</span>
-                          </div>
-                          <div className="ml-auto w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
-                            <motion.div 
-                              animate={{ x: [0, 3, 0] }}
-                              transition={{ repeat: Infinity, duration: 1.5 }}
-                            >
-                              <div className="w-1.5 h-1.5 border-t-2 border-r-2 border-gray-400 rotate-45" />
-                            </motion.div>
-                          </div>
-                        </motion.div>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
+                        simState.isPeakPrice ? 'bg-[#E8783C] text-white shadow-sm' : 'bg-white text-gray-500 border border-gray-200'
+                      }`}>
+                        <TrendingUp size={15} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[12px] font-extrabold text-[#1A2B24]">Peak Hour Surge</span>
+                          {simState.isPeakPrice && (
+                            <span className="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-[#E8783C] text-white">
+                              +₹50
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-gray-500 font-medium">Truffle Fries: ₹299 ➔ ₹349</p>
                       </div>
                     </div>
-                  </motion.div>
-                )}
 
-                {activeStep === 2 && (
-                  /* STEP 3: LIVE DIGITAL MENU */
-                  <motion.div
-                    key="step-2"
-                    initial={{ opacity: 0, y: 60, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -60, scale: 0.9, filter: 'blur(12px)' }}
-                    transition={{ type: "spring", stiffness: 220, damping: 22 }}
-                    className="w-full h-full flex flex-col items-center justify-center relative z-10"
+                    <button
+                      type="button"
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-extrabold transition-all ${
+                        simState.isPeakPrice
+                          ? 'bg-[#E8783C] text-white shadow-sm'
+                          : 'bg-white text-gray-700 border border-gray-200 group-hover:border-gray-300'
+                      }`}
+                    >
+                      {simState.isPeakPrice ? 'Revert ₹299' : 'Apply +₹50'}
+                    </button>
+                  </div>
+
+                  {/* 2. 86 / Sold Out Item Toggle */}
+                  <div
+                    onClick={() => triggerAction(
+                      (s) => ({ ...s, isWingsSoldOut: !s.isWingsSoldOut }),
+                      simState.isWingsSoldOut ? 'Restocked: Spicy Wings Available' : 'Sold Out: Spicy Wings 86’d'
+                    )}
+                    className={`cursor-pointer rounded-xl p-3 transition-all duration-300 border flex items-center justify-between group ${
+                      simState.isWingsSoldOut
+                        ? 'bg-[#EF4444]/8 border-[#EF4444]/40 shadow-sm'
+                        : 'bg-gray-50/70 hover:bg-gray-50 border-gray-200/80 hover:border-gray-300'
+                    }`}
                   >
-                    <div className="w-[300px] h-[560px] bg-black rounded-[3.5rem] p-2.5 border-[6px] border-gray-800 shadow-[0_40px_100px_rgba(232,120,60,0.15)] relative flex flex-col overflow-hidden">
-                      {/* Dynamic Island */}
-                      <div className="absolute top-5 left-1/2 -translate-x-1/2 w-28 h-8 bg-black rounded-full z-40" />
-                      
-                      <div className="w-full h-full rounded-[2.8rem] overflow-hidden relative bg-[#FAFAF7]">
-                         <motion.div 
-                           initial={{ y: 200, opacity: 0 }}
-                           animate={{ y: 0, opacity: 1 }}
-                           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-                           className="h-full w-full"
-                         >
-                           <MenuTemplateRenderer
-                             templateId="maison-noir"
-                             restaurant={MOCK_RESTAURANT}
-                             categories={MOCK_CATEGORIES}
-                             items={MOCK_ITEMS}
-                             compact={true}
-                             className="h-full w-full pt-14 pb-6 hide-scrollbar"
-                           />
-                         </motion.div>
-
-                         {/* Floating Action Button simulation */}
-                         <motion.div 
-                           initial={{ scale: 0 }}
-                           animate={{ scale: 1 }}
-                           transition={{ delay: 0.8, type: "spring", stiffness: 400, damping: 15 }}
-                           className="absolute bottom-8 right-6 w-14 h-14 bg-[#E8783C] rounded-full shadow-[0_10px_20px_rgba(232,120,60,0.4)] flex items-center justify-center text-white cursor-pointer hover:scale-110 transition-transform"
-                         >
-                            <ShoppingBag size={22} fill="currentColor" strokeWidth={1} />
-                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#1A2B24] rounded-full border-2 border-white flex items-center justify-center text-[9px] font-bold">2</div>
-                         </motion.div>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
+                        simState.isWingsSoldOut ? 'bg-[#EF4444] text-white shadow-sm' : 'bg-white text-gray-500 border border-gray-200'
+                      }`}>
+                        <RefreshCw size={15} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[12px] font-extrabold text-[#1A2B24]">Kitchen Stock Alert</span>
+                          {simState.isWingsSoldOut && (
+                            <span className="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-[#EF4444] text-white">
+                              86'D
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-gray-500 font-medium">Spicy Wings: Mark Out of Stock</p>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
-              {/* Enhanced Bottom Carousel Indicator */}
-              <div className="flex items-center gap-3 mt-8 relative z-20">
-                {STEPS.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveStep(i)}
-                    className="relative py-2 flex justify-center group"
-                    aria-label={`Go to step ${i + 1}`}
+                    <button
+                      type="button"
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-extrabold transition-all ${
+                        simState.isWingsSoldOut
+                          ? 'bg-[#EF4444] text-white shadow-sm'
+                          : 'bg-white text-gray-700 border border-gray-200 group-hover:border-gray-300'
+                      }`}
+                    >
+                      {simState.isWingsSoldOut ? 'Restock' : 'Mark Sold Out'}
+                    </button>
+                  </div>
+
+                  {/* 3. Daily Chef's Special Promotion */}
+                  <div
+                    onClick={() => triggerAction(
+                      (s) => ({ ...s, isChefSpecial: !s.isChefSpecial }),
+                      simState.isChefSpecial ? 'Removed: Chef Special' : 'Promoted: Mushroom Risotto Special'
+                    )}
+                    className={`cursor-pointer rounded-xl p-3 transition-all duration-300 border flex items-center justify-between group ${
+                      simState.isChefSpecial
+                        ? 'bg-[#F59E0B]/8 border-[#F59E0B]/40 shadow-sm'
+                        : 'bg-gray-50/70 hover:bg-gray-50 border-gray-200/80 hover:border-gray-300'
+                    }`}
                   >
-                    <div className={`transition-all duration-500 rounded-full ${
-                      i === activeStep ? 'w-8 h-2 bg-[#E8783C]' : 'w-2 h-2 bg-white/20 group-hover:bg-white/40'
-                    }`} />
-                  </button>
-                ))}
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
+                        simState.isChefSpecial ? 'bg-[#F59E0B] text-white shadow-sm' : 'bg-white text-gray-500 border border-gray-200'
+                      }`}>
+                        <Flame size={15} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[12px] font-extrabold text-[#1A2B24]">Chef’s Daily Special</span>
+                          {simState.isChefSpecial && (
+                            <span className="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-[#F59E0B] text-white">
+                              PROMOTED
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-gray-500 font-medium">Mushroom Risotto: 15% Off Badge</p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-extrabold transition-all ${
+                        simState.isChefSpecial
+                          ? 'bg-[#F59E0B] text-white shadow-sm'
+                          : 'bg-white text-gray-700 border border-gray-200 group-hover:border-gray-300'
+                      }`}
+                    >
+                      {simState.isChefSpecial ? 'Remove' : 'Promote'}
+                    </button>
+                  </div>
+
+                  {/* 4. Dinner Luxury Ambience Shift */}
+                  <div
+                    onClick={() => triggerAction(
+                      (s) => ({ ...s, isNightTheme: !s.isNightTheme }),
+                      simState.isNightTheme ? 'Switched to Bistro Light' : 'Switched to Royal Noir Theme'
+                    )}
+                    className={`cursor-pointer rounded-xl p-3 transition-all duration-300 border flex items-center justify-between group ${
+                      simState.isNightTheme
+                        ? 'bg-[#1A2B24]/8 border-[#1A2B24]/30 shadow-sm'
+                        : 'bg-gray-50/70 hover:bg-gray-50 border-gray-200/80 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
+                        simState.isNightTheme ? 'bg-[#1A2B24] text-white shadow-sm' : 'bg-white text-gray-500 border border-gray-200'
+                      }`}>
+                        <Sparkles size={15} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[12px] font-extrabold text-[#1A2B24]">Menu Theme Ambience</span>
+                          <span className="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-gray-200 text-gray-700">
+                            {simState.isNightTheme ? 'ROYAL NOIR' : 'BISTRO LIGHT'}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-gray-500 font-medium">Toggle between day & evening palette</p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 rounded-lg text-[11px] font-extrabold bg-white text-gray-700 border border-gray-200 group-hover:border-gray-300 shadow-sm"
+                    >
+                      {simState.isNightTheme ? 'Day Mode' : 'Night Mode'}
+                    </button>
+                  </div>
+
+                </div>
+
+                {/* Compact Bottom Proof Metric Strip */}
+                <div className="mt-4 pt-3.5 border-t border-gray-100 flex items-center justify-between text-[11px] font-bold text-gray-500">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 size={13} className="text-[#34B56A]" />
+                    <span><strong className="text-[#1A2B24]">₹0</strong> Reprint Cost</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 size={13} className="text-[#34B56A]" />
+                    <span><strong className="text-[#1A2B24]">0-Sec</strong> Turnaround</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 size={13} className="text-[#34B56A]" />
+                    <span><strong className="text-[#1A2B24]">1 QR</strong> Forever</span>
+                  </div>
+                </div>
+
               </div>
             </div>
-          </motion.div>
+
+            {/* ══════════════════════════════════════════════════════════
+                RIGHT: PREMIUM IPHONE 16 PRO MOCKUP (SAME AS "SAME MENU" SECTION)
+               ══════════════════════════════════════════════════════════ */}
+            <div className="lg:col-span-7 flex flex-col items-center justify-center relative perspective-[1000px] py-4">
+
+              {/* Data stream sync toast that triggers on every click */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={pulseKey}
+                  initial={{ opacity: 0, y: -12, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="mb-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#34B56A]/30 text-[#16803C] text-[11px] font-bold shadow-md z-30"
+                >
+                  <Check size={13} className="text-[#34B56A]" />
+                  <span>{simState.lastAction}</span>
+                  <span className="text-gray-300">·</span>
+                  <span className="text-[#E8783C] font-mono">{simState.latencyMs}ms sync</span>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* 3D Floating Phone Wrapper */}
+              <motion.div
+                initial={{ opacity: 0, rotateY: 12, scale: 0.94 }}
+                whileInView={{ opacity: 1, rotateY: -3, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, type: 'spring', bounce: 0.3 }}
+                className="relative"
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                {/* Ambient Glow behind phone */}
+                <motion.div
+                  animate={{
+                    backgroundColor: simState.isNightTheme
+                      ? '#1A2B24'
+                      : simState.isPeakPrice
+                      ? '#E8783C'
+                      : '#34B56A',
+                  }}
+                  transition={{ duration: 0.7 }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[580px] rounded-full blur-[110px] pointer-events-none opacity-40 mix-blend-multiply"
+                />
+
+                {/* Floating Live Badge Top Left - Positioned cleanly above phone rim */}
+                <div className="absolute -top-10 sm:-top-11 left-0 sm:-left-4 z-30 flex items-center gap-2 rounded-full border border-white/80 bg-white/95 px-3.5 py-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.08)] backdrop-blur-md">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[11px] font-extrabold text-[#1A2B24] tracking-wide">
+                    Live Table View • Table #12
+                  </span>
+                </div>
+
+                {/* Miniature Permanent QR Stand (Floating on Table Left) */}
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ repeat: Infinity, duration: 4.2, ease: 'easeInOut' }}
+                  className="hidden sm:flex absolute -left-20 bottom-16 flex-col items-center z-30 select-none"
+                >
+                  <div className="bg-white rounded-2xl p-2.5 shadow-[0_16px_36px_rgba(0,0,0,0.12)] border border-black/8 flex flex-col items-center w-26 text-center">
+                    <div className="w-14 h-14 bg-white rounded-xl p-1 shadow-inner ring-1 ring-black/8 mb-1.5 relative overflow-hidden">
+                      <QrCode className="w-full h-full text-[#1A2B24]" strokeWidth={1.5} />
+                      <motion.div
+                        animate={{ top: ['-10%', '110%'] }}
+                        transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }}
+                        className="absolute left-0 right-0 h-0.5 bg-[#E8783C] shadow-[0_0_8px_#E8783C]"
+                      />
+                    </div>
+                    <span className="text-[8.5px] font-black uppercase text-[#1A2B24] tracking-wider">TABLE #12</span>
+                    <span className="text-[7.5px] font-bold text-[#E8783C] mt-0.5">Permanent Stand</span>
+                  </div>
+                  <div className="w-14 h-2 bg-black/15 rounded-full blur-[4px] mt-1.5" />
+                </motion.div>
+
+                {/* ── THE PREMIUM IPHONE MOCKUP COMPONENT ── */}
+                <PremiumIPhoneMockup
+                  statusBarTheme={simState.isNightTheme ? 'light' : 'dark'}
+                  statusBarBg="bg-transparent"
+                  screenClassName="overflow-hidden flex flex-col"
+                >
+                  <div
+                    className="h-full w-full relative flex flex-col select-none transition-colors duration-500 overflow-hidden"
+                    style={{
+                      backgroundColor: theme.bg,
+                      color: theme.text,
+                    }}
+                  >
+                    {/* Sticky Restaurant Masthead */}
+                    <div
+                      className="py-2.5 px-3.5 border-b shrink-0 z-20 backdrop-blur-md transition-colors duration-500"
+                      style={{
+                        backgroundColor: theme.surface,
+                        borderColor: theme.border,
+                      }}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <UtensilsCrossed size={12} style={{ color: theme.accent }} />
+                            <h3 className="text-xs sm:text-[13px] font-black tracking-tight leading-none">
+                              The Rustic Spatula
+                            </h3>
+                          </div>
+                          <p
+                            className="text-[10px] mt-1 font-sans font-medium tracking-wide"
+                            style={{ color: theme.subtext }}
+                          >
+                            Table #12 • Live Guest View
+                          </p>
+                        </div>
+
+                        <span
+                          className="text-[9px] font-sans font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border shadow-xs"
+                          style={{
+                            backgroundColor: `${theme.accent}15`,
+                            color: theme.accent,
+                            borderColor: `${theme.accent}40`,
+                          }}
+                        >
+                          ● LIVE
+                        </span>
+                      </div>
+
+                      {/* Horizontal Category Navigation Tabs */}
+                      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+                        {CATEGORIES.map((cat) => {
+                          const isCatActive = selectedCategory === cat;
+                          return (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setSelectedCategory(cat)}
+                              className="px-2.5 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider shrink-0 transition-all cursor-pointer"
+                              style={{
+                                backgroundColor: isCatActive ? theme.accent : 'transparent',
+                                color: isCatActive ? '#FFFFFF' : theme.text,
+                                border: `1px solid ${isCatActive ? theme.accent : theme.border}`,
+                              }}
+                            >
+                              {cat}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Scrollable Menu Items Canvas */}
+                    <div className="flex-1 overflow-y-auto scrollbar-none p-3 space-y-2.5 pb-24 relative">
+
+                      {/* Dish 1: Truffle Fries (Dynamic Pricing) */}
+                      <motion.div
+                        layout
+                        className="rounded-2xl p-2.5 border transition-all duration-300 flex gap-2.5 relative overflow-hidden shadow-xs"
+                        style={{
+                          backgroundColor: theme.surface,
+                          borderColor: simState.isPeakPrice ? theme.accent : theme.border,
+                        }}
+                      >
+                        <div className="flex-1 flex flex-col justify-between min-w-0">
+                          <div>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              {/* Veg dot */}
+                              <div className="w-2.5 h-2.5 border border-emerald-600 flex items-center justify-center rounded-[2px] shrink-0">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                              </div>
+                              <h4 className="text-[11.5px] font-black line-clamp-1 leading-snug">
+                                Truffle Parmesan Fries
+                              </h4>
+                            </div>
+                            <p
+                              className="text-[9.5px] font-sans leading-relaxed line-clamp-2"
+                              style={{ color: theme.subtext }}
+                            >
+                              Black truffle oil, aged parmesan, rosemary sea salt.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between mt-2 pt-1 border-t border-black/5 dark:border-white/5">
+                            <div>
+                              {simState.isPeakPrice ? (
+                                <div className="flex items-center gap-1 font-sans">
+                                  <span className="text-[10px] line-through opacity-45">₹299</span>
+                                  <motion.span
+                                    initial={{ scale: 1.25, color: '#FFD700' }}
+                                    animate={{ scale: 1, color: theme.accent }}
+                                    className="text-[12px] font-extrabold"
+                                  >
+                                    ₹349
+                                  </motion.span>
+                                </div>
+                              ) : (
+                                <span className="text-[12px] font-extrabold font-sans" style={{ color: theme.accent }}>
+                                  ₹299
+                                </span>
+                              )}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => toggleCart('dish-1')}
+                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-sans font-bold uppercase tracking-wider transition-transform active:scale-95 cursor-pointer shadow-xs"
+                              style={{
+                                backgroundColor: cartItems.includes('dish-1') ? theme.accent : 'transparent',
+                                color: cartItems.includes('dish-1') ? '#FFFFFF' : theme.text,
+                                border: `1px solid ${theme.accent}`,
+                              }}
+                            >
+                              {cartItems.includes('dish-1') ? (
+                                <>
+                                  <Check size={10} />
+                                  <span>Added</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Plus size={10} />
+                                  <span>Add</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Dish Photo Thumbnail */}
+                        <div
+                          className="w-[66px] h-[66px] rounded-xl overflow-hidden shrink-0 relative flex items-center justify-center border shadow-xs transition-colors"
+                          style={{
+                            backgroundColor: theme.bg,
+                            borderColor: theme.border,
+                          }}
+                        >
+                          <span className="text-2xl select-none" aria-hidden="true">
+                            🍟
+                          </span>
+                          <img
+                            src="https://images.unsplash.com/photo-1576107232684-1279f3908594?w=200&auto=format&fit=crop"
+                            alt="Truffle Fries"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          />
+                          {simState.isPeakPrice && (
+                            <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded-sm text-[7px] font-sans font-black uppercase tracking-wider bg-[#E8783C] text-white shadow-sm z-10">
+                              Peak Surge
+                            </span>
+                          )}
+                        </div>
+                      </motion.div>
+
+                      {/* Dish 2: Signature Spicy Wings (Sold Out 86 Toggle) */}
+                      <motion.div
+                        layout
+                        className="rounded-2xl p-2.5 border transition-all duration-300 flex gap-2.5 relative overflow-hidden shadow-xs"
+                        style={{
+                          backgroundColor: theme.surface,
+                          borderColor: simState.isWingsSoldOut ? 'rgba(239, 68, 68, 0.4)' : theme.border,
+                          opacity: simState.isWingsSoldOut ? 0.5 : 1,
+                        }}
+                      >
+                        <div className="flex-1 flex flex-col justify-between min-w-0">
+                          <div>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              {/* Non-veg dot */}
+                              <div className="w-2.5 h-2.5 border border-rose-600 flex items-center justify-center rounded-[2px] shrink-0">
+                                <div className="w-1.5 h-1.5 rounded-full bg-rose-600" />
+                              </div>
+                              <h4 className={`text-[11.5px] font-black line-clamp-1 leading-snug ${simState.isWingsSoldOut ? 'line-through' : ''}`}>
+                                Signature Spicy Wings
+                              </h4>
+                            </div>
+                            <p
+                              className="text-[9.5px] font-sans leading-relaxed line-clamp-2"
+                              style={{ color: theme.subtext }}
+                            >
+                              Hot peri-peri glaze with creamy blue cheese dip.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between mt-2 pt-1 border-t border-black/5 dark:border-white/5">
+                            <span className="text-[12px] font-extrabold font-sans" style={{ color: theme.accent }}>
+                              ₹449
+                            </span>
+
+                            {simState.isWingsSoldOut ? (
+                              <span className="text-[8.5px] font-black uppercase px-2 py-0.5 rounded bg-[#EF4444] text-white">
+                                SOLD OUT
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => toggleCart('dish-2')}
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-sans font-bold uppercase tracking-wider transition-transform active:scale-95 cursor-pointer shadow-xs"
+                                style={{
+                                  backgroundColor: cartItems.includes('dish-2') ? theme.accent : 'transparent',
+                                  color: cartItems.includes('dish-2') ? '#FFFFFF' : theme.text,
+                                  border: `1px solid ${theme.accent}`,
+                                }}
+                              >
+                                {cartItems.includes('dish-2') ? (
+                                  <>
+                                    <Check size={10} />
+                                    <span>Added</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus size={10} />
+                                    <span>Add</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Dish Photo Thumbnail */}
+                        <div
+                          className="w-[66px] h-[66px] rounded-xl overflow-hidden shrink-0 relative flex items-center justify-center border shadow-xs transition-colors"
+                          style={{
+                            backgroundColor: theme.bg,
+                            borderColor: theme.border,
+                          }}
+                        >
+                          <span className="text-2xl select-none" aria-hidden="true">
+                            🍗
+                          </span>
+                          <img
+                            src="https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=200&auto=format&fit=crop"
+                            alt="Spicy Wings"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          />
+                          {simState.isWingsSoldOut && (
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-10">
+                              <span className="text-[7.5px] font-black text-white uppercase tracking-wider">
+                                86'd
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+
+                      {/* Dish 3: Mushroom Risotto (Chef Special Badge) */}
+                      <motion.div
+                        layout
+                        className="rounded-2xl p-2.5 border transition-all duration-300 flex gap-2.5 relative overflow-hidden shadow-xs"
+                        style={{
+                          backgroundColor: theme.surface,
+                          borderColor: simState.isChefSpecial ? theme.gold : theme.border,
+                        }}
+                      >
+                        <div className="flex-1 flex flex-col justify-between min-w-0">
+                          <div>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              {/* Veg dot */}
+                              <div className="w-2.5 h-2.5 border border-emerald-600 flex items-center justify-center rounded-[2px] shrink-0">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                              </div>
+                              <h4 className="text-[11.5px] font-black line-clamp-1 leading-snug">
+                                Wild Mushroom Risotto
+                              </h4>
+                            </div>
+                            <p
+                              className="text-[9.5px] font-sans leading-relaxed line-clamp-2"
+                              style={{ color: theme.subtext }}
+                            >
+                              Creamy arborio rice with foraged forest truffles.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between mt-2 pt-1 border-t border-black/5 dark:border-white/5">
+                            <span className="text-[12px] font-extrabold font-sans" style={{ color: theme.gold }}>
+                              ₹699
+                            </span>
+
+                            <button
+                              type="button"
+                              onClick={() => toggleCart('dish-3')}
+                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-sans font-bold uppercase tracking-wider transition-transform active:scale-95 cursor-pointer shadow-xs"
+                              style={{
+                                backgroundColor: cartItems.includes('dish-3') ? theme.gold : 'transparent',
+                                color: cartItems.includes('dish-3') ? '#FFFFFF' : theme.text,
+                                border: `1px solid ${theme.gold}`,
+                              }}
+                            >
+                              {cartItems.includes('dish-3') ? (
+                                <>
+                                  <Check size={10} />
+                                  <span>Added</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Plus size={10} />
+                                  <span>Add</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Dish Photo Thumbnail */}
+                        <div
+                          className="w-[66px] h-[66px] rounded-xl overflow-hidden shrink-0 relative flex items-center justify-center border shadow-xs transition-colors"
+                          style={{
+                            backgroundColor: theme.bg,
+                            borderColor: theme.border,
+                          }}
+                        >
+                          <span className="text-2xl select-none" aria-hidden="true">
+                            🍄
+                          </span>
+                          <img
+                            src="https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?w=200&auto=format&fit=crop"
+                            alt="Mushroom Risotto"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          />
+                          {simState.isChefSpecial && (
+                            <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded-sm text-[7px] font-sans font-black uppercase tracking-wider bg-[#F59E0B] text-white shadow-sm z-10 flex items-center gap-0.5">
+                              <Flame size={8} /> 15% Off
+                            </span>
+                          )}
+                        </div>
+                      </motion.div>
+
+                    </div>
+
+                    {/* Floating Bottom Table Cart Summary */}
+                    <div
+                      className="absolute bottom-5 sm:bottom-6 left-3 right-3 p-2.5 rounded-2xl border shadow-xl flex items-center justify-between backdrop-blur-xl z-20 transition-all duration-300"
+                      style={{
+                        backgroundColor: theme.surface,
+                        borderColor: theme.accent,
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 shadow-xs text-white"
+                          style={{
+                            backgroundColor: theme.accent,
+                          }}
+                        >
+                          <ShoppingBag size={13} />
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-sans font-black block leading-none">
+                            {cartItems.length} Dishes • ₹{simState.isPeakPrice ? '1,048' : '998'}
+                          </span>
+                          <span
+                            className="text-[9px] font-sans font-medium"
+                            style={{ color: theme.subtext }}
+                          >
+                            Table #12 Active Cart
+                          </span>
+                        </div>
+                      </div>
+
+                      <span
+                        className="px-2.5 py-1 rounded-xl text-[10px] font-sans font-bold uppercase tracking-wider shadow-xs text-white"
+                        style={{
+                          backgroundColor: theme.accent,
+                        }}
+                      >
+                        Order Now →
+                      </span>
+                    </div>
+                  </div>
+                </PremiumIPhoneMockup>
+
+              </motion.div>
+
+              {/* Real-world proof callout */}
+              <div className="mt-5 flex items-center gap-2.5 bg-white px-4 py-2.5 rounded-xl shadow-sm border border-black/5 text-center">
+                <CheckCircle2 size={16} className="text-[#34B56A]" />
+                <p className="text-[12px] text-gray-700 font-medium text-left">
+                  <strong className="text-[#1A2B24] font-bold">Physical table QR stays untouched.</strong> Cloud updates push in &lt;15ms. Zero reprinting forever.
+                </p>
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
-
-      </div>
-    </section>
+      </section>
     </MotionConfig>
   );
 }

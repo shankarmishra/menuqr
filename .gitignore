@@ -54,3 +54,9 @@ frontend/.env.development
 scratch_screenshot/
 temp.txt
 
+# Design references and raw mockup assets
+docs/design-references/
+frontend/public/assets/mockups/
+frontend/public/marketing/reference-menu.png
+frontend/public/marketing/iphone-mockup-raw.png
+frontend/public/marketing/phone-mockup.png

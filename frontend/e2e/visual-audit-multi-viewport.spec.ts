@@ -116,7 +116,7 @@ for (const vp of viewports) {
       // Scroll smoothly down the gallery
       const cards = page.locator('article[data-template-id]');
       const initialCount = await cards.count();
-      expect(initialCount).toBe(15);
+      expect(initialCount).toBe(10);
 
       // Verify no card overlap: check bounding boxes of adjacent cards
       if (initialCount >= 2) {
@@ -149,7 +149,7 @@ for (const vp of viewports) {
       await page.screenshot({ path: `${auditDir}/${vp.name}-gallery-reverse-top.png` });
 
       // Filter testing: click Indian pill
-      const indianFilter = page.getByRole('button', { name: 'Indian', exact: true });
+      const indianFilter = page.locator('#templates').getByRole('button', { name: 'Indian', exact: true }).first();
       if (await indianFilter.isVisible()) {
         await indianFilter.click();
         await page.waitForTimeout(400);
@@ -157,18 +157,18 @@ for (const vp of viewports) {
         // Verify subset filtered count
         const filteredCount = await cards.count();
         expect(filteredCount).toBeGreaterThan(0);
-        expect(filteredCount).toBeLessThan(15);
+        expect(filteredCount).toBeLessThan(10);
 
         await page.screenshot({ path: `${auditDir}/${vp.name}-gallery-filter-indian.png` });
       }
 
       // Switch back to All
-      const allFilter = page.getByRole('button', { name: 'All', exact: true });
+      const allFilter = page.locator('#templates').getByRole('button', { name: 'All', exact: true }).first();
       if (await allFilter.isVisible()) {
         await allFilter.click();
         await page.waitForTimeout(400);
         const restoredCount = await cards.count();
-        expect(restoredCount).toBe(15);
+        expect(restoredCount).toBe(10);
       }
     });
   });

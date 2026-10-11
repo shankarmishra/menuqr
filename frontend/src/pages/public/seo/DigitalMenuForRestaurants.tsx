@@ -10,7 +10,8 @@ export default function DigitalMenuForRestaurants() {
   const breadcrumbs = [{ name: 'Digital Menu for Restaurants', path: '/digital-menu-for-restaurants' }];
 
   return (
-    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans">
+    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans relative overflow-x-clip">
+      <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="Digital Menu for Restaurants | MenusQR"
         description="Create an interactive digital menu for your restaurant, café, or dhaba. Fast loading, mobile-optimized, and hassle-free menu updates."
@@ -19,7 +20,7 @@ export default function DigitalMenuForRestaurants() {
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto">
+      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl md:text-5xl font-extrabold text-[#151C19] mb-6 tracking-tight">

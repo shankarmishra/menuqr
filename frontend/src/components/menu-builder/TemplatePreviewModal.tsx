@@ -1,8 +1,9 @@
-﻿import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Sparkles, Smartphone, Layers } from 'lucide-react';
-import { DEMO_RESTAURANT } from '../../data/menuTemplates';
+import { DEMO_RESTAURANT, isTemplateDark } from '../../data/menuTemplates';
 import type { MenuTemplate } from '../../data/menuTemplates';
 import MenuTemplateRenderer from './MenuTemplateRenderer';
+import PremiumIPhoneMockup from '../marketing/PremiumIPhoneMockup';
 
 interface TemplatePreviewModalProps {
   template: MenuTemplate | null;
@@ -141,15 +142,16 @@ export default function TemplatePreviewModal({
             </div>
 
             {/* Right Col: High Res Phone Frame Preview */}
-            <div className="md:col-span-7 flex justify-center">
-              <div className="w-[310px] h-[580px] rounded-[44px] border-8 border-[#2D3833] shadow-2xl overflow-hidden relative bg-[#151C19] flex flex-col">
-                {/* Phone Notch */}
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-5 bg-black rounded-full z-30 flex items-center justify-end pr-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]" />
-                </div>
-
-                {/* Live Menu Content Inside Phone */}
-                <div className="flex-1 overflow-y-auto pt-7">
+            <div className="md:col-span-7 flex justify-center py-2">
+              <PremiumIPhoneMockup
+                className="!w-[290px] sm:!w-[310px] shadow-2xl"
+                badgeText="Interactive Preview"
+                statusBarTheme={isTemplateDark(template) ? 'light' : 'dark'}
+                homeIndicatorTheme={isTemplateDark(template) ? 'light' : 'dark'}
+                screenStyle={{ backgroundColor: template.colors.bg }}
+                screenClassName=""
+              >
+                <div className="h-full w-full overflow-y-auto">
                   <MenuTemplateRenderer
                     templateId={template.id}
                     restaurant={{
@@ -162,7 +164,7 @@ export default function TemplatePreviewModal({
                     compact={false}
                   />
                 </div>
-              </div>
+              </PremiumIPhoneMockup>
             </div>
           </div>
         </motion.div>

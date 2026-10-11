@@ -1,5 +1,7 @@
 
 
+import PremiumIPhoneMockup from './PremiumIPhoneMockup';
+
 export default function PremiumOrderingSection() {
   return (
     <section className="py-16 md:py-20 bg-white relative overflow-hidden">
@@ -15,24 +17,37 @@ export default function PremiumOrderingSection() {
 
         <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
           {/* Left: Phone Mockup (Customer) */}
-          <div className="w-[280px] h-[580px] bg-gray-100 rounded-[3rem] border-[8px] border-gray-900 shadow-xl overflow-hidden relative">
-            <div className="absolute top-0 inset-x-0 h-6 bg-gray-900 rounded-b-3xl w-40 mx-auto"></div>
-            <div className="p-4 pt-10 h-full flex flex-col bg-[#FAFAF7]">
-              <div className="font-bold text-xl mb-4">Menu</div>
-              <div className="space-y-3 flex-1">
-                <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
-                  <div className="font-semibold text-sm">Truffle Burger</div>
-                  <div className="text-[#e8783c] text-xs font-bold mt-1">₹450</div>
+          <div className="flex justify-center">
+            <PremiumIPhoneMockup
+              className="!w-[280px] sm:!w-[290px] shadow-2xl"
+              badgeText="Customer View"
+              statusBarTheme="dark"
+              statusBarBg="bg-[#FAFAF7]"
+            >
+              <div className="p-4 h-full flex flex-col bg-[#FAFAF7] justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="font-bold text-xl text-[#151C19]">Menu</div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
+                      Table #12
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
+                      <div className="font-semibold text-sm text-[#151C19]">Truffle Burger</div>
+                      <div className="text-[#e8783c] text-xs font-bold mt-1">₹450</div>
+                    </div>
+                    <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
+                      <div className="font-semibold text-sm text-[#151C19]">Fries</div>
+                      <div className="text-[#e8783c] text-xs font-bold mt-1">₹150</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
-                  <div className="font-semibold text-sm">Fries</div>
-                  <div className="text-[#e8783c] text-xs font-bold mt-1">₹150</div>
+                <div className="bg-[#151c19] text-white p-3.5 rounded-xl text-center font-bold shadow-lg mb-2 text-sm tracking-wide">
+                  PLACE ORDER • ₹600
                 </div>
               </div>
-              <div className="bg-[#151c19] text-white p-4 rounded-xl text-center font-bold mt-4 shadow-lg">
-                PLACE ORDER • ₹600
-              </div>
-            </div>
+            </PremiumIPhoneMockup>
           </div>
 
           {/* Center: Transfer Animation */}

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { ChefHat, QrCode, Palette, LayoutDashboard, Plus, Settings, TrendingUp, Search, CheckCircle2 } from 'lucide-react';
 import IPhoneMockup from './PremiumIPhoneMockup';
-import { MenuTemplateRenderer } from '../menu-builder/MenuTemplateRenderer';
+import IndianHeritageMenuDisplay from './IndianHeritageMenuDisplay';
 
 export default function DashboardDemoSection() {
   const [step, setStep] = useState(0);
@@ -40,32 +40,6 @@ export default function DashboardDemoSection() {
     if (step >= 4) return 320;
     return 280;
   };
-
-  const demoRestaurant = {
-    name: 'Spice Lounge',
-    tagline: 'Authentic Indian Cuisine',
-    cuisine: 'Indian',
-    logo: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=200&h=200&fit=crop'
-  };
-
-  const demoCategories = [
-    { id: 'c1', name: 'Mains', order: 1 }
-  ];
-
-  const demoItems = [
-    {
-      id: 'i1', name: 'Butter Chicken', description: 'Rich tomato gravy', price: getPreviewPrice(),
-      category: 'c1', dietType: 'non-veg' as const, available: true
-    },
-    {
-      id: 'i2', name: 'Truffle Mushroom Risotto', description: 'Creamy arborio rice', price: 450,
-      category: 'c1', dietType: 'veg' as const, available: true
-    },
-    {
-      id: 'i4', name: 'Wagyu Beef Burger', description: 'Brioche bun, cheddar', price: 680,
-      category: 'c1', dietType: 'non-veg' as const, available: true
-    }
-  ];
 
   return (
     <section ref={sectionRef} className="py-16 md:py-20 px-6 bg-menusqr-primary overflow-hidden relative">
@@ -121,8 +95,8 @@ export default function DashboardDemoSection() {
                 SL
               </div>
               <div>
-                <p className="text-xs font-bold text-menusqr-emerald">Spice Lounge</p>
-                <p className="text-[10px] font-bold text-menusqr-veg uppercase tracking-wider">Premium Active</p>
+                <p className="text-xs font-bold text-menusqr-emerald">Spice Lounge & Haveli</p>
+                <p className="text-[10px] font-bold text-menusqr-veg uppercase tracking-wider">Royal Palace Active</p>
               </div>
             </div>
           </div>
@@ -179,11 +153,11 @@ export default function DashboardDemoSection() {
                   </thead>
                   <tbody className="text-sm">
                     {[
-                      { name: 'Butter Chicken', category: 'Mains', price: getPrice(), status: 'Available', type: 'non-veg', highlight: true },
-                      { name: 'Truffle Mushroom Risotto', category: 'Mains', price: 450, status: 'Available', type: 'veg' },
-                      { name: 'Artisan Burrata Salad', category: 'Starters', price: 320, status: 'Sold Out', type: 'veg' },
-                      { name: 'Wagyu Beef Burger', category: 'Mains', price: 680, status: 'Available', type: 'non-veg' },
-                      { name: 'Classic Tiramisu', category: 'Desserts', price: 280, status: 'Available', type: 'veg' },
+                      { name: 'Murgh Makhani (Butter Chicken)', category: 'Royal Curries', price: getPrice(), status: 'Available', type: 'non-veg', highlight: true },
+                      { name: 'Dal Makhani Bukhara', category: 'Royal Curries', price: 340, status: 'Available', type: 'veg' },
+                      { name: 'Tandoori Malai Paneer Tikka', category: 'Clay Oven Tandoor', price: 360, status: 'Available', type: 'veg' },
+                      { name: 'Awadhi Dum Gosht Biryani', category: 'Dum Biryani', price: 480, status: 'Available', type: 'non-veg' },
+                      { name: 'Shahi Kesari Tukda', category: 'Desserts', price: 220, status: 'Sold Out', type: 'veg' },
                     ].map((item, i) => (
                       <tr key={i} className={`border-b border-gray-100 hover:bg-gray-50/50 transition-colors ${item.highlight && step >= 1 && step <= 3 ? 'bg-menusqr-orange/5 hover:bg-menusqr-orange/5' : ''}`}>
                         <td className="p-4 pl-6 font-bold text-menusqr-emerald flex items-center gap-3">
@@ -252,18 +226,20 @@ export default function DashboardDemoSection() {
                   Live Preview
                 </div>
                 
-                <IPhoneMockup className="scale-[0.85] transform-gpu shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] border-gray-800">
-                  <div className="h-full w-full overflow-y-auto scrollbar-hide bg-menusqr-primary">
-                    <div className="p-4 pt-12">
-                      <MenuTemplateRenderer
-                        templateId="minimal-editorial"
-                        restaurant={demoRestaurant}
-                        categories={demoCategories}
-                        items={demoItems}
-                        compact={true}
-                      />
-                    </div>
-                  </div>
+                <IPhoneMockup
+                  className="scale-[0.85] transform-gpu shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] border-gray-800"
+                  screenClassName="overflow-hidden flex flex-col bg-[#200817]"
+                  statusBarTheme="light"
+                  statusBarBg="bg-[#280B1E]"
+                >
+                  <IndianHeritageMenuDisplay
+                    restaurantName="Spice Lounge & Haveli"
+                    tagline="Royal Awadhi & Mughlai Cuisine"
+                    tableInfo="Table #04 • Royal Courtyard"
+                    badgeText="24K Royal Luxe"
+                    highlightItemPrice={getPreviewPrice()}
+                    isUpdated={step === 4}
+                  />
                 </IPhoneMockup>
 
                 <AnimatePresence>
@@ -272,10 +248,15 @@ export default function DashboardDemoSection() {
                       initial={{ opacity: 0, scale: 0.8, y: 20 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.8, y: -20 }}
-                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-menusqr-veg/95 backdrop-blur-md text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 z-50 whitespace-nowrap border border-white/20"
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-[#1A0512] via-[#2A081A] to-[#1A0512] text-[#FAF3E0] border-2 border-[#D4AF37] px-4 py-3 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex items-center gap-3 z-50 whitespace-nowrap"
                     >
-                      <CheckCircle2 size={18} strokeWidth={3} />
-                      <span className="text-sm font-bold tracking-wide">Preview Updated</span>
+                      <div className="w-6 h-6 rounded-full bg-[#D4AF37] text-[#180912] flex items-center justify-center font-bold text-xs shadow-md shrink-0">
+                        ✓
+                      </div>
+                      <div className="text-left font-sans">
+                        <p className="text-[11px] font-black text-[#D4AF37] uppercase tracking-wider">Live Cloud Sync</p>
+                        <p className="text-[10px] text-white/90 font-medium">Butter Chicken: ₹280 → ₹320</p>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

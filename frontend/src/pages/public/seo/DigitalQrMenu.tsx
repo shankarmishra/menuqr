@@ -10,7 +10,8 @@ export default function DigitalQrMenu() {
   const breadcrumbs = [{ name: 'Digital QR Menu', path: '/digital-qr-menu' }];
 
   return (
-    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans">
+    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans relative overflow-x-clip">
+      <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="Digital QR Menu for Restaurants | MenusQR"
         description="Transform your restaurant with a seamless digital QR menu. Update prices, categories, and items instantly while keeping your table QR codes unchanged."
@@ -19,7 +20,7 @@ export default function DigitalQrMenu() {
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto">
+      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl md:text-5xl font-extrabold text-[#151C19] mb-6 tracking-tight">

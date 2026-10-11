@@ -58,7 +58,8 @@ export default function PricingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7]">
+    <div className="min-h-screen bg-[#FAFAF7] relative overflow-x-clip">
+      <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="MenusQR Pricing | Digital Menu Plans for Restaurants"
         description="View MenusQR pricing plans. Basic ₹999/year, Intermediate ₹1499/year, and Premium ₹2999/year. Create your digital restaurant QR menu today."
@@ -67,7 +68,7 @@ export default function PricingPage() {
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto">
+      <main className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <div className="text-center mb-16 max-w-3xl mx-auto">

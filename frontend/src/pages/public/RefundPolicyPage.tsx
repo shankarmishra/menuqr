@@ -8,7 +8,8 @@ export default function RefundPolicyPage() {
   const breadcrumbs = [{ name: 'Refund Policy', path: '/refund-cancellation' }];
 
   return (
-    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans">
+    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans relative overflow-x-clip">
+      <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="Refund & Cancellation Policy | MenusQR"
         description="Official refund and cancellation policy for MenusQR subscription plans."
@@ -17,7 +18,7 @@ export default function RefundPolicyPage() {
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-4xl mx-auto">
+      <main className="pt-32 pb-24 px-6 md:px-12 max-w-4xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl font-extrabold text-[#151C19] mb-8">Refund & Cancellation Policy</h1>

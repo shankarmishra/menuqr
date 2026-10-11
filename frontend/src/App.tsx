@@ -1,8 +1,10 @@
 import NotFoundPage from './pages/public/NotFoundPage';
 import { useEffect, useState } from 'react';
 import { MenusQRMark } from './components/brand/MenusQRMark';
+import { MenusQRLoader } from './components/brand/MenusQRLoader';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useMatch } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import ScrollToTop from './components/navigation/ScrollToTop';
 import HomePage from './pages/HomePage';
 import SignupPage from './pages/public/SignupPage';
 import OnboardingWizard from './pages/public/OnboardingWizard';
@@ -29,6 +31,7 @@ import FaqPage from './pages/public/FaqPage';
 import PrivacyPolicyPage from './pages/public/PrivacyPolicyPage';
 import TermsPage from './pages/public/TermsPage';
 import RefundPolicyPage from './pages/public/RefundPolicyPage';
+import TemplateAuditCanvas from './pages/public/TemplateAuditCanvas';
 
 import AdminLayout from './layouts/AdminLayout';
 import AppLayout from './layouts/AppLayout';
@@ -159,7 +162,11 @@ function AdminDomainRedirect({ destination }: { destination: string }) {
 
 function PublicAppRoutes() {
   const menuMatch = useMatch('/menu/:slug');
+  const qrMatch = useMatch('/qr/:qrId');
+  const auditMatch = useMatch('/audit-preview/:templateId');
+  const auditBaseMatch = useMatch('/audit-preview');
   const menuSlug = menuMatch?.params.slug;
+  const isCustomerMenuRoute = Boolean(menuSlug || qrMatch || auditMatch || auditBaseMatch);
   const routeKey = menuSlug ? `menu:${menuSlug}` : 'app';
   const [menuName, setMenuName] = useState<{ slug: string; name: string }>();
   const [loadedRoute, setLoadedRoute] = useState(routeKey);
@@ -204,6 +211,7 @@ function PublicAppRoutes() {
 
   return (
     <>
+      {!isCustomerMenuRoute && <MenusQRLoader />}
       <Routes>
         {/* Core Public Brand & Commercial SEO Pages */}
         <Route path="/" element={<HomePage />} />
@@ -242,6 +250,8 @@ function PublicAppRoutes() {
         {/* Customer Menu Route */}
         <Route path="/qr/:qrId" element={<QrLandingPage />} />
         <Route path="/menu/:slug" element={<MenuPage key={menuSlug} />} />
+        <Route path="/audit-preview/:templateId" element={<TemplateAuditCanvas />} />
+        <Route path="/audit-preview" element={<Navigate to="/audit-preview/royal-maharaja" replace />} />
 
         {/* Auth & Admin */}
         <Route path="/login" element={<AdminLogin />} />
@@ -303,6 +313,7 @@ export default function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <ToastProvider>
           <AppRoutes />
         </ToastProvider>

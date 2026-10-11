@@ -1,4 +1,4 @@
-// High-visibility material textures (3% - 8% opacity) for all 15 MenusQR templates
+// High-visibility material textures (3% - 8% opacity) for all 15 MenusQR signature templates
 
 export const TEMPLATE_TEXTURES = {
   // 01. Royal Maharaja: Crimson/Midnight Velvet & Brass Filigree
@@ -10,22 +10,22 @@ export const TEMPLATE_TEXTURES = {
     accentColor: `#D4AF37`,
   },
 
-  // 02. Rajasthani Heritage: Sandstone & Block-print Terracotta Linework
+  // 02. Rajasthani Heritage: Sandstone Parchment & Botanical Lace
   rajasthaniHeritage: {
-    bg: `bg-[#FAF2EC]`,
-    gradient: `bg-gradient-to-b from-[#F5EBE4] via-[#FAF2EC] to-[#ECE0D6]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 0 L80 40 L40 80 L0 40 Z M40 15 L65 40 L40 65 L15 40 Z M40 28 L52 40 L40 52 L28 40 Z' fill='%23C85A32' fill-opacity='0.06'/%3E%3C/svg%3E")`,
-    textColor: `text-[#2B1710]`,
-    accentColor: `#C85A32`,
+    bg: `bg-[#F7EBD7]`,
+    gradient: `bg-gradient-to-b from-[#FCF5E9] via-[#F7EBD7] to-[#EAD7B8]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='40' height='24' viewBox='0 0 40 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 24 C0 12, 10 0, 20 0 C30 0, 40 12, 40 24' fill='none' stroke='%23D4AE68' stroke-opacity='0.08' stroke-width='1'/%3E%3Ccircle cx='20' cy='3' r='1' fill='%23D76C3C' fill-opacity='0.08'/%3E%3C/svg%3E")`,
+    textColor: `text-[#35463E]`,
+    accentColor: `#D76C3C`,
   },
 
   // 03. Mughal Luxe: Emerald Velvet Marble & Gold Ogee Arch Lattice
   mughalLuxe: {
-    bg: `bg-[#0A1813]`,
-    gradient: `bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#132D24] via-[#0A1813] to-[#040B08]`,
-    overlayPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 Q60 30 30 60 Q0 30 30 0 Z' fill='none' stroke='%23E5C158' stroke-opacity='0.06' stroke-width='1.5'/%3E%3C/svg%3E")`,
-    textColor: `text-[#E5C158]`,
-    accentColor: `#E5C158`,
+    bg: `bg-[#073D34]`,
+    gradient: `bg-gradient-to-b from-[#064F43] via-[#073D34] to-[#052C25]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 Q60 30 30 60 Q0 30 30 0 Z' fill='none' stroke='%23D7B66D' stroke-opacity='0.08' stroke-width='1.5'/%3E%3C/svg%3E")`,
+    textColor: `text-[#F6EAD1]`,
+    accentColor: `#D7B66D`,
   },
 
   // 04. Banarasi Gold: Deep Crimson Woven Silk Brocade Lattice

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, useInView, AnimatePresence, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import PhysicalQRStand from './PhysicalQRStand';
 import PremiumIPhoneMockup from './PremiumIPhoneMockup';
-import { Signal, Wifi, Battery, CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
 const heroRestaurantPoster = '/marketing/hero/hero-restaurant-poster.webp';
 
 type HeroStage = 'hidden' | 'entering' | 'aiming' | 'scanning' | 'detected' | 'processing' | 'menu-open';
@@ -104,22 +104,9 @@ export default function HeroScene() {
         transition={{ duration: shouldReduceMotion ? 0 : 1.1, type: 'spring', stiffness: 55, damping: 16 }}
         className="absolute bottom-[4%] sm:bottom-[7%] left-1/2 -translate-x-1/2 z-20 origin-bottom"
       >
-        <PremiumIPhoneMockup>
-          {/* iOS Status Bar */}
-          <div className="absolute top-0 left-0 w-full h-[36px] flex justify-between items-center px-6 pt-1.5 z-50 text-white font-semibold text-[11px] drop-shadow-sm pointer-events-none">
-            <span className="tracking-tight">9:41</span>
-            <div className="flex items-center gap-1.5 opacity-90">
-              <Signal size={12} className="stroke-[2.5]" />
-              <Wifi size={12} className="stroke-[2.5]" />
-              <div className="relative flex items-center">
-                <Battery size={15} className="stroke-2" />
-                <div className="absolute left-[2px] top-[4px] h-[6px] w-[8px] bg-white rounded-[1px]" />
-              </div>
-            </div>
-          </div>
-
+        <PremiumIPhoneMockup statusBarTheme="light" statusBarMode="overlay">
           {/* Screen Content: Scan Camera Mode vs Customer Menu */}
-          <div className="relative w-full h-full flex flex-col pt-[34px] font-sans">
+          <div className="relative w-full h-full flex flex-col font-sans">
             <AnimatePresence mode="wait">
               {['entering', 'aiming', 'scanning', 'detected', 'processing'].includes(stage) ? (
                 /* CAMERA UI SCANNING SCREEN */
@@ -129,7 +116,7 @@ export default function HeroScene() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0, scale: 1.05 }}
                   transition={{ duration: 0.4 }}
-                  className="absolute inset-0 bg-[#151C19] flex flex-col justify-between p-5 pt-[44px] z-30"
+                  className="absolute inset-0 bg-[#151C19] flex flex-col justify-between p-5 pt-[50px] z-20"
                 >
                   {/* Blurred Camera Feed Background */}
                   <div className="absolute inset-0 opacity-30">
@@ -202,7 +189,7 @@ export default function HeroScene() {
                   className="absolute inset-0 bg-[#FAF8F5] flex flex-col text-left z-30 overflow-hidden"
                 >
                   {/* Restaurant Header */}
-                  <div className="bg-gradient-to-b from-[#131C18] to-[#1E2B24] text-white px-3.5 pt-[38px] pb-3 shrink-0 relative border-b border-white/10 shadow-sm">
+                  <div className="bg-gradient-to-b from-[#131C18] to-[#1E2B24] text-white px-3.5 pt-[46px] pb-3 shrink-0 relative border-b border-white/10 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#E8783C] to-[#C96028] text-white flex items-center justify-center font-serif font-black text-xs shadow-md border border-white/20">

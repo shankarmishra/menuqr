@@ -141,17 +141,21 @@ export default function CustomerExperienceSection() {
             whileInView={{ opacity: 1, rotateY: -5, scale: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-            className="relative shadow-[0_30px_60px_rgba(21,28,25,0.15)] rounded-[50px]"
+            className="relative shadow-[0_30px_60px_rgba(21,28,25,0.15)] rounded-[52px]"
             style={{ transformStyle: 'preserve-3d' }}
           >
-            <IPhoneMockup badgeText="Diner View">
+            <IPhoneMockup 
+              badgeText="Diner View"
+              statusBarTheme="dark"
+              statusBarBg="bg-white"
+            >
               <div className="h-full w-full bg-[#FAFAF7] relative flex flex-col">
-                {/* Header (Sticky) */}
-                <div className="pt-12 pb-3 px-4 bg-white border-b border-black/5 shrink-0 z-10 shadow-sm relative">
-                  <div className="flex justify-between items-center mb-3">
+                {/* Header */}
+                <div className="py-2.5 px-4 bg-white border-b border-black/5 shrink-0 z-10 shadow-sm relative">
+                  <div className="flex justify-between items-center mb-2.5">
                     <div>
                       <h4 className="text-sm font-black text-menusqr-emerald tracking-tight">Olive & Thyme</h4>
-                      <p className="text-[10px] text-menusqr-neutral-sec mt-0.5">Table #08 ? Digital Menu</p>
+                      <p className="text-[10px] text-menusqr-neutral-sec mt-0.5">Table #08 • Digital Menu</p>
                     </div>
                     <span className="text-[10px] text-menusqr-emerald bg-menusqr-yellow px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
                       Open

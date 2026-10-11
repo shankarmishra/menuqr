@@ -2,19 +2,8 @@ import { motion } from 'framer-motion';
 import { fadeUp, viewportConfig, smoothSpring } from './animations';
 import PhysicalQRStand from './PhysicalQRStand';
 import IPhoneMockup from './PremiumIPhoneMockup';
-import MenuTemplateRenderer from '../menu-builder/MenuTemplateRenderer';
+import IndianHeritageMenuDisplay from './IndianHeritageMenuDisplay';
 import { Link } from 'react-router-dom';
-
-const mockCategories = [
-  { id: 'c1', name: 'Mains', order: 1 },
-  { id: 'c2', name: 'Drinks', order: 2 }
-];
-
-const mockItems = [
-  { id: 'i1', name: 'Truffle Pasta', price: 24, category: 'c1', dietType: 'veg' as const, available: true, description: 'Handmade pasta, black truffle, parmesan' },
-  { id: 'i2', name: 'Wagyu Burger', price: 28, category: 'c1', dietType: 'non-veg' as const, available: true, description: 'Caramelized onions, brioche bun' },
-  { id: 'i3', name: 'Matcha Latte', price: 6, category: 'c2', dietType: 'veg' as const, available: true }
-];
 
 export default function FinalCtaSection() {
   return (
@@ -90,16 +79,19 @@ export default function FinalCtaSection() {
             transition={{ ...smoothSpring, delay: 0.2 }}
             className="absolute left-1/2 lg:left-auto lg:right-[15%] -translate-x-1/2 lg:translate-x-0 z-0"
           >
-            <IPhoneMockup className="scale-[0.85] sm:scale-100 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-              <div className="h-full w-full overflow-hidden rounded-[38px] sm:rounded-[44px] bg-white">
-                <MenuTemplateRenderer
-                   templateId="template-02"
-                   restaurant={{ name: 'The Garden', tagline: 'Fresh & Organic' }}
-                   categories={mockCategories}
-                   items={mockItems}
-                   compact={true}
-                />
-              </div>
+            <IPhoneMockup
+              className="scale-[0.85] sm:scale-100 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+              screenClassName="overflow-hidden flex flex-col bg-[#200817]"
+              statusBarTheme="light"
+              statusBarBg="bg-[#280B1E]"
+            >
+              <IndianHeritageMenuDisplay
+                restaurantName="The Grand Royal Darbar"
+                tagline="Royal Awadhi & Mughlai Cuisine"
+                tableInfo="TABLE 12 • Royal Balcony Dining"
+                badgeText="24K Palace Dining"
+                highlightItemPrice={480}
+              />
             </IPhoneMockup>
           </motion.div>
 

@@ -1,8 +1,10 @@
 import React from 'react';
 import clsx from 'clsx';
 import type { LayoutProps } from '../types';
-import { DietIndicator, RenderItemPrices } from '../shared/RenderItemPrices';
-import { RoyalMaharajaAtmosphere } from '../assets/builtInImages';
+import { DietIndicator } from '../shared/RenderItemPrices';
+import { PalaceCrownEmblem } from '../artwork/ArchesAndEmblems';
+import { FiligreeDiamondDivider } from '../artwork/SectionDividers';
+import { PalaceGoldFrame } from '../artwork/OrnamentalFrames';
 
 export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
   template,
@@ -15,43 +17,69 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
   activeCategory,
   setActiveCategory,
 }) => {
-  return (
-    <div className="text-[#FAF3E0] font-serif relative z-10 space-y-4 sm:space-y-6">
-      {/* Mobile-First Header & Masthead */}
-      <div className="text-center space-y-1.5 pb-3 border-b border-[#D4AF37]/30 bg-gradient-to-b from-[#2A111F]/90 to-[#180912]/95 border-2 border-[#D4AF37]/40 p-4 rounded-lg shadow-xl">
-        <div className="flex justify-center items-center gap-2 text-[#D4AF37]">
-          <span className="h-px w-6 bg-[#D4AF37]/60" />
-          <span className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#D4AF37]">Palace Dining</span>
-          <span className="h-px w-6 bg-[#D4AF37]/60" />
-        </div>
-        <h1
-          className={clsx(
-            'font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-[#FFF5D1] via-[#D4AF37] to-[#AA7C11]',
-            compact ? 'text-xl' : 'text-2xl sm:text-3xl lg:text-4xl'
-          )}
-          style={{ fontFamily: template.typography.heading }}
-        >
-          {restaurant.name}
-        </h1>
-        {restaurant.tagline && (
-          <p className="text-xs italic text-[#FAF3E0]/70 font-serif tracking-widest">{restaurant.tagline}</p>
-        )}
-      </div>
+  const goldColor = template.colors.heading || '#D4AF37';
 
-      {/* Sticky Mobile Category Navigation Bar (Horizontally scrollable) */}
-      {!compact && rawCategories.length > 1 && (
-        <div className="sticky top-12 z-30 lg:hidden bg-[#180912]/95 backdrop-blur-md py-2 px-1 border-y border-[#D4AF37]/30 shadow-md overflow-x-auto scrollbar-none flex gap-2">
+  return (
+    <div className="text-[#FAF3E0] font-serif relative z-10 space-y-6 max-w-4xl mx-auto w-full">
+      {/* ═══════════════════════════════════════════════════════════════════════
+          COVER MASTHEAD: IMPERIAL PALACE BANQUET CREST
+          ═══════════════════════════════════════════════════════════════════════ */}
+      <PalaceGoldFrame goldColor={goldColor} className="bg-gradient-to-b from-[#2E0B20] via-[#1F0716] to-[#12030C] text-center">
+        <div className="flex flex-col items-center justify-center space-y-2 py-2">
+          {/* Royal Crown Crest & Symmetrical Wings */}
+          <div className="flex items-center gap-3">
+            <span className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#D4AF37]" />
+            <PalaceCrownEmblem size={compact ? 36 : 46} color={goldColor} />
+            <span className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent to-[#D4AF37]" />
+          </div>
+
+          <span className="text-[9.5px] uppercase tracking-[0.4em] font-bold text-[#D4AF37]">
+            Imperial Palace Dining • Darbar Hall
+          </span>
+
+          <h1
+            className={clsx(
+              'font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-[#FFF5D1] via-[#D4AF37] to-[#9E7311] leading-tight px-2 break-words max-w-2xl',
+              compact ? 'text-xl' : 'text-2xl sm:text-3xl md:text-4xl'
+            )}
+            style={{ fontFamily: template.typography.heading }}
+          >
+            {restaurant.name}
+          </h1>
+
+          {restaurant.tagline && (
+            <p className="text-xs sm:text-sm italic text-[#FAF3E0]/80 font-serif tracking-widest max-w-xl mx-auto px-4 leading-relaxed">
+              {restaurant.tagline}
+            </p>
+          )}
+
+          {restaurant.address && (
+            <div className="pt-1 text-[10px] sm:text-[11px] text-[#D4AF37]/70 font-mono tracking-wider flex items-center justify-center gap-2">
+              <span>✦</span>
+              <span>{restaurant.address}</span>
+              {restaurant.phone && <span>• {restaurant.phone}</span>}
+              <span>✦</span>
+            </div>
+          )}
+        </div>
+      </PalaceGoldFrame>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          STICKY CATEGORY FILTER (ALL VIEWPORTS)
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {rawCategories.length > 1 && (
+        <div className="sticky top-2 z-30 bg-[#16040F]/95 backdrop-blur-md py-2 px-2 rounded-full border border-[#D4AF37]/35 shadow-xl flex items-center gap-1.5 overflow-x-auto scrollbar-none">
           <button
             type="button"
             onClick={() => setActiveCategory('all')}
             className={clsx(
-              'px-3 py-1 text-xs uppercase tracking-widest border transition-all rounded-full shrink-0 font-bold',
+              'px-3.5 py-1 text-xs uppercase tracking-widest rounded-full transition-all shrink-0 font-bold',
               activeCategory === 'all'
-                ? 'bg-[#D4AF37] text-[#180912] border-[#D4AF37]'
-                : 'text-[#D4AF37] border-[#D4AF37]/40 bg-[#180912]'
+                ? 'bg-[#D4AF37] text-[#180912] shadow-[0_0_12px_rgba(212,175,55,0.4)]'
+                : 'text-[#D4AF37] hover:bg-[#D4AF37]/15'
             )}
           >
-            ❖ All
+            ❖ All Dishes
           </button>
           {rawCategories.map((cat) => {
             const isActive = activeCategory === cat.id || activeCategory === cat.name;
@@ -61,123 +89,139 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
                 type="button"
                 onClick={() => setActiveCategory(cat.id)}
                 className={clsx(
-                  'px-3 py-1 text-xs uppercase tracking-widest border transition-all rounded-full shrink-0 whitespace-nowrap',
+                  'px-3 py-1 text-xs uppercase tracking-widest rounded-full transition-all shrink-0 whitespace-nowrap',
                   isActive
-                    ? 'bg-[#D4AF37] text-[#180912] border-[#D4AF37] font-bold'
-                    : 'text-[#D4AF37] border-[#D4AF37]/40 bg-[#180912]'
+                    ? 'bg-[#D4AF37] text-[#180912] font-bold shadow-[0_0_12px_rgba(212,175,55,0.4)]'
+                    : 'text-[#D4AF37] hover:bg-[#D4AF37]/15'
                 )}
               >
-                ❖ {cat.name}
+                ❖ {cat.name} ({cat.items.length})
               </button>
             );
           })}
         </div>
       )}
 
-      {/* Main Grid: Desktop Split View / Mobile Direct Menu Flow */}
-      <div className={clsx(compact ? 'space-y-6' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start')}>
-        
-        {/* Left Column (Desktop Only Sidebar - 35%) */}
-        {!compact && (
-          <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-gradient-to-b from-[#2A111F]/90 to-[#180912]/95 border-2 border-[#D4AF37]/40 p-5 rounded-lg shadow-2xl">
-            <RoyalMaharajaAtmosphere compact={compact} />
+      {/* ═══════════════════════════════════════════════════════════════════════
+          BANQUET SPREAD CARDS
+          ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="space-y-8">
+        {categories.map((cat) => (
+          <PalaceGoldFrame
+            key={cat.id}
+            goldColor={goldColor}
+            className="bg-gradient-to-br from-[#230C19]/95 via-[#180912]/98 to-[#10040B]/95"
+          >
+            {/* Category Header with Gold Cartouche */}
+            <div className="text-center space-y-1 pb-4">
+              <h2
+                className={clsx(
+                  'font-bold text-[#D4AF37] uppercase tracking-[0.2em] inline-block px-4 py-1 rounded bg-[#2D0D21] border border-[#D4AF37]/40 shadow-md',
+                  compact ? 'text-xs' : 'text-sm sm:text-base'
+                )}
+                style={{ fontFamily: template.typography.heading }}
+              >
+                ❖ {cat.name} ❖
+              </h2>
+              <FiligreeDiamondDivider color={goldColor} />
+            </div>
 
-            {rawCategories.length > 1 && (
-              <div className="space-y-1 pt-2">
-                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-[#D4AF37]/70 block text-center mb-2">Categories</span>
-                <div className="flex flex-col gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setActiveCategory('all')}
-                    className={clsx(
-                      'px-3.5 py-2 text-xs uppercase tracking-widest border transition-all text-left flex items-center justify-between rounded-sm',
-                      activeCategory === 'all'
-                        ? 'bg-[#D4AF37] text-[#180912] border-[#D4AF37] font-bold shadow-md'
-                        : 'text-[#D4AF37] border-[#D4AF37]/30 hover:border-[#D4AF37] bg-[#180912]/40'
-                    )}
+            {/* Dishes Listing */}
+            <div className="space-y-4 divide-y divide-[#D4AF37]/15">
+              {cat.items.map((item, idx) => {
+                const displayPrice = item.price ? `₹${item.price}` : '';
+                return (
+                  <div
+                    key={item.id}
+                    className="pt-3 first:pt-0 group hover:bg-[#D4AF37]/5 px-2 -mx-2 rounded transition-colors"
                   >
-                    <span>❖ All Dishes</span>
-                  </button>
-                  {rawCategories.map((cat) => {
-                    const isActive = activeCategory === cat.id || activeCategory === cat.name;
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => setActiveCategory(cat.id)}
-                        className={clsx(
-                          'px-3.5 py-2 text-xs uppercase tracking-widest border transition-all text-left flex items-center justify-between rounded-sm whitespace-nowrap',
-                          isActive
-                            ? 'bg-[#D4AF37] text-[#180912] border-[#D4AF37] font-bold shadow-md'
-                            : 'text-[#D4AF37] border-[#D4AF37]/30 hover:border-[#D4AF37] bg-[#180912]/40'
-                        )}
-                      >
-                        <span>❖ {cat.name}</span>
-                        <span className="text-[10px] opacity-75">({cat.items.length})</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+                    <div className="flex items-start justify-between gap-3">
+                      {/* Left: Index + Diet + Name */}
+                      <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                        <span className="shrink-0 w-4 h-4 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/60 text-[#D4AF37] flex items-center justify-center font-mono text-[9px] font-bold mt-0.5">
+                          {idx + 1}
+                        </span>
 
-        {/* Right Column: Printed Restaurant Menu Spread (65% on Desktop, Full Width on Mobile) */}
-        <div className={clsx(!compact && 'lg:col-span-8', 'bg-gradient-to-br from-[#230C19]/95 via-[#180912]/98 to-[#10040B]/95 border-2 border-[#D4AF37]/40 p-4 sm:p-6 rounded-lg shadow-2xl space-y-8')}>
-          {categories.map((cat) => (
-            <div key={cat.id} className="space-y-4">
-              {/* Category Header */}
-              <div className="flex items-center gap-3 py-2 border-b-2 border-[#D4AF37]/40">
-                <span className="text-[#D4AF37] text-xs">❖</span>
-                <h2
-                  className={clsx('font-extrabold text-[#D4AF37] uppercase tracking-[0.2em]', compact ? 'text-xs' : 'text-xs sm:text-base')}
-                  style={{ fontFamily: template.typography.heading }}
-                >
-                  {cat.name}
-                </h2>
-                <div className="flex-1 h-px bg-gradient-to-r from-[#D4AF37]/50 to-transparent" />
-              </div>
+                        <div className="shrink-0 mt-1">
+                          <DietIndicator type={item.dietType} compact={compact} color="#D4AF37" />
+                        </div>
 
-              {/* Menu Item Listing */}
-              <div className="space-y-3">
-                {cat.items.map((item) => (
-                  <div key={item.id} className="group py-1.5 border-b border-[#D4AF37]/10 hover:border-[#D4AF37]/30 transition-all">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <DietIndicator type={item.dietType} compact={compact} color="#D4AF37" />
-                        <h3
-                          className="font-bold text-xs sm:text-sm text-[#FFF5D1] group-hover:text-[#D4AF37] transition-colors"
-                          style={{ fontFamily: template.typography.body }}
-                        >
-                          {item.name}
-                        </h3>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-baseline flex-wrap gap-2">
+                            <h3
+                              className={clsx(
+                                'font-bold text-[#FFF8EA] group-hover:text-[#D4AF37] transition-colors leading-snug break-words',
+                                compact ? 'text-xs' : 'text-sm sm:text-base'
+                              )}
+                              style={{ fontFamily: template.typography.heading }}
+                            >
+                              {item.name}
+                            </h3>
+                            {item.isBestseller && (
+                              <span className="text-[8px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/40">
+                                ROYAL SIGNATURE
+                              </span>
+                            )}
+                          </div>
+
+                          {item.description && (
+                            <p
+                              className={clsx(
+                                'text-[#E0CCA8] mt-1 leading-relaxed font-serif italic max-w-xl',
+                                compact ? 'text-[10px] line-clamp-2' : 'text-xs'
+                              )}
+                            >
+                              {item.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Dotted Leader Line */}
-                      <span className="flex-1 border-b border-dotted border-[#D4AF37]/40 mx-2 hidden sm:inline-block" />
+                      {/* Right: Price + Add to cart + Optional Photo Thumbnail */}
+                      <div className="shrink-0 flex items-center gap-3 ml-2 self-start mt-0.5">
+                        {item.image && (
+                          <div className="hidden sm:block w-14 h-14 rounded overflow-hidden border border-[#D4AF37]/50 shadow-md shrink-0">
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                              onError={(e) => {
+                                (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
+                              }}
+                            />
+                          </div>
+                        )}
 
-                      <RenderItemPrices
-                        item={item}
-                        accentColor="#D4AF37"
-                        onAddToCart={onAddToCart}
-                        isPremium={isPremium}
-                        btnStyle="text-[9px] font-bold px-2 py-0.5 bg-[#D4AF37] text-[#180912] rounded hover:bg-[#b59226]"
-                      />
+                        <div className="flex flex-col items-end gap-1">
+                          {displayPrice && (
+                            <span className="font-mono font-bold text-xs sm:text-sm text-[#D4AF37] tracking-wider px-2 py-0.5 bg-[#2B0E20] rounded border border-[#D4AF37]/40">
+                              {displayPrice}
+                            </span>
+                          )}
+
+                          {isPremium && onAddToCart && (
+                            <button
+                              type="button"
+                              onClick={() => onAddToCart(item, String(item.price || ''))}
+                              className="text-[9px] font-bold px-2 py-0.5 bg-[#D4AF37] text-[#180912] rounded hover:bg-[#e7c758] transition-colors"
+                              aria-label={`Add ${item.name} to order`}
+                            >
+                              + ADD
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-
-                    {item.description && (
-                      <p className="text-[11px] text-[#FAF3E0]/70 pl-5 mt-0.5 leading-relaxed font-serif italic">
-                        {item.description}
-                      </p>
-                    )}
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
+          </PalaceGoldFrame>
+        ))}
       </div>
     </div>
   );
 };
+
+export default RoyalMaharajaTemplate;

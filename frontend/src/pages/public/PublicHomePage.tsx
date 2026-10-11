@@ -1,4 +1,3 @@
-import { MenusQRLoader } from '../../components/brand/MenusQRLoader';
 import SiteHeader from '../../components/marketing/SiteHeader';
 import SiteFooter from '../../components/marketing/SiteFooter';
 import HeroSection from '../../components/marketing/HeroSection';
@@ -28,9 +27,6 @@ export default function PublicHomePage() {
         type="website"
         schema={[getOrganizationSchema(), getWebSiteSchema()]}
       />
-      {/* Brand Opening Loader (Plays once per browser session) */}
-      <MenusQRLoader />
-
       {/* Header */}
       <SiteHeader />
 

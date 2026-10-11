@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Eye, Palette, Save, Lock, Zap, Smartphone, Monitor } from 'lucide-react';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
-import { menuTemplates } from '../../data/menuTemplates';
+import PremiumIPhoneMockup from '../../components/marketing/PremiumIPhoneMockup';
+import { menuTemplates, isTemplateDark } from '../../data/menuTemplates';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { getAppearance, getMenu, getProfile, getSubscription, updateAppearance, type AppMenuData, type AppProfile, type AppSubscriptionData } from './appStore';
 
@@ -180,18 +181,38 @@ export default function Appearance() {
             </div>
           </div>
           
-          <div className={previewMode === 'phone'
-            ? 'w-full max-w-[340px] aspect-[9/18] rounded-[2.5rem] border-[8px] border-[#151c19] overflow-hidden shadow-2xl relative bg-black'
-            : 'w-full aspect-[4/3] rounded-xl border-4 border-[#151c19] overflow-hidden shadow-2xl relative bg-black max-h-[500px]'
-          }>
-            <MenuTemplateRenderer
-              templateId={templateId}
-              restaurant={{ name: profile?.businessName || 'Your restaurant', tagline: profile?.tagline, phone: profile?.phone, address: profile?.address, logo: profile?.logoUrl }}
-              categories={previewCategories}
-              items={previewItems}
-              compact={previewMode === 'phone'}
-            />
-          </div>
+          {previewMode === 'phone' ? (
+            <div className="py-2">
+              <PremiumIPhoneMockup
+                className="!w-[290px] sm:!w-[310px] shadow-2xl"
+                badgeText="Live Preview"
+                statusBarTheme={isTemplateDark(menuTemplates.find((t) => t.id === templateId)) ? 'light' : 'dark'}
+                homeIndicatorTheme={isTemplateDark(menuTemplates.find((t) => t.id === templateId)) ? 'light' : 'dark'}
+                screenStyle={{ backgroundColor: menuTemplates.find((t) => t.id === templateId)?.colors.bg || '#FAFAF7' }}
+                screenClassName=""
+              >
+                <div className="h-full w-full overflow-y-auto">
+                  <MenuTemplateRenderer
+                    templateId={templateId}
+                    restaurant={{ name: profile?.businessName || 'Your restaurant', tagline: profile?.tagline, phone: profile?.phone, address: profile?.address, logo: profile?.logoUrl }}
+                    categories={previewCategories}
+                    items={previewItems}
+                    compact={true}
+                  />
+                </div>
+              </PremiumIPhoneMockup>
+            </div>
+          ) : (
+            <div className="w-full aspect-[4/3] rounded-xl border-4 border-[#151c19] overflow-hidden shadow-2xl relative bg-black max-h-[500px]">
+              <MenuTemplateRenderer
+                templateId={templateId}
+                restaurant={{ name: profile?.businessName || 'Your restaurant', tagline: profile?.tagline, phone: profile?.phone, address: profile?.address, logo: profile?.logoUrl }}
+                categories={previewCategories}
+                items={previewItems}
+                compact={false}
+              />
+            </div>
+          )}
           
           <div className="flex items-center gap-2 mt-4 text-xs font-medium text-[#849a90]">
             <Palette size={14} className="text-[#e8783c]" />

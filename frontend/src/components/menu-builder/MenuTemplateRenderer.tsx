@@ -35,7 +35,7 @@ export interface MenuTemplateRendererProps {
   }>;
   compact?: boolean;
   className?: string;
-  onAddToCart?: (item: any, priceStr: string, variant?: string) => void;
+  onAddToCart?: (item: any, priceStr?: string, variant?: string) => void;
   isPremium?: boolean;
 }
 
@@ -90,7 +90,7 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
         'w-full transition-all duration-300 relative overflow-hidden',
         textureObj?.bg || 'bg-white',
         textureObj?.gradient || '',
-        compact ? 'p-3 sm:p-4 text-xs' : 'p-4 sm:p-8 min-h-screen text-sm',
+        compact ? 'p-0.5 text-xs' : 'p-4 sm:p-8 min-h-screen text-sm',
         className
       )}
       style={{
@@ -98,7 +98,7 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
         backgroundImage: textureObj?.overlayPattern !== 'none' ? textureObj?.overlayPattern : undefined,
       }}
     >
-      <div className={clsx('mx-auto relative z-10', compact ? 'max-w-xl' : 'max-w-4xl')}>
+      <div className={clsx('mx-auto relative z-10', compact ? 'max-w-xl' : 'max-w-6xl')}>
         <TemplateComponent
           template={template}
           restaurant={restaurant}

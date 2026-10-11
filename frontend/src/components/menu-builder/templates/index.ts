@@ -25,9 +25,11 @@ export const getTemplateComponent = (id: string): React.FC<LayoutProps> => {
       return RoyalMaharajaTemplate;
     case '02':
     case 'rajasthani-heritage':
+    case 'heritage-parchment':
       return RajasthaniHeritageTemplate;
     case '03':
     case 'mughal-luxe':
+    case 'emerald-heritage':
       return MughalLuxeTemplate;
     case '04':
     case 'banarasi-gold':
@@ -71,22 +73,54 @@ export const getTemplateComponent = (id: string): React.FC<LayoutProps> => {
 
 export const getTemplateTextureKey = (id: string): keyof typeof TEMPLATE_TEXTURES => {
   switch (id) {
-    case '01': return 'royalMaharaja';
-    case '02': return 'rajasthaniHeritage';
-    case '03': return 'mughalLuxe';
-    case '04': return 'banarasiGold';
-    case '05': return 'southIndianHeritage';
-    case '06': return 'indianStreetKitchen';
-    case '07': return 'modernIndia';
-    case '08': return 'spiceHouse';
-    case '09': return 'maisonNoir';
-    case '10': return 'ivoryDining';
-    case '11': return 'grandTable';
-    case '12': return 'coffeeHouse';
-    case '13': return 'paperCafe';
-    case '14': return 'bombayStreet';
+    case '01':
+    case 'royal-maharaja':
+      return 'royalMaharaja';
+    case '02':
+    case 'rajasthani-heritage':
+    case 'heritage-parchment':
+      return 'rajasthaniHeritage';
+    case '03':
+    case 'mughal-luxe':
+    case 'emerald-heritage':
+      return 'mughalLuxe';
+    case '04':
+    case 'banarasi-gold':
+      return 'banarasiGold';
+    case '05':
+    case 'south-indian-heritage':
+      return 'southIndianHeritage';
+    case '06':
+    case 'indian-street-kitchen':
+      return 'indianStreetKitchen';
+    case '07':
+    case 'modern-india':
+      return 'modernIndia';
+    case '08':
+    case 'spice-house':
+      return 'spiceHouse';
+    case '09':
+    case 'maison-noir':
+      return 'maisonNoir';
+    case '10':
+    case 'ivory-dining':
+      return 'ivoryDining';
+    case '11':
+    case 'grand-table':
+      return 'grandTable';
+    case '12':
+    case 'coffee-house':
+      return 'coffeeHouse';
+    case '13':
+    case 'paper-cafe':
+      return 'paperCafe';
+    case '14':
+    case 'bombay-street':
+      return 'bombayStreet';
     case '15':
-    default: return 'minimalEditorial';
+    case 'minimal-editorial':
+    default:
+      return 'minimalEditorial';
   }
 };
 

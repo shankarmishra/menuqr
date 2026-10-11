@@ -10,7 +10,8 @@ export default function QrOrderingForRestaurants() {
   const breadcrumbs = [{ name: 'QR Ordering for Restaurants', path: '/qr-ordering-for-restaurants' }];
 
   return (
-    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans">
+    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans relative overflow-x-clip">
+      <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="QR Ordering for Restaurants | Table Ordering System | MenusQR"
         description="Let guests order directly from their table using MenusQR Premium. Streamline kitchen reception, speed up service, and boost table turnover."
@@ -19,7 +20,7 @@ export default function QrOrderingForRestaurants() {
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto">
+      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl md:text-5xl font-extrabold text-[#151C19] mb-6 tracking-tight">

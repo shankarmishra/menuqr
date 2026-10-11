@@ -14,6 +14,8 @@ export interface MenuItem {
   dietType: 'veg' | 'non-veg' | 'vegan';
   available?: boolean;
   isBestseller?: boolean;
+  isSpecial?: boolean;
+  spicyLevel?: number;
   image?: string;
 }
 

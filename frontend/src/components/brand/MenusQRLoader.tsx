@@ -2,28 +2,20 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MenusQRMark } from './MenusQRMark';
 
-const STORAGE_KEY = 'menusqr_loader_played_session';
-
 export function MenusQRLoader() {
   const [isVisible, setIsVisible] = useState(() => {
     if (typeof window === 'undefined') return false;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
-    if (window.location.search.includes('loader=true')) return true;
-    return !sessionStorage.getItem(STORAGE_KEY);
+    // Always play on load / refresh as requested by user
+    return true;
   });
 
   useEffect(() => {
     if (!isVisible) return;
 
-    try {
-      sessionStorage.setItem(STORAGE_KEY, 'true');
-    } catch {
-      // Ignore quota
-    }
-
     const timer = setTimeout(() => {
       setIsVisible(false);
-    }, 1500);
+    }, 1400);
 
     return () => clearTimeout(timer);
   }, [isVisible]);

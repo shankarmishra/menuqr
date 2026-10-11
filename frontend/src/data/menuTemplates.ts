@@ -36,6 +36,29 @@ export interface MenuTemplate {
   };
 }
 
+export function isColorDark(hex?: string): boolean {
+  if (!hex || typeof hex !== 'string') return false;
+  const cleanHex = hex.replace('#', '').trim();
+  if (cleanHex.length === 3) {
+    const r = parseInt(cleanHex[0] + cleanHex[0], 16);
+    const g = parseInt(cleanHex[1] + cleanHex[1], 16);
+    const b = parseInt(cleanHex[2] + cleanHex[2], 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 < 128;
+  }
+  if (cleanHex.length >= 6) {
+    const r = parseInt(cleanHex.substring(0, 2), 16);
+    const g = parseInt(cleanHex.substring(2, 4), 16);
+    const b = parseInt(cleanHex.substring(4, 6), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 < 128;
+  }
+  return false;
+}
+
+export function isTemplateDark(template?: MenuTemplate | null): boolean {
+  if (!template) return false;
+  return isColorDark(template.colors.bg);
+}
+
 export const menuTemplates: MenuTemplate[] = [
   // 01. ROYAL MAHARAJA
   {
@@ -76,79 +99,81 @@ export const menuTemplates: MenuTemplate[] = [
     },
   },
 
-  // 02. RAJASTHANI HERITAGE
+  // 02. HERITAGE PARCHMENT ATELIER (RAJASTHANI HERITAGE)
   {
     id: 'rajasthani-heritage',
-    name: 'Rajasthani Heritage',
-    subtitle: 'Textile-Inspired Regional Craft',
-    categories: ['Indian', 'Heritage', 'Traditional'],
-    description: 'Sandstone tones, bold terracotta block header with block-print textile trim, asymmetric compositions, and Cinzel typography.',
+    name: 'Heritage Parchment Atelier',
+    subtitle: 'Indian Botanical Parchment & Scalloped Arch Edition',
+    categories: ['Royal Heritage', 'Fine Dining', 'Traditional', 'Indian'],
+    description: 'Warm antique cream parchment, deep teal framing, terracotta botanical floral borders, central scalloped arch, blooming lotus emblem, and curated food photography.',
+    badge: 'Art-Directed Masterpiece',
     colors: {
-      bg: '#F7EBE1',
-      surface: '#FFFFFF',
-      text: '#2C1D11',
-      heading: '#9E3B20',
-      accent: '#D47A37',
-      secondary: '#1E3A5F',
-      border: 'rgba(158, 59, 32, 0.25)',
+      bg: '#F7EBD7',
+      surface: '#FCF5E9',
+      text: '#35463E',
+      heading: '#244740',
+      accent: '#D76C3C',
+      secondary: '#315A53',
+      border: '#315A53',
     },
     typography: {
-      heading: "'Cinzel', serif",
+      heading: "'Cinzel', 'Playfair Display', serif",
       body: "'Plus Jakarta Sans', sans-serif",
       style: 'serif',
     },
     layout: {
-      type: 'left-aligned',
-      headerStyle: 'typographic',
-      itemStyle: 'detailed-card',
-      categoryStyle: 'section-header',
-      separator: 'line',
-      spacing: 'spacious',
-    },
-    decorations: {
-      motif: 'Sandstone Block Print',
-      borderStyle: 'solid sandstone',
-      hasPattern: true,
-      patternType: 'temple',
-      patternOpacity: 0.05,
-    },
-  },
-
-  // 03. MUGHAL LUXE
-  {
-    id: 'mughal-luxe',
-    name: 'Mughal Luxe',
-    subtitle: 'Five-Star Indian Fine Dining',
-    categories: ['Indian', 'Fine Dining', 'Luxury'],
-    description: 'Deep royal emerald (#0C2920) framed with subtle architectural arches and delicate antique gold Cormorant Garamond headings.',
-    colors: {
-      bg: '#0C2920',
-      surface: '#143B2F',
-      text: '#FFFBF0',
-      heading: '#E5C158',
-      accent: '#E5C158',
-      secondary: '#A3D9C9',
-      border: 'rgba(229, 193, 88, 0.3)',
-    },
-    typography: {
-      heading: "'Cormorant Garamond', serif",
-      body: "'Plus Jakarta Sans', sans-serif",
-      style: 'serif',
-    },
-    layout: {
-      type: 'centered',
+      type: 'editorial',
       headerStyle: 'arch',
-      itemStyle: 'inline',
+      itemStyle: 'detailed-card',
       categoryStyle: 'arch-title',
       separator: 'ornament',
       spacing: 'luxury',
     },
     decorations: {
-      motif: 'Mughal Arch Symmetry',
-      borderStyle: 'ornate gold arch',
+      motif: 'Botanical Floral Vine & Scalloped Arch',
+      borderStyle: '5-layer teal gold floral border',
       hasPattern: true,
       patternType: 'arch',
-      patternOpacity: 0.12,
+      patternOpacity: 0.15,
+    },
+  },
+
+  // 03. MUGHAL LUXE (EMERALD HERITAGE)
+  {
+    id: 'mughal-luxe',
+    name: 'Mughal Luxe',
+    subtitle: 'Indian Palace Arches & Antique Gold Foil Edition',
+    categories: ['Royal Heritage', 'Fine Dining', 'North Indian', 'Luxury'],
+    description: 'Deep emerald-green heritage artwork, antique-gold ornamental borders, Indian palace-inspired cusped arches, handcrafted ivory menu pages, authentic food photography, and refined editorial typography.',
+    badge: 'Signature Masterpiece',
+    colors: {
+      bg: '#064F43',
+      surface: '#F5EBDD',
+      text: '#F5EBDD',
+      heading: '#D7B66D',
+      accent: '#D7B66D',
+      secondary: '#073D34',
+      border: '#C9A967',
+    },
+    typography: {
+      heading: "'Cormorant Garamond', Georgia, serif",
+      body: "'Plus Jakarta Sans', sans-serif",
+      style: 'serif',
+    },
+    layout: {
+      type: 'editorial',
+      headerStyle: 'arch',
+      itemStyle: 'detailed-card',
+      categoryStyle: 'arch-title',
+      separator: 'ornament',
+      spacing: 'luxury',
+    },
+    decorations: {
+      motif: 'Palace Arch & Lotus Ornaments',
+      borderStyle: 'emerald gold jaali border',
+      hasPattern: true,
+      patternType: 'arch',
+      patternOpacity: 0.08,
     },
   },
 
@@ -195,7 +220,7 @@ export const menuTemplates: MenuTemplate[] = [
     id: 'south-indian-heritage',
     name: 'Southern Heritage',
     subtitle: 'Authentic Temple Architecture & Brass',
-    categories: ['Indian', 'Traditional'],
+    categories: ['Indian', 'Traditional', 'Heritage'],
     description: 'Crisp ivory layout anchored by maroon & brass temple top geometric rules, Rozha One font, and clear category columns.',
     colors: {
       bg: '#FFFDF7',
@@ -459,7 +484,7 @@ export const menuTemplates: MenuTemplate[] = [
     id: 'coffee-house',
     name: 'Coffee House',
     subtitle: 'Specialty Café & Artisan Bakery',
-    categories: ['Café'],
+    categories: ['Café', 'Minimal'],
     description: 'Cozy espresso and warm cream palette with editorial typography, pastry & coffee photography, and handwritten Caveat accents.',
     colors: {
       bg: '#2E1C14',
@@ -535,7 +560,7 @@ export const menuTemplates: MenuTemplate[] = [
     id: 'bombay-street',
     name: 'Bombay Street',
     subtitle: 'Mumbai Street Food × Modern Visual Identity',
-    categories: ['Street Food'],
+    categories: ['Indian', 'Street Food', 'Heritage'],
     description: 'High-energy Mumbai street food vibe with punchy Anton display type, food-photo blocks, and strong price labels.',
     colors: {
       bg: '#FFFDF2',
@@ -572,7 +597,7 @@ export const menuTemplates: MenuTemplate[] = [
     id: 'minimal-editorial',
     name: 'Minimal Editorial',
     subtitle: 'Universal Modern Premium',
-    categories: ['Minimal', 'Fine Dining'],
+    categories: ['Minimal', 'Fine Dining', 'Luxury'],
     description: 'Ultra-clean warm white canvas with razor-thin rules, high contrast Montserrat typography, and generous spacing. Proves great design needs no decoration.',
     colors: {
       bg: '#FAFAF8',
@@ -603,241 +628,14 @@ export const menuTemplates: MenuTemplate[] = [
       patternOpacity: 0,
     },
   },
-  // 16. SAPPHIRE VELVET
-  {
-    id: 'sapphire-velvet',
-    name: 'Sapphire Velvet',
-    subtitle: 'Midnight Blue & Silver Luxury',
-    categories: ['Fine Dining', 'Luxury'],
-    description: 'Deep midnight blue with brushed silver accents, elegant Cinzel typography, and a royal, hushed dining atmosphere.',
-    badge: 'New',
-    colors: {
-      bg: '#0B132B',
-      surface: '#1C2541',
-      text: '#F8F9FA',
-      heading: '#E2E8F0',
-      accent: '#94A3B8',
-      secondary: '#3A506B',
-      border: 'rgba(148, 163, 184, 0.2)',
-    },
-    typography: {
-      heading: "'Cinzel', serif",
-      body: "'Plus Jakarta Sans', sans-serif",
-      style: 'serif',
-    },
-    layout: {
-      type: 'centered',
-      headerStyle: 'ornate',
-      itemStyle: 'detailed-card',
-      categoryStyle: 'ornamental',
-      separator: 'line',
-      spacing: 'luxury',
-    },
-    decorations: {
-      motif: 'Silver Filigree',
-      borderStyle: 'fine single line',
-      hasPattern: true,
-      patternType: 'damask',
-      patternOpacity: 0.04,
-    },
-  },
-
-  // 17. TOKYO MINIMAL
-  {
-    id: 'tokyo-minimal',
-    name: 'Tokyo Minimal',
-    subtitle: 'Wabi-Sabi Zen Aesthetic',
-    categories: ['Minimal', 'Fine Dining'],
-    description: 'Inspired by Japanese Zen minimalism. Unbleached paper tones, vertical structural lines, and precise typography.',
-    badge: 'Premium',
-    colors: {
-      bg: '#EBEAE4',
-      surface: '#F4F4F0',
-      text: '#2C2C2C',
-      heading: '#1A1A1A',
-      accent: '#8B0000', // Japanese lacquer red accent
-      secondary: '#737373',
-      border: 'rgba(44, 44, 44, 0.15)',
-    },
-    typography: {
-      heading: "'Plus Jakarta Sans', sans-serif",
-      body: "'Plus Jakarta Sans', sans-serif",
-      style: 'sans',
-    },
-    layout: {
-      type: 'left-aligned',
-      headerStyle: 'minimal',
-      itemStyle: 'list',
-      categoryStyle: 'section-header',
-      separator: 'dots',
-      spacing: 'spacious',
-    },
-    decorations: {
-      motif: 'Zen Grid',
-      borderStyle: 'none',
-      hasPattern: false,
-      patternOpacity: 0,
-    },
-  },
-
-  // 18. ONYX & COPPER
-  {
-    id: 'onyx-copper',
-    name: 'Onyx & Copper',
-    subtitle: 'Industrial Luxury Dining',
-    categories: ['Luxury', 'Fine Dining'],
-    description: 'Dark slate and charcoal surfaces accented with glowing copper typography. Perfect for modern steakhouses and speakeasies.',
-    colors: {
-      bg: '#1A1A1A',
-      surface: '#242424',
-      text: '#E0E0E0',
-      heading: '#B87333',
-      accent: '#B87333',
-      secondary: '#808080',
-      border: 'rgba(184, 115, 51, 0.25)',
-    },
-    typography: {
-      heading: "'Montserrat', sans-serif",
-      body: "'Plus Jakarta Sans', sans-serif",
-      style: 'editorial',
-    },
-    layout: {
-      type: 'centered',
-      headerStyle: 'typographic',
-      itemStyle: 'card',
-      categoryStyle: 'underline',
-      separator: 'none',
-      spacing: 'normal',
-    },
-    decorations: {
-      motif: 'Copper Inlay',
-      borderStyle: 'solid gold frame',
-      hasPattern: true,
-      patternType: 'grain',
-      patternOpacity: 0.15,
-    },
-  },
-  // 19. CHALKBOARD BISTRO
-  {
-    id: 'chalk-bistro',
-    name: 'Chalkboard Bistro',
-    subtitle: 'Classic Rustic Cafe & Burger Joint',
-    categories: ['Café', 'Street Food', 'Traditional'],
-    description: 'Authentic chalkboard background with yellow ribbon banners, dashed sketch lines, and playful typography reminiscent of an artisan burger joint.',
-    badge: 'Premium',
-    colors: {
-      bg: '#212121',
-      surface: '#2A2A2A',
-      text: '#F5F5F5',
-      heading: '#E5DF39',
-      accent: '#E5DF39',
-      secondary: '#A0A0A0',
-      border: 'rgba(255, 255, 255, 0.15)',
-    },
-    typography: {
-      heading: "'Caveat', cursive",
-      body: "'Plus Jakarta Sans', sans-serif",
-      style: 'handwritten',
-    },
-    layout: {
-      type: 'two-column',
-      headerStyle: 'banner',
-      itemStyle: 'list',
-      categoryStyle: 'tab',
-      separator: 'dots',
-      spacing: 'compact',
-    },
-    decorations: {
-      motif: 'Chalk Dust & Sketches',
-      borderStyle: 'chalk line',
-      hasPattern: true,
-      patternType: 'grain',
-      patternOpacity: 0.1,
-    },
-  },
-
-  // 20. FLUID ABSTRACT
-  {
-    id: 'fluid-abstract',
-    name: 'Fluid Abstract',
-    subtitle: 'Modern Organic Design',
-    categories: ['Modern', 'Fine Dining', 'Minimal'],
-    description: 'Dynamic organic shapes and fluid waves in deep brown and warm orange on an ivory canvas. Featuring inset circular image masks.',
-    badge: 'Trending',
-    colors: {
-      bg: '#F5F0E6',
-      surface: '#FFFFFF',
-      text: '#221A16',
-      heading: '#E27522',
-      accent: '#E27522',
-      secondary: '#64544A',
-      border: 'rgba(34, 26, 22, 0.1)',
-    },
-    typography: {
-      heading: "'Playfair Display', serif",
-      body: "'Montserrat', sans-serif",
-      style: 'editorial',
-    },
-    layout: {
-      type: 'magazine',
-      headerStyle: 'split',
-      itemStyle: 'image-card',
-      categoryStyle: 'chip',
-      separator: 'none',
-      spacing: 'spacious',
-    },
-    decorations: {
-      motif: 'Organic Blob Shapes',
-      borderStyle: 'none',
-      hasPattern: true,
-      patternType: 'grain',
-      patternOpacity: 0.05,
-    },
-  },
-
-  // 21. DARK CLIPBOARD
-  {
-    id: 'dark-clipboard',
-    name: 'Dark Clipboard',
-    subtitle: 'Ultra Modern Neon & Wood',
-    categories: ['Modern', 'Fine Dining', 'Minimal'],
-    description: 'Presented on a digital wooden clipboard texture with an ultra-dark canvas, neon orange accents, subtle line-art food backgrounds, and overlapping circular imagery.',
-    badge: 'Premium',
-    colors: {
-      bg: '#111214',
-      surface: '#1A1C1F',
-      text: '#E0E0E0',
-      heading: '#FFFFFF',
-      accent: '#F26D21',
-      secondary: '#888888',
-      border: 'rgba(242, 109, 33, 0.2)',
-    },
-    typography: {
-      heading: "'Montserrat', sans-serif",
-      body: "'Plus Jakarta Sans', sans-serif",
-      style: 'sans',
-    },
-    layout: {
-      type: 'card-grid',
-      headerStyle: 'hero-image',
-      itemStyle: 'michelin',
-      categoryStyle: 'section-header',
-      separator: 'line',
-      spacing: 'normal',
-    },
-    decorations: {
-      motif: 'Neon Clipboard Edge',
-      borderStyle: 'clipboard top',
-      hasPattern: false,
-      patternOpacity: 0,
-    },
-  },
 ];
 
 export const TEMPLATE_FILTER_CATEGORIES = [
   { id: 'all', label: 'All' },
   { id: 'Indian', label: 'Indian' },
   { id: 'Luxury', label: 'Luxury' },
+  { id: 'Heritage', label: 'Heritage' },
+  { id: 'Traditional', label: 'Traditional' },
   { id: 'Fine Dining', label: 'Fine Dining' },
   { id: 'Street Food', label: 'Street Food' },
   { id: 'Café', label: 'Café' },

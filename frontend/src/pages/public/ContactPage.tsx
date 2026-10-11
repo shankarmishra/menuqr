@@ -11,7 +11,8 @@ export default function ContactPage() {
   const breadcrumbs = [{ name: 'Contact', path: '/contact' }];
 
   return (
-    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans">
+    <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans relative overflow-x-clip">
+      <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="Contact MenusQR | Customer Support & Business Inquiries"
         description="Get in touch with the MenusQR team for onboarding assistance, restaurant support, or sales inquiries."
@@ -20,7 +21,7 @@ export default function ContactPage() {
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto">
+      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl md:text-5xl font-extrabold text-[#151C19] mb-6 tracking-tight">
