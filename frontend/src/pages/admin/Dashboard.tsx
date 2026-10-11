@@ -171,10 +171,10 @@ export default function Dashboard() {
           </div>
 
           <div className="mt-12">
-             <button className="w-full bg-white/[0.03] hover:bg-white/[0.1] border border-white/[0.05] text-white font-bold py-4 px-6 rounded-2xl transition-all flex items-center justify-between group">
+             <Link to="/admin/settings" className="w-full bg-white/[0.03] hover:bg-white/[0.1] border border-white/[0.05] text-white font-bold py-4 px-6 rounded-2xl transition-all flex items-center justify-between group">
                 Advanced Settings
                 <ArrowUpRight size={20} className="text-slate-400 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-             </button>
+             </Link>
           </div>
         </motion.div>
       </div>

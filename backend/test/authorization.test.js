@@ -662,6 +662,7 @@ test('sticker requests are tenant-owned and admins manage audited statuses', asy
   const tenantB = await createFixture('BASIC', 'ACTIVE');
 
   const adminEmail = 'xshankarmishra@gmail.com';
+  await pool.query('DELETE FROM admin_auth_rate_limits');
   await pool.query("INSERT INTO admin_users (id, email, status) VALUES ($1, $2, 'active') ON CONFLICT (email) DO UPDATE SET status='active'", [randomUUID(), adminEmail]);
   const otpChallenge = await requestAdminOtp(adminEmail, '198.51.100.72');
   const verifyRes = await requestJson(`${baseUrl}/api/auth/admin/verify-otp`, { method: 'POST', body: JSON.stringify({ email: adminEmail, otp: otpChallenge.otp }) });

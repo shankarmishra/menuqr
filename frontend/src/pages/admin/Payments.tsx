@@ -1,24 +1,29 @@
 import { useEffect, useState } from 'react';
 import { getPayments } from './clientStore';
-import { CreditCard, Search } from 'lucide-react';
+import { CreditCard, Search, AlertTriangle } from 'lucide-react';
 
 export default function Payments() {
   const [payments, setPayments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    let isCurrent = true;
+  const loadData = () => {
     setIsLoading(true);
-    void getPayments().then(data => {
-      if (isCurrent) {
+    setLoadError('');
+    getPayments()
+      .then((data) => {
         setPayments(data || []);
         setIsLoading(false);
-      }
-    }).catch(() => {
-      if (isCurrent) setIsLoading(false);
-    });
-    return () => { isCurrent = false; };
+      })
+      .catch((err) => {
+        setLoadError(err instanceof Error ? err.message : 'Failed to load payments.');
+        setIsLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
   const filteredPayments = payments.filter(p => 
@@ -35,6 +40,22 @@ export default function Payments() {
           <p className="text-[#aab7b2]">Track transaction history and statuses.</p>
         </div>
       </header>
+
+      {loadError && (
+        <div role="alert" className="mb-6 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-rose-300 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertTriangle size={18} className="text-rose-400 shrink-0" />
+            <span className="text-sm font-medium">{loadError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={loadData}
+            className="px-3 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 rounded-lg text-xs font-bold transition-all cursor-pointer"
+          >
+            Retry
+          </button>
+        </div>
+      )}
       
       <div className="mb-8 flex flex-wrap gap-4">
         <label className="relative flex-1 min-w-[280px]">

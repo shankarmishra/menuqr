@@ -88,6 +88,7 @@ export interface AdminSession {
 
 const storageKey = 'menusqr.clients';
 import { ensureCsrfToken, setCsrfToken } from '../../utils/csrf';
+import { parseApiResponse } from '../../utils/api';
 
 const draftStorageKey = 'menusqr.clientDrafts';
 const migrationStorageKey = 'menusqr.apiMigration.v1';
@@ -109,24 +110,26 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
   }
 
-  const response = await fetch(`${apiBaseUrl}/api${path}`, {
-    ...init,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...csrfHeaders,
-      ...init?.headers,
-    },
-  });
-  if (!response.ok) {
-    if (response.status === 401 && path.startsWith('/admin/')) {
-      window.dispatchEvent(new Event('menusqr:admin-unauthorized'));
-    }
-    const result = await response.json().catch(() => null) as { error?: string } | null;
-    throw new Error(result?.error ?? `Request failed (${response.status}).`);
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl}/api${path}`, {
+      ...init,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...csrfHeaders,
+        ...init?.headers,
+      },
+    });
+  } catch (err: any) {
+    throw new Error(err?.message || 'We could not reach the MenusQR server. Check your connection.');
   }
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+
+  if (response.status === 401 && path.startsWith('/admin/')) {
+    window.dispatchEvent(new Event('menusqr:admin-unauthorized'));
+  }
+
+  return parseApiResponse<T>(response);
 }
 
 function getLegacyClients(): ClientRecord[] {
@@ -492,5 +495,71 @@ export function updateAdminStickerRequest(id: string, status: AdminStickerReques
   return request<{ id: string; status: AdminStickerRequest['status']; updatedAt: string }>(`/admin/sticker-requests/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: JSON.stringify({ status, note }),
+  });
+}
+
+export interface AdminCoupon {
+  id: string;
+  code: string;
+  plan_id: string;
+  discount_pct: number;
+  status: 'AVAILABLE' | 'RESERVED' | 'REDEEMED' | 'EXPIRED' | 'DISABLED';
+  created_by: string;
+  expires_at: string | null;
+  reserved_order_id: string | null;
+  reserved_at: string | null;
+  redeemed_order_id: string | null;
+  redeemed_at: string | null;
+  created_at: string;
+}
+
+export interface AdminCouponsResponse {
+  coupons: AdminCoupon[];
+  activeCounts: { INTERMEDIATE: number; PREMIUM: number };
+}
+
+export interface BulkGenerateCouponsInput {
+  planId: 'INTERMEDIATE' | 'PREMIUM';
+  discountPct: number;
+  count: number;
+  expiryDays?: number | null;
+}
+
+export interface BulkGenerateCouponsResponse {
+  success: boolean;
+  createdCount: number;
+  coupons: AdminCoupon[];
+}
+
+export interface DisableCouponResponse {
+  success: boolean;
+  coupon: AdminCoupon;
+}
+
+export function getAdminCoupons(filters?: {
+  planId?: string;
+  status?: string;
+  search?: string;
+}): Promise<AdminCouponsResponse> {
+  const params = new URLSearchParams();
+  if (filters?.planId) params.set('planId', filters.planId);
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.search) params.set('search', filters.search);
+  const qs = params.toString();
+  return request<AdminCouponsResponse>(`/admin/coupons${qs ? `?${qs}` : ''}`);
+}
+
+export function bulkGenerateAdminCoupons(
+  payload: BulkGenerateCouponsInput
+): Promise<BulkGenerateCouponsResponse> {
+  return request<BulkGenerateCouponsResponse>('/admin/coupons/bulk-generate', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function disableAdminCoupon(id: string): Promise<DisableCouponResponse> {
+  return request<DisableCouponResponse>(`/admin/coupons/${encodeURIComponent(id)}/disable`, {
+    method: 'PATCH',
   });
 }

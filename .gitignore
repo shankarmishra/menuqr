@@ -46,6 +46,11 @@ backend/test_*.cjs
 frontend/homepage_dom.html
 frontend/techtext*.json
 frontend/test-results/
+test-results/
+visual-audit/
+scripts/
+.env.development
+frontend/.env.development
 scratch_screenshot/
 temp.txt
 

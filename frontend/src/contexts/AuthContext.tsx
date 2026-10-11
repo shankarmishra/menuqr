@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { setCsrfToken, getCsrfToken } from '../utils/csrf';
+import { parseApiResponse } from '../utils/api';
 
 type User = {
   id: string;
@@ -27,11 +28,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
       if (response.ok) {
-        const data = await response.json();
-        if (data.csrfToken) {
+        const data = await parseApiResponse<{
+          csrfToken?: string;
+          authenticated?: boolean;
+          user?: User;
+        }>(response);
+        if (data?.csrfToken) {
           setCsrfToken(data.csrfToken);
         }
-        if (data.authenticated) {
+        if (data?.authenticated) {
           setUser(data.user || { id: 'super-admin', role: 'SUPER_ADMIN' });
         } else {
           setUser(null);

@@ -1,4 +1,5 @@
 import { ensureCsrfToken } from '../../utils/csrf';
+import { parseApiResponse } from '../../utils/api';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -27,15 +28,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new Error('We could not reach MenusQR. Check your connection and try again.');
   }
-  if (!response.ok) {
-    if (response.status === 401) {
-      window.dispatchEvent(new Event('menusqr:app-unauthorized'));
-    }
-    const result = await response.json().catch(() => null) as { error?: string } | null;
-    throw new Error(result?.error ?? `Request failed (${response.status}).`);
+
+  if (response.status === 401) {
+    window.dispatchEvent(new Event('menusqr:app-unauthorized'));
   }
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+
+  return parseApiResponse<T>(response);
 }
 
 export interface AppProfile {
