@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import SiteHeader from '../../components/marketing/SiteHeader';
-import { AlertCircle, CheckCircle2, ChevronRight, ShieldCheck, MapPin } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ChevronRight, ShieldCheck, MapPin, Star, ExternalLink } from 'lucide-react';
 
 const PLANS: Record<string, { price: number; label: string; features: string[] }> = {
   basic: {
@@ -68,6 +68,28 @@ export default function PurchaseDetailsPage() {
   const [couponError, setCouponError] = useState('');
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Add-ons State
+  const [isGoogleReviewsSelected, setIsGoogleReviewsSelected] = useState(false);
+  const [addonInfo, setAddonInfo] = useState<{ id: string; name: string; description: string; price: number; currency: string }>({
+    id: 'google_reviews',
+    name: 'Google Reviews Integration',
+    description: "Connect your restaurant's Google review page to your MENUQR menu so customers can easily share their experience.",
+    price: 499,
+    currency: 'INR',
+  });
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/purchase/addons`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.addons && Array.isArray(data.addons)) {
+          const gr = data.addons.find((a: any) => a.id === 'google_reviews');
+          if (gr) setAddonInfo(gr);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!['basic', 'intermediate', 'premium'].includes(planId)) {
@@ -266,6 +288,7 @@ export default function PurchaseDetailsPage() {
           planId: planId.toUpperCase(),
           currency: 'INR',
           couponCode: couponApplied?.code || formData.couponCode || null,
+          selectedAddons: isGoogleReviewsSelected ? ['google_reviews'] : [],
           emailVerificationToken,
           emailVerified,
           emailChallengeId,
@@ -302,7 +325,10 @@ export default function PurchaseDetailsPage() {
   };
 
   const plan = PLANS[planId] || PLANS['premium'];
-  const finalPrice = couponApplied ? couponApplied.finalAmount : plan.price;
+  const addonPrice = isGoogleReviewsSelected ? addonInfo.price : 0;
+  const basePlanPrice = plan.price;
+  const planDiscountedPrice = couponApplied ? couponApplied.finalAmount : basePlanPrice;
+  const finalPayablePrice = planDiscountedPrice + addonPrice;
 
   return (
     <div className="min-h-screen bg-[#FAFAF7] flex flex-col">
@@ -576,6 +602,70 @@ export default function PurchaseDetailsPage() {
                 </div>
               </div>
 
+              {/* Optional Add-on Service: Google Reviews Integration */}
+              <div className="mt-8 pt-6 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-bold text-[#151C19] uppercase tracking-wider flex items-center gap-1.5">
+                    <Star size={14} className="text-amber-500 fill-amber-500" />
+                    Optional Add-on Service
+                  </h4>
+                  <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                    +₹{addonInfo.price}/year
+                  </span>
+                </div>
+
+                <div
+                  onClick={() => setIsGoogleReviewsSelected(!isGoogleReviewsSelected)}
+                  className={`p-5 rounded-2xl border transition-all cursor-pointer ${
+                    isGoogleReviewsSelected
+                      ? 'bg-amber-50/40 border-amber-300 ring-2 ring-amber-400/20'
+                      : 'bg-white border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-start gap-4">
+                    <input
+                      type="checkbox"
+                      id="googleReviewsCheckbox"
+                      checked={isGoogleReviewsSelected}
+                      onChange={(e) => setIsGoogleReviewsSelected(e.target.checked)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-1 h-5 w-5 rounded border-gray-300 text-[#E8783C] focus:ring-[#E8783C] cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <label
+                          htmlFor="googleReviewsCheckbox"
+                          className="font-bold text-[#151C19] text-sm cursor-pointer"
+                        >
+                          {addonInfo.name}
+                        </label>
+                        <span className="text-xs font-bold text-[#151C19]">
+                          ₹{addonInfo.price} <span className="text-gray-400 font-normal">/yr</span>
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#151C19]/70 mt-1 leading-relaxed">
+                        {addonInfo.description}
+                      </p>
+
+                      {/* Small Live Menu Preview */}
+                      <div className="mt-4 p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                          Live Menu Preview
+                        </p>
+                        <div className="inline-flex items-center gap-2 rounded-lg bg-black text-white px-3 py-1.5 text-xs font-semibold shadow-sm">
+                          <Star size={12} className="text-amber-400 fill-amber-400" />
+                          <span>Write a Google Review</span>
+                          <ExternalLink size={11} className="opacity-70" />
+                        </div>
+                        <p className="text-[10px] text-gray-500 mt-1.5">
+                          Customers tap this button on your existing QR menu to leave verified reviews.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Coupon Section (Eligible Plans Only) */}
               <div className="mt-8 pt-6 border-t border-gray-100">
                 <h4 className="text-xs font-bold text-[#151C19] uppercase tracking-wider mb-2">Discount Coupon</h4>
@@ -666,18 +756,40 @@ export default function PurchaseDetailsPage() {
                   <h4 className="text-2xl font-black text-[#151C19]">{plan.label}</h4>
                 </div>
                 <div className="text-right">
-                  {couponApplied ? (
-                    <div>
-                      <span className="text-sm line-through text-gray-400 block">₹{plan.price}</span>
-                      <span className="text-3xl font-black text-[#E8783C]">₹{finalPrice}</span>
-                      <span className="text-xs font-bold text-emerald-600 block">Save ₹{couponApplied.discountAmount} ({couponApplied.discountPct}%)</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <span className="text-3xl font-black text-[#151C19]">₹{plan.price}</span>
-                      <span className="text-[#151C19]/60 font-medium text-sm block">/ year</span>
-                    </div>
-                  )}
+                  <span className="text-xl font-bold text-[#151C19]">₹{plan.price}</span>
+                  <span className="text-[#151C19]/60 font-medium text-xs block">/ year</span>
+                </div>
+              </div>
+
+              {/* Price Breakdown */}
+              <div className="border-t border-gray-100 pt-4 mb-6 space-y-2.5 text-sm">
+                <div className="flex justify-between text-[#151C19]/70">
+                  <span>Base Plan ({plan.label})</span>
+                  <span>₹{plan.price}</span>
+                </div>
+                {couponApplied && (
+                  <div className="flex justify-between text-emerald-600 font-medium">
+                    <span>Coupon Discount ({couponApplied.code})</span>
+                    <span>-₹{couponApplied.discountAmount} ({couponApplied.discountPct}%)</span>
+                  </div>
+                )}
+                {isGoogleReviewsSelected && (
+                  <div className="flex justify-between text-[#151C19] font-medium bg-amber-50/60 p-2.5 rounded-xl border border-amber-100">
+                    <span className="flex items-center gap-1.5 text-xs text-amber-900 font-semibold">
+                      <Star size={13} className="text-amber-500 fill-amber-500" />
+                      Google Reviews Add-on
+                    </span>
+                    <span className="text-xs font-bold text-amber-900">+₹{addonInfo.price}</span>
+                  </div>
+                )}
+                <div className="border-t border-gray-100 pt-3 flex justify-between items-baseline">
+                  <div>
+                    <span className="font-bold text-[#151C19] text-base block">Total Payable</span>
+                    <span className="text-[#151C19]/50 text-[11px]">Billed annually</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-3xl font-black text-[#E8783C]">₹{finalPayablePrice}</span>
+                  </div>
                 </div>
               </div>
 

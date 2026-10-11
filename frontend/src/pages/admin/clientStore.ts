@@ -62,7 +62,12 @@ export interface PublicMenuRecord {
   menuItems: MenuItemRecord[];
   plan?: string;
   templateId?: string;
+  googleReviews?: {
+    enabled: boolean;
+    reviewUrl?: string;
+  };
 }
+
 
 export interface ApiHealth {
   status: 'ok';
@@ -313,6 +318,10 @@ interface RawPublicMenuApiResponse {
   };
   plan: string;
   templateId?: string;
+  googleReviews?: {
+    enabled: boolean;
+    reviewUrl?: string;
+  };
   categories: Array<{ id: string; name: string; order: number }>;
   items: Array<{
     id: string;
@@ -360,6 +369,7 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     menuItems,
     plan: raw.plan,
     templateId: raw.templateId,
+    googleReviews: raw.googleReviews,
   };
 }
 

@@ -314,3 +314,28 @@ export async function updateOrderStatus(id: string, status: string) {
 }
 export function renewSubscription(planId: string): Promise<any> { return request<any>('/subscription/renew', { method: 'POST', body: JSON.stringify({ planId }) }); }
 
+export interface GoogleReviewsAddonStatus {
+  addonId: string;
+  status: 'SETUP_REQUIRED' | 'ACTIVE' | 'EXPIRED' | 'NOT_SUBSCRIBED';
+  reviewUrl: string | null;
+  expiresAt: string | null;
+  updatedAt: string | null;
+  canConfigure: boolean;
+}
+
+export function getGoogleReviewsAddon(): Promise<GoogleReviewsAddonStatus> {
+  return request<GoogleReviewsAddonStatus>('/addons/google-reviews');
+}
+
+export function updateGoogleReviewsAddon(reviewUrl: string): Promise<{ success: boolean; status: string; reviewUrl: string; updatedAt: string }> {
+  return request('/addons/google-reviews', {
+    method: 'PUT',
+    body: JSON.stringify({ reviewUrl }),
+  });
+}
+
+export function deleteGoogleReviewsAddon(): Promise<{ success: boolean; status: string; reviewUrl: null }> {
+  return request('/addons/google-reviews', {
+    method: 'DELETE',
+  });
+}

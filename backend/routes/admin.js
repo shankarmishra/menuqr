@@ -298,6 +298,66 @@ export default async function adminRoutes(request, response, url) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // SUPER ADMIN GOOGLE REVIEWS ADD-ON OPERATIONS ENDPOINT
+  // ─────────────────────────────────────────────────────────────────────────
+  if (request.method === 'GET' && url.pathname === '/api/admin/addons/google-reviews') {
+    const listRes = await pool.query(`
+      SELECT
+        e.id as "entitlementId",
+        e.tenant_id as "tenantId",
+        c.business_name as "businessName",
+        c.menu_slug as "menuSlug",
+        u.email as "ownerEmail",
+        e.status as "entitlementStatus",
+        e.started_at as "startedAt",
+        e.expires_at as "expiresAt",
+        e.order_id as "orderId",
+        o.amount as "orderAmount",
+        COALESCE(o.addon_amount, 0) as "addonAmount",
+        r.review_url as "reviewUrl",
+        CASE
+          WHEN e.expires_at < NOW() THEN 'EXPIRED'
+          WHEN r.review_url IS NOT NULL AND r.review_url != '' THEN 'ACTIVE'
+          ELSE 'SETUP_REQUIRED'
+        END as "integrationStatus"
+      FROM tenant_addon_entitlements e
+      JOIN clients c ON c.id = e.tenant_id
+      LEFT JOIN users u ON u.tenant_id = c.id
+      LEFT JOIN orders o ON o.id = e.order_id
+      LEFT JOIN tenant_google_reviews r ON r.tenant_id = e.tenant_id
+      WHERE e.addon_id = 'google_reviews'
+      ORDER BY e.created_at DESC
+    `);
+
+    const rows = listRes.rows;
+    const now = new Date();
+    const totalSubscribers = rows.length;
+    const activeSubscribers = rows.filter(r => r.entitlementStatus === 'ACTIVE' && new Date(r.expiresAt) > now).length;
+    const setupPendingCount = rows.filter(r => r.entitlementStatus === 'ACTIVE' && new Date(r.expiresAt) > now && !r.reviewUrl).length;
+    const expiredCount = rows.filter(r => r.entitlementStatus === 'EXPIRED' || new Date(r.expiresAt) <= now).length;
+    const totalAddonRevenue = rows.reduce((sum, r) => sum + Number(r.addonAmount || 0), 0);
+
+    const summary = {
+      totalSubscribers,
+      activeSubscribers,
+      setupRequired: setupPendingCount,
+      setupPendingCount,
+      expired: expiredCount,
+      expiredCount,
+      totalRevenueRupees: totalAddonRevenue,
+      totalRevenuePaise: Math.round(totalAddonRevenue * 100),
+      totalAddonRevenue,
+    };
+
+    sendJson(response, 200, {
+      subscribers: rows,
+      summary,
+      metrics: summary,
+    });
+    return true;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // CATEGORY-AWARE & OPERATIONAL METRICS ENDPOINT
   // ─────────────────────────────────────────────────────────────────────────
   if (request.method === 'GET' && url.pathname === '/api/admin/metrics') {

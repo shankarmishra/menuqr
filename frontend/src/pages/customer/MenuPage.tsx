@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Clock3, ShoppingCart, X, Plus, Minus } from 'lucide-react';
+import { MapPin, Clock3, ShoppingCart, X, Plus, Minus, Star, ExternalLink } from 'lucide-react';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { getClientByMenuSlug, submitCustomerOrder, submitCustomerOrderByQr, type PublicMenuRecord } from '../admin/clientStore';
@@ -31,8 +31,8 @@ export default function MenuPage() {
   const loadError = currentMenuResult?.error ?? '';
   const isLoading = Boolean(slug) && !currentMenuResult;
 
-  const addToCart = (item: any, priceStr: string, variant?: string) => {
-    if (!isPremium) return;
+  const addToCart = (item: any, priceStr?: string, variant?: string) => {
+    if (!isPremium || !priceStr) return;
     const price = parseFloat(priceStr.replace(/[^0-9.]/g, ''));
     if (isNaN(price)) return;
 
@@ -195,6 +195,36 @@ export default function MenuPage() {
           isPremium={isPremium}
         />
       </main>
+
+      {/* Google Reviews Add-on Section */}
+      {client.googleReviews?.enabled && client.googleReviews?.reviewUrl && (
+        <section
+          aria-label="Google Reviews"
+          className="mx-auto my-10 max-w-sm px-4 text-center"
+        >
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md shadow-lg transition-transform hover:scale-[1.01]">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-amber-400/10 text-amber-400">
+              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+            </div>
+            <h3 className="text-sm font-semibold text-white tracking-wide">
+              Share Your Experience
+            </h3>
+            <p className="mt-1 text-xs text-white/60">
+              Enjoyed your dining at {client.businessName}? Leave an honest review on Google.
+            </p>
+            <a
+              href={client.googleReviews.reviewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Write a Google review for ${client.businessName} (opens in a new tab)`}
+              className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2.5 text-xs font-semibold text-white transition-all duration-200 active:scale-95 shadow-sm"
+            >
+              <span>Write a Google Review</span>
+              <ExternalLink size={13} className="opacity-70" />
+            </a>
+          </div>
+        </section>
+      )}
 
       <footer className="py-6 text-center text-xs opacity-60 border-t border-white/10 mt-12">
         Prepared with care at <strong className="opacity-100">{client.businessName}</strong>

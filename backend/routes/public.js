@@ -15,7 +15,7 @@ export function clearAllPublicMenuCaches() {
   publicMenuCache.clear();
 }
 
-async function getFullPublicMenuData(tenantId) {
+export async function getFullPublicMenuData(tenantId) {
   const cached = publicMenuCache.get(tenantId);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.data;
@@ -41,6 +41,28 @@ async function getFullPublicMenuData(tenantId) {
   // 4. Fetch Menu & Categories
   const menuRes = await pool.query('SELECT * FROM menus WHERE tenant_id = $1 LIMIT 1', [tenantId]);
   const menu = menuRes.rows[0];
+
+  // 5. Fetch Google Reviews add-on status & URL if active and unexpired
+  let googleReviews = { enabled: false };
+  const addonRes = await pool.query(
+    `SELECT status, expires_at FROM tenant_addon_entitlements
+     WHERE tenant_id = $1 AND addon_id = 'google_reviews' AND status = 'ACTIVE' AND expires_at > NOW()`,
+    [tenantId]
+  );
+  if (addonRes.rows.length > 0) {
+    const reviewRes = await pool.query(
+      `SELECT review_url FROM tenant_google_reviews WHERE tenant_id = $1`,
+      [tenantId]
+    );
+    const reviewUrl = reviewRes.rows[0]?.review_url;
+    if (reviewUrl) {
+      googleReviews = {
+        enabled: true,
+        reviewUrl,
+      };
+    }
+  }
+
 
   let categories = [];
   let items = [];
@@ -147,9 +169,11 @@ async function getFullPublicMenuData(tenantId) {
     },
     plan: authorization.planId,
     templateId: appearance.template_id || 'royal-maharaja',
+    googleReviews,
     categories,
     items,
   };
+
 
   publicMenuCache.set(tenantId, {
     data: result,

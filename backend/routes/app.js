@@ -17,6 +17,49 @@ function requireBasicContentAccess(authorization) {
   }
 }
 
+export function isValidGoogleReviewUrl(urlString) {
+  if (typeof urlString !== 'string') return false;
+  const trimmed = urlString.trim();
+  if (!trimmed || trimmed.length > 1000) return false;
+
+  let parsed;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return false;
+  }
+
+  // Enforce HTTPS
+  if (parsed.protocol !== 'https:') return false;
+
+  // Reject embedded username/password
+  if (parsed.username || parsed.password) return false;
+
+  const hostname = parsed.hostname.toLowerCase();
+
+  const isExactHost = [
+    'search.google.com',
+    'g.page',
+    'maps.google.com',
+    'goo.gl',
+    'maps.app.goo.gl',
+    'google.com',
+    'www.google.com',
+  ].includes(hostname);
+
+  const isGoogleSubdomain =
+    hostname.endsWith('.google.com') ||
+    hostname.endsWith('.google.co.in') ||
+    hostname.endsWith('.g.page');
+
+  if (!isExactHost && !isGoogleSubdomain) {
+    return false;
+  }
+
+  return true;
+}
+
+
 export default async function appRoutes(request, response, url) {
   if (!url.pathname.startsWith('/api/app/')) return false;
   
@@ -401,6 +444,123 @@ export default async function appRoutes(request, response, url) {
     sendJson(response, 200, updated.rows[0]);
     return true;
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // GET /api/app/addons/google-reviews — Status & Review Configuration
+  // ─────────────────────────────────────────────────────────────────────────
+  if (request.method === 'GET' && url.pathname === '/api/app/addons/google-reviews') {
+    const entitlementRes = await pool.query(
+      `SELECT status, expires_at, started_at, updated_at
+       FROM tenant_addon_entitlements
+       WHERE tenant_id = $1 AND addon_id = 'google_reviews'`,
+      [user.tenantId]
+    );
+
+    const reviewRes = await pool.query(
+      `SELECT review_url, updated_at FROM tenant_google_reviews WHERE tenant_id = $1`,
+      [user.tenantId]
+    );
+
+    const ent = entitlementRes.rows[0];
+    const rev = reviewRes.rows[0];
+
+    const now = new Date();
+    const hasEntitlement = Boolean(ent && ent.status === 'ACTIVE' && new Date(ent.expires_at) > now);
+    const isExpired = Boolean(ent && (new Date(ent.expires_at) <= now || ent.status === 'EXPIRED'));
+
+    let status = 'NOT_SUBSCRIBED';
+    if (isExpired) {
+      status = 'EXPIRED';
+    } else if (hasEntitlement) {
+      status = rev?.review_url ? 'ACTIVE' : 'SETUP_REQUIRED';
+    }
+
+    sendJson(response, 200, {
+      status,
+      canConfigure: hasEntitlement,
+      hasEntitlement,
+      isExpired,
+      expiresAt: ent?.expires_at || null,
+      startedAt: ent?.started_at || null,
+      reviewUrl: rev?.review_url || '',
+      lastUpdated: rev?.updated_at || ent?.updated_at || null,
+    });
+    return true;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // PUT /api/app/addons/google-reviews — Save / Update Review Link
+  // ─────────────────────────────────────────────────────────────────────────
+  if (request.method === 'PUT' && url.pathname === '/api/app/addons/google-reviews') {
+    // Entitlement verification: tenant must have active, unexpired entitlement
+    const entCheck = await pool.query(
+      `SELECT status, expires_at FROM tenant_addon_entitlements
+       WHERE tenant_id = $1 AND addon_id = 'google_reviews' AND status = 'ACTIVE' AND expires_at > NOW()`,
+      [user.tenantId]
+    );
+
+    if (entCheck.rows.length === 0) {
+      throw apiError(403, 'Active Google Reviews add-on subscription required to configure review link.');
+    }
+
+    const input = await readJson(request);
+    const rawUrl = String(input.reviewUrl || '').trim();
+
+    if (!rawUrl) {
+      throw apiError(400, 'Google review link is required.');
+    }
+
+    if (!isValidGoogleReviewUrl(rawUrl)) {
+      throw apiError(400, 'Invalid Google review URL. Please provide a valid https:// Google review link (e.g. from g.page, search.google.com, or maps.google.com).');
+    }
+
+    const upsertRes = await pool.query(
+      `INSERT INTO tenant_google_reviews (tenant_id, review_url, updated_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (tenant_id)
+       DO UPDATE SET review_url = EXCLUDED.review_url, updated_at = NOW()
+       RETURNING review_url as "reviewUrl", updated_at as "updatedAt"`,
+      [user.tenantId, rawUrl]
+    );
+
+    invalidatePublicMenuCache(user.tenantId);
+
+    sendJson(response, 200, {
+      success: true,
+      status: 'ACTIVE',
+      reviewUrl: upsertRes.rows[0].reviewUrl,
+      updatedAt: upsertRes.rows[0].updatedAt,
+      message: 'Google review link saved successfully.'
+    });
+    return true;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // DELETE /api/app/addons/google-reviews — Clear Review Link
+  // ─────────────────────────────────────────────────────────────────────────
+  if (request.method === 'DELETE' && url.pathname === '/api/app/addons/google-reviews') {
+    const entCheck = await pool.query(
+      `SELECT status, expires_at FROM tenant_addon_entitlements
+       WHERE tenant_id = $1 AND addon_id = 'google_reviews' AND status = 'ACTIVE' AND expires_at > NOW()`,
+      [user.tenantId]
+    );
+
+    if (entCheck.rows.length === 0) {
+      throw apiError(403, 'Active Google Reviews add-on subscription required.');
+    }
+
+    await pool.query('DELETE FROM tenant_google_reviews WHERE tenant_id = $1', [user.tenantId]);
+    invalidatePublicMenuCache(user.tenantId);
+
+    sendJson(response, 200, {
+      success: true,
+      status: 'SETUP_REQUIRED',
+      reviewUrl: '',
+      message: 'Google review link removed.'
+    });
+    return true;
+  }
+
 
 
   if (request.method === 'GET' && url.pathname === '/api/app/menu') {

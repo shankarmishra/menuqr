@@ -4,15 +4,40 @@ import { pool } from '../db.js';
 import { apiError, sendJson, readJson, readJsonWithRaw } from '../utils.js';
 import { hashPassword } from '../auth.js';
 import { sendActivationEmail, sendPaymentSuccessEmail, sendRenewalEmail } from '../email.js';
+import { invalidatePublicMenuCache } from './public.js';
 
 // ---------------------------------------------------------------------------
 // PLAN CONFIG — prices NEVER come from the frontend
 // ---------------------------------------------------------------------------
-const PLANS = {
+export const PLANS = {
   basic:        { price: 999,  label: 'Basic',        features: ['1 QR Code', 'Unlimited menu views', 'Up to 50 items', 'Basic templates', 'Email support'] },
   intermediate: { price: 1499, label: 'Intermediate', features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', 'Priority support', 'Analytics dashboard'] },
   premium:      { price: 2999, label: 'Premium',      features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', '24/7 support', 'Analytics dashboard', 'Table ordering', 'Live orders panel', 'Reception workflow'] },
 };
+
+// ---------------------------------------------------------------------------
+// ADD-ON CATALOGUE — server-authoritative annual services
+// ---------------------------------------------------------------------------
+export const ADDONS = {
+  google_reviews: {
+    id: 'google_reviews',
+    name: 'Google Reviews Integration',
+    description: "Connect your restaurant's Google review page to your MENUQR menu so customers can easily share their experience.",
+    price: Number(process.env.ADDON_GOOGLE_REVIEWS_PRICE) || 499,
+    currency: 'INR',
+    billingPeriod: 'YEARLY',
+    active: true,
+  },
+};
+
+export function getAddon(addonId) {
+  if (!addonId) return null;
+  const key = String(addonId).toLowerCase().trim();
+  const addon = ADDONS[key];
+  if (!addon || !addon.active) return null;
+  return addon;
+}
+
 
 // ---------------------------------------------------------------------------
 // Helpers & Signature Verification
@@ -414,13 +439,47 @@ export async function processOrderPaymentAndProvision({
 
     provisionedTenantId = tenantId;
 
+    // ── 6b. Provision Add-on Entitlements (e.g. Google Reviews) ─────────
+    const rawSelectedAddons = order.selected_addons;
+    let selectedAddonsList = [];
+    if (Array.isArray(rawSelectedAddons)) {
+      selectedAddonsList = rawSelectedAddons;
+    } else if (typeof rawSelectedAddons === 'string') {
+      try { selectedAddonsList = JSON.parse(rawSelectedAddons); } catch (_) {}
+    }
+
+    for (const addonItem of selectedAddonsList) {
+      const addonKey = typeof addonItem === 'string' ? addonItem : addonItem?.id;
+      if (addonKey === 'google_reviews') {
+        const addonExpiresAt = new Date();
+        addonExpiresAt.setFullYear(addonExpiresAt.getFullYear() + 1);
+        const entitlementId = `ent_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
+        await client.query(
+          `INSERT INTO tenant_addon_entitlements
+             (id, tenant_id, addon_id, status, started_at, expires_at, order_id, updated_at)
+           VALUES ($1, $2, 'google_reviews', 'ACTIVE', NOW(), $3, $4, NOW())
+           ON CONFLICT (tenant_id, addon_id)
+           DO UPDATE SET
+             status = 'ACTIVE',
+             expires_at = CASE
+               WHEN tenant_addon_entitlements.expires_at > NOW()
+                 THEN tenant_addon_entitlements.expires_at + INTERVAL '1 year'
+               ELSE EXCLUDED.expires_at
+             END,
+             order_id = EXCLUDED.order_id,
+             updated_at = NOW()`,
+          [entitlementId, tenantId, addonExpiresAt, orderId]
+        );
+      }
+    }
+
     // ── 7. Log provisioning ─────────────────────────────────────────────
     await client.query(
       `INSERT INTO activity_logs (tenant_id, user_id, action, description, metadata)
        VALUES ($1,$2,$3,$4,$5)`,
       [tenantId, userId, 'ORDER_PROVISIONED',
        `Order ${orderId} provisioned successfully`,
-       JSON.stringify({ orderId, plan: order.plan_id, amount: order.amount })]
+       JSON.stringify({ orderId, plan: order.plan_id, amount: order.amount, selectedAddons: selectedAddonsList })]
     );
 
     // ── 8. Mark order complete with lock ownership fencing ──────────────
@@ -445,6 +504,7 @@ export async function processOrderPaymentAndProvision({
     }
 
     await client.query('COMMIT');
+    invalidatePublicMenuCache(tenantId);
   } catch (e) {
     await client.query('ROLLBACK').catch(() => {});
     await pool.query(
@@ -676,6 +736,17 @@ export default async function purchaseRoutes(request, response, url) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // GET /api/purchase/catalogue & /api/purchase/addons — Authoritative catalogue
+  // ─────────────────────────────────────────────────────────────────────────
+  if (request.method === 'GET' && (url.pathname === '/api/purchase/catalogue' || url.pathname === '/api/purchase/addons')) {
+    sendJson(response, 200, {
+      plans: PLANS,
+      addons: Object.values(ADDONS),
+    });
+    return true;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // POST /api/purchase/orders — Create order with coupon & business metadata
   // ─────────────────────────────────────────────────────────────────────────
   if (request.method === 'POST' && url.pathname === '/api/purchase/orders') {
@@ -684,7 +755,8 @@ export default async function purchaseRoutes(request, response, url) {
       customerName, customerEmail, phone,
       businessName, city, address, state, cuisine, businessType, categoryOther, outletCount,
       website, instagram,
-      planId, currency, couponCode, emailVerified, phoneVerified, emailChallengeId, emailVerificationToken
+      planId, currency, couponCode, emailVerified, phoneVerified, emailChallengeId, emailVerificationToken,
+      selectedAddons,
     } = input;
 
     if (!customerName || !customerEmail || !businessName || !planId) {
@@ -694,6 +766,31 @@ export default async function purchaseRoutes(request, response, url) {
     const planKey = makePlanKey(planId);
     const plan = PLANS[planKey];
     if (!plan) throw apiError(400, 'Invalid plan selected.');
+
+    // ── Authoritative Add-on Validation & Pricing ───────────────────────────
+    let addonAmount = 0;
+    const validatedAddons = [];
+    if (selectedAddons !== undefined && selectedAddons !== null) {
+      if (!Array.isArray(selectedAddons)) {
+        throw apiError(400, 'selectedAddons must be an array.');
+      }
+      const rawKeys = selectedAddons.map(a => String(typeof a === 'object' && a !== null ? (a.id || '') : a).toLowerCase().trim());
+      const uniqueAddonKeys = Array.from(new Set(rawKeys.filter(Boolean)));
+      for (const key of uniqueAddonKeys) {
+        const addon = getAddon(key);
+        if (!addon) {
+          throw apiError(400, `Add-on '${key}' is invalid or currently unavailable.`);
+        }
+        addonAmount += addon.price;
+        validatedAddons.push({
+          id: addon.id,
+          name: addon.name,
+          price: addon.price,
+          currency: addon.currency,
+          billingPeriod: addon.billingPeriod,
+        });
+      }
+    }
 
     const normalizedEmail = customerEmail.trim().toLowerCase();
     const { consumeEmailVerificationGrant } = await import('../clientAuth.js');
@@ -743,9 +840,9 @@ export default async function purchaseRoutes(request, response, url) {
       orderId = `order_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
     }
 
-    // Coupon discount handling
-    let finalAmount = plan.price;
-    let originalAmount = plan.price;
+    // Authoritative total calculations: coupon applies strictly to base plan; add-on added cleanly
+    let finalAmount = plan.price + addonAmount;
+    let originalAmount = plan.price + addonAmount;
     let discountPct = null;
     let discountAmount = null;
     let validCouponCode = null;
@@ -761,8 +858,8 @@ export default async function purchaseRoutes(request, response, url) {
         orderId,
       });
       const calc = calculateDiscount(plan.price, reservedCoupon.discount_pct);
-      finalAmount = calc.finalAmount;
-      originalAmount = calc.originalAmount;
+      finalAmount = (plan.price - calc.discountAmount) + addonAmount;
+      originalAmount = plan.price + addonAmount;
       discountPct = calc.discountPct;
       discountAmount = calc.discountAmount;
       validCouponCode = reservedCoupon.code;
@@ -824,13 +921,15 @@ export default async function purchaseRoutes(request, response, url) {
              cuisine = $6, business_type = $7, category_other = $8, outlet_count = $9,
              website = $10, instagram = $11, plan_id = $12, amount = $13, original_amount = $14,
              discount_pct = $15, discount_amount = $16, coupon_code = $17, email_verified = $18,
-             phone_verified = $19, currency = $20, metadata = COALESCE($21, metadata), updated_at = CURRENT_TIMESTAMP
-         WHERE id = $22`,
+             phone_verified = $19, currency = $20, metadata = COALESCE($21, metadata),
+             selected_addons = $22, addon_amount = $23, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $24`,
         [customerName, phone || null, city || null, address || null, state || null,
          cuisine || businessType || null, businessType || 'restaurant', categoryOther || null,
          Number(outletCount) || 1, website || null, instagram || null,
          planKey, finalAmount, originalAmount, discountPct, discountAmount, validCouponCode,
-         isServerEmailVerified, false, currency || 'INR', metadataJSON, orderId]
+         isServerEmailVerified, false, currency || 'INR', metadataJSON,
+         JSON.stringify(validatedAddons), addonAmount, orderId]
       );
     } else {
       await pool.query(
@@ -838,15 +937,17 @@ export default async function purchaseRoutes(request, response, url) {
            (id, customer_name, customer_email, phone, business_name, city, address, state,
             cuisine, business_type, category_other, outlet_count, website, instagram,
             plan_id, amount, original_amount, discount_pct, discount_amount, coupon_code,
-            email_verified, phone_verified, currency, status, provisioning_status, metadata)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)`,
+            email_verified, phone_verified, currency, status, provisioning_status, metadata,
+            selected_addons, addon_amount)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)`,
         [orderId, customerName, customerEmail.trim().toLowerCase(), phone || null,
          businessName, city || null, address || null, state || null,
          cuisine || businessType || null, businessType || 'restaurant', categoryOther || null,
          Number(outletCount) || 1, website || null, instagram || null,
          planKey, finalAmount, originalAmount, discountPct, discountAmount, validCouponCode,
          isServerEmailVerified, false, currency || 'INR',
-         'PENDING_PAYMENT', 'PENDING', metadataJSON]
+         'PENDING_PAYMENT', 'PENDING', metadataJSON,
+         JSON.stringify(validatedAddons), addonAmount]
       );
     }
 
@@ -856,6 +957,8 @@ export default async function purchaseRoutes(request, response, url) {
       originalAmount,
       discountAmount: discountAmount || 0,
       discountPct: discountPct || 0,
+      addonAmount,
+      selectedAddons: validatedAddons,
       couponCode: validCouponCode,
       status: 'PENDING_PAYMENT',
       paymentSessionId,
@@ -874,7 +977,13 @@ export default async function purchaseRoutes(request, response, url) {
     if (!res.rows[0]) throw apiError(404, 'Order not found.');
     const order = res.rows[0];
     const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
-    sendJson(response, 200, { ...order, planLabel: planMeta.label, planFeatures: planMeta.features });
+    sendJson(response, 200, {
+      ...order,
+      planLabel: planMeta.label,
+      planFeatures: planMeta.features,
+      selectedAddons: order.selected_addons || [],
+      addonAmount: Number(order.addon_amount || 0),
+    });
     return true;
   }
 
@@ -907,7 +1016,7 @@ export default async function purchaseRoutes(request, response, url) {
   if (request.method === 'POST' && renewMatch) {
     const sourceOrderId = renewMatch[1];
     const input = await readJson(request);
-    const { planId, razorpayPaymentId, razorpayOrderId, razorpaySignature, mockSuccess } = input;
+    const { planId, razorpayPaymentId, razorpayOrderId, razorpaySignature, mockSuccess, selectedAddons } = input;
 
     const sourceRes = await pool.query('SELECT * FROM orders WHERE id=$1', [sourceOrderId]);
     const sourceOrder = sourceRes.rows[0];
@@ -922,6 +1031,34 @@ export default async function purchaseRoutes(request, response, url) {
 
     const planKey = makePlanKey(planId || sourceOrder.plan_id);
     const plan = PLANS[planKey];
+    if (!plan) throw apiError(400, 'Invalid plan selected.');
+
+    // Authoritative add-on validation for renewal
+    let addonAmount = 0;
+    const validatedAddons = [];
+    if (selectedAddons !== undefined && selectedAddons !== null) {
+      if (!Array.isArray(selectedAddons)) {
+        throw apiError(400, 'selectedAddons must be an array.');
+      }
+      const rawKeys = selectedAddons.map(a => String(typeof a === 'object' && a !== null ? (a.id || '') : a).toLowerCase().trim());
+      const uniqueAddonKeys = Array.from(new Set(rawKeys.filter(Boolean)));
+      for (const key of uniqueAddonKeys) {
+        const addon = getAddon(key);
+        if (!addon) {
+          throw apiError(400, `Add-on '${key}' is invalid or currently unavailable.`);
+        }
+        addonAmount += addon.price;
+        validatedAddons.push({
+          id: addon.id,
+          name: addon.name,
+          price: addon.price,
+          currency: addon.currency,
+          billingPeriod: addon.billingPeriod,
+        });
+      }
+    }
+    const renewalTotal = plan.price + addonAmount;
+
     const razorpayConfigured = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 
     if (razorpayConfigured) {
@@ -942,11 +1079,12 @@ export default async function purchaseRoutes(request, response, url) {
     const renewOrderId = `order_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
     await pool.query(
       `INSERT INTO orders
-         (id, customer_name, customer_email, business_name, plan_id, amount, currency, status, provisioning_status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+         (id, customer_name, customer_email, business_name, plan_id, amount, currency, status, provisioning_status, selected_addons, addon_amount)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
       [renewOrderId, sourceOrder.customer_name, sourceOrder.customer_email,
-       sourceOrder.business_name, planKey, plan.price,
-       sourceOrder.currency || 'INR', 'PAID', 'PENDING']
+       sourceOrder.business_name, planKey, renewalTotal,
+       sourceOrder.currency || 'INR', 'PAID', 'PENDING',
+       JSON.stringify(validatedAddons), addonAmount]
     );
 
     const paymentId = `pay_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
@@ -956,7 +1094,7 @@ export default async function purchaseRoutes(request, response, url) {
       [paymentId, renewOrderId,
        razorpayPaymentId ? 'razorpay' : 'mock',
        razorpayPaymentId || `mock_renew_${randomUUID()}`,
-       plan.price, 'SUCCESS']
+       renewalTotal, 'SUCCESS']
     );
 
     const existingSub = await pool.query(
@@ -986,6 +1124,30 @@ export default async function purchaseRoutes(request, response, url) {
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
         [subId, tenantId, planKey.toUpperCase(), 'ACTIVE', newStart, newExpiry, new Date(), renewOrderId]
       );
+    }
+
+    // Provision renewed add-on entitlement if purchased
+    for (const addonItem of validatedAddons) {
+      if (addonItem.id === 'google_reviews') {
+        const entitlementId = `ent_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
+        await pool.query(
+          `INSERT INTO tenant_addon_entitlements
+             (id, tenant_id, addon_id, status, started_at, expires_at, order_id, updated_at)
+           VALUES ($1, $2, 'google_reviews', 'ACTIVE', NOW(), $3, $4, NOW())
+           ON CONFLICT (tenant_id, addon_id)
+           DO UPDATE SET
+             status = 'ACTIVE',
+             expires_at = CASE
+               WHEN tenant_addon_entitlements.expires_at > NOW()
+                 THEN GREATEST(tenant_addon_entitlements.expires_at + INTERVAL '1 year', EXCLUDED.expires_at)
+               ELSE EXCLUDED.expires_at
+             END,
+             order_id = EXCLUDED.order_id,
+             updated_at = NOW()`,
+          [entitlementId, tenantId, newExpiry, renewOrderId]
+        );
+        invalidatePublicMenuCache(tenantId);
+      }
     }
 
     await pool.query(

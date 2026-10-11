@@ -66,7 +66,17 @@ export default function PurchaseReviewPage() {
             <span className="text-[#151C19]/70 font-medium">Plan</span>
             <span className="font-bold text-[#E8783C] uppercase tracking-wide">{order.plan_id}</span>
           </div>
-          <div className="flex justify-between items-center mb-6">
+          {(order.selected_addons?.includes('google_reviews') || order.selectedAddons?.includes('google_reviews') || Number(order.addon_amount || order.addonAmount || 0) > 0) && (
+            <div className="flex justify-between items-center mb-3 text-xs bg-amber-50/60 p-2.5 rounded-xl border border-amber-100">
+              <span className="text-amber-900 font-semibold flex items-center gap-1.5">
+                ★ Google Reviews Add-on (1 year)
+              </span>
+              <span className="font-bold text-amber-900">
+                +₹{order.addon_amount || order.addonAmount || 499}
+              </span>
+            </div>
+          )}
+          <div className="flex justify-between items-center mb-6 pt-2 border-t border-gray-100">
             <span className="text-[#151C19]/70 font-medium">Total Amount</span>
             <span className="font-black text-2xl text-[#151C19]">{order.currency === 'INR' ? '₹' : order.currency} {order.amount}</span>
           </div>
