@@ -93,7 +93,6 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   if (premium?.tenantId) await cleanTenant(premium.tenantId);
-  await pool.end();
 });
 
 test('Client Panel routes load without errors', async ({ browser, baseURL }) => {

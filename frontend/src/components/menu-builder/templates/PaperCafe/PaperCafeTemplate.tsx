@@ -18,10 +18,10 @@ export const PaperCafeTemplate: React.FC<LayoutProps> = ({
   return (
     <div className="text-[#3A2E2B] font-mono relative z-10 space-y-6">
       {/* Editorial Menu Spread Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div className={clsx(compact ? 'space-y-4' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start')}>
         
-        {/* Left Column: Recycled Kraft Paper Identity (35% on Desktop) */}
-        <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#FBF6F0] border-2 border-[#8C6D53]/40 p-5 rounded shadow-xl">
+        {/* Left Column: Recycled Kraft Paper Identity */}
+        <div className={clsx(compact ? 'space-y-3 bg-[#FBF6F0] border-2 border-[#8C6D53]/40 p-4 rounded shadow-xl' : 'lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#FBF6F0] border-2 border-[#8C6D53]/40 p-5 rounded shadow-xl')}>
           <div className="text-center space-y-1 pb-3 border-b-2 border-[#8C6D53]/40">
             <span className="text-[9px] font-mono uppercase tracking-[0.4em] text-[#8C6D53] font-bold block">
               CRAFT PRINT & KITCHEN
@@ -77,8 +77,8 @@ export const PaperCafeTemplate: React.FC<LayoutProps> = ({
           )}
         </div>
 
-        {/* Right Column: Printed Kraft Menu Spread (65% on Desktop) */}
-        <div className="lg:col-span-8 bg-[#FBF6F0] border-2 border-[#8C6D53]/40 p-4 sm:p-6 rounded shadow-xl space-y-8">
+        {/* Right Column: Printed Kraft Menu Spread */}
+        <div className={clsx(!compact && 'lg:col-span-8', 'bg-[#FBF6F0] border-2 border-[#8C6D53]/40 p-4 sm:p-6 rounded shadow-xl space-y-8')}>
           {categories.map((cat) => (
             <div key={cat.id} className="space-y-4">
               <div className="flex items-center gap-2 border-b border-[#8C6D53]/40 pb-1">
@@ -98,7 +98,7 @@ export const PaperCafeTemplate: React.FC<LayoutProps> = ({
                       <div className="flex items-center gap-2 min-w-0">
                         <DietIndicator type={item.dietType} compact={compact} color="#8C6D53" />
                         <h3
-                          className="font-bold text-xs sm:text-sm text-[#2B211E] group-hover:text-[#8C6D53] transition-colors truncate"
+                          className={clsx('font-bold text-xs sm:text-sm text-[#2B211E] group-hover:text-[#8C6D53] transition-colors', compact ? 'leading-snug' : 'truncate')}
                           style={{ fontFamily: template.typography.body }}
                         >
                           {item.name}
@@ -106,7 +106,7 @@ export const PaperCafeTemplate: React.FC<LayoutProps> = ({
                       </div>
 
                       {/* Dashed Leader Line */}
-                      <span className="flex-1 border-b border-dashed border-[#8C6D53]/40 mx-2 hidden sm:inline-block" />
+                      <span className={clsx(!compact && 'hidden sm:inline-block', 'flex-1 border-b border-dashed border-[#8C6D53]/40 mx-2')} />
 
                       <RenderItemPrices
                         item={item}

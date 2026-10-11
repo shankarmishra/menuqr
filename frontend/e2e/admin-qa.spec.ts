@@ -63,7 +63,6 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await pool.query('DELETE FROM coupons WHERE code LIKE $1', ['MQ15-TEST-%']);
-  await pool.end();
 });
 
 test.describe('Admin Portal QA & UI Verification', () => {

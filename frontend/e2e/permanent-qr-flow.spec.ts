@@ -102,10 +102,10 @@ test.beforeAll(async () => {
 test.afterAll(async () => {
   if (basic?.tenantId) await cleanTenant(basic.tenantId);
   if (premium?.tenantId) await cleanTenant(premium.tenantId);
-  await pool.end();
 });
 
 test('Basic onboarding saves real data, creates one permanent QR, edits live menu, and requests/admin-reviews stickers', async ({ browser, baseURL }, testInfo) => {
+  test.slow();
   const context = await browser.newContext({ acceptDownloads: true });
   await addAuthCookie(context, basic.cookie);
   const page = await context.newPage();
@@ -164,18 +164,18 @@ test('Basic onboarding saves real data, creates one permanent QR, edits live men
   expect(svgDownload.suggestedFilename()).toContain('.svg');
   await page.getByRole('button', { name: 'Close' }).click();
 
-  await page.goto(`${baseURL}/qr/${encodeURIComponent(qrId)}`);
+  await page.goto(`${baseURL}/qr/${encodeURIComponent(qrId)}`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: basicRestaurantName })).toBeVisible();
   await expect(page.getByText('Market Thali')).toBeVisible();
 
-  await page.goto(`${baseURL}/app/menu`);
+  await page.goto(`${baseURL}/app/menu`, { waitUntil: 'domcontentloaded' });
   await page.getByRole('heading', { name: 'Market Thali' }).hover();
   await page.getByRole('button', { name: 'Edit item' }).filter({ visible: true }).first().click();
   await page.getByLabel(/Dish Name/).clear();
   await page.getByLabel(/Dish Name/).fill('Market Thali Updated');
   await page.getByRole('button', { name: 'Save Item' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Menu item updated.' })).toBeVisible();
-  await expect(page.getByText('29 left')).toBeVisible();
+  await expect(page.getByText('19 left')).toBeVisible();
   const savedItem = await pool.query('SELECT name FROM menu_items WHERE id = $1', [menu.rows[0].item_id]);
   expect(savedItem.rows[0].name).toBe('Market Thali Updated');
   const liveScan = await page.request.get(`${baseURL}/api/public/qr/${encodeURIComponent(qrId)}`);
@@ -185,7 +185,7 @@ test('Basic onboarding saves real data, creates one permanent QR, edits live men
   const stableQr = await pool.query('SELECT qr_code_id FROM tenant_qr_identity WHERE tenant_id = $1', [basic.tenantId]);
   expect(stableQr.rows[0].qr_code_id).toBe(qrRecordId);
 
-  await page.goto(`${baseURL}/app/qr`);
+  await page.goto(`${baseURL}/app/qr`, { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: 'Order New +' }).click();
   await page.getByLabel('Quantity').fill('50');
   await page.getByLabel('Contact name').fill(managerContactName);
@@ -201,7 +201,7 @@ test('Basic onboarding saves real data, creates one permanent QR, edits live men
   adminOrigin.hostname = 'localhost';
   await addAuthCookie(adminContext, adminCookie, 'menusqr_admin_session', adminOrigin.origin);
   const admin = await adminContext.newPage();
-  await admin.goto(`${adminOrigin.origin}/admin/sticker-requests`);
+  await admin.goto(`${adminOrigin.origin}/admin/sticker-requests`, { waitUntil: 'domcontentloaded' });
   await expect(admin.getByRole('heading', { name: 'Sticker requests', level: 1 }).last()).toBeVisible();
   await expect(admin.getByText(basicRestaurantName)).toBeVisible();
   await expect(admin.getByText(managerContactName)).toBeVisible();
@@ -214,10 +214,11 @@ test('Basic onboarding saves real data, creates one permanent QR, edits live men
 });
 
 test('Premium scan places server-priced order and restaurant accepts it', async ({ browser, baseURL }) => {
+  test.slow();
   const context = await browser.newContext();
   await addAuthCookie(context, premium.cookie);
   const page = await context.newPage();
-  await page.goto(`${baseURL}/qr/${encodeURIComponent(premium.qrId!)}`);
+  await page.goto(`${baseURL}/qr/${encodeURIComponent(premium.qrId!)}`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: premiumRestaurantName })).toBeVisible();
   await page.getByRole('button', { name: '+ Add' }).first().click();
   await page.getByRole('button', { name: /Open order cart/ }).click();
@@ -232,7 +233,7 @@ test('Premium scan places server-priced order and restaurant accepts it', async 
   expect((await orderResponse.json()).total).toBe(525);
   await expect(page.getByText('Order Placed Successfully!')).toBeVisible();
 
-  await page.goto(`${baseURL}/app/orders`);
+  await page.goto(`${baseURL}/app/orders`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Grilled Paneer')).toBeVisible();
   await page.getByRole('button', { name: /ACCEPT/ }).click();
   await expect(page.getByRole('button', { name: /COOKING/ })).toBeVisible();

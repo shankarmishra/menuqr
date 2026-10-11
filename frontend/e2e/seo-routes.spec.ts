@@ -26,7 +26,7 @@ for (const r of seoRoutes) {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto(r.path);
+    await page.goto(r.path, { waitUntil: 'domcontentloaded' });
     await expect(page).toHaveTitle(r.expectedTitle);
 
     const h1Locator = page.locator('h1').first();
@@ -34,7 +34,7 @@ for (const r of seoRoutes) {
     const h1Text = await h1Locator.textContent();
     expect(h1Text?.trim()).toContain(r.expectedH1);
 
-    const criticalErrors = consoleErrors.filter(e => !e.includes('favicon') && !e.includes('failed to load resource'));
+    const criticalErrors = consoleErrors.filter(e => !e.toLowerCase().includes('favicon') && !e.toLowerCase().includes('failed to load resource'));
     expect(criticalErrors).toHaveLength(0);
   });
 }

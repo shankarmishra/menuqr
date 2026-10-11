@@ -11,7 +11,7 @@ export default function AppLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [restaurantName, setRestaurantName] = useState('Loading...');
   const { logout } = useAuth();
-  const { sub, can } = usePlan();
+  const { sub, can, contentChangesRemaining } = usePlan();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -125,12 +125,17 @@ export default function AppLayout() {
               <Store className="text-[#87958e] hidden sm:block" size={18} />
               <span className="font-bold text-white tracking-wide">{restaurantName}</span>
               <ChevronRight size={14} className="text-white/20 mx-1 hidden sm:block" />
-              <div className="hidden sm:flex items-center gap-1.5">
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-white/5 text-[#aab7b2] border border-white/10">{planId}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-white/5 text-[#aab7b2] border border-white/10">{planId}</span>
                 {isActive ? (
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ACTIVE</span>
+                  <span className="hidden sm:inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ACTIVE</span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">EXPIRED</span>
+                  <span className="hidden sm:inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">EXPIRED</span>
+                )}
+                {planId === 'BASIC' && (
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#e8783c]/10 text-[#e8783c] border border-[#e8783c]/20">
+                    {contentChangesRemaining} left
+                  </span>
                 )}
               </div>
             </div>

@@ -18,10 +18,10 @@ export const IvoryDiningTemplate: React.FC<LayoutProps> = ({
   return (
     <div className="text-[#2C2523] font-serif relative z-10 space-y-6">
       {/* Editorial Menu Spread Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div className={clsx(compact ? 'space-y-4' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start')}>
         
-        {/* Left Column: Alabaster Parchment Identity (35% on Desktop) */}
-        <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#FFFDF9] border border-[#C5A059]/30 p-5 rounded-lg shadow-xl">
+        {/* Left Column: Alabaster Parchment Identity */}
+        <div className={clsx(compact ? 'space-y-3 bg-[#FFFDF9] border border-[#C5A059]/30 p-4 rounded-lg shadow-xl' : 'lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#FFFDF9] border border-[#C5A059]/30 p-5 rounded-lg shadow-xl')}>
           <div className="text-center space-y-1 pb-3 border-b border-[#C5A059]/30">
             <span className="text-[9px] font-serif uppercase tracking-[0.4em] text-[#C5A059] font-bold block">
               ALABASTER FINE DINING
@@ -77,8 +77,8 @@ export const IvoryDiningTemplate: React.FC<LayoutProps> = ({
           )}
         </div>
 
-        {/* Right Column: Printed Ivory Parchment Spread (65% on Desktop) */}
-        <div className="lg:col-span-8 bg-[#FFFDF9] border border-[#C5A059]/30 p-4 sm:p-6 rounded-lg shadow-xl space-y-8">
+        {/* Right Column: Printed Ivory Parchment Spread */}
+        <div className={clsx(!compact && 'lg:col-span-8', 'bg-[#FFFDF9] border border-[#C5A059]/30 p-4 sm:p-6 rounded-lg shadow-xl space-y-8')}>
           {categories.map((cat) => (
             <div key={cat.id} className="space-y-4">
               <div className="flex items-center justify-center gap-3 py-1">
@@ -99,7 +99,7 @@ export const IvoryDiningTemplate: React.FC<LayoutProps> = ({
                       <div className="flex items-center gap-2 min-w-0">
                         <DietIndicator type={item.dietType} compact={compact} color="#C5A059" />
                         <h3
-                          className="font-normal text-xs sm:text-sm text-[#2C2523] group-hover:text-[#C5A059] transition-colors truncate"
+                          className={clsx('font-normal text-xs sm:text-sm text-[#2C2523] group-hover:text-[#C5A059] transition-colors', compact ? 'leading-snug' : 'truncate')}
                           style={{ fontFamily: template.typography.body }}
                         >
                           {item.name}
@@ -107,7 +107,7 @@ export const IvoryDiningTemplate: React.FC<LayoutProps> = ({
                       </div>
 
                       {/* Dotted Leader Line */}
-                      <span className="flex-1 border-b border-dotted border-[#C5A059]/30 mx-2 hidden sm:inline-block" />
+                      <span className={clsx(!compact && 'hidden sm:inline-block', 'flex-1 border-b border-dotted border-[#C5A059]/30 mx-2')} />
 
                       <RenderItemPrices
                         item={item}

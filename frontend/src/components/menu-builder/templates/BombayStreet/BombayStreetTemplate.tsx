@@ -18,10 +18,10 @@ export const BombayStreetTemplate: React.FC<LayoutProps> = ({
   return (
     <div className="text-white font-sans relative z-10 space-y-6">
       {/* Editorial Menu Spread Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div className={clsx(compact ? 'space-y-4' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start')}>
         
         {/* Left Column: Urban Poster Identity (35% on Desktop) */}
-        <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#262626] border-2 border-[#EAB308] p-5 rounded-md shadow-2xl">
+        <div className={clsx(compact ? 'space-y-3 bg-[#262626] border-2 border-[#EAB308] p-4 rounded-md shadow-2xl' : 'lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#262626] border-2 border-[#EAB308] p-5 rounded-md shadow-2xl')}>
           <div className="text-center space-y-2 pb-3 border-b-2 border-[#EAB308]">
             <span className="text-[10px] font-black tracking-widest text-[#EAB308] uppercase block">
               BOMBAY URBAN STREET FOOD
@@ -78,7 +78,7 @@ export const BombayStreetTemplate: React.FC<LayoutProps> = ({
         </div>
 
         {/* Right Column: Printed Urban Poster Spread (65% on Desktop) */}
-        <div className="lg:col-span-8 bg-[#262626] border-2 border-[#EAB308] p-4 sm:p-6 rounded-md shadow-2xl space-y-8">
+        <div className={clsx(!compact && 'lg:col-span-8', 'bg-[#262626] border-2 border-[#EAB308] p-4 sm:p-6 rounded-md shadow-2xl space-y-8')}>
           {categories.map((cat) => (
             <div key={cat.id} className="space-y-4">
               <div className="flex items-center gap-2 border-b-2 border-[#EAB308] pb-1">
@@ -99,7 +99,7 @@ export const BombayStreetTemplate: React.FC<LayoutProps> = ({
                       <div className="flex items-center gap-2 min-w-0">
                         <DietIndicator type={item.dietType} compact={compact} color="#EAB308" />
                         <h3
-                          className="font-bold text-xs sm:text-sm text-white group-hover:text-[#EAB308] transition-colors truncate"
+                          className="font-bold text-xs sm:text-sm text-white group-hover:text-[#EAB308] transition-colors"
                           style={{ fontFamily: template.typography.body }}
                         >
                           {item.name}

@@ -56,8 +56,18 @@ export function usePlan(): UsePlanResult {
   const [tick, setTick] = useState(0);
 
   const refresh = useCallback(() => {
-    setLoading(true);
-    setTick((t) => t + 1);
+    window.dispatchEvent(new Event('menusqr:plan-updated'));
+  }, []);
+
+  useEffect(() => {
+    const handlePlanUpdate = () => {
+      setLoading(true);
+      setTick((t) => t + 1);
+    };
+    window.addEventListener('menusqr:plan-updated', handlePlanUpdate);
+    return () => {
+      window.removeEventListener('menusqr:plan-updated', handlePlanUpdate);
+    };
   }, []);
 
   useEffect(() => {

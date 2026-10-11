@@ -18,10 +18,10 @@ export const ModernIndiaTemplate: React.FC<LayoutProps> = ({
   return (
     <div className="text-[#2D241E] font-sans relative z-10 space-y-6">
       {/* Editorial Menu Spread Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div className={clsx(compact ? 'space-y-4' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start')}>
         
         {/* Left Column: Minimal Saffron Identity (35% on Desktop) */}
-        <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#FFFDF7] border border-[#D97706]/30 p-5 rounded-lg shadow-xl">
+        <div className={clsx(compact ? 'space-y-3 bg-[#FFFDF7] border border-[#D97706]/30 p-4 rounded-lg shadow-xl' : 'lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#FFFDF7] border border-[#D97706]/30 p-5 rounded-lg shadow-xl')}>
           <div className="text-center space-y-1 pb-3 border-b border-[#D97706]/20">
             <span className="text-[9px] font-sans uppercase tracking-[0.4em] text-[#D97706] font-bold block">
               MODERN INDIAN GASTRONOMY
@@ -78,7 +78,7 @@ export const ModernIndiaTemplate: React.FC<LayoutProps> = ({
         </div>
 
         {/* Right Column: Printed Modern Spread (65% on Desktop) */}
-        <div className="lg:col-span-8 bg-[#FFFDF7] border border-[#D97706]/30 p-4 sm:p-6 rounded-lg shadow-xl space-y-8">
+        <div className={clsx(!compact && 'lg:col-span-8', 'bg-[#FFFDF7] border border-[#D97706]/30 p-4 sm:p-6 rounded-lg shadow-xl space-y-8')}>
           {categories.map((cat) => (
             <div key={cat.id} className="space-y-4">
               <div className="flex items-center gap-2 border-b border-[#D97706]/20 pb-1">
@@ -98,7 +98,7 @@ export const ModernIndiaTemplate: React.FC<LayoutProps> = ({
                       <div className="flex items-center gap-2 min-w-0">
                         <DietIndicator type={item.dietType} compact={compact} color="#D97706" />
                         <h3
-                          className="font-semibold text-xs sm:text-sm text-[#2D241E] group-hover:text-[#D97706] transition-colors truncate"
+                          className="font-semibold text-xs sm:text-sm text-[#2D241E] group-hover:text-[#D97706] transition-colors"
                           style={{ fontFamily: template.typography.body }}
                         >
                           {item.name}

@@ -5,7 +5,10 @@
     "frontend"
   ],
   "scripts": {
-    "build": "npm --prefix frontend run build"
+    "dev": "npm --prefix frontend run dev",
+    "server": "node backend/server.js",
+    "build": "npm --prefix frontend run build",
+    "test:e2e": "npm --prefix frontend run test:e2e"
   },
   "dependencies": {
     "@playwright/test": "^1.63.0"

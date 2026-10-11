@@ -71,13 +71,13 @@ export default function HeroScene() {
       <motion.div
         style={{ y: qrY }}
         animate={{
-          scale: ['aiming', 'scanning', 'detected', 'processing'].includes(stage) ? 1.03 : 1,
-          x: stage === 'menu-open' ? '-60%' : '-45%',
-          opacity: stage === 'menu-open' ? 0.90 : 1,
-          filter: stage === 'menu-open' ? 'blur(1px)' : 'blur(0px)',
+          scale: ['aiming', 'scanning', 'detected', 'processing'].includes(stage) ? 1.03 : stage === 'menu-open' ? 0.92 : 1,
+          x: stage === 'menu-open' ? '-52%' : '-45%',
+          opacity: stage === 'menu-open' ? 0.88 : 1,
+          filter: stage === 'menu-open' ? 'blur(0.5px)' : 'blur(0px)',
         }}
         transition={{ duration: shouldReduceMotion ? 0 : 0.9, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
+        className="absolute top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hidden sm:block md:scale-100"
       >
         <PhysicalQRStand />
       </motion.div>
@@ -88,26 +88,26 @@ export default function HeroScene() {
         initial={shouldReduceMotion ? false : { y: '110%', opacity: 0 }}
         animate={
           stage === 'hidden'
-            ? { y: '110%', opacity: 0, x: '25%', rotate: 0 }
+            ? { y: '110%', opacity: 0, x: '0%', rotate: 0 }
             : stage === 'entering'
-            ? { y: '10%', opacity: 1, x: '25%', rotate: 0 }
+            ? { y: '10%', opacity: 1, x: '0%', rotate: 0 }
             : stage === 'aiming'
-            ? { y: '0%', opacity: 1, x: '-15%', rotate: -3 }
+            ? { y: '0%', opacity: 1, x: '-10%', rotate: -2 }
             : stage === 'scanning'
-            ? { y: '0%', opacity: 1, x: '-15%', rotate: -3 }
+            ? { y: '0%', opacity: 1, x: '-10%', rotate: -2 }
             : stage === 'detected'
-            ? { y: '0%', opacity: 1, x: '-15%', rotate: -2 }
+            ? { y: '0%', opacity: 1, x: '-8%', rotate: -1 }
             : stage === 'processing'
-            ? { y: '0%', opacity: 1, x: '-10%', rotate: -1 }
-            : { y: '0%', opacity: 1, x: '28%', rotate: 0 }
+            ? { y: '0%', opacity: 1, x: '-4%', rotate: 0 }
+            : { y: '0%', opacity: 1, x: '18%', rotate: 0 }
         }
         transition={{ duration: shouldReduceMotion ? 0 : 1.1, type: 'spring', stiffness: 55, damping: 16 }}
-        className="absolute bottom-[5%] sm:bottom-[8%] left-1/2 -translate-x-1/2 z-20 origin-bottom"
+        className="absolute bottom-[4%] sm:bottom-[7%] left-1/2 -translate-x-1/2 z-20 origin-bottom"
       >
         <PremiumIPhoneMockup>
           {/* iOS Status Bar */}
-          <div className="absolute top-0 left-0 w-full h-[40px] flex justify-between items-center px-6 pt-2 z-50 text-white font-semibold text-[11px] drop-shadow-sm">
-            <span>9:41</span>
+          <div className="absolute top-0 left-0 w-full h-[36px] flex justify-between items-center px-6 pt-1.5 z-50 text-white font-semibold text-[11px] drop-shadow-sm pointer-events-none">
+            <span className="tracking-tight">9:41</span>
             <div className="flex items-center gap-1.5 opacity-90">
               <Signal size={12} className="stroke-[2.5]" />
               <Wifi size={12} className="stroke-[2.5]" />
@@ -119,7 +119,7 @@ export default function HeroScene() {
           </div>
 
           {/* Screen Content: Scan Camera Mode vs Customer Menu */}
-          <div className="relative w-full h-full flex flex-col pt-[40px] font-sans">
+          <div className="relative w-full h-full flex flex-col pt-[34px] font-sans">
             <AnimatePresence mode="wait">
               {['entering', 'aiming', 'scanning', 'detected', 'processing'].includes(stage) ? (
                 /* CAMERA UI SCANNING SCREEN */
@@ -199,131 +199,167 @@ export default function HeroScene() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 15 }}
                   transition={{ duration: 0.5 }}
-                  className="absolute inset-0 bg-[#FAFAF7] flex flex-col text-left z-30 overflow-hidden"
+                  className="absolute inset-0 bg-[#FAF8F5] flex flex-col text-left z-30 overflow-hidden"
                 >
                   {/* Restaurant Header */}
-                  <div className="bg-[#151C19] text-white p-3.5 pt-7 shrink-0 relative border-b border-white/10">
-                    <div className="flex items-center justify-between">
+                  <div className="bg-gradient-to-b from-[#131C18] to-[#1E2B24] text-white px-3.5 pt-[38px] pb-3 shrink-0 relative border-b border-white/10 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-[#E8783C] text-white flex items-center justify-center font-serif font-bold text-xs shadow-sm">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#E8783C] to-[#C96028] text-white flex items-center justify-center font-serif font-black text-xs shadow-md border border-white/20">
                           RH
                         </div>
                         <div>
-                          <h3 className="font-extrabold text-xs tracking-tight leading-none mb-0.5 text-white">Royal Haveli</h3>
-                          <p className="text-[9px] text-[#E8783C] font-mono font-bold tracking-wider uppercase">
-                            FINE DINING • TABLE 12
+                          <div className="flex items-center gap-1.5">
+                            <h3 className="font-extrabold text-sm tracking-tight leading-none text-white">Royal Haveli</h3>
+                          </div>
+                          <p className="text-[8.5px] text-[#F1A679] font-mono font-bold tracking-wider uppercase mt-0.5">
+                            AWADHI & MUGHLAI • TABLE 12
                           </p>
                         </div>
                       </div>
                       <span className="flex items-center gap-1 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#34B56A] animate-pulse" />
-                        <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wide">Live</span>
+                        <span className="text-[7.5px] font-bold text-emerald-300 uppercase tracking-wide">Live</span>
                       </span>
+                    </div>
+
+                    {/* Quality badge line */}
+                    <div className="flex items-center justify-between text-[8px] text-white/60 pt-1.5 border-t border-white/10 font-medium">
+                      <span>⭐ 4.9 (1.2k+ reviews)</span>
+                      <span>• Charcoal Clay Roast</span>
+                      <span className="text-emerald-400 font-semibold">Open Now</span>
                     </div>
                   </div>
 
                   {/* Category Navigation Pills */}
-                  <div className="bg-white border-b border-slate-200/80 px-3 py-2 flex gap-1.5 shrink-0 overflow-x-auto scrollbar-none">
-                    <span className="bg-[#E8783C] text-white text-[9.5px] font-bold px-2.5 py-1 rounded-full shrink-0 shadow-sm">
+                  <div className="bg-white border-b border-stone-200/80 px-3 py-2 flex gap-1.5 shrink-0 overflow-x-auto scrollbar-none shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+                    <span className="bg-[#E8783C] text-white text-[9px] font-bold px-2.5 py-1 rounded-full shrink-0 shadow-sm">
                       Starters
                     </span>
-                    <span className="bg-slate-100 text-[#4A5D54] text-[9.5px] font-semibold px-2.5 py-1 rounded-full shrink-0">
-                      Main Course
+                    <span className="bg-stone-100 text-[#3A4A41] text-[9px] font-semibold px-2.5 py-1 rounded-full shrink-0 hover:bg-stone-200/80">
+                      Royal Curries
                     </span>
-                    <span className="bg-slate-100 text-[#4A5D54] text-[9.5px] font-semibold px-2.5 py-1 rounded-full shrink-0">
-                      Biryani & Rice
+                    <span className="bg-stone-100 text-[#3A4A41] text-[9px] font-semibold px-2.5 py-1 rounded-full shrink-0 hover:bg-stone-200/80">
+                      Dum Biryani
                     </span>
-                    <span className="bg-slate-100 text-[#4A5D54] text-[9.5px] font-semibold px-2.5 py-1 rounded-full shrink-0">
-                      Breads
+                    <span className="bg-stone-100 text-[#3A4A41] text-[9px] font-semibold px-2.5 py-1 rounded-full shrink-0 hover:bg-stone-200/80">
+                      Tandoor Breads
                     </span>
                   </div>
 
                   {/* Food Menu Items List */}
                   <div className="flex-1 p-2.5 space-y-2 overflow-y-auto">
                     {/* Item 1: Paneer Tikka Angara */}
-                    <div className="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-sm flex flex-col justify-between gap-1.5">
+                    <div className="bg-white p-2.5 rounded-xl border border-stone-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between gap-1.5 hover:border-[#E8783C]/40 transition-colors">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                            <span className="w-3 h-3 border border-[#34B56A] rounded-[2px] flex items-center justify-center bg-emerald-50 shrink-0">
+                          <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                            <span className="w-3 h-3 border border-[#34B56A] rounded-[2px] flex items-center justify-center bg-emerald-50 shrink-0" title="Vegetarian">
                               <span className="w-1.5 h-1.5 rounded-full bg-[#34B56A]" />
                             </span>
-                            <h4 className="font-bold text-[#151C19] text-[11.5px] leading-tight">Paneer Tikka Angara</h4>
-                            <span className="text-[7.5px] font-bold uppercase tracking-wider bg-[#E8783C]/10 text-[#E8783C] px-1.5 py-0.2 rounded border border-[#E8783C]/20">
+                            <h4 className="font-bold text-[#151C19] text-[11px] leading-tight">Paneer Tikka Angara</h4>
+                            <span className="text-[7px] font-extrabold uppercase tracking-wider bg-[#E8783C]/10 text-[#E8783C] px-1.5 py-0.2 rounded border border-[#E8783C]/20">
                               BESTSELLER
                             </span>
                           </div>
-                          <p className="text-[9px] text-[#55635B] leading-snug line-clamp-2">
-                            Chargrilled cottage cheese marinated in smoked chili paste & mustard oil.
+                          <p className="text-[8.5px] text-[#616E67] leading-relaxed line-clamp-2">
+                            Charcoal-smoked organic paneer in Mathania chili paste, hung curd & cold-pressed mustard oil.
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                      <div className="flex items-center justify-between pt-1 border-t border-stone-100">
                         <span className="font-extrabold text-xs text-[#151C19]">₹385</span>
-                        <button className="bg-[#151C19] hover:bg-[#E8783C] text-white text-[9.5px] font-bold px-2.5 py-0.5 rounded-md transition-colors shadow-sm">
-                          Add +
+                        <button className="bg-[#151C19] hover:bg-[#E8783C] text-white text-[9px] font-bold px-2.5 py-0.5 rounded-md transition-colors shadow-sm active:scale-95">
+                          + Add
                         </button>
                       </div>
                     </div>
 
                     {/* Item 2: Galouti Kebab */}
-                    <div className="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-sm flex flex-col justify-between gap-1.5">
+                    <div className="bg-white p-2.5 rounded-xl border border-stone-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between gap-1.5 hover:border-[#E8783C]/40 transition-colors">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                            <span className="w-3 h-3 border border-[#FF5E4D] rounded-[2px] flex items-center justify-center bg-rose-50 shrink-0">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#FF5E4D]" />
+                          <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                            <span className="w-3 h-3 border border-[#E11D48] rounded-[2px] flex items-center justify-center bg-rose-50 shrink-0" title="Non-Vegetarian">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48]" />
                             </span>
-                            <h4 className="font-bold text-[#151C19] text-[11.5px] leading-tight">Awadhi Galouti Kebab</h4>
-                            <span className="text-[7.5px] font-bold uppercase tracking-wider bg-[#151C19]/10 text-[#151C19] px-1.5 py-0.2 rounded border border-[#151C19]/20">
+                            <h4 className="font-bold text-[#151C19] text-[11px] leading-tight">Awadhi Galouti Kebab</h4>
+                            <span className="text-[7px] font-extrabold uppercase tracking-wider bg-[#D4AF37]/15 text-[#9E7A18] px-1.5 py-0.2 rounded border border-[#D4AF37]/30">
                               CHEF SPECIAL
                             </span>
                           </div>
-                          <p className="text-[9px] text-[#55635B] leading-snug line-clamp-2">
-                            Melt-in-mouth minced mutton kebabs infused with 16 royal spices & rose water.
+                          <p className="text-[8.5px] text-[#616E67] leading-relaxed line-clamp-2">
+                            Melt-in-mouth minced mutton kebabs infused with 16 royal potli spices, rose water & clove smoke.
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                      <div className="flex items-center justify-between pt-1 border-t border-stone-100">
                         <span className="font-extrabold text-xs text-[#151C19]">₹495</span>
-                        <button className="bg-[#151C19] hover:bg-[#E8783C] text-white text-[9.5px] font-bold px-2.5 py-0.5 rounded-md transition-colors shadow-sm">
-                          Add +
+                        <button className="bg-[#151C19] hover:bg-[#E8783C] text-white text-[9px] font-bold px-2.5 py-0.5 rounded-md transition-colors shadow-sm active:scale-95">
+                          + Add
                         </button>
                       </div>
                     </div>
 
-                    {/* Item 3: Dahi Ke Sholay */}
-                    <div className="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-sm flex flex-col justify-between gap-1.5">
+                    {/* Item 3: Dal Makhani Haveli */}
+                    <div className="bg-white p-2.5 rounded-xl border border-stone-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between gap-1.5 hover:border-[#E8783C]/40 transition-colors">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="w-3 h-3 border border-[#34B56A] rounded-[2px] flex items-center justify-center bg-emerald-50 shrink-0">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className="w-3 h-3 border border-[#34B56A] rounded-[2px] flex items-center justify-center bg-emerald-50 shrink-0" title="Vegetarian">
                               <span className="w-1.5 h-1.5 rounded-full bg-[#34B56A]" />
                             </span>
-                            <h4 className="font-bold text-[#151C19] text-[11.5px] leading-tight">Dahi Ke Sholay</h4>
+                            <h4 className="font-bold text-[#151C19] text-[11px] leading-tight">Dal Makhani Haveli</h4>
+                            <span className="text-[7px] font-extrabold uppercase tracking-wider bg-stone-100 text-stone-600 px-1.5 py-0.2 rounded">
+                              SLOW COOKED
+                            </span>
                           </div>
-                          <p className="text-[9px] text-[#55635B] leading-snug line-clamp-2">
-                            Crispy fried bread rolls stuffed with hung curd, coriander, and green chillies.
+                          <p className="text-[8.5px] text-[#616E67] leading-relaxed line-clamp-2">
+                            Overnight charcoal-simmered black urad lentils, slow-cooked with fresh white butter & cream.
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between pt-1 border-t border-slate-100">
-                        <span className="font-extrabold text-xs text-[#151C19]">₹320</span>
-                        <button className="bg-[#151C19] hover:bg-[#E8783C] text-white text-[9.5px] font-bold px-2.5 py-0.5 rounded-md transition-colors shadow-sm">
-                          Add +
+                      <div className="flex items-center justify-between pt-1 border-t border-stone-100">
+                        <span className="font-extrabold text-xs text-[#151C19]">₹345</span>
+                        <button className="bg-[#151C19] hover:bg-[#E8783C] text-white text-[9px] font-bold px-2.5 py-0.5 rounded-md transition-colors shadow-sm active:scale-95">
+                          + Add
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Item 4: Subz Dum Biryani */}
+                    <div className="bg-white p-2.5 rounded-xl border border-stone-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between gap-1.5 hover:border-[#E8783C]/40 transition-colors">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className="w-3 h-3 border border-[#34B56A] rounded-[2px] flex items-center justify-center bg-emerald-50 shrink-0" title="Vegetarian">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#34B56A]" />
+                            </span>
+                            <h4 className="font-bold text-[#151C19] text-[11px] leading-tight">Subz Dum Biryani</h4>
+                          </div>
+                          <p className="text-[8.5px] text-[#616E67] leading-relaxed line-clamp-2">
+                            Aged long-grain basmati rice layered with garden vegetables, saffron milk & fragrant kewra.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-1 border-t border-stone-100">
+                        <span className="font-extrabold text-xs text-[#151C19]">₹365</span>
+                        <button className="bg-[#151C19] hover:bg-[#E8783C] text-white text-[9px] font-bold px-2.5 py-0.5 rounded-md transition-colors shadow-sm active:scale-95">
+                          + Add
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  {/* Floating View Order Cart Bar */}
-                  <div className="bg-[#151C19] text-white p-2.5 px-3 flex items-center justify-between shrink-0 shadow-lg border-t border-white/10">
+                  {/* Restrained Bottom Cart Bar */}
+                  <div className="bg-[#151C19] text-white p-2.5 px-3 flex items-center justify-between shrink-0 shadow-lg border-t border-white/10 mb-2">
                     <div>
-                      <p className="text-[8px] font-bold text-white/60 uppercase tracking-wider">Your Order</p>
+                      <p className="text-[7.5px] font-bold text-[#F1A679] uppercase tracking-wider">YOUR ORDER</p>
                       <p className="text-[11px] font-extrabold text-white">2 items • ₹880</p>
                     </div>
-                    <button className="bg-[#E8783C] text-white text-[9.5px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                      View Cart →
+                    <button className="bg-[#E8783C] hover:bg-[#F1A679] text-white text-[9px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md transition-colors active:scale-95">
+                      <span>View Order</span>
+                      <span>→</span>
                     </button>
                   </div>
                 </motion.div>

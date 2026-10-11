@@ -18,10 +18,10 @@ export const BanarasiGoldTemplate: React.FC<LayoutProps> = ({
   return (
     <div className="text-[#F3E5AB] font-serif relative z-10 space-y-6">
       {/* Editorial Menu Spread Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div className={clsx(compact ? 'space-y-4' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start')}>
         
         {/* Left Column: Silk Woven Identity (35% on Desktop) */}
-        <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#2B112B] border-2 border-[#F3E5AB]/40 p-5 rounded-md shadow-2xl">
+        <div className={clsx(compact ? 'space-y-3 bg-[#2B112B] border-2 border-[#F3E5AB]/40 p-4 rounded-md shadow-2xl' : 'lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#2B112B] border-2 border-[#F3E5AB]/40 p-5 rounded-md shadow-2xl')}>
           <div className="text-center space-y-1 pb-3 border-b border-[#F3E5AB]/30">
             <div className="text-[9px] font-serif uppercase tracking-[0.35em] text-[#F3E5AB] font-bold">
               ✦ BANARASI SILK & FEAST ✦
@@ -78,7 +78,7 @@ export const BanarasiGoldTemplate: React.FC<LayoutProps> = ({
         </div>
 
         {/* Right Column: Printed Woven Spread (65% on Desktop) */}
-        <div className="lg:col-span-8 bg-[#2B112B] border-2 border-[#F3E5AB]/40 p-4 sm:p-6 rounded-md shadow-2xl space-y-8">
+        <div className={clsx(!compact && 'lg:col-span-8', 'bg-[#2B112B] border-2 border-[#F3E5AB]/40 p-4 sm:p-6 rounded-md shadow-2xl space-y-8')}>
           {categories.map((cat) => (
             <div key={cat.id} className="space-y-4">
               <div className="flex items-center gap-3 border-b border-[#F3E5AB]/30 pb-1">
@@ -99,7 +99,7 @@ export const BanarasiGoldTemplate: React.FC<LayoutProps> = ({
                       <div className="flex items-center gap-2 min-w-0">
                         <DietIndicator type={item.dietType} compact={compact} color="#F3E5AB" />
                         <h3
-                          className="font-bold text-xs sm:text-sm text-[#FFF5D1] group-hover:text-[#F3E5AB] transition-colors truncate"
+                          className="font-bold text-xs sm:text-sm text-[#FFF5D1] group-hover:text-[#F3E5AB] transition-colors"
                           style={{ fontFamily: template.typography.body }}
                         >
                           {item.name}

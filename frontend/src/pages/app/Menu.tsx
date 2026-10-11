@@ -738,7 +738,7 @@ export default function Menu() {
 
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-white">{item.name}</span>
+                            <h4 className="text-sm font-bold text-white">{item.name}</h4>
                             {hasVariants && (
                               <span className="rounded bg-sky-500/15 px-2 py-0.5 text-[10px] font-semibold text-sky-300">
                                 {item.variants?.length || 2} variants
@@ -783,7 +783,8 @@ export default function Menu() {
                             type="button"
                             onClick={() => openItemDrawer(item)}
                             className="rounded-lg p-1.5 text-[#aab7b2] hover:bg-[#25322c] hover:text-white"
-                            title="Edit dish"
+                            aria-label="Edit item"
+                            title="Edit item"
                           >
                             <Edit2 className="h-4 w-4" />
                           </button>
@@ -843,8 +844,10 @@ export default function Menu() {
             <form onSubmit={handleSaveItem} className="flex-1 overflow-y-auto p-6 space-y-6">
               {/* Category Selection */}
               <div>
-                <label className="text-xs font-semibold text-[#aab7b2]">Category *</label>
+                <label htmlFor="dish-category" className="text-xs font-semibold text-[#aab7b2]">Category *</label>
                 <select
+                  id="dish-category"
+                  aria-label="Category"
                   value={itemForm.categoryId}
                   onChange={(e) => setItemForm({ ...itemForm, categoryId: e.target.value })}
                   required
@@ -858,8 +861,10 @@ export default function Menu() {
 
               {/* Item Name */}
               <div>
-                <label className="text-xs font-semibold text-[#aab7b2]">Dish Name *</label>
+                <label htmlFor="dish-name" className="text-xs font-semibold text-[#aab7b2]">Dish Name *</label>
                 <input
+                  id="dish-name"
+                  aria-label="Dish Name"
                   type="text"
                   value={itemForm.name}
                   onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
@@ -871,8 +876,10 @@ export default function Menu() {
 
               {/* Description */}
               <div>
-                <label className="text-xs font-semibold text-[#aab7b2]">Description</label>
+                <label htmlFor="dish-description" className="text-xs font-semibold text-[#aab7b2]">Description</label>
                 <textarea
+                  id="dish-description"
+                  aria-label="Description"
                   value={itemForm.description}
                   onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
                   placeholder="Ingredients or preparation details..."
@@ -913,8 +920,10 @@ export default function Menu() {
 
                 {itemForm.pricingType === 'single' ? (
                   <div className="mt-4">
-                    <label className="text-xs font-semibold text-[#aab7b2]">Price (₹) *</label>
+                    <label htmlFor="dish-price" className="text-xs font-semibold text-[#aab7b2]">Price (₹) *</label>
                     <input
+                      id="dish-price"
+                      aria-label="Price"
                       type="number"
                       min="0"
                       step="1"
@@ -1022,7 +1031,7 @@ export default function Menu() {
                   disabled={saving}
                   className="rounded-xl bg-[#e8783c] px-6 py-2.5 text-xs font-bold text-white hover:bg-[#d6672b]"
                 >
-                  Save Dish
+                  Save Item
                 </button>
               </div>
             </form>

@@ -43,7 +43,7 @@ export default defineConfig({
         API_PORT: '3311',
         NODE_ENV: 'test',
         JWT_SECRET: process.env.JWT_SECRET || 'super_secret_jwt_key_12345',
-        DATABASE_URL: process.env.DATABASE_URL || 'postgres://postgres:postgres@127.0.0.1:5432/menuqr_test',
+        DATABASE_URL: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/menuqr',
         OTP_SECRET: process.env.OTP_SECRET || 'test-otp-secret-key-12345678901234567890',
         ADMIN_OTP_PEPPER: process.env.ADMIN_OTP_PEPPER || 'test-otp-secret-key-12345678901234567890',
       },

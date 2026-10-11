@@ -98,7 +98,7 @@ export default function QrCenter() {
       const request = await createStickerRequest({ quantity: parsedQuantity, contactName, contactPhone, contactEmail, deliveryAddress, deliveryCity, deliveryState });
       setRequests((prev) => [request, ...prev]);
       setShowRequestForm(false);
-      showToast('success', 'Sticker request submitted successfully! We will contact you soon.');
+      showToast('success', 'Sticker request submitted successfully.');
     } catch (error) {
       showToast('error', error instanceof Error ? error.message : 'The request could not be submitted. Please try again.');
     } finally {
@@ -109,12 +109,14 @@ export default function QrCenter() {
   const downloadPNG = async () => {
     if (!stickerRef.current) return;
     try {
-      const dataUrl = await toPng(stickerRef.current, { pixelRatio: 3, cacheBust: true });
+      const dataUrl = await toPng(stickerRef.current, { pixelRatio: 3, cacheBust: true, skipFonts: true });
       const link = document.createElement('a');
       const name = qr?.restaurantName || profile?.businessName || 'restaurant';
       link.download = `MenusQR_${name.replace(/[^a-z0-9]+/gi, '_')}_Sticker.png`;
       link.href = dataUrl;
+      document.body.appendChild(link);
       link.click();
+      link.remove();
     } catch {
       showToast('error', 'Could not download PNG.');
     }
@@ -123,13 +125,16 @@ export default function QrCenter() {
   const downloadSVG = async () => {
     if (!stickerRef.current) return;
     try {
-      const svg = await toSvg(stickerRef.current, { cacheBust: true });
+      const svg = await toSvg(stickerRef.current, { cacheBust: true, skipFonts: true });
       const link = document.createElement('a');
       const name = qr?.restaurantName || profile?.businessName || 'restaurant';
       link.download = `MenusQR_${name.replace(/[^a-z0-9]+/gi, '_')}_Sticker.svg`;
-      link.href = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+      const blobUrl = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+      link.href = blobUrl;
+      document.body.appendChild(link);
       link.click();
-      URL.revokeObjectURL(link.href);
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
     } catch {
       showToast('error', 'Could not download SVG.');
     }

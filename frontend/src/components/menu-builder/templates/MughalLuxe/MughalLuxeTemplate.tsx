@@ -66,54 +66,56 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
       )}
 
       {/* Grid Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div className={clsx(compact ? 'space-y-6' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start')}>
         
         {/* Desktop Sidebar (35%) */}
-        <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-gradient-to-b from-[#132D24] to-[#0A1813] border-2 border-[#E5C158]/50 p-5 rounded-lg shadow-2xl">
-          <MughalLuxeAtmosphere compact={compact} />
+        {!compact && (
+          <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-gradient-to-b from-[#132D24] to-[#0A1813] border-2 border-[#E5C158]/50 p-5 rounded-lg shadow-2xl">
+            <MughalLuxeAtmosphere compact={compact} />
 
-          {!compact && rawCategories.length > 1 && (
-            <div className="space-y-1.5 pt-2">
-              <span className="text-[9px] font-serif uppercase tracking-[0.3em] font-bold text-[#E5C158]/80 block text-center mb-1">IMPERIAL SECTIONS</span>
-              <div className="flex flex-col gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setActiveCategory('all')}
-                  className={clsx(
-                    'px-3.5 py-2 text-xs font-serif tracking-widest transition-all text-left flex items-center justify-between rounded-t-full border',
-                    activeCategory === 'all'
-                      ? 'bg-[#E5C158] text-[#0A1813] border-[#E5C158] font-bold shadow-md'
-                      : 'text-[#E5C158] border-[#E5C158]/30 hover:border-[#E5C158] bg-[#132D24]/50'
-                  )}
-                >
-                  <span>All Dishes</span>
-                </button>
-                {rawCategories.map((cat) => {
-                  const isActive = activeCategory === cat.id || activeCategory === cat.name;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => setActiveCategory(cat.id)}
-                      className={clsx(
-                        'px-3.5 py-2 text-xs font-serif tracking-widest transition-all text-left flex items-center justify-between rounded-t-full border whitespace-nowrap',
-                        isActive
-                          ? 'bg-[#E5C158] text-[#0A1813] border-[#E5C158] font-bold shadow-md'
-                          : 'text-[#E5C158] border-[#E5C158]/30 hover:border-[#E5C158] bg-[#132D24]/50'
-                      )}
-                    >
-                      <span>{cat.name}</span>
-                      <span className="text-[10px] opacity-70">({cat.items.length})</span>
-                    </button>
-                  );
-                })}
+            {rawCategories.length > 1 && (
+              <div className="space-y-1.5 pt-2">
+                <span className="text-[9px] font-serif uppercase tracking-[0.3em] font-bold text-[#E5C158]/80 block text-center mb-1">IMPERIAL SECTIONS</span>
+                <div className="flex flex-col gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setActiveCategory('all')}
+                    className={clsx(
+                      'px-3.5 py-2 text-xs font-serif tracking-widest transition-all text-left flex items-center justify-between rounded-t-full border',
+                      activeCategory === 'all'
+                        ? 'bg-[#E5C158] text-[#0A1813] border-[#E5C158] font-bold shadow-md'
+                        : 'text-[#E5C158] border-[#E5C158]/30 hover:border-[#E5C158] bg-[#132D24]/50'
+                    )}
+                  >
+                    <span>All Dishes</span>
+                  </button>
+                  {rawCategories.map((cat) => {
+                    const isActive = activeCategory === cat.id || activeCategory === cat.name;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setActiveCategory(cat.id)}
+                        className={clsx(
+                          'px-3.5 py-2 text-xs font-serif tracking-widest transition-all text-left flex items-center justify-between rounded-t-full border whitespace-nowrap',
+                          isActive
+                            ? 'bg-[#E5C158] text-[#0A1813] border-[#E5C158] font-bold shadow-md'
+                            : 'text-[#E5C158] border-[#E5C158]/30 hover:border-[#E5C158] bg-[#132D24]/50'
+                        )}
+                      >
+                        <span>{cat.name}</span>
+                        <span className="text-[10px] opacity-70">({cat.items.length})</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Menu Content Spread (65% Desktop, 100% Mobile) */}
-        <div className="lg:col-span-8 bg-gradient-to-br from-[#112921]/95 to-[#0A1813]/98 border-2 border-[#E5C158]/50 p-4 sm:p-6 rounded-lg shadow-2xl space-y-8">
+        <div className={clsx(!compact && 'lg:col-span-8', 'bg-gradient-to-br from-[#112921]/95 to-[#0A1813]/98 border-2 border-[#E5C158]/50 p-4 sm:p-6 rounded-lg shadow-2xl space-y-8')}>
           {categories.map((cat) => (
             <div key={cat.id} className="space-y-4">
               <div className="flex items-center gap-3 border-b border-[#E5C158]/30 pb-1">
@@ -134,7 +136,7 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
                       <div className="flex items-center gap-2 min-w-0">
                         <DietIndicator type={item.dietType} compact={compact} color="#E5C158" />
                         <h3
-                          className="font-bold text-xs sm:text-sm text-[#F3E5AB] group-hover:text-[#E5C158] transition-colors truncate"
+                          className="font-bold text-xs sm:text-sm text-[#F3E5AB] group-hover:text-[#E5C158] transition-colors"
                           style={{ fontFamily: template.typography.body }}
                         >
                           {item.name}

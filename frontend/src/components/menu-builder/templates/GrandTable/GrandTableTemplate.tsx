@@ -18,10 +18,10 @@ export const GrandTableTemplate: React.FC<LayoutProps> = ({
   return (
     <div className="text-[#E2E8F0] font-serif relative z-10 space-y-6">
       {/* Editorial Menu Spread Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div className={clsx(compact ? 'space-y-4' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start')}>
         
-        {/* Left Column: Navy Leather & Antique Brass Identity (35% on Desktop) */}
-        <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#142030] border-2 border-[#C8A962]/40 p-5 rounded-lg shadow-2xl">
+        {/* Left Column: Navy Leather & Antique Brass Identity */}
+        <div className={clsx(compact ? 'space-y-3 bg-[#142030] border-2 border-[#C8A962]/40 p-4 rounded-lg shadow-2xl' : 'lg:col-span-4 lg:sticky lg:top-8 space-y-5 bg-[#142030] border-2 border-[#C8A962]/40 p-5 rounded-lg shadow-2xl')}>
           <div className="text-center space-y-1 pb-3 border-b-2 border-[#C8A962]/40">
             <span className="text-[9px] font-serif uppercase tracking-[0.4em] text-[#C8A962] font-bold block">
               THE GRAND TABLE DINING ROOM
@@ -77,8 +77,8 @@ export const GrandTableTemplate: React.FC<LayoutProps> = ({
           )}
         </div>
 
-        {/* Right Column: Printed Grand Table Spread (65% on Desktop) */}
-        <div className="lg:col-span-8 bg-[#142030] border-2 border-[#C8A962]/40 p-4 sm:p-6 rounded-lg shadow-2xl space-y-8">
+        {/* Right Column: Printed Grand Table Spread */}
+        <div className={clsx(!compact && 'lg:col-span-8', 'bg-[#142030] border-2 border-[#C8A962]/40 p-4 sm:p-6 rounded-lg shadow-2xl space-y-8')}>
           {categories.map((cat) => (
             <div key={cat.id} className="space-y-4">
               <div className="flex items-center gap-3 border-b border-[#C8A962]/30 pb-1">
@@ -99,7 +99,7 @@ export const GrandTableTemplate: React.FC<LayoutProps> = ({
                       <div className="flex items-center gap-2 min-w-0">
                         <DietIndicator type={item.dietType} compact={compact} color="#C8A962" />
                         <h3
-                          className="font-bold text-xs sm:text-sm text-[#F8FAFC] group-hover:text-[#C8A962] transition-colors truncate"
+                          className={clsx('font-bold text-xs sm:text-sm text-[#F8FAFC] group-hover:text-[#C8A962] transition-colors', compact ? 'leading-snug' : 'truncate')}
                           style={{ fontFamily: template.typography.body }}
                         >
                           {item.name}
@@ -107,7 +107,7 @@ export const GrandTableTemplate: React.FC<LayoutProps> = ({
                       </div>
 
                       {/* Dotted Leader Line */}
-                      <span className="flex-1 border-b border-dotted border-[#C8A962]/40 mx-2 hidden sm:inline-block" />
+                      <span className={clsx(!compact && 'hidden sm:inline-block', 'flex-1 border-b border-dotted border-[#C8A962]/40 mx-2')} />
 
                       <RenderItemPrices
                         item={item}

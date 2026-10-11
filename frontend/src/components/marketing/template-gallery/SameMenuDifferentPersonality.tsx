@@ -5,12 +5,12 @@ import { DEMO_RESTAURANT, menuTemplates } from '../../../data/menuTemplates';
 import { MenuTemplateRenderer } from '../../menu-builder/MenuTemplateRenderer';
 
 const COMPARISON_TEMPLATES = [
-  { id: 'dark-clipboard', label: 'Dark Clipboard', desc: 'Neon & wood' },
-  { id: 'fluid-abstract', label: 'Fluid Abstract', desc: 'Modern organic' },
-  { id: 'chalk-bistro', label: 'Chalkboard Bistro', desc: 'Rustic cafe' },
-  { id: 'royal-maharaja', label: 'Royal Maharaja', desc: 'Traditional luxury' },
-  { id: 'modern-india', label: 'Modern India', desc: 'Editorial style' },
-  { id: 'minimal-editorial', label: 'Minimal Editorial', desc: 'Clean & simple' },
+  { id: 'royal-maharaja', label: 'Royal Maharaja', desc: 'Palace dining & gold' },
+  { id: 'rajasthani-heritage', label: 'Rajasthani Heritage', desc: 'Craft & terracotta' },
+  { id: 'mughal-luxe', label: 'Mughal Luxe', desc: 'Emerald & regal gold' },
+  { id: 'banarasi-gold', label: 'Banarasi Gold', desc: 'Silk weave collection' },
+  { id: 'modern-india', label: 'Modern India', desc: 'Contemporary dining' },
+  { id: 'bombay-street', label: 'Bombay Street', desc: 'Irani café & bazaar' },
 ];
 
 export const SameMenuDifferentPersonality = () => {
@@ -122,7 +122,7 @@ export const SameMenuDifferentPersonality = () => {
                   restaurant={DEMO_RESTAURANT}
                   categories={DEMO_RESTAURANT.categories}
                   items={DEMO_RESTAURANT.items}
-                  compact={false}
+                  compact={true}
                 />
               </motion.div>
             </div>
