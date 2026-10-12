@@ -27,7 +27,7 @@ export default function MenuPage() {
   const currentMenuResult = menuResult?.slug === slug ? menuResult : undefined;
   const client = currentMenuResult?.client;
   const template = menuTemplates.find((option) => option.id === client?.templateId) ?? menuTemplates[0];
-  const isPremium = client?.plan?.toUpperCase() === 'PREMIUM';
+  const isPremium = Boolean(client?.orderingEnabled ?? (client?.plan?.toUpperCase() === 'PREMIUM'));
   const loadError = currentMenuResult?.error ?? '';
   const isLoading = Boolean(slug) && !currentMenuResult;
 
@@ -155,6 +155,8 @@ export default function MenuPage() {
     price: item.price ? Number(item.price) : 0,
     halfPrice: item.halfPrice ? Number(item.halfPrice) : undefined,
     fullPrice: item.fullPrice ? Number(item.fullPrice) : undefined,
+    pricingType: item.pricingType,
+    variants: item.variants,
     category: item.category,
     dietType: (item.dietType === 'non-veg' ? 'non-veg' : item.dietType === 'vegan' ? 'vegan' : 'veg') as 'veg' | 'non-veg' | 'vegan',
     available: item.available !== false,
@@ -191,7 +193,7 @@ export default function MenuPage() {
           categories={categoriesForRenderer}
           items={itemsForRenderer}
           compact={false}
-          onAddToCart={addToCart}
+          onAddToCart={isPremium ? addToCart : undefined}
           isPremium={isPremium}
         />
       </main>

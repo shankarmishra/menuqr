@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import type { LayoutProps } from '../types';
-import { DietIndicator } from '../shared/RenderItemPrices';
+import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { PalaceCrownEmblem } from '../artwork/ArchesAndEmblems';
 import { FiligreeDiamondDivider } from '../artwork/SectionDividers';
 import { PalaceGoldFrame } from '../artwork/OrnamentalFrames';
@@ -16,6 +16,7 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
   isPremium,
   activeCategory,
   setActiveCategory,
+  searchBar,
 }) => {
   const goldColor = template.colors.heading || '#D4AF37';
 
@@ -63,6 +64,11 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
           )}
         </div>
       </PalaceGoldFrame>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          UNIVERSAL MENU SEARCH
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {searchBar}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           STICKY CATEGORY FILTER (ALL VIEWPORTS)
@@ -129,7 +135,7 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
             {/* Dishes Listing */}
             <div className="space-y-4 divide-y divide-[#D4AF37]/15">
               {cat.items.map((item, idx) => {
-                const displayPrice = item.price ? `₹${item.price}` : '';
+                const pricing = parseItemPricing(item);
                 return (
                   <div
                     key={item.id}
@@ -164,14 +170,14 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
                             )}
                           </div>
 
-                          {item.description && (
+                          {pricing.cleanDescription && (
                             <p
                               className={clsx(
                                 'text-[#E0CCA8] mt-1 leading-relaxed font-serif italic max-w-xl',
                                 compact ? 'text-[10px] line-clamp-2' : 'text-xs'
                               )}
                             >
-                              {item.description}
+                              {pricing.cleanDescription}
                             </p>
                           )}
                         </div>
@@ -193,24 +199,15 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
                           </div>
                         )}
 
-                        <div className="flex flex-col items-end gap-1">
-                          {displayPrice && (
-                            <span className="font-mono font-bold text-xs sm:text-sm text-[#D4AF37] tracking-wider px-2 py-0.5 bg-[#2B0E20] rounded border border-[#D4AF37]/40">
-                              {displayPrice}
-                            </span>
-                          )}
-
-                          {isPremium && onAddToCart && (
-                            <button
-                              type="button"
-                              onClick={() => onAddToCart(item, String(item.price || ''))}
-                              className="text-[9px] font-bold px-2 py-0.5 bg-[#D4AF37] text-[#180912] rounded hover:bg-[#e7c758] transition-colors"
-                              aria-label={`Add ${item.name} to order`}
-                            >
-                              + ADD
-                            </button>
-                          )}
-                        </div>
+                        <RenderItemPrices
+                          item={item}
+                          accentColor="#D4AF37"
+                          isPremium={isPremium}
+                          onAddToCart={onAddToCart}
+                          priceClassName="font-mono font-bold text-xs sm:text-sm text-[#D4AF37] tracking-wider px-2 py-0.5 bg-[#2B0E20] rounded border border-[#D4AF37]/40"
+                          btnStyle="text-[9px] font-bold px-2 py-0.5 bg-[#D4AF37] text-[#180912] rounded hover:bg-[#e7c758] transition-colors cursor-pointer"
+                          compact={compact}
+                        />
                       </div>
                     </div>
                   </div>

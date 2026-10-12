@@ -17,6 +17,7 @@ export interface MenuItem {
   isSpecial?: boolean;
   spicyLevel?: number;
   image?: string;
+  variants?: Array<{ id?: string; name: string; price: number | string; variantGroup?: string }>;
 }
 
 export interface CategoryGroup {
@@ -45,4 +46,7 @@ export interface LayoutProps {
   isPremium?: boolean;
   activeCategory: string;
   setActiveCategory: (cat: string) => void;
+  searchQuery?: string;
+  setSearchQuery?: (query: string) => void;
+  searchBar?: React.ReactNode;
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
 import type { LayoutProps, MenuItem } from '../types';
-import { DietIndicator } from '../shared/RenderItemPrices';
+import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 
 // ============================================================================
 // HERITAGE PARCHMENT ATELIER — CURATED CUISINE PHOTOGRAPHY
@@ -705,6 +705,7 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
   isPremium,
   activeCategory,
   setActiveCategory,
+  searchBar,
 }) => {
   // Mobile / Desktop View Mode Switcher: "Cover" vs "Menu" vs "All"
   const [activeViewTab, setActiveViewTab] = useState<'both' | 'cover' | 'menu'>('both');
@@ -862,6 +863,11 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
           </div>
         </section>
       )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          UNIVERSAL MENU SEARCH
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {activeViewTab !== 'cover' && searchBar}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           PAGE TWO: INTERIOR MENU SPREAD (CONTINUOUS OPULENT BOOKLET PAGE)
@@ -1172,7 +1178,7 @@ const DishRow: React.FC<{
   isPremium?: boolean;
 }> = ({ item, index, template, compact, onAddToCart, isPremium }) => {
   const formattedIndex = String(index).padStart(2, '0');
-  const displayPrice = item.price ? `₹${item.price}` : '—';
+  const pricing = parseItemPricing(item);
 
   return (
     <div className="group/dish py-1.5 sm:py-2.5 border-b border-[#D4AE68]/25 hover:border-[#D76C3C]/50 transition-colors">
@@ -1234,40 +1240,30 @@ const DishRow: React.FC<{
             </div>
 
             {/* Description: Takes full available horizontal width */}
-            {item.description && (
+            {pricing.cleanDescription && (
               <p
                 className={clsx(
                   'text-[#6E6657] font-serif italic mt-0.5 pr-1',
                   compact ? 'text-[9.5px] leading-snug line-clamp-2' : 'text-xs sm:text-[13px] leading-relaxed'
                 )}
               >
-                {item.description}
+                {pricing.cleanDescription}
               </p>
             )}
           </div>
         </div>
 
-        {/* Right: Pinned Price Badge + Add to Cart */}
+        {/* Right: Pinned Price Badges & Add to Cart */}
         <div className="shrink-0 flex items-center gap-1.5 pl-1.5 self-start mt-0.5">
-          <span
-            className={clsx(
-              'font-serif font-black text-[#1B4942] tracking-wider whitespace-nowrap bg-[#FCF5E9] rounded border border-[#D4AE68]/60 shadow-2xs group-hover/dish:border-[#D97036] group-hover/dish:text-[#D97036] transition-colors',
-              compact ? 'text-[11px] px-1.5 py-0.5' : 'text-sm sm:text-base px-2.5 py-0.5'
-            )}
-          >
-            {displayPrice}
-          </span>
-
-          {isPremium && onAddToCart && (
-            <button
-              type="button"
-              onClick={() => onAddToCart(item, String(item.price || ''))}
-              className="text-[9px] font-bold px-2 py-0.5 bg-[#D97036] text-white rounded hover:bg-[#b65023] transition-colors cursor-pointer shrink-0"
-              aria-label={`Add ${item.name} to order`}
-            >
-              + ADD
-            </button>
-          )}
+          <RenderItemPrices
+            item={item}
+            accentColor="#D97036"
+            isPremium={isPremium}
+            onAddToCart={onAddToCart}
+            priceClassName="font-serif font-black text-[#1B4942] tracking-wider whitespace-nowrap bg-[#FCF5E9] rounded border border-[#D4AE68]/60 shadow-2xs text-xs sm:text-sm px-2 py-0.5"
+            btnStyle="text-[9px] font-bold px-2 py-0.5 bg-[#D97036] text-white rounded hover:bg-[#b65023] transition-colors cursor-pointer shrink-0"
+            compact={compact}
+          />
         </div>
       </div>
     </div>
@@ -1275,7 +1271,7 @@ const DishRow: React.FC<{
 };
 
 // ============================================================================
-// HELPER COMPONENT: MULTI-VARIANT / TABULAR BREAD SECTION (S M L MATRIX)
+// HELPER COMPONENT: MULTI-VARIANT / TABULAR BREAD SECTION
 // ============================================================================
 const BreadVariantSection: React.FC<{
   category: { id: string; name: string; items: MenuItem[] };
@@ -1285,107 +1281,18 @@ const BreadVariantSection: React.FC<{
   isPremium?: boolean;
 }> = ({ category, template, compact, onAddToCart, isPremium }) => {
   return (
-    <div className="space-y-1.5 w-full">
-      {/* S M L Table Header Row */}
-      <div
-        className={clsx(
-          'flex items-center justify-between pb-1.5 border-b border-[#D4AE68]/50 font-serif uppercase tracking-widest text-[#6E6657] font-bold',
-          compact ? 'text-[8.5px]' : 'text-[10px] sm:text-[11px]'
-        )}
-      >
-        <span className="flex items-center gap-1.5 pl-0.5">
-          <span className="text-[#D97036]">❖</span> Bread Selection
-        </span>
-        <div
-          className={clsx(
-            'grid grid-cols-3 text-center font-black text-[#1B4942]',
-            compact ? 'w-24 gap-0.5 text-[8.5px]' : 'w-32 sm:w-44 gap-1 sm:gap-2 text-xs sm:text-sm'
-          )}
-        >
-          <span>S</span>
-          <span>M</span>
-          <span>L</span>
-        </div>
-      </div>
-
-      {/* Bread Rows */}
-      <div className="space-y-1">
-        {category.items.map((item) => {
-          const basePriceNum = Number(item.price) || 40;
-          const sPrice = item.halfPrice || item.regPrice || basePriceNum;
-          const mPrice = item.price || Math.round(basePriceNum * 1.15);
-          const lPrice = item.fullPrice || item.largePrice || Math.round(basePriceNum * 1.3);
-
-          return (
-            <div
-              key={item.id}
-              className="flex items-center justify-between py-1.5 sm:py-2 border-b border-[#D4AE68]/20 hover:border-[#D76C3C]/40 transition-colors group/bread"
-            >
-              <div className="flex items-center gap-1.5 min-w-0 flex-1 pr-1.5">
-                <div className="shrink-0">
-                  <DietIndicator type={item.dietType} compact={compact} color="#386450" />
-                </div>
-                <span
-                  className={clsx(
-                    'font-bold text-[#1B4942] group-hover/bread:text-[#D97036] transition-colors leading-snug',
-                    compact ? 'text-[11px]' : 'text-xs sm:text-sm'
-                  )}
-                  style={{ fontFamily: template.typography.body }}
-                >
-                  {item.name}
-                </span>
-              </div>
-
-              {/* Dotted Leader: ONLY when NOT compact on desktop/tablet */}
-              {!compact && (
-                <div className="hidden sm:block flex-1 border-b border-dotted border-[#D4AE68]/45 mx-2 self-center translate-y-0.5" />
-              )}
-
-              {/* Price Multi-Columns */}
-              <div
-                className={clsx(
-                  'grid grid-cols-3 text-center font-serif font-black text-[#1B4942] shrink-0',
-                  compact ? 'w-24 gap-0.5 text-[10px]' : 'w-32 sm:w-44 gap-1 sm:gap-2 text-xs sm:text-sm'
-                )}
-              >
-                <button
-                  type="button"
-                  disabled={!isPremium || !onAddToCart}
-                  onClick={() => onAddToCart?.(item, String(sPrice), 'Small')}
-                  className={clsx(
-                    'py-0.5 rounded hover:bg-[#D97036]/10 transition-colors',
-                    isPremium && onAddToCart && 'hover:text-[#D97036] cursor-pointer'
-                  )}
-                >
-                  ₹{sPrice}
-                </button>
-                <button
-                  type="button"
-                  disabled={!isPremium || !onAddToCart}
-                  onClick={() => onAddToCart?.(item, String(mPrice), 'Medium')}
-                  className={clsx(
-                    'py-0.5 rounded hover:bg-[#D97036]/10 transition-colors',
-                    isPremium && onAddToCart && 'hover:text-[#D97036] cursor-pointer'
-                  )}
-                >
-                  ₹{mPrice}
-                </button>
-                <button
-                  type="button"
-                  disabled={!isPremium || !onAddToCart}
-                  onClick={() => onAddToCart?.(item, String(lPrice), 'Large')}
-                  className={clsx(
-                    'py-0.5 rounded hover:bg-[#D97036]/10 transition-colors',
-                    isPremium && onAddToCart && 'hover:text-[#D97036] cursor-pointer'
-                  )}
-                >
-                  ₹{lPrice}
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+    <div className="space-y-1 w-full">
+      {category.items.map((item, idx) => (
+        <DishRow
+          key={item.id}
+          item={item}
+          index={idx + 1}
+          template={template}
+          compact={compact}
+          onAddToCart={onAddToCart}
+          isPremium={isPremium}
+        />
+      ))}
     </div>
   );
 };

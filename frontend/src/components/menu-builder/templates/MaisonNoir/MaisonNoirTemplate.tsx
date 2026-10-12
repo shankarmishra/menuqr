@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import type { LayoutProps } from '../types';
-import { DietIndicator } from '../shared/RenderItemPrices';
+import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { MichelinSealEmblem } from '../artwork/ArchesAndEmblems';
 import { PlatinumHairlineDivider } from '../artwork/SectionDividers';
 
@@ -12,8 +12,10 @@ export const MaisonNoirTemplate: React.FC<LayoutProps> = ({
   rawCategories,
   compact,
   onAddToCart,
+  isPremium,
   activeCategory,
   setActiveCategory,
+  searchBar,
 }) => {
   const goldColor = template.colors.accent || '#C5A059';
   const headingFont = template.typography.heading || "'Bodoni Moda', serif";
@@ -68,6 +70,11 @@ export const MaisonNoirTemplate: React.FC<LayoutProps> = ({
           )}
         </div>
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          UNIVERSAL MENU SEARCH
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {searchBar}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           STICKY CATEGORY FILTER (ALL VIEWPORTS)
@@ -138,7 +145,7 @@ export const MaisonNoirTemplate: React.FC<LayoutProps> = ({
             {/* Dishes Listing */}
             <div className="space-y-4 divide-y divide-white/10">
               {cat.items.map((item) => {
-                const displayPrice = item.price ? `₹${item.price}` : '';
+                const pricing = parseItemPricing(item);
                 return (
                   <div
                     key={item.id}
@@ -162,35 +169,24 @@ export const MaisonNoirTemplate: React.FC<LayoutProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        {displayPrice && (
-                          <span
-                            className={clsx(
-                              'font-mono text-[#C5A059] tracking-wider whitespace-nowrap',
-                              compact ? 'text-xs' : 'text-sm sm:text-base'
-                            )}
-                          >
-                            {displayPrice}
-                          </span>
-                        )}
-
-                        {onAddToCart && (
-                          <button
-                            type="button"
-                            onClick={() => onAddToCart(item, displayPrice)}
-                            className="text-[10px] uppercase font-mono tracking-wider px-2 py-0.5 rounded border border-[#C5A059] text-[#C5A059] hover:bg-[#C5A059] hover:text-[#0E0E10] transition-all"
-                          >
-                            Order
-                          </button>
-                        )}
+                        <RenderItemPrices
+                          item={item}
+                          accentColor="#C5A059"
+                          isPremium={isPremium}
+                          onAddToCart={onAddToCart}
+                          priceClassName="font-mono text-[#C5A059] tracking-wider whitespace-nowrap text-xs sm:text-sm"
+                          btnStyle="text-[10px] uppercase font-mono tracking-wider px-2 py-0.5 rounded border border-[#C5A059] text-[#C5A059] hover:bg-[#C5A059] hover:text-[#0E0E10] transition-all cursor-pointer"
+                          compact={compact}
+                        />
                       </div>
                     </div>
 
                     {/* Second Row: Description & Optional Image Thumbnail */}
                     <div className="flex items-start justify-between gap-3 mt-1">
                       <div className="min-w-0 flex-1">
-                        {item.description && (
+                        {pricing.cleanDescription && (
                           <p className="text-[11px] sm:text-xs text-white/60 leading-relaxed font-serif italic break-words">
-                            {item.description}
+                            {pricing.cleanDescription}
                           </p>
                         )}
 

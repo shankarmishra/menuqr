@@ -168,6 +168,7 @@ export async function getFullPublicMenuData(tenantId) {
       city: client.city,
     },
     plan: authorization.planId,
+    orderingEnabled: Boolean(authorization.active && authorization.entitlements.includes('customer_ordering')),
     templateId: appearance.template_id || 'royal-maharaja',
     googleReviews,
     categories,
@@ -310,29 +311,79 @@ export default async function publicRoutes(request, response, url) {
       throw apiError(400, 'Order items are required.');
     }
     
-    // Fetch real prices from database
-    const menuItemsRes = await pool.query('SELECT id, price, name FROM menu_items WHERE tenant_id = $1 AND is_available = true', [client.id]);
-    const itemPrices = new Map(menuItemsRes.rows.map(r => [r.id, { price: parseFloat(r.price || '0'), name: r.name }]));
-    
+    // Fetch real prices and variants from database
+    const menuItemsRes = await pool.query(
+      'SELECT id, price, half_price, full_price, name FROM menu_items WHERE tenant_id = $1 AND is_available = true',
+      [client.id]
+    );
+    const variantsRes = await pool.query(
+      'SELECT id, menu_item_id, name, price FROM menu_item_variants WHERE tenant_id = $1 AND is_available = true',
+      [client.id]
+    );
+
+    const itemMap = new Map(menuItemsRes.rows.map(r => [
+      r.id,
+      {
+        id: r.id,
+        name: r.name,
+        price: parseFloat(r.price || '0'),
+        halfPrice: r.half_price !== null && r.half_price !== undefined ? parseFloat(r.half_price) : null,
+        fullPrice: r.full_price !== null && r.full_price !== undefined ? parseFloat(r.full_price) : null,
+      }
+    ]));
+
+    const variantsByItem = new Map();
+    for (const v of variantsRes.rows) {
+      const list = variantsByItem.get(v.menu_item_id) || [];
+      list.push({
+        id: v.id,
+        name: v.name,
+        price: parseFloat(v.price || '0'),
+      });
+      variantsByItem.set(v.menu_item_id, list);
+    }
+
     let calculatedTotal = 0;
     const validatedItems = [];
-    
+
     for (const item of input.items) {
       if (!item || !item.id) throw apiError(400, 'Invalid item in order.');
       const qty = parseInt(item.quantity, 10);
       if (isNaN(qty) || qty <= 0 || qty > 100) {
         throw apiError(400, `Invalid quantity for item: ${item.name || item.id}`);
       }
-      if (!itemPrices.has(item.id)) {
+      if (!itemMap.has(item.id)) {
         throw apiError(400, `Item not found or unavailable: ${item.name || item.id}`);
       }
-      const dbItem = itemPrices.get(item.id);
-      calculatedTotal += dbItem.price * qty;
+      const dbItem = itemMap.get(item.id);
+      let unitPrice = dbItem.price;
+      const variantName = item.variant ? String(item.variant).trim() : null;
+
+      if (variantName) {
+        const itemVariants = variantsByItem.get(item.id) || [];
+        const matchedDbVariant = itemVariants.find(v =>
+          v.id === item.variantId ||
+          v.name.toLowerCase() === variantName.toLowerCase() ||
+          variantName.toLowerCase().startsWith(v.name.toLowerCase()) ||
+          v.name.toLowerCase().startsWith(variantName.toLowerCase())
+        );
+
+        if (matchedDbVariant) {
+          unitPrice = matchedDbVariant.price;
+        } else if (/half/i.test(variantName) && dbItem.halfPrice !== null && !isNaN(dbItem.halfPrice)) {
+          unitPrice = dbItem.halfPrice;
+        } else if (/full/i.test(variantName) && dbItem.fullPrice !== null && !isNaN(dbItem.fullPrice)) {
+          unitPrice = dbItem.fullPrice;
+        }
+      }
+
+      calculatedTotal += unitPrice * qty;
       validatedItems.push({
         id: item.id,
         name: dbItem.name,
-        price: dbItem.price,
-        quantity: qty
+        variant: variantName || undefined,
+        price: unitPrice,
+        quantity: qty,
       });
     }
     

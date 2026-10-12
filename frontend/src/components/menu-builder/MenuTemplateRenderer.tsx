@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import clsx from 'clsx';
-import { menuTemplates } from '../../data/menuTemplates';
+import { menuTemplates, isTemplateDark } from '../../data/menuTemplates';
 import { getTemplateComponent, getTemplateTextureKey, TEMPLATE_TEXTURES, type CategoryGroup } from './templates';
+import { UniversalMenuSearch } from './templates/shared/UniversalMenuSearch';
 
 export interface MenuTemplateRendererProps {
   templateId: string;
@@ -32,6 +33,7 @@ export interface MenuTemplateRendererProps {
     dietType: 'veg' | 'non-veg' | 'vegan';
     available?: boolean;
     isBestseller?: boolean;
+    variants?: Array<{ id?: string; name: string; price: number | string; variantGroup?: string }>;
   }>;
   compact?: boolean;
   className?: string;
@@ -51,6 +53,22 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
 }) => {
   const template = menuTemplates.find((t) => t.id === templateId || t.name.toLowerCase().replace(/\s+/g, '-') === templateId) || menuTemplates[0];
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Authoritative entitlement gating: only provide addToCart when plan ordering is permitted
+  const effectiveAddToCart = isPremium && onAddToCart ? onAddToCart : undefined;
+
+  // Search filtering: matches name and meaningful description
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const matchingItems = useMemo(() => {
+    if (!normalizedQuery) return items;
+    return items.filter((item) => {
+      const name = (item.name || '').toLowerCase();
+      const desc = (item.description || '').toLowerCase();
+      return name.includes(normalizedQuery) || desc.includes(normalizedQuery);
+    });
+  }, [items, normalizedQuery]);
 
   // Group items by category
   const sortedCategories = [...categories].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -59,17 +77,17 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
     .map((cat) => ({
       id: cat.id,
       name: cat.name,
-      items: items.filter((item) => item.category === cat.id || item.category === cat.name),
+      items: matchingItems.filter((item) => item.category === cat.id || item.category === cat.name),
     }))
     .filter((cat) => cat.items.length > 0);
 
   const rawCategories: CategoryGroup[] =
     itemsByCategory.length > 0
       ? itemsByCategory
-      : Array.from(new Set(items.map((i) => i.category))).map((catName, idx) => ({
+      : Array.from(new Set(matchingItems.map((i) => i.category))).map((catName, idx) => ({
           id: `cat-${idx}`,
           name: catName,
-          items: items.filter((i) => i.category === catName),
+          items: matchingItems.filter((i) => i.category === catName),
         }));
 
   // Filter categories based on active category selection
@@ -83,6 +101,17 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
   const TemplateComponent = getTemplateComponent(template.id);
   const textureKey = getTemplateTextureKey(template.id);
   const textureObj = TEMPLATE_TEXTURES[textureKey];
+  const isDark = isTemplateDark(template);
+
+  const searchBar = compact ? null : (
+    <UniversalMenuSearch
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+      accentColor={template.colors.accent || template.colors.heading}
+      placeholder="Search dishes..."
+      isDarkTheme={isDark}
+    />
+  );
 
   return (
     <div
@@ -105,11 +134,50 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
           categories={filteredCategories}
           rawCategories={rawCategories}
           compact={compact}
-          onAddToCart={onAddToCart}
+          onAddToCart={effectiveAddToCart}
           isPremium={isPremium}
           activeCategory={activeCategory}
           setActiveCategory={setActiveCategory}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          searchBar={searchBar}
         />
+
+        {/* Global Empty Search State if no dishes matched */}
+        {!compact && normalizedQuery && filteredCategories.length === 0 && (
+          <div className="py-16 px-4 text-center space-y-4">
+            <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center bg-black/10 dark:bg-white/10 opacity-70">
+              🔍
+            </div>
+            <p className="text-base font-medium opacity-80">
+              No dishes found matching <span className="font-bold">"{searchQuery}"</span>
+            </p>
+            {activeCategory !== 'all' && (
+              <p className="text-xs opacity-60">
+                Searching inside category only. Try viewing all dishes or clearing your search.
+              </p>
+            )}
+            <div className="flex items-center justify-center gap-3 pt-2">
+              {activeCategory !== 'all' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveCategory('all')}
+                  className="px-4 py-2 rounded-xl text-xs font-bold border border-current opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  View in All Dishes
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-current text-black dark:text-white transition-opacity cursor-pointer"
+                style={{ backgroundColor: template.colors.accent || template.colors.heading, color: isDark ? '#000000' : '#FFFFFF' }}
+              >
+                Clear Search
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

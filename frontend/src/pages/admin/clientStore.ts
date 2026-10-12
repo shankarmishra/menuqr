@@ -6,7 +6,7 @@ export interface MenuItemRecord {
   name: string;
   description: string;
   price: string;
-  pricingType?: 'single' | 'half-full' | 'sizes';
+  pricingType?: 'single' | 'half-full' | 'sizes' | 'variants';
   halfPrice?: string;
   fullPrice?: string;
   regPrice?: string;
@@ -16,6 +16,7 @@ export interface MenuItemRecord {
   dietType: MenuDietType;
   image: string;
   available: boolean;
+  variants?: Array<{ id?: string; name: string; price: number; variantGroup?: string }>;
 }
 
 export interface ClientRecord {
@@ -61,6 +62,7 @@ export interface PublicMenuRecord {
   categories?: Array<{ id: string; name: string; order: number }>;
   menuItems: MenuItemRecord[];
   plan?: string;
+  orderingEnabled?: boolean;
   templateId?: string;
   googleReviews?: {
     enabled: boolean;
@@ -317,6 +319,7 @@ interface RawPublicMenuApiResponse {
     city?: string;
   };
   plan: string;
+  orderingEnabled?: boolean;
   templateId?: string;
   googleReviews?: {
     enabled: boolean;
@@ -328,10 +331,14 @@ interface RawPublicMenuApiResponse {
     name: string;
     description?: string;
     price: number;
+    halfPrice?: number | null;
+    fullPrice?: number | null;
+    pricingType?: string;
     category: string;
     dietType: 'veg' | 'non-veg' | 'vegan';
     available: boolean;
     image?: string;
+    variants?: Array<{ id?: string; name: string; price: number; variantGroup?: string }>;
   }>;
 }
 
@@ -341,9 +348,9 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     name: item.name,
     description: item.description ?? '',
     price: String(item.price),
-    pricingType: 'single' as const,
-    halfPrice: '',
-    fullPrice: '',
+    pricingType: (item.pricingType as any) || (item.variants && item.variants.length > 0 ? 'variants' : (item.halfPrice || item.fullPrice ? 'half-full' : 'single')),
+    halfPrice: item.halfPrice !== undefined && item.halfPrice !== null ? String(item.halfPrice) : '',
+    fullPrice: item.fullPrice !== undefined && item.fullPrice !== null ? String(item.fullPrice) : '',
     regPrice: '',
     medPrice: '',
     largePrice: '',
@@ -351,6 +358,7 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     dietType: (item.dietType ?? 'veg') as MenuDietType,
     image: item.image ?? '',
     available: item.available,
+    variants: item.variants,
   }));
   return {
     businessName: raw.restaurant.name,
@@ -368,6 +376,7 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     categories: raw.categories,
     menuItems,
     plan: raw.plan,
+    orderingEnabled: raw.orderingEnabled,
     templateId: raw.templateId,
     googleReviews: raw.googleReviews,
   };

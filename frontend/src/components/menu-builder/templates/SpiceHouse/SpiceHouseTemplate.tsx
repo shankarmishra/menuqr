@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import type { LayoutProps } from '../types';
-import { DietIndicator } from '../shared/RenderItemPrices';
+import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { SpiceDustDivider } from '../artwork/SectionDividers';
 
 export const SpiceHouseTemplate: React.FC<LayoutProps> = ({
@@ -11,8 +11,10 @@ export const SpiceHouseTemplate: React.FC<LayoutProps> = ({
   rawCategories,
   compact,
   onAddToCart,
+  isPremium,
   activeCategory,
   setActiveCategory,
+  searchBar,
 }) => {
   const spiceColor = template.colors.accent || '#E07A5F';
   const headingFont = template.typography.heading || "'Oswald', serif";
@@ -60,6 +62,11 @@ export const SpiceHouseTemplate: React.FC<LayoutProps> = ({
           )}
         </div>
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          UNIVERSAL MENU SEARCH
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {searchBar}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           STICKY CATEGORY FILTER (ALL VIEWPORTS)
@@ -125,7 +132,7 @@ export const SpiceHouseTemplate: React.FC<LayoutProps> = ({
             {/* Dishes Listing */}
             <div className="space-y-4 divide-y divide-[#E07A5F]/15">
               {cat.items.map((item) => {
-                const displayPrice = item.price ? `₹${item.price}` : '';
+                const pricing = parseItemPricing(item);
                 return (
                   <div
                     key={item.id}
@@ -149,35 +156,24 @@ export const SpiceHouseTemplate: React.FC<LayoutProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        {displayPrice && (
-                          <span
-                            className={clsx(
-                              'font-bold text-[#F4A261] tracking-wide font-mono whitespace-nowrap',
-                              compact ? 'text-xs' : 'text-sm sm:text-base'
-                            )}
-                          >
-                            {displayPrice}
-                          </span>
-                        )}
-
-                        {onAddToCart && (
-                          <button
-                            type="button"
-                            onClick={() => onAddToCart(item, displayPrice)}
-                            className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#E07A5F] text-white hover:bg-[#c96247] transition-all"
-                          >
-                            Add
-                          </button>
-                        )}
+                        <RenderItemPrices
+                          item={item}
+                          accentColor="#E07A5F"
+                          isPremium={isPremium}
+                          onAddToCart={onAddToCart}
+                          priceClassName="font-bold text-[#F4A261] tracking-wide font-mono whitespace-nowrap text-xs sm:text-sm"
+                          btnStyle="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#E07A5F] text-white hover:bg-[#c96247] transition-all cursor-pointer"
+                          compact={compact}
+                        />
                       </div>
                     </div>
 
                     {/* Second Row: Description & Optional Image Thumbnail */}
                     <div className="flex items-start justify-between gap-3 mt-1">
                       <div className="min-w-0 flex-1">
-                        {item.description && (
+                        {pricing.cleanDescription && (
                           <p className="text-[11px] sm:text-xs text-[#DFCEBF] leading-relaxed font-serif italic break-words">
-                            {item.description}
+                            {pricing.cleanDescription}
                           </p>
                         )}
 

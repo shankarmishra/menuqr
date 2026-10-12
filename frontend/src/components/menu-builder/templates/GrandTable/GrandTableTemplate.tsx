@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import type { LayoutProps } from '../types';
-import { DietIndicator } from '../shared/RenderItemPrices';
+import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { GrandGoldDivider } from '../artwork/SectionDividers';
 import { GrandBallroomFrame } from '../artwork/OrnamentalFrames';
 
@@ -12,8 +12,10 @@ export const GrandTableTemplate: React.FC<LayoutProps> = ({
   rawCategories,
   compact,
   onAddToCart,
+  isPremium,
   activeCategory,
   setActiveCategory,
+  searchBar,
 }) => {
   const goldColor = template.colors.accent || '#C8A962';
   const headingFont = template.typography.heading || "'Cinzel', serif";
@@ -62,6 +64,11 @@ export const GrandTableTemplate: React.FC<LayoutProps> = ({
           )}
         </div>
       </GrandBallroomFrame>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          UNIVERSAL MENU SEARCH
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {searchBar}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           STICKY CATEGORY FILTER (ALL VIEWPORTS)
@@ -128,7 +135,7 @@ export const GrandTableTemplate: React.FC<LayoutProps> = ({
             {/* Dishes Listing */}
             <div className="space-y-4 divide-y divide-[#C8A962]/15">
               {cat.items.map((item) => {
-                const displayPrice = item.price ? `₹${item.price}` : '';
+                const pricing = parseItemPricing(item);
                 return (
                   <div
                     key={item.id}
@@ -152,35 +159,24 @@ export const GrandTableTemplate: React.FC<LayoutProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        {displayPrice && (
-                          <span
-                            className={clsx(
-                              'font-bold text-[#C8A962] tracking-wide font-mono whitespace-nowrap',
-                              compact ? 'text-xs' : 'text-sm sm:text-base'
-                            )}
-                          >
-                            {displayPrice}
-                          </span>
-                        )}
-
-                        {onAddToCart && (
-                          <button
-                            type="button"
-                            onClick={() => onAddToCart(item, displayPrice)}
-                            className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#C8A962] text-[#080E17] hover:bg-[#dec17e] transition-all"
-                          >
-                            Add
-                          </button>
-                        )}
+                        <RenderItemPrices
+                          item={item}
+                          accentColor="#C8A962"
+                          isPremium={isPremium}
+                          onAddToCart={onAddToCart}
+                          priceClassName="font-bold text-[#C8A962] tracking-wide font-mono whitespace-nowrap text-xs sm:text-sm"
+                          btnStyle="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#C8A962] text-[#080E17] hover:bg-[#dec17e] transition-all cursor-pointer"
+                          compact={compact}
+                        />
                       </div>
                     </div>
 
                     {/* Second Row: Description & Optional Image Thumbnail */}
                     <div className="flex items-start justify-between gap-3 mt-1">
                       <div className="min-w-0 flex-1">
-                        {item.description && (
+                        {pricing.cleanDescription && (
                           <p className="text-[11px] sm:text-xs text-[#94A3B8] leading-relaxed font-serif italic break-words">
-                            {item.description}
+                            {pricing.cleanDescription}
                           </p>
                         )}
 

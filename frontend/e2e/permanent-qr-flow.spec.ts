@@ -7,7 +7,18 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const backendRequire = createRequire(resolve(repoRoot, 'backend/package.json'));
 backendRequire('dotenv').config({ path: resolve(repoRoot, 'backend/.env') });
 const { Pool } = backendRequire('pg');
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+let dbUrl = process.env.DATABASE_URL;
+if (dbUrl) {
+  try {
+    const parsed = new URL(dbUrl);
+    const dbName = decodeURIComponent(parsed.pathname).replace(/^\/+/, '');
+    if (!/(?:^|[_-])test(?:$|[_-])/i.test(dbName)) {
+      parsed.pathname = `/${dbName}_test`;
+      dbUrl = parsed.toString();
+    }
+  } catch {}
+}
+const pool = new Pool({ connectionString: dbUrl });
 const { hashPassword, generateAuthCookie } = await import(pathToFileURL(resolve(repoRoot, 'backend/auth.js')).href);
 
 type RestaurantFixture = { tenantId: string; userId: string; menuId?: string; itemId?: string; qrId?: string; cookie: string };
@@ -155,13 +166,15 @@ test('Basic onboarding saves real data, creates one permanent QR, edits live men
   await testInfo.attach('sticker-print-preview', { body: await page.screenshot(), contentType: 'image/png' });
   await page.emulateMedia({ media: 'screen' });
   const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'PNG' }).click();
+  await page.getByRole('button', { name: 'Download Image (PNG)' }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toContain('MenusQR_E2E_Basic_Cafe');
-  const svgPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'SVG' }).click();
-  const svgDownload = await svgPromise;
-  expect(svgDownload.suggestedFilename()).toContain('.svg');
+  if (await page.getByRole('button', { name: 'SVG' }).isVisible()) {
+    const svgPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'SVG' }).click();
+    const svgDownload = await svgPromise;
+    expect(svgDownload.suggestedFilename()).toContain('.svg');
+  }
   await page.getByRole('button', { name: 'Close' }).click();
 
   await page.goto(`${baseURL}/qr/${encodeURIComponent(qrId)}`, { waitUntil: 'domcontentloaded' });

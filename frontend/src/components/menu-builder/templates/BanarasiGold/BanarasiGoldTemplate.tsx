@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import type { LayoutProps } from '../types';
-import { DietIndicator } from '../shared/RenderItemPrices';
+import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { BanarasiKalka } from '../artwork/ArchesAndEmblems';
 import { BanarasiZariDivider } from '../artwork/SectionDividers';
 import { BanarasiZariFrame } from '../artwork/OrnamentalFrames';
@@ -13,8 +13,10 @@ export const BanarasiGoldTemplate: React.FC<LayoutProps> = ({
   rawCategories,
   compact,
   onAddToCart,
+  isPremium,
   activeCategory,
   setActiveCategory,
+  searchBar,
 }) => {
   const zariGold = template.colors.accent || '#FFD700';
   const headingFont = template.typography.heading || "'Philosopher', serif";
@@ -66,6 +68,11 @@ export const BanarasiGoldTemplate: React.FC<LayoutProps> = ({
           )}
         </div>
       </BanarasiZariFrame>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          UNIVERSAL MENU SEARCH
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {searchBar}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           STICKY CATEGORY FILTER (ALL VIEWPORTS)
@@ -133,7 +140,7 @@ export const BanarasiGoldTemplate: React.FC<LayoutProps> = ({
               {/* Dishes Listing */}
               <div className="space-y-3.5 divide-y divide-[#FFD700]/15">
                 {cat.items.map((item) => {
-                  const displayPrice = item.price ? `₹${item.price}` : '';
+                  const pricing = parseItemPricing(item);
                   return (
                     <div
                       key={item.id}
@@ -157,35 +164,24 @@ export const BanarasiGoldTemplate: React.FC<LayoutProps> = ({
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          {displayPrice && (
-                            <span
-                              className={clsx(
-                                'font-bold text-[#FFD700] tracking-wide font-mono whitespace-nowrap',
-                                compact ? 'text-xs' : 'text-sm sm:text-base'
-                              )}
-                            >
-                              {displayPrice}
-                            </span>
-                          )}
-
-                          {onAddToCart && (
-                            <button
-                              type="button"
-                              onClick={() => onAddToCart(item, displayPrice)}
-                              className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#FFD700] text-[#1E0514] hover:bg-[#ffe347] transition-all"
-                            >
-                              Add
-                            </button>
-                          )}
+                          <RenderItemPrices
+                            item={item}
+                            accentColor="#FFD700"
+                            isPremium={isPremium}
+                            onAddToCart={onAddToCart}
+                            priceClassName="font-mono font-bold text-xs sm:text-sm text-[#FFD700] tracking-wide px-2 py-0.5 bg-[#3D0E2B] rounded border border-[#FFD700]/40"
+                            btnStyle="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#FFD700] text-[#1E0514] hover:bg-[#ffe347] transition-all cursor-pointer"
+                            compact={compact}
+                          />
                         </div>
                       </div>
 
                       {/* Second Row: Description & Optional Image Thumbnail */}
                       <div className="flex items-start justify-between gap-3 mt-1">
                         <div className="min-w-0 flex-1">
-                          {item.description && (
+                          {pricing.cleanDescription && (
                             <p className="text-[11px] sm:text-xs text-[#E6D5C3] leading-relaxed font-serif italic break-words">
-                              {item.description}
+                              {pricing.cleanDescription}
                             </p>
                           )}
 

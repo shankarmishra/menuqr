@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
 import type { LayoutProps, MenuItem } from '../types';
-import { DietIndicator } from '../shared/RenderItemPrices';
+import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 
 // --- AUTHENTIC HERITAGE CURATED PHOTOGRAPHY ---
 // High quality Unsplash imagery for Indian luxury cuisine
@@ -649,6 +649,7 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
   isPremium,
   activeCategory,
   setActiveCategory,
+  searchBar,
 }) => {
   // Mobile / Phone Mockup Tab Switcher: "Cover" vs "Inside Menu"
   const [activeViewTab, setActiveViewTab] = useState<'both' | 'cover' | 'menu'>(compact ? 'menu' : 'both');
@@ -873,6 +874,11 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
           </div>
         </section>
       )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          UNIVERSAL MENU SEARCH
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {activeViewTab !== 'cover' && searchBar}
 
       {/* ========================================================================= */}
       {/* INTERIOR MENU PAGES: WARM IVORY PARCHMENT BOOKLET */}
@@ -1204,7 +1210,9 @@ const DishRow: React.FC<{
   onAddToCart?: (item: any, priceStr: string, variant?: string) => void;
   isPremium?: boolean;
   useDottedLeader?: boolean;
-}> = ({ item, template, compact = false, onAddToCart: _onAddToCart, isPremium: _isPremium, useDottedLeader = false }) => {
+}> = ({ item, template, compact = false, onAddToCart, isPremium, useDottedLeader = false }) => {
+  const pricing = parseItemPricing(item);
+
   if (compact) {
     return (
       <div className="py-2 border-b border-[#D7B66D]/20 last:border-b-0">
@@ -1232,21 +1240,25 @@ const DishRow: React.FC<{
                   </span>
                 )}
               </div>
-              {item.description && (
+              {pricing.cleanDescription && (
                 <p className="text-[10px] text-[#776B5B] leading-tight font-sans font-normal mt-0.5 line-clamp-2 break-normal">
-                  {item.description}
+                  {pricing.cleanDescription}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Price Badge: real dynamic price */}
+          {/* Price Badges & Add buttons */}
           <div className="shrink-0 pt-0.5">
-            {item.price && (
-              <span className="font-serif font-bold text-[11px] text-[#285B48] tracking-wider bg-[#F5EBDD] px-2 py-0.5 rounded border border-[#C9A967]/50 shadow-xs whitespace-nowrap">
-                ₹{item.price}
-              </span>
-            )}
+            <RenderItemPrices
+              item={item}
+              accentColor="#285B48"
+              isPremium={isPremium}
+              onAddToCart={onAddToCart}
+              priceClassName="font-serif font-bold text-[11px] text-[#285B48] tracking-wider bg-[#F5EBDD] px-2 py-0.5 rounded border border-[#C9A967]/50 shadow-xs whitespace-nowrap"
+              btnStyle="text-[9px] font-bold px-2 py-0.5 bg-[#D7B66D] text-[#064F43] rounded hover:bg-[#e4ca8c] transition-colors cursor-pointer"
+              compact={true}
+            />
           </div>
         </div>
       </div>
@@ -1254,7 +1266,6 @@ const DishRow: React.FC<{
   }
 
   // Desktop view
-  const displayPrice = item.price ? `₹${item.price}` : '';
   return (
     <div className="group py-2.5 border-b border-[#C9A967]/20 hover:border-[#C9A967]/60 transition-colors">
       <div className="flex items-baseline justify-between gap-3">
@@ -1281,24 +1292,28 @@ const DishRow: React.FC<{
           <span className="hidden sm:inline-block flex-1 border-b border-dotted border-[#C9A967]/60 mx-3 self-end mb-1" />
         )}
 
-        {/* Price Display */}
+        {/* Price & Add */}
         <div className="shrink-0 flex items-center gap-2 ml-2">
           {item.isBestseller && (
             <span className="hidden xs:inline-block text-[9px] font-sans font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#27844F]/15 text-[#27844F] border border-[#27844F]/30">
               BEST SELLER
             </span>
           )}
-          {displayPrice && (
-            <span className="font-serif font-bold text-xs sm:text-sm text-[#285B48] tracking-widest bg-[#F5EBDD] px-2 py-0.5 rounded border border-[#C9A967]/50 shadow-xs">
-              {displayPrice}
-            </span>
-          )}
+          <RenderItemPrices
+            item={item}
+            accentColor="#285B48"
+            isPremium={isPremium}
+            onAddToCart={onAddToCart}
+            priceClassName="font-serif font-bold text-xs sm:text-sm text-[#285B48] tracking-widest bg-[#F5EBDD] px-2 py-0.5 rounded border border-[#C9A967]/50 shadow-xs"
+            btnStyle="text-[9px] font-bold px-2 py-0.5 bg-[#D7B66D] text-[#064F43] rounded hover:bg-[#e4ca8c] transition-colors cursor-pointer"
+            compact={compact}
+          />
         </div>
       </div>
 
-      {item.description && (
+      {pricing.cleanDescription && (
         <p className="text-[#776B5B] pl-6 mt-1.5 leading-relaxed font-sans font-normal max-w-[92%] text-xs sm:text-[13px]">
-          {item.description}
+          {pricing.cleanDescription}
         </p>
       )}
     </div>

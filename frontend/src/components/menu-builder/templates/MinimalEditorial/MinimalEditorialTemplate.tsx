@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import type { LayoutProps } from '../types';
-import { DietIndicator } from '../shared/RenderItemPrices';
+import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { SwissPrecisionDivider } from '../artwork/SectionDividers';
 import { SwissArchitecturalFrame } from '../artwork/OrnamentalFrames';
 
@@ -12,8 +12,10 @@ export const MinimalEditorialTemplate: React.FC<LayoutProps> = ({
   rawCategories,
   compact,
   onAddToCart,
+  isPremium,
   activeCategory,
   setActiveCategory,
+  searchBar,
 }) => {
   const headingFont = template.typography.heading || "'Inter', sans-serif";
 
@@ -56,6 +58,11 @@ export const MinimalEditorialTemplate: React.FC<LayoutProps> = ({
           )}
         </div>
       </SwissArchitecturalFrame>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          UNIVERSAL MENU SEARCH
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {searchBar}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           STICKY CATEGORY FILTER (ALL VIEWPORTS)
@@ -132,7 +139,7 @@ export const MinimalEditorialTemplate: React.FC<LayoutProps> = ({
               {/* Dishes Listing */}
               <div className="space-y-4 divide-y divide-black/10">
                 {cat.items.map((item, itemIdx) => {
-                  const displayPrice = item.price ? `₹${item.price}` : '';
+                  const pricing = parseItemPricing(item);
                   const itemNum = `${catNum}.${String(itemIdx + 1).padStart(2, '0')}`;
                   return (
                     <div
@@ -160,35 +167,24 @@ export const MinimalEditorialTemplate: React.FC<LayoutProps> = ({
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          {displayPrice && (
-                            <span
-                              className={clsx(
-                                'font-mono text-black tracking-wider font-medium whitespace-nowrap',
-                                compact ? 'text-xs' : 'text-sm sm:text-base'
-                              )}
-                            >
-                              {displayPrice}
-                            </span>
-                          )}
-
-                          {onAddToCart && (
-                            <button
-                              type="button"
-                              onClick={() => onAddToCart(item, displayPrice)}
-                              className="text-[10px] uppercase font-mono tracking-wider px-2 py-0.5 rounded border border-black text-black hover:bg-black hover:text-white transition-all"
-                            >
-                              Add
-                            </button>
-                          )}
+                          <RenderItemPrices
+                            item={item}
+                            accentColor="#000000"
+                            isPremium={isPremium}
+                            onAddToCart={onAddToCart}
+                            priceClassName="font-mono text-black tracking-wider font-medium whitespace-nowrap text-xs sm:text-sm"
+                            btnStyle="text-[10px] uppercase font-mono tracking-wider px-2 py-0.5 rounded border border-black text-black hover:bg-black hover:text-white transition-all cursor-pointer"
+                            compact={compact}
+                          />
                         </div>
                       </div>
 
                       {/* Second Row: Description & Optional Image Thumbnail */}
                       <div className="flex items-start justify-between gap-3 mt-1">
                         <div className="min-w-0 flex-1">
-                          {item.description && (
+                          {pricing.cleanDescription && (
                             <p className="text-[11px] sm:text-xs text-black/60 leading-relaxed font-sans break-words">
-                              {item.description}
+                              {pricing.cleanDescription}
                             </p>
                           )}
 
