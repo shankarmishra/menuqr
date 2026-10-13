@@ -95,7 +95,7 @@ export function TemplateCard({
           ═══════════════════════════════════════════════════════════════════ */}
       <div
         className="relative flex min-h-[220px] sm:min-h-[300px] md:min-h-[560px] lg:min-h-[620px] w-full items-center justify-center p-2 sm:p-5 md:p-8 lg:p-10 overflow-hidden"
-        style={{ background: 'var(--stage-bg)' }}
+        style={{ background: 'var(--stage-bg)', isolation: 'isolate' }}
       >
         {/* Ambient Glow matching template accent */}
         <div
@@ -108,13 +108,13 @@ export function TemplateCard({
           style={{ background: 'linear-gradient(to top, var(--floor-reflection), transparent)' }}
         />
 
-        <div className="relative z-10 flex items-center justify-center">
+        <div className="relative z-10 flex items-center justify-center w-full">
           <div
-            className="relative shadow-[0_30px_70px_rgba(0,0,0,0.7)] rounded-[45px] sm:rounded-[50px] scale-[0.68] sm:scale-[0.82] md:scale-100 origin-center my-[-30px] sm:my-[-15px] md:my-0"
-            style={{ transformStyle: 'preserve-3d' }}
+            className="relative shadow-[0_30px_70px_rgba(0,0,0,0.7)] rounded-[45px] sm:rounded-[50px] scale-[0.72] sm:scale-[0.85] md:scale-100 origin-center my-[-15px] sm:my-[-5px] md:my-0"
+            style={{ isolation: 'isolate' }}
           >
             <PremiumIPhoneMockup
-              className="!w-[230px] sm:!w-[260px] md:!w-[290px] lg:!w-[315px]"
+              className="!w-[225px] sm:!w-[260px] md:!w-[290px] lg:!w-[315px]"
               badgeText="Live Menu Preview"
               statusBarTheme={isTemplateDark(template) ? 'light' : 'dark'}
               homeIndicatorTheme={isTemplateDark(template) ? 'light' : 'dark'}
@@ -122,7 +122,7 @@ export function TemplateCard({
               screenClassName=""
             >
               <div
-                className="h-full w-full overflow-y-auto overflow-x-hidden p-1 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                className="h-full w-full overflow-y-auto overflow-x-hidden p-1 pointer-events-none md:pointer-events-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                 style={{ backgroundColor: theme.phoneScreenBg }}
               >
                 <MenuTemplateRenderer

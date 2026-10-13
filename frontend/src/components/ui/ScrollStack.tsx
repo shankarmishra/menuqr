@@ -225,10 +225,13 @@ const ScrollStack = ({
         const turn = lean * settings.rotationAmount * (i % 2 ? -1 : 1);
         const blur = depth * settings.blurAmount;
         const dim = 1 - Math.pow(1 - dimStep, depth);
+        const has3D = Math.abs(tilt) > 0.01 || Math.abs(turn) > 0.01;
         const transform =
           depth < 0.0005
             ? ''
-            : `perspective(1200px) rotateX(${tilt.toFixed(2)}deg) rotate(${turn.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
+            : has3D
+              ? `perspective(1200px) rotateX(${tilt.toFixed(2)}deg) rotate(${turn.toFixed(2)}deg) scale(${scale.toFixed(4)})`
+              : `scale(${scale.toFixed(4)})`;
         write(`transform${i}`, transform, (value) => {
           card.style.transform = value;
         });

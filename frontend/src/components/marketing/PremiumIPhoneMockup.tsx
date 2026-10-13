@@ -46,7 +46,7 @@ export default function PremiumIPhoneMockup({
   return (
     <div
       className={`relative w-[260px] sm:w-[290px] md:w-[310px] aspect-[393/852] rounded-[48px] sm:rounded-[52px] bg-gradient-to-b from-[#343B37] via-[#1C221F] to-[#0E1210] p-[3px] shadow-[0_28px_70px_-10px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.14)] select-none box-border ${className}`}
-      style={{ boxSizing: 'border-box' }}
+      style={{ boxSizing: 'border-box', isolation: 'isolate' }}
     >
       {/* Outer Titanium Edge Subtle Chamfer */}
       <div className="absolute inset-0 rounded-[48px] sm:rounded-[52px] border border-white/10 pointer-events-none z-30" />
@@ -62,11 +62,14 @@ export default function PremiumIPhoneMockup({
       <div className="absolute top-[140px] -right-[3px] w-[3px] h-[64px] bg-[#363E3A] rounded-r-[2px] border-r border-white/20 z-20 pointer-events-none" />
 
       {/* Black Outer Bezel Frame Chassis */}
-      <div className="relative w-full h-full bg-[#0A0D0C] rounded-[45px] sm:rounded-[49px] p-[6px] sm:p-[7px] box-border flex flex-col">
+      <div className="relative w-full h-full bg-[#0A0D0C] rounded-[45px] sm:rounded-[49px] p-[6px] sm:p-[7px] box-border flex flex-col overflow-hidden">
         {/* Inner Phone Screen Display Viewport */}
         <div
           className={`relative w-full h-full rounded-[39px] sm:rounded-[42px] overflow-hidden isolate flex flex-col box-border ${screenClassName}`}
-          style={screenStyle}
+          style={{
+            WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+            ...screenStyle,
+          }}
         >
           {/* iOS Top Status Bar Area */}
           {showStatusBar ? (
@@ -136,6 +139,7 @@ export default function PremiumIPhoneMockup({
             className={`flex-1 min-h-0 w-full relative flex flex-col ${
               statusBarMode === 'reserved' ? 'overflow-hidden' : 'h-full overflow-hidden'
             } ${innerClassName}`}
+            style={{ contain: 'paint' }}
           >
             {children}
           </div>

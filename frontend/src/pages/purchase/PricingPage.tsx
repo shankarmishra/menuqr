@@ -20,8 +20,10 @@ export default function PricingPage() {
         'Permanent Table QR Code',
         'Up to 50 Menu Items',
         'Basic Design Template',
+        'Universal Menu Search',
         'Dietary Tags (Veg/Non-Veg)',
         'Instant Customer Scan (No App)',
+        'Print-Ready QR Download',
       ],
       highlight: false,
     },
@@ -34,6 +36,8 @@ export default function PricingPage() {
         'Permanent Table QR Code',
         'Up to 150 Menu Items',
         'Premium Design Templates',
+        'Half/Full & Portion Variant Pricing',
+        'Universal Menu Search',
         'Dietary Tags & Image Support',
         'Instant Customer Scan (No App)',
         'Standard Email Support',
@@ -48,9 +52,11 @@ export default function PricingPage() {
       features: [
         'Permanent Table QR Code',
         'Unlimited Menu Edits & Categories',
-        'All Premium Design Templates',
-        'Dietary Tags & Image Support',
+        'All 15 Premium Design Templates',
         'Direct Table QR Ordering System',
+        'Half/Full & Portion Variant Pricing',
+        'Universal Menu Search',
+        'Dietary Tags & Image Support',
         'Priority Email Support',
       ],
       highlight: true,
@@ -133,6 +139,39 @@ export default function PricingPage() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Optional Add-Ons Section */}
+        <div className="max-w-6xl mx-auto mb-16">
+          <div className="bg-white rounded-3xl p-8 sm:p-10 border border-gray-200/80 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#E8783C]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#E8783C]/10 text-[#E8783C] mb-3">
+                Optional Annual Add-On
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#151C19] tracking-tight mb-2">
+                Google Reviews Integration
+              </h2>
+              <p className="text-[#53615a] text-sm sm:text-base leading-relaxed">
+                Add a direct &ldquo;Write a Google Review&rdquo; button to your live QR menu. Prompt dining guests to open your official Google business review link with one tap right from their table.
+              </p>
+              <p className="text-xs text-[#82928a] mt-2 italic">
+                * Direct review-link button CTA for your menu; does not sync live Google star counts or ratings. Available during checkout with any plan.
+              </p>
+            </div>
+            <div className="relative z-10 flex flex-col sm:flex-row md:flex-col items-start md:items-end justify-between gap-4 shrink-0 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-gray-100">
+              <div className="text-left md:text-right">
+                <span className="text-3xl sm:text-4xl font-black text-[#151C19]">₹499</span>
+                <span className="text-sm text-[#53615a] font-medium"> / year</span>
+              </div>
+              <Link
+                to="/purchase/details?plan=intermediate"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-sm bg-[#151C19] hover:bg-[#25322d] text-white transition-colors shadow-sm"
+              >
+                Select at Checkout
+              </Link>
+            </div>
+          </div>
         </div>
 
         <GeoFaqSection title="Pricing & Subscription FAQs" />

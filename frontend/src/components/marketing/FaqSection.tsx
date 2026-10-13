@@ -18,6 +18,14 @@ const faqs = [
   { 
     q: 'What happens if I cancel my subscription?', 
     a: 'Your menu goes offline and will display a polite "Menu Unavailable" screen. However, your permanent QR code is protected—it will never be recycled or hijacked. When you renew, your menu instantly comes back online using the exact same QR code.' 
+  },
+  {
+    q: 'Can I display Half and Full prices or different portion sizes?',
+    a: 'Yes. MENUQR fully supports explicit Half and Full pricing as well as custom portion tags (e.g., Half: 6 pcs / Full: 10 pcs). Guests see separate, transparent prices for each portion size across all 15 menu templates.'
+  },
+  {
+    q: 'How does the Google Reviews add-on work?',
+    a: 'The Google Reviews add-on (₹499/year) enables you to configure your official Google review link in your dashboard. A prominent "Write a Google Review" button appears directly on your live digital menu so guests can easily leave feedback. Please note this provides a fast, direct link CTA for customer reviews and does not sync live Google star ratings or reviews into the menu.'
   }
 ];
 

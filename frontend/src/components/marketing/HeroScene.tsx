@@ -212,7 +212,7 @@ export default function HeroScene() {
 
                     {/* Quality badge line */}
                     <div className="flex items-center justify-between text-[8px] text-white/60 pt-1.5 border-t border-white/10 font-medium">
-                      <span>⭐ 4.9 (1.2k+ reviews)</span>
+                      <span>Dine-In • Table 12</span>
                       <span>• Charcoal Clay Roast</span>
                       <span className="text-emerald-400 font-semibold">Open Now</span>
                     </div>

@@ -43,6 +43,14 @@ export const DEFAULT_GEO_FAQS: GeoFaqItem[] = [
   {
     question: "Does the restaurant need to reprint the QR?",
     answer: "No. You print your table QR codes once. Because MenusQR maps the physical QR code to your dynamic digital menu, you never need to reprint table stickers or acrylic stands when changing items or prices."
+  },
+  {
+    question: "Can restaurants show Half and Full prices or different portion sizes?",
+    answer: "Yes. MenusQR fully supports explicit Half and Full pricing as well as custom portion tags (e.g. Half: 6 pcs / Full: 10 pcs). Guests see separate, transparent prices for each size across all 15 menu templates."
+  },
+  {
+    question: "Is Google Reviews integration available?",
+    answer: "Yes. An optional Google Reviews add-on (₹499/year) allows you to display a direct 'Write a Google Review' link button on your live QR menu. (Direct link button CTA; does not sync live star ratings or reviews)."
   }
 ];
 

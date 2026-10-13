@@ -67,7 +67,7 @@ export default function OneQrSection() {
         <header className="mx-auto max-w-3xl space-y-5 text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-menusqr-orange/20 bg-orange-50/70 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-menusqr-emerald">
             <span className="h-1.5 w-1.5 rounded-full bg-menusqr-orange" />
-            One menu. Always up to date.
+            Your menu changes. Your QR doesn't.
           </span>
           <h2 className="text-[2.6rem] font-extrabold leading-[1.04] tracking-tight text-menusqr-emerald sm:text-[3.5rem]">
             One QR.<br className="sm:hidden" />{' '}

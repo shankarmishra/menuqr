@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 
 const features = [
   { name: 'Digital Menu via QR', basic: true, intermediate: true, premium: true },
+  { name: 'Universal Menu Search', basic: true, intermediate: true, premium: true },
+  { name: 'Half/Full & Portion Pricing', basic: true, intermediate: true, premium: true },
+  { name: 'Print-Ready QR Downloads', basic: true, intermediate: true, premium: true },
   { name: 'Included Edits', basic: '1 Edit', intermediate: 'Unlimited', premium: 'Unlimited' },
   { name: 'Premium Layout Templates', basic: false, intermediate: '3-4 Templates', premium: 'All Templates' },
   { name: 'Live Menu Updates', basic: false, intermediate: true, premium: true },
@@ -89,6 +92,27 @@ export default function PlanComparisonSection() {
               </article>
             );
           })}
+        </div>
+
+        {/* Optional Add-On Callout */}
+        <div className="mt-8 rounded-2xl border border-[#151C19]/15 bg-white p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="max-w-xl">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#E8783C] bg-[#E8783C]/10 px-2 py-0.5 rounded">
+              Optional Annual Add-On
+            </span>
+            <h3 className="text-lg font-extrabold text-[#151C19] mt-1">
+              Google Reviews Integration — ₹499/year
+            </h3>
+            <p className="text-xs text-[#626776] mt-1 leading-relaxed">
+              Display a direct &ldquo;Write a Google Review&rdquo; button on your live QR menu linked to your Google Business profile. <span className="italic">(Direct review-link CTA; does not fetch or sync live star ratings).</span>
+            </p>
+          </div>
+          <Link
+            to="/purchase/details?plan=intermediate"
+            className="shrink-0 text-xs font-bold px-4 py-2.5 rounded-lg border border-[#151C19]/20 hover:bg-[#151C19]/5 text-[#151C19] transition-colors"
+          >
+            Add at Checkout
+          </Link>
         </div>
       </div>
     </section>

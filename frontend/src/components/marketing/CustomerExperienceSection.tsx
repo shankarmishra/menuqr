@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Smartphone, Zap, Filter, HeartHandshake, Search } from 'lucide-react';
+import { Smartphone, Search, Star, Layers, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import IPhoneMockup from './PremiumIPhoneMockup';
 
@@ -34,12 +34,12 @@ export default function CustomerExperienceSection() {
   }, [isInView]);
 
   const sampleItems = [
-    { id: 1, name: 'Paneer Tikka Roll', price: '₹240', isVeg: true, category: 'Starters', cal: '320 kcal', desc: 'Charcoal-grilled paneer wrapped in a roomali roti with mint chutney.' },
-    { id: 2, name: 'Chicken Malai Tikka', price: '₹340', isVeg: false, category: 'Starters', cal: '410 kcal', desc: 'Creamy, melt-in-mouth chicken chunks marinated in yogurt.' },
+    { id: 1, name: 'Paneer Tikka Roll', price: '₹240', halfPrice: '₹140', fullPrice: '₹240', isVeg: true, category: 'Starters', cal: '320 kcal', desc: 'Charcoal-grilled paneer wrapped in a roomali roti with mint chutney.' },
+    { id: 2, name: 'Chicken Malai Tikka', price: '₹340', halfPrice: '₹190', fullPrice: '₹340', isVeg: false, category: 'Starters', cal: '410 kcal', desc: 'Creamy, melt-in-mouth chicken chunks marinated in yogurt.' },
     { id: 3, name: 'Wild Mushroom Soup', price: '₹220', isVeg: true, category: 'Soups', cal: '180 kcal', desc: 'Truffle scented rich mushroom soup served with garlic bread.' },
     { id: 4, name: 'Classic Cold Coffee', price: '₹180', isVeg: true, category: 'Beverages', cal: '210 kcal', desc: 'Thick blended cold coffee with vanilla ice cream.' },
     { id: 5, name: 'Tandoori Roti', price: '₹40', isVeg: true, category: 'Breads', cal: '110 kcal', desc: 'Fresh from the clay oven.' },
-    { id: 6, name: 'Dal Makhani', price: '₹320', isVeg: true, category: 'Mains', cal: '450 kcal', desc: 'Overnight simmered black lentils finished with cream.' },
+    { id: 6, name: 'Dal Makhani', price: '₹320', halfPrice: '₹180', fullPrice: '₹320', isVeg: true, category: 'Mains', cal: '450 kcal', desc: 'Overnight simmered black lentils finished with cream.' },
   ];
 
   const filteredItems = animationStep >= 4 ? [sampleItems[0]] : sampleItems;
@@ -62,7 +62,7 @@ export default function CustomerExperienceSection() {
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white shadow-sm text-menusqr-emerald text-xs font-semibold uppercase tracking-wider border border-menusqr-emerald/10"
           >
             <Smartphone size={14} className="text-menusqr-orange" />
-            <span>Premium Feature</span>
+            <span>Diner Experience</span>
           </motion.div>
 
           <motion.h2 
@@ -72,8 +72,8 @@ export default function CustomerExperienceSection() {
             transition={{ delay: 0.1 }}
             className="text-[2.5rem] sm:text-[3.5rem] font-extrabold text-menusqr-emerald leading-[1.1] tracking-tight"
           >
-            Live Table <br />
-            <span className="text-menusqr-orange italic font-serif font-medium">Ordering System</span>
+            Intuitive Browsing. <br />
+            <span className="text-menusqr-orange italic font-serif font-medium">Clear Portions & Reviews</span>
           </motion.h2>
 
           <motion.p 
@@ -83,7 +83,7 @@ export default function CustomerExperienceSection() {
             transition={{ delay: 0.2 }}
             className="text-base sm:text-lg text-menusqr-neutral-sec leading-relaxed max-w-md"
           >
-            Turn your digital menu into a complete point-of-sale extension. Diners can browse, filter, and place orders directly from their table without waiting for a server.
+            Give diners a fast, native-feeling menu built for Indian dining habits. Instant dish search, clear Half/Full portion pricing, and an official Google review link right at the bottom.
           </motion.p>
 
           <motion.div 
@@ -94,37 +94,37 @@ export default function CustomerExperienceSection() {
             className="space-y-6 pt-4"
           >
             <div className="flex gap-4 items-start group">
-              <div className="p-3 rounded-2xl bg-white shadow-sm text-menusqr-yellow border border-menusqr-emerald/5 shrink-0 transition-transform group-hover:scale-110">
-                <Zap size={22} className="fill-current" />
-              </div>
-              <div>
-                <h4 className="text-base font-bold text-menusqr-emerald mb-1">Instant Order Reception</h4>
-                <p className="text-sm text-menusqr-neutral-sec leading-relaxed">
-                  Orders flash directly on your kitchen or reception dashboard, complete with table numbers.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-start group">
-              <div className="p-3 rounded-2xl bg-white shadow-sm text-menusqr-veg border border-menusqr-emerald/5 shrink-0 transition-transform group-hover:scale-110">
-                <Filter size={22} />
-              </div>
-              <div>
-                <h4 className="text-base font-bold text-menusqr-emerald mb-1">Accept & Fulfill</h4>
-                <p className="text-sm text-menusqr-neutral-sec leading-relaxed">
-                  One-tap acceptance notifies the diner their food is being prepared.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-start group">
               <div className="p-3 rounded-2xl bg-white shadow-sm text-menusqr-orange border border-menusqr-emerald/5 shrink-0 transition-transform group-hover:scale-110">
-                <HeartHandshake size={22} />
+                <Search size={22} />
               </div>
               <div>
-                <h4 className="text-base font-bold text-menusqr-emerald mb-1">Zero App Downloads</h4>
+                <h4 className="text-base font-bold text-menusqr-emerald mb-1">Live Search & Category Filters</h4>
                 <p className="text-sm text-menusqr-neutral-sec leading-relaxed">
-                  A seamless web experience. No registration, no passwords for your customers.
+                  Guests filter Veg/Non-Veg or type any dish name to find favorites instantly without scrolling.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 items-start group">
+              <div className="p-3 rounded-2xl bg-white shadow-sm text-menusqr-emerald border border-menusqr-emerald/5 shrink-0 transition-transform group-hover:scale-110">
+                <Layers size={22} />
+              </div>
+              <div>
+                <h4 className="text-base font-bold text-menusqr-emerald mb-1">Half/Full & Variant Pricing</h4>
+                <p className="text-sm text-menusqr-neutral-sec leading-relaxed">
+                  Clear portion badges show exact prices with zero duplicate text, calculated accurately at checkout.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 items-start group">
+              <div className="p-3 rounded-2xl bg-white shadow-sm text-amber-500 border border-menusqr-emerald/5 shrink-0 transition-transform group-hover:scale-110">
+                <Star size={22} className="fill-amber-400 text-amber-500" />
+              </div>
+              <div>
+                <h4 className="text-base font-bold text-menusqr-emerald mb-1">Official Google Reviews Add-on</h4>
+                <p className="text-sm text-menusqr-neutral-sec leading-relaxed">
+                  Invite satisfied guests to share their experience with a dedicated Google review link on your live menu.
                 </p>
               </div>
             </div>
@@ -224,8 +224,15 @@ export default function CustomerExperienceSection() {
                                 </div>
                                 <span className="text-xs font-bold text-menusqr-emerald line-clamp-1">{item.name}</span>
                               </div>
-                              <p className="text-[10px] text-menusqr-neutral-sec line-clamp-2 leading-relaxed mb-2">{item.desc}</p>
-                              <span className="text-xs font-bold text-menusqr-emerald">{item.price}</span>
+                              <p className="text-[10px] text-menusqr-neutral-sec line-clamp-2 leading-relaxed mb-1.5">{item.desc}</p>
+                              {item.halfPrice && item.fullPrice ? (
+                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-menusqr-emerald">
+                                  <span className="bg-[#F5F3EE] px-1.5 py-0.5 rounded">Half {item.halfPrice}</span>
+                                  <span className="bg-[#F5F3EE] px-1.5 py-0.5 rounded">Full {item.fullPrice}</span>
+                                </div>
+                              ) : (
+                                <span className="text-xs font-bold text-menusqr-emerald">{item.price}</span>
+                              )}
                             </div>
                             <div className="w-20 h-20 bg-[#F5F3EE] rounded-xl shrink-0 relative overflow-hidden">
                               {/* Placeholder for image */}
@@ -245,6 +252,21 @@ export default function CustomerExperienceSection() {
                           </motion.div>
                         ))}
                       </AnimatePresence>
+                    </div>
+
+                    {/* Official Google Reviews CTA Card */}
+                    <div className="mt-4 p-3.5 rounded-2xl bg-white border border-black/5 shadow-2xs text-center">
+                      <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-amber-400/15 text-amber-500">
+                        <Star className="h-4 w-4 fill-amber-400 text-amber-500" />
+                      </div>
+                      <h5 className="text-[11px] font-bold text-menusqr-emerald">Share Your Experience</h5>
+                      <p className="text-[9px] text-menusqr-neutral-sec mt-0.5 leading-tight">
+                        Enjoyed dining at Olive & Thyme? Leave a review on Google.
+                      </p>
+                      <div className="mt-2.5 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-menusqr-primary text-[10px] font-bold text-menusqr-emerald border border-black/5 shadow-2xs">
+                        <span>Write a Google Review</span>
+                        <ExternalLink size={10} className="text-menusqr-neutral-sec" />
+                      </div>
                     </div>
                   </motion.div>
                 </div>
@@ -289,10 +311,25 @@ export default function CustomerExperienceSection() {
                             Charcoal-grilled paneer wrapped in a roomali roti with mint chutney, sliced onions, and a dash of chaat masala.
                           </p>
                           
+                          {/* Portion Selector */}
+                          <div className="mb-4">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-menusqr-neutral-sec block mb-1.5">Select Portion</span>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="p-2 rounded-xl border border-black/10 bg-[#F5F3EE] text-left">
+                                <span className="text-xs font-bold text-menusqr-emerald block">Half</span>
+                                <span className="text-xs text-menusqr-neutral-sec font-semibold">₹140</span>
+                              </div>
+                              <div className="p-2 rounded-xl border-2 border-menusqr-orange bg-menusqr-orange/5 text-left">
+                                <span className="text-xs font-bold text-menusqr-emerald block">Full</span>
+                                <span className="text-xs font-bold text-menusqr-orange">₹240</span>
+                              </div>
+                            </div>
+                          </div>
+
                           <div className="h-[1px] w-full bg-black/5 mb-4" />
                           
                           <div className="flex justify-between items-center">
-                            <span className="text-lg font-black text-menusqr-emerald">₹240</span>
+                            <span className="text-base font-black text-menusqr-emerald">₹240</span>
                             <div className="flex items-center gap-3">
                               <button className="w-8 h-8 rounded-full bg-[#F5F3EE] flex items-center justify-center text-menusqr-emerald font-bold">-</button>
                               <span className="font-bold text-sm">1</span>
@@ -303,7 +340,7 @@ export default function CustomerExperienceSection() {
 
                         <div className="px-5 pt-2">
                           <button className="w-full py-3.5 bg-menusqr-emerald text-white rounded-2xl font-bold text-sm shadow-[0_8px_16px_rgba(21,28,25,0.2)]">
-                            Add to Order • ₹240
+                            Add to Order • Full (₹240)
                           </button>
                         </div>
                       </motion.div>

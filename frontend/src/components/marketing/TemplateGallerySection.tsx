@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
 import { menuTemplates, type MenuTemplate } from '../../data/menuTemplates';
 import { TemplateCard } from './template-gallery/TemplateCard';
@@ -34,6 +34,19 @@ export default function TemplateGallerySection() {
   }, [signatureTemplates]);
 
   const [activeCategory, setActiveCategory] = useState('All');
+
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const filteredTemplates = useMemo(() => {
     if (activeCategory === 'All') return signatureTemplates;
@@ -91,13 +104,13 @@ export default function TemplateGallerySection() {
 
         {/* TEMPLATE SHOWCASE LIST: REACT BITS SCROLLSTACK */}
         <ScrollStack
-          key={activeCategory}
+          key={`${activeCategory}-${isMobile ? 'mobile' : 'desktop'}`}
           className="relative z-10 max-w-[1360px] mx-auto w-full px-4 sm:px-6 md:px-12"
           useWindowScroll={true}
-          itemDistance={130}
-          itemStackDistance={28}
-          stackPosition="100px"
-          itemScale={0.035}
+          itemDistance={isMobile ? 180 : 130}
+          itemStackDistance={isMobile ? 16 : 28}
+          stackPosition={isMobile ? '76px' : '100px'}
+          itemScale={isMobile ? 0.025 : 0.035}
           baseScale={0.82}
           dimAmount={0.16}
           blurAmount={0}
