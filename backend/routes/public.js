@@ -301,14 +301,99 @@ export default async function publicRoutes(request, response, url) {
     requireEntitlement(authorization, 'customer_ordering', 'Online ordering is not available on this plan. Please upgrade to Premium.');
     
     const input = await readJson(request);
-    
-    const tableNumber = String(input.tableNumber || '').trim();
-    if (!tableNumber) {
-      throw apiError(400, 'Table number is required.');
+
+    // Idempotency check: prevent duplicate submissions on retries or rapid double-taps
+    const rawIdempotencyKey = String(
+      request.headers['x-idempotency-key'] ||
+      request.headers['idempotency-key'] ||
+      input.idempotencyKey ||
+      ''
+    ).trim();
+    const idempotencyKey = rawIdempotencyKey ? rawIdempotencyKey.slice(0, 128) : null;
+
+    if (idempotencyKey) {
+      const existingRes = await pool.query(`
+        SELECT 
+          id, 
+          COALESCE(order_type, 'DINE_IN') as "orderType",
+          table_number as "tableNumber", 
+          customer_name as "customerName",
+          customer_phone as "customerPhone",
+          delivery_address as "deliveryAddress",
+          delivery_landmark as "deliveryLandmark",
+          delivery_city as "deliveryCity",
+          notes,
+          items, 
+          total, 
+          status, 
+          rejection_reason as "rejectionReason",
+          tracking_token as "trackingToken",
+          created_at as time
+        FROM customer_orders
+        WHERE tenant_id = $1 AND idempotency_key = $2
+      `, [client.id, idempotencyKey]);
+
+      if (existingRes.rows[0]) {
+        const existingOrder = existingRes.rows[0];
+        existingOrder.total = parseFloat(existingOrder.total);
+        sendJson(response, 200, existingOrder);
+        return true;
+      }
     }
+
+    // Normalise order type: 'DINE_IN' or 'DELIVERY'
+    const rawType = String(input.orderType || input.type || 'DINE_IN').toUpperCase();
+    const orderType = rawType === 'DELIVERY' ? 'DELIVERY' : 'DINE_IN';
+
+    // Customer name & phone handling
+    const rawCustomerName = String(input.customerName || input.name || '').trim();
+    const customerName = rawCustomerName || (orderType === 'DINE_IN' ? 'Guest' : '');
+    if (!customerName || customerName.length < 2) {
+      throw apiError(400, 'Customer name is required (at least 2 characters).');
+    }
+
+    const rawCustomerPhone = String(input.customerPhone || input.phone || '').trim();
+    let customerPhone = null;
+    if (orderType === 'DELIVERY') {
+      const cleanDigits = rawCustomerPhone.replace(/\D/g, '');
+      if (!rawCustomerPhone || cleanDigits.length < 10) {
+        throw apiError(400, 'A valid 10-digit mobile number is required for delivery.');
+      }
+      customerPhone = cleanDigits.slice(-10);
+    } else if (rawCustomerPhone) {
+      const cleanDigits = rawCustomerPhone.replace(/\D/g, '');
+      if (cleanDigits.length < 7) {
+        throw apiError(400, 'Please enter a valid phone number.');
+      }
+      customerPhone = cleanDigits.length >= 10 ? cleanDigits.slice(-10) : cleanDigits;
+    }
+
+    let tableNumber = null;
+    let deliveryAddress = null;
+    let deliveryLandmark = null;
+    let deliveryCity = null;
+
+    if (orderType === 'DINE_IN') {
+      tableNumber = String(input.tableNumber || '').trim();
+      if (!tableNumber) {
+        throw apiError(400, 'Table number is required for dine-in orders.');
+      }
+    } else {
+      deliveryAddress = String(input.deliveryAddress || input.address || '').trim();
+      if (!deliveryAddress || deliveryAddress.length < 5) {
+        throw apiError(400, 'Full delivery address is required (at least 5 characters).');
+      }
+      deliveryLandmark = String(input.deliveryLandmark || input.landmark || '').trim() || null;
+      deliveryCity = String(input.deliveryCity || input.city || '').trim() || null;
+    }
+
+    const notes = String(input.notes || input.instructions || '').trim() || null;
     
     if (!Array.isArray(input.items) || input.items.length === 0) {
       throw apiError(400, 'Order items are required.');
+    }
+    if (input.items.length > 50) {
+      throw apiError(400, 'Too many unique items in order (maximum 50).');
     }
     
     // Fetch real prices and variants from database
@@ -344,6 +429,7 @@ export default async function publicRoutes(request, response, url) {
     }
 
     let calculatedTotal = 0;
+    let totalOrderQuantity = 0;
     const validatedItems = [];
 
     for (const item of input.items) {
@@ -351,6 +437,10 @@ export default async function publicRoutes(request, response, url) {
       const qty = parseInt(item.quantity, 10);
       if (isNaN(qty) || qty <= 0 || qty > 100) {
         throw apiError(400, `Invalid quantity for item: ${item.name || item.id}`);
+      }
+      totalOrderQuantity += qty;
+      if (totalOrderQuantity > 200) {
+        throw apiError(400, 'Total order quantity cannot exceed 200 items.');
       }
       if (!itemMap.has(item.id)) {
         throw apiError(400, `Item not found or unavailable: ${item.name || item.id}`);
@@ -374,6 +464,8 @@ export default async function publicRoutes(request, response, url) {
           unitPrice = dbItem.halfPrice;
         } else if (/full/i.test(variantName) && dbItem.fullPrice !== null && !isNaN(dbItem.fullPrice)) {
           unitPrice = dbItem.fullPrice;
+        } else {
+          throw apiError(400, `Invalid variant "${variantName}" selected for item: ${dbItem.name}`);
         }
       }
 
@@ -387,20 +479,110 @@ export default async function publicRoutes(request, response, url) {
       });
     }
     
-    // Generate a readable ID like MQR-4B9F2
+    // Generate order ID and cryptographically random tracking token
     const { randomBytes } = await import('node:crypto');
     const orderId = randomBytes(4).toString('hex').toUpperCase();
+    const trackingToken = randomBytes(16).toString('hex');
     
     const res = await pool.query(
-      `INSERT INTO customer_orders (id, tenant_id, table_number, items, total, status)
-       VALUES ($1, $2, $3, $4, $5, 'NEW')
-       RETURNING id, table_number as "tableNumber", items, total, status, created_at as time`,
-      [orderId, client.id, tableNumber, JSON.stringify(validatedItems), calculatedTotal]
+      `INSERT INTO customer_orders (
+         id, tenant_id, order_type, table_number, customer_name, customer_phone,
+         delivery_address, delivery_landmark, delivery_city, notes, items, total, status,
+         idempotency_key, tracking_token
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'NEW', $13, $14)
+       RETURNING 
+         id, 
+         order_type as "orderType",
+         table_number as "tableNumber", 
+         customer_name as "customerName",
+         customer_phone as "customerPhone",
+         delivery_address as "deliveryAddress",
+         delivery_landmark as "deliveryLandmark",
+         delivery_city as "deliveryCity",
+         notes,
+         items, 
+         total, 
+         status, 
+         tracking_token as "trackingToken",
+         created_at as time`,
+      [
+        orderId, 
+        client.id, 
+        orderType, 
+        tableNumber, 
+        customerName, 
+        customerPhone, 
+        deliveryAddress, 
+        deliveryLandmark, 
+        deliveryCity, 
+        notes, 
+        JSON.stringify(validatedItems), 
+        calculatedTotal,
+        idempotencyKey,
+        trackingToken
+      ]
     );
     
     const newOrder = res.rows[0];
     newOrder.total = parseFloat(newOrder.total);
     sendJson(response, 201, newOrder);
+    return true;
+  }
+
+  // Customer Order Status Tracking Endpoint (Privacy Protected)
+  const customerOrderStatusMatch = url.pathname.match(/^\/api\/public\/orders\/([^/]+)$/);
+  if (request.method === 'GET' && customerOrderStatusMatch) {
+    const orderId = decodeURIComponent(customerOrderStatusMatch[1]);
+    const res = await pool.query(`
+      SELECT
+        o.id,
+        o.order_type as "orderType",
+        o.table_number as "tableNumber",
+        o.customer_name as "customerName",
+        o.customer_phone as "customerPhone",
+        o.delivery_address as "deliveryAddress",
+        o.delivery_landmark as "deliveryLandmark",
+        o.delivery_city as "deliveryCity",
+        o.notes,
+        o.items,
+        o.total,
+        o.status,
+        o.rejection_reason as "rejectionReason",
+        o.tracking_token as "trackingToken",
+        o.created_at as time,
+        c.business_name as "restaurantName",
+        c.phone as "restaurantPhone"
+      FROM customer_orders o
+      JOIN clients c ON c.id = o.tenant_id
+      WHERE o.id = $1
+    `, [orderId]);
+
+    if (!res.rows[0]) throw apiError(404, 'Order not found.');
+    const order = res.rows[0];
+    order.total = parseFloat(order.total);
+
+    // Phase 2 Rule 8: Public tracking privacy protection
+    const tokenParam = url.searchParams.get('token') || request.headers['x-tracking-token'];
+    const isAuthorized = Boolean(order.trackingToken && tokenParam && String(tokenParam).trim() === order.trackingToken);
+
+    if (!isAuthorized) {
+      // Mask PII if request does not provide the secret order tracking token
+      if (order.customerPhone) {
+        const digits = order.customerPhone.replace(/\D/g, '');
+        order.customerPhone = digits.length >= 4 
+          ? `${digits.slice(0, 2)}******${digits.slice(-2)}` 
+          : '******';
+      }
+      if (order.deliveryAddress) {
+        order.deliveryAddress = 'Address hidden for privacy';
+      }
+      order.deliveryLandmark = null;
+      order.notes = null;
+      delete order.trackingToken;
+    }
+
+    sendJson(response, 200, order);
     return true;
   }
   

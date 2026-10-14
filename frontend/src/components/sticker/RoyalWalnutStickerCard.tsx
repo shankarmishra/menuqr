@@ -1,5 +1,6 @@
 import React from 'react';
-import { ChefHat, CheckCircle2, Download } from 'lucide-react';
+import { CheckCircle2, Download } from 'lucide-react';
+import { MenusQRMark } from '../brand/MenusQRMark';
 
 export type StickerThemeId = 'menusqr-walnut-gold' | 'menusqr-emerald-gold' | 'menusqr-ebony-silver' | 'menusqr-ruby-gold';
 
@@ -83,7 +84,6 @@ export interface RoyalWalnutStickerCardProps {
   showStatusBadge?: boolean;
   showDownloadButtons?: boolean;
   onDownloadPNG?: () => void;
-  onDownloadSVG?: () => void;
   headerText?: string;
   footerText?: string;
   isModal?: boolean;
@@ -100,7 +100,6 @@ export default function RoyalWalnutStickerCard({
   showStatusBadge = true,
   showDownloadButtons = true,
   onDownloadPNG,
-  onDownloadSVG,
   headerText = 'Scan Me for Menu',
   footerText = 'Scan to view our menu',
   isModal = false,
@@ -268,11 +267,11 @@ export default function RoyalWalnutStickerCard({
           </svg>
 
           {/* --- BRANDING AREA --- */}
-          <div className="relative z-10 flex flex-col items-center pt-2 text-center">
-            {/* MenusQR Logo Mark */}
-            <div className="flex items-center gap-1.5 mb-1">
-              <div className="p-1 rounded-md text-white shadow-sm" style={{ backgroundColor: theme.textDark }}>
-                <ChefHat size={16} strokeWidth={2} />
+          <div className="relative z-10 flex flex-col items-center pt-2 text-center w-full">
+            {/* Official MenusQR Logo Mark */}
+            <div className="flex items-center gap-1.5 mb-2">
+              <div className="w-5 h-5 p-0.5 rounded-md flex items-center justify-center shadow-sm" style={{ backgroundColor: theme.textDark }}>
+                <MenusQRMark color="#FFFFFF" orange="#E8783C" />
               </div>
               <span className="text-xs font-black tracking-widest uppercase" style={{ color: theme.textDark }}>
                 Menus<span style={{ color: theme.accentColor }}>QR</span>
@@ -281,26 +280,32 @@ export default function RoyalWalnutStickerCard({
 
             {/* Restaurant Name */}
             <h2
-              className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight max-w-[280px] break-words mt-1 mb-0.5"
-              style={{ fontFamily: "'Playfair Display', 'Georgia', serif", color: theme.textDark }}
+              className={`font-extrabold tracking-tight leading-snug w-full max-w-[340px] px-2 break-words mb-2 ${
+                restaurantName.length > 22
+                  ? 'text-xl'
+                  : restaurantName.length > 13
+                  ? 'text-2xl'
+                  : 'text-2xl sm:text-3xl'
+              }`}
+              style={{ fontFamily: "'Playfair Display', Georgia, serif", color: theme.textDark }}
             >
               {restaurantName}
             </h2>
 
             {/* Subtitle */}
-            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] opacity-90" style={{ color: theme.leafColor }}>
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] opacity-90 block mb-1" style={{ color: theme.leafColor }}>
               {category}
             </p>
 
             {tagline && (
-              <p className="text-xs italic mt-0.5 max-w-[260px] truncate opacity-80" style={{ color: theme.textDark }}>
+              <p className="text-xs italic max-w-[280px] truncate opacity-80 block" style={{ color: theme.textDark }}>
                 {tagline}
               </p>
             )}
           </div>
 
           {/* --- QR CODE CONTAINER AREA --- */}
-          <div className="relative z-10 my-4 flex flex-col items-center">
+          <div className="relative z-10 my-3 flex flex-col items-center">
             <div
               className="relative flex h-44 w-44 sm:h-48 sm:w-48 items-center justify-center rounded-2xl bg-white p-3 shadow-[0_8px_20px_rgba(0,0,0,0.18)]"
               style={{
@@ -310,11 +315,11 @@ export default function RoyalWalnutStickerCard({
               {qrImage ? (
                 <>
                   <img src={qrImage} alt="Permanent restaurant menu QR code" className="h-full w-full object-contain" />
-                  {/* Center Badge Icon on QR */}
+                  {/* Center Badge Icon on QR with official MenusQR signature mark */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="bg-white p-1 rounded-lg shadow-md">
-                      <div className="text-white p-1.5 rounded-md flex items-center justify-center" style={{ backgroundColor: theme.textDark }}>
-                        <ChefHat size={16} strokeWidth={2.5} />
+                    <div className="bg-white p-1 rounded-xl shadow-md border border-black/5">
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center p-1" style={{ backgroundColor: theme.textDark }}>
+                        <MenusQRMark color="#FFFFFF" orange="#E8783C" />
                       </div>
                     </div>
                   </div>
@@ -328,19 +333,19 @@ export default function RoyalWalnutStickerCard({
           </div>
 
           {/* --- FOOTER CONTENT ON CARD --- */}
-          <div className="relative z-10 flex flex-col items-center text-center mt-auto pb-1">
+          <div className="relative z-10 flex flex-col items-center text-center mt-auto pt-2 pb-1 w-full">
             <h3
-              className="text-base sm:text-lg font-extrabold tracking-tight"
-              style={{ fontFamily: "'Playfair Display', 'Georgia', serif", color: theme.textDark }}
+              className="text-base sm:text-lg font-extrabold tracking-tight leading-snug w-full max-w-[340px] px-2 mb-1.5"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif", color: theme.textDark }}
             >
               {footerText}
             </h3>
 
-            <p className="text-xs font-medium tracking-wide mt-0.5 opacity-80" style={{ color: theme.leafColor }}>
+            <p className="text-xs font-medium tracking-wide opacity-80 block mb-2" style={{ color: theme.leafColor }}>
               {domain}
             </p>
 
-            <div className="flex items-center justify-center gap-2 w-full mt-2 pt-1 border-t opacity-40" style={{ borderColor: theme.accentColor }}>
+            <div className="flex items-center justify-center gap-2 w-full pt-2 border-t opacity-40" style={{ borderColor: theme.accentColor }}>
               <span className="text-[9px] font-extrabold uppercase tracking-[0.2em]" style={{ color: theme.leafColor }}>
                 ONE QR — ALWAYS THE LATEST MENU
               </span>
@@ -368,28 +373,16 @@ export default function RoyalWalnutStickerCard({
         )}
 
         {/* Download Buttons Bar */}
-        {showDownloadButtons && (onDownloadPNG || onDownloadSVG) && (
-          <div className="relative z-30 flex items-center justify-center gap-3 w-full max-w-[320px] mt-3">
-            {onDownloadPNG && (
-              <button
-                type="button"
-                onClick={onDownloadPNG}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl border bg-gradient-to-b from-white/10 to-black/30 font-bold text-xs sm:text-sm shadow-md hover:brightness-125 transition-all active:scale-95 cursor-pointer"
-                style={{ borderColor: theme.accentColor, color: theme.badgeText }}
-              >
-                <Download size={14} /> PNG
-              </button>
-            )}
-            {onDownloadSVG && (
-              <button
-                type="button"
-                onClick={onDownloadSVG}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl border bg-gradient-to-b from-white/10 to-black/30 font-bold text-xs sm:text-sm shadow-md hover:brightness-125 transition-all active:scale-95 cursor-pointer"
-                style={{ borderColor: theme.accentColor, color: theme.badgeText }}
-              >
-                <Download size={14} /> SVG
-              </button>
-            )}
+        {showDownloadButtons && onDownloadPNG && (
+          <div className="relative z-30 flex items-center justify-center w-full max-w-[240px] mt-3">
+            <button
+              type="button"
+              onClick={onDownloadPNG}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl border bg-gradient-to-b from-white/10 to-black/30 font-bold text-xs sm:text-sm shadow-md hover:brightness-125 transition-all active:scale-95 cursor-pointer"
+              style={{ borderColor: theme.accentColor, color: theme.badgeText }}
+            >
+              <Download size={14} /> Download Image (PNG)
+            </button>
           </div>
         )}
       </div>

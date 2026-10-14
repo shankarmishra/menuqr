@@ -646,7 +646,6 @@ export const DEMO_RESTAURANT = {
   name: 'THE GARDEN RESTAURANT',
   tagline: 'Modern Indian Kitchen & Fine Dining',
   cuisine: 'Indian • Contemporary Fine Dining',
-  phone: '+91 98765 43210',
   address: 'MG Road, Indiranagar, Bangalore',
   logo: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=150&auto=format&fit=crop&q=80',
   categories: [

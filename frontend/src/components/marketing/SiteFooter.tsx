@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { MenusQRBrand } from '../brand/MenusQRBrand';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Phone, MessageCircle, Mail } from 'lucide-react';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -91,9 +91,46 @@ export default function SiteFooter() {
             <div className="mb-6 font-mono font-bold tracking-[0.2em] text-menusqr-orange text-xs uppercase bg-menusqr-orange/10 px-3 py-1.5 rounded-sm border border-menusqr-orange/20">
               Digital Menu Infrastructure
             </div>
-            <p className="text-menusqr-neutral-muted text-lg max-w-md leading-relaxed mb-10">
+            <p className="text-menusqr-neutral-muted text-lg max-w-md leading-relaxed mb-6">
               The premier digital menu platform for restaurants, cafés, and food businesses. Permanent table QR codes with instant live menu management.
             </p>
+
+            {/* Direct Contact Details */}
+            <div className="flex flex-col gap-2.5 mb-8 text-sm">
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-menusqr-orange">
+                  <Phone size={14} />
+                </span>
+                <span className="text-white/60 text-xs">Call / Support:</span>
+                <a href="tel:+918796530323" className="font-semibold text-white hover:text-menusqr-orange transition-colors">
+                  +91 87965 30323
+                </a>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                  <MessageCircle size={14} />
+                </span>
+                <span className="text-white/60 text-xs">WhatsApp:</span>
+                <a
+                  href="https://wa.me/918796530323?text=Hi%20MenusQR%20Team"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-emerald-400 hover:underline transition-colors"
+                >
+                  +91 87965 30323
+                </a>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-white/70">
+                  <Mail size={14} />
+                </span>
+                <span className="text-white/60 text-xs">Email:</span>
+                <a href="mailto:support@menusqr.in" className="font-semibold text-white hover:text-menusqr-orange transition-colors">
+                  support@menusqr.in
+                </a>
+              </div>
+            </div>
+
             <div className="flex gap-4">
               <Link to="/plans" className="bg-menusqr-orange text-white px-6 py-3 rounded-full font-semibold hover:bg-[#d6672d] transition-colors flex items-center gap-2">
                 Get Started <ArrowRight size={18} />
@@ -137,9 +174,13 @@ export default function SiteFooter() {
           <div className="mb-4 md:mb-0">
             &copy; {CURRENT_YEAR} MenusQR. All rights reserved.
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 flex-wrap justify-center md:justify-end">
+            <a href="tel:+918796530323" className="text-[#aab7b2] hover:text-white transition-colors flex items-center gap-1.5">
+              <Phone size={13} className="text-menusqr-orange" />
+              <span>+91 87965 30323</span>
+            </a>
             <span className="text-[#aab7b2]">Official Domain: <a href="https://menusqr.in" className="text-white hover:underline font-semibold">https://menusqr.in</a></span>
-            <div className="flex items-center gap-2 ml-4 px-3 py-1.5 rounded-full bg-menusqr-emerald-dark/50 border border-menusqr-emerald-dark">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-menusqr-emerald-dark/50 border border-menusqr-emerald-dark">
               <span className="w-2 h-2 rounded-full bg-menusqr-veg animate-pulse"></span>
               <span className="text-xs font-mono font-medium">All systems operational</span>
             </div>

@@ -838,14 +838,16 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
                   >
                     {restaurant.city ? `${restaurant.city.toUpperCase()} • FINE DINING` : 'ESTD. HERITAGE KITCHEN'}
                   </p>
-                  <p
-                    className={clsx(
-                      'font-mono text-[#285B48] tracking-wider font-semibold',
-                      compact ? 'text-[8px]' : 'text-[8px] sm:text-[9.5px]'
-                    )}
-                  >
-                    {restaurant.phone || '+91 98765 43210'}
-                  </p>
+                  {restaurant.phone && (
+                    <p
+                      className={clsx(
+                        'font-mono text-[#285B48] tracking-wider font-semibold',
+                        compact ? 'text-[8px]' : 'text-[8px] sm:text-[9.5px]'
+                      )}
+                    >
+                      {restaurant.phone}
+                    </p>
+                  )}
                 </div>
 
                 {/* Symmetrical Mughal Miniature Flowering Shrubs at Arch Base */}
@@ -1002,9 +1004,11 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
                   <p className="font-serif text-[10px] text-[#776B5B] italic">
                     Freshly Prepared Daily with Royal Spices
                   </p>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full border border-[#C9A967]/60 bg-[#F5EBDD] font-mono text-[9px] text-[#165746] font-bold shadow-xs">
-                    <span>☎ {restaurant.phone || '+91 98765 43210'}</span>
-                  </div>
+                  {restaurant.phone && (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full border border-[#C9A967]/60 bg-[#F5EBDD] font-mono text-[9px] text-[#165746] font-bold shadow-xs">
+                      <span>☎ {restaurant.phone}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </HeritageRunningBorder>
@@ -1185,10 +1189,12 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
                         <span className="w-2 h-2 rounded-full bg-[#27844F]" />
                         <span className="font-sans font-medium">Freshly Prepared Daily with Traditional Heritage Spices</span>
                       </div>
-                      <div className="px-4 py-2 rounded-xl border border-[#C9A967] bg-[#F5EBDD] flex items-center gap-2 font-mono text-[11px] font-bold text-[#165746] shadow-sm">
-                        <span>☎ Delivery & Reservations:</span>
-                        <span>{restaurant.phone || '+91 98765 43210'}</span>
-                      </div>
+                      {restaurant.phone && (
+                        <div className="px-4 py-2 rounded-xl border border-[#C9A967] bg-[#F5EBDD] flex items-center gap-2 font-mono text-[11px] font-bold text-[#165746] shadow-sm">
+                          <span>☎ Delivery & Reservations:</span>
+                          <span>{restaurant.phone}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </HeritageRunningBorder>

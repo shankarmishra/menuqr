@@ -453,16 +453,52 @@ export function removeClientDraft(key: string): void {
   localStorage.setItem(draftStorageKey, JSON.stringify(drafts));
 }
 
+export type CustomerOrderStatus = 
+  | 'NEW' 
+  | 'ACCEPTED' 
+  | 'PREPARING' 
+  | 'IN_PROGRESS' 
+  | 'READY' 
+  | 'DELIVERED' 
+  | 'COMPLETED' 
+  | 'CANCELLED';
+
 export interface CustomerOrder {
   id: string;
-  tableNumber: string;
+  orderType?: 'DINE_IN' | 'DELIVERY';
+  tableNumber?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  deliveryAddress?: string | null;
+  deliveryLandmark?: string | null;
+  deliveryCity?: string | null;
+  notes?: string | null;
+  rejectionReason?: string | null;
+  trackingToken?: string;
+  idempotencyKey?: string;
   items: Array<{ id: string; name: string; quantity: number; price: number; variant?: string }>;
   total: number;
-  status: 'NEW' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED';
+  status: CustomerOrderStatus;
   time: string;
+  restaurantName?: string;
+  restaurantPhone?: string;
 }
 
-export async function submitCustomerOrder(slug: string, order: Omit<CustomerOrder, 'id' | 'status' | 'time'>): Promise<CustomerOrder> {
+export type CreateCustomerOrderPayload = {
+  orderType?: 'DINE_IN' | 'DELIVERY';
+  tableNumber?: string | null;
+  customerName: string;
+  customerPhone: string;
+  deliveryAddress?: string | null;
+  deliveryLandmark?: string | null;
+  deliveryCity?: string | null;
+  notes?: string | null;
+  idempotencyKey?: string;
+  items: Array<{ id: string; name?: string; quantity: number; price?: number; variant?: string; variantId?: string }>;
+  total?: number;
+};
+
+export async function submitCustomerOrder(slug: string, order: CreateCustomerOrderPayload): Promise<CustomerOrder> {
   return request<CustomerOrder>(`/public/menus/${encodeURIComponent(slug)}/orders`, {
     method: 'POST',
     body: JSON.stringify(order)
@@ -473,18 +509,23 @@ export async function getLiveOrders(): Promise<CustomerOrder[]> {
   return request<CustomerOrder[]>('/app/orders');
 }
 
-export async function updateOrderStatus(id: string, status: CustomerOrder['status']): Promise<CustomerOrder> {
+export async function updateOrderStatus(id: string, status: CustomerOrderStatus, rejectionReason?: string): Promise<CustomerOrder> {
   return request<CustomerOrder>(`/app/orders/${encodeURIComponent(id)}/status`, {
     method: 'PATCH',
-    body: JSON.stringify({ status })
+    body: JSON.stringify({ status, rejectionReason })
   });
 }
 
-export async function submitCustomerOrderByQr(qrId: string, order: Omit<CustomerOrder, 'id' | 'status' | 'time'>): Promise<CustomerOrder> {
+export async function submitCustomerOrderByQr(qrId: string, order: CreateCustomerOrderPayload): Promise<CustomerOrder> {
   return request<CustomerOrder>(`/public/qr/${encodeURIComponent(qrId)}/orders`, {
     method: 'POST',
     body: JSON.stringify(order),
   });
+}
+
+export async function getCustomerOrderStatus(orderId: string, token?: string): Promise<CustomerOrder> {
+  const query = token ? `?token=${encodeURIComponent(token)}` : '';
+  return request<CustomerOrder>(`/public/orders/${encodeURIComponent(orderId)}${query}`);
 }
 
 export interface AdminStickerRequest {

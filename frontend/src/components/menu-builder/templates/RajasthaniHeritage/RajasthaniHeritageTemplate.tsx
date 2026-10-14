@@ -845,9 +845,11 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
                     <p className="font-sans text-[7.5px] sm:text-[8.5px] tracking-wider text-[#6E6657]">
                       {restaurant.city ? `more info www.${restaurant.city.toLowerCase().replace(/\s+/g, '')}food.com` : 'more info www.example.com'}
                     </p>
-                    <p className="font-sans text-[7.5px] sm:text-[8.5px] tracking-wider text-[#6E6657]">
-                      call {restaurant.phone || '+0123-456-789'}
-                    </p>
+                    {restaurant.phone && (
+                      <p className="font-sans text-[7.5px] sm:text-[8.5px] tracking-wider text-[#6E6657]">
+                        call {restaurant.phone}
+                      </p>
+                    )}
                   </div>
                 </div>
               </ScallopedArchFrame>
@@ -1065,7 +1067,7 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-3 text-[9px] sm:text-[10px] text-[#6E6657] pt-1 font-sans">
                   <span>✦ Open Daily: 12:00 PM – 11:30 PM</span>
-                  <span>✦ Reservations: {restaurant.phone || '+0123-456-789'}</span>
+                  {restaurant.phone && <span>✦ Reservations: {restaurant.phone}</span>}
                   <span>✦ {restaurant.city ? `www.${restaurant.city.toLowerCase().replace(/\s+/g, '')}food.com` : 'www.example.com'}</span>
                 </div>
                 <p className="text-[8.5px] sm:text-[9.5px] font-serif italic text-[#1B4942]/75 pt-1">

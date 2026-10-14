@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
-import { Copy, Download, ExternalLink, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
-import { toPng, toSvg } from 'html-to-image';
+import { Copy, ExternalLink, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
+import { toPng } from 'html-to-image';
 import { STICKER_TEMPLATES } from './StickerTemplates';
 import RoyalWalnutStickerCard, { type StickerThemeId } from './RoyalWalnutStickerCard';
 
@@ -40,20 +40,6 @@ export default function MenusQRStickerGenerator({ client, menuUrl, qrImage }: Pr
       link.click();
     } catch (err) {
       console.error('Failed to download sticker PNG:', err);
-    }
-  };
-
-  const downloadStickerSVG = async () => {
-    if (!stickerRef.current) return;
-    try {
-      const svg = await toSvg(stickerRef.current, { cacheBust: true });
-      const link = document.createElement('a');
-      link.download = `${client?.menuSlug || 'menu'}-sticker.svg`;
-      link.href = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
-      link.click();
-      URL.revokeObjectURL(link.href);
-    } catch (err) {
-      console.error('Failed to download sticker SVG:', err);
     }
   };
 
@@ -112,7 +98,7 @@ export default function MenusQRStickerGenerator({ client, menuUrl, qrImage }: Pr
 
       {/* --- QUICK ACTION BUTTONS BAR --- */}
       <div className="w-full max-w-xl mt-6 pt-6 border-t border-white/10 flex flex-col items-center gap-3">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
           <button
             type="button"
             onClick={() => void downloadStickerPNG()}
@@ -120,19 +106,6 @@ export default function MenusQRStickerGenerator({ client, menuUrl, qrImage }: Pr
             style={{ backgroundColor: template.accentColor }}
           >
             <ImageIcon size={16} /> Download PNG
-          </button>
-          
-          <button
-            type="button"
-            onClick={() => void downloadStickerSVG()}
-            className="flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-xs sm:text-sm font-extrabold transition-all hover:brightness-110 cursor-pointer"
-            style={{ 
-              borderColor: `${template.accentColor}80`, 
-              backgroundColor: `${template.accentColor}1A`, 
-              color: template.accentColor 
-            }}
-          >
-            <Download size={16} /> Download SVG
           </button>
           
           <button

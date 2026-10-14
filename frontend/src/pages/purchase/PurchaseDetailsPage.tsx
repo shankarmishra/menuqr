@@ -449,7 +449,7 @@ export default function PurchaseDetailsPage() {
                       className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm ${
                         validationErrors.phone ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
                       }`}
-                      placeholder="+91 98765 43210"
+                      placeholder="+91 98XXXXXXXX"
                     />
                     {validationErrors.phone && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.phone}</p>}
                   </div>

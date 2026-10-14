@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
-import { toPng, toSvg } from 'html-to-image';
+import { toPng } from 'html-to-image';
 import RoyalWalnutStickerCard from '../sticker/RoyalWalnutStickerCard';
 import './QRGenerationSequence.css';
 
@@ -115,20 +115,6 @@ export default function QRGenerationSequence({
     }
   };
 
-  const downloadSVG = async () => {
-    if (!stickerRef.current) return;
-    try {
-      const svg = await toSvg(stickerRef.current, { cacheBust: true });
-      const link = document.createElement('a');
-      link.download = `MenusQR_${restaurantName.replace(/[^a-z0-9]+/gi, '_')}_Sticker.svg`;
-      link.href = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
-      link.click();
-      URL.revokeObjectURL(link.href);
-    } catch {
-      onError?.();
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/85 px-3 py-6 backdrop-blur-md">
       <motion.div
@@ -208,7 +194,6 @@ export default function QRGenerationSequence({
                   showStatusBadge={true}
                   showDownloadButtons={true}
                   onDownloadPNG={() => void downloadPNG()}
-                  onDownloadSVG={() => void downloadSVG()}
                 />
               </motion.div>
             )}

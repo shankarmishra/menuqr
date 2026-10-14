@@ -52,7 +52,8 @@ const routes = [
         "name": "MenusQR",
         "url": DOMAIN,
         "logo": `${DOMAIN}/favicon.svg`,
-        "email": "support@menusqr.in"
+        "email": "support@menusqr.in",
+        "telephone": "+91 87965 30323"
       },
       {
         "@context": "https://schema.org",
@@ -344,7 +345,7 @@ const routes = [
     content: `
       <main class="max-w-5xl mx-auto px-6 py-20">
         <h1 class="text-4xl md:text-5xl font-extrabold text-[#151C19]">Contact MenusQR Support & Sales</h1>
-        <p class="text-lg text-[#53615a] mt-4 leading-relaxed">Email support@menusqr.in for customer support and sales inquiries.</p>
+        <p class="text-lg text-[#53615a] mt-4 leading-relaxed">Call or WhatsApp +91 87965 30323, or email support@menusqr.in for customer support and sales inquiries.</p>
       </main>
     `,
     schema: [

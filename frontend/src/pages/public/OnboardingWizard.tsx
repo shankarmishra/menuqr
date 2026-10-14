@@ -304,7 +304,7 @@ export default function OnboardingWizard() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-[#AAB7B2]">Phone Number</label>
-                    <input type="tel" aria-label="Restaurant phone" placeholder="e.g. +91 9876543210" value={restaurantData.phone} onChange={(e) => setRestaurantData({ ...restaurantData, phone: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                    <input type="tel" aria-label="Restaurant phone" placeholder="e.g. +91 98XXXXXXXX" value={restaurantData.phone} onChange={(e) => setRestaurantData({ ...restaurantData, phone: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-[#AAB7B2]">City / Location</label>

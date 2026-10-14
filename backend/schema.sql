@@ -593,3 +593,14 @@ CREATE TABLE IF NOT EXISTS tenant_google_reviews (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS order_type VARCHAR(50) DEFAULT 'DINE_IN';
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS customer_phone VARCHAR(50);
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS delivery_address TEXT;
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS delivery_landmark VARCHAR(255);
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS delivery_city VARCHAR(255);
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(128);
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS tracking_token VARCHAR(64);
+CREATE INDEX IF NOT EXISTS idx_customer_orders_idempotency ON customer_orders (tenant_id, idempotency_key);
+CREATE INDEX IF NOT EXISTS idx_customer_orders_tracking_token ON customer_orders (id, tracking_token);

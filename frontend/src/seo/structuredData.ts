@@ -8,6 +8,14 @@ export const getOrganizationSchema = () => {
     "url": DOMAIN,
     "logo": `${DOMAIN}/favicon.svg`,
     "email": "support@menusqr.in",
+    "telephone": "+91 87965 30323",
+    "contactPoint": [{
+      "@type": "ContactPoint",
+      "telephone": "+91 87965 30323",
+      "contactType": "customer service",
+      "areaServed": "IN",
+      "availableLanguage": ["English", "Hindi"]
+    }],
     "sameAs": [
       "https://twitter.com/menusqr",
       "https://www.linkedin.com/company/menusqr",

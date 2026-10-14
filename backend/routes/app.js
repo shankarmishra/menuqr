@@ -1087,37 +1087,112 @@ export default async function appRoutes(request, response, url) {
 
   // Customer Orders (Reception Dashboard)
   if (request.method === 'GET' && url.pathname === '/api/app/orders') {
-    requireEntitlement(authorization, 'reception_orders', 'Order reception management is a Premium feature. Please upgrade your plan.');
+    // Phase 2 Rule 3: Preserve restaurant access to existing orders even if subscription expired or downgraded
     const res = await pool.query(`
-      SELECT id, table_number as "tableNumber", items, total, status, created_at as time
+      SELECT 
+        id, 
+        COALESCE(order_type, 'DINE_IN') as "orderType",
+        table_number as "tableNumber", 
+        customer_name as "customerName",
+        customer_phone as "customerPhone",
+        delivery_address as "deliveryAddress",
+        delivery_landmark as "deliveryLandmark",
+        delivery_city as "deliveryCity",
+        notes,
+        items, 
+        total, 
+        status, 
+        rejection_reason as "rejectionReason",
+        created_at as time
       FROM customer_orders
       WHERE tenant_id = $1
         AND created_at >= NOW() - INTERVAL '24 HOURS'
       ORDER BY created_at DESC
     `, [user.tenantId]);
-    sendJson(response, 200, res.rows);
+    sendJson(response, 200, res.rows.map(r => ({ ...r, total: parseFloat(r.total) })));
     return true;
   }
 
   const orderUpdateMatch = url.pathname.match(/^\/api\/app\/orders\/([^/]+)\/status$/);
   if (request.method === 'PATCH' && orderUpdateMatch) {
-    requireEntitlement(authorization, 'reception_orders', 'Order status management is a Premium feature. Please upgrade your plan.');
     const orderId = decodeURIComponent(orderUpdateMatch[1]);
     const input = await readJson(request);
     
-    if (!['NEW', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED'].includes(input.status)) {
+    const allowedStatuses = [
+      'NEW', 
+      'ACCEPTED', 
+      'PREPARING', 
+      'IN_PROGRESS', 
+      'READY', 
+      'DELIVERED', 
+      'COMPLETED', 
+      'CANCELLED'
+    ];
+    if (!allowedStatuses.includes(input.status)) {
       throw apiError(400, 'Invalid status.');
     }
+
+    // Tenant isolation & current status verification
+    const currentRes = await pool.query(
+      'SELECT id, status, order_type as "orderType" FROM customer_orders WHERE id = $1 AND tenant_id = $2',
+      [orderId, user.tenantId]
+    );
+    if (!currentRes.rows[0]) throw apiError(404, 'Order not found.');
+    
+    const currentOrder = currentRes.rows[0];
+    const currentStatus = currentOrder.status;
+    const targetStatus = input.status;
+
+    // Explicit documented state machine transitions
+    const VALID_TRANSITIONS = {
+      NEW: ['ACCEPTED', 'CANCELLED'],
+      ACCEPTED: ['PREPARING', 'IN_PROGRESS', 'CANCELLED'],
+      PREPARING: ['READY', 'CANCELLED'],
+      IN_PROGRESS: ['READY', 'CANCELLED'],
+      READY: ['DELIVERED', 'COMPLETED', 'CANCELLED'],
+      DELIVERED: [],
+      COMPLETED: [],
+      CANCELLED: []
+    };
+
+    if (currentStatus !== targetStatus) {
+      const allowedNext = VALID_TRANSITIONS[currentStatus] || [];
+      if (!allowedNext.includes(targetStatus)) {
+        throw apiError(400, `Cannot transition order from ${currentStatus} to ${targetStatus}.`);
+      }
+    }
+
+    const rejectionReason = input.rejectionReason 
+      ? String(input.rejectionReason).trim() 
+      : (targetStatus === 'CANCELLED' ? 'Declined by restaurant' : null);
     
     const res = await pool.query(`
       UPDATE customer_orders
-      SET status = $1, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2 AND tenant_id = $3
-      RETURNING id, table_number as "tableNumber", items, total, status, created_at as time
-    `, [input.status, orderId, user.tenantId]);
+      SET 
+        status = $1, 
+        rejection_reason = COALESCE($2, rejection_reason),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3 AND tenant_id = $4
+      RETURNING 
+        id, 
+        COALESCE(order_type, 'DINE_IN') as "orderType",
+        table_number as "tableNumber", 
+        customer_name as "customerName",
+        customer_phone as "customerPhone",
+        delivery_address as "deliveryAddress",
+        delivery_landmark as "deliveryLandmark",
+        delivery_city as "deliveryCity",
+        notes,
+        items, 
+        total, 
+        status, 
+        rejection_reason as "rejectionReason",
+        created_at as time
+    `, [targetStatus, rejectionReason, orderId, user.tenantId]);
     
-    if (!res.rows[0]) throw apiError(404, 'Order not found.');
-    sendJson(response, 200, res.rows[0]);
+    const updated = res.rows[0];
+    updated.total = parseFloat(updated.total);
+    sendJson(response, 200, updated);
     return true;
   }
 

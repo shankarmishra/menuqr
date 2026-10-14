@@ -25,7 +25,6 @@ export default function TemplateAuditCanvas() {
           name: 'The Royal Sovereign Imperial Dining Hall & Heritage Garden',
           tagline: 'Authentic 19th-Century Royal Palace Recipes Handcrafted with Fresh Spices & Saffron',
           cuisine: 'Mughal • Awadhi • Royal Rajasthani Imperial Banquet',
-          phone: '+91 98765 43210',
           address: 'Heritage Palace Arcade, 4th Floor, Indiranagar High Street, Bengaluru, Karnataka',
           logo: DEMO_RESTAURANT.logo,
         },

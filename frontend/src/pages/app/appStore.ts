@@ -306,10 +306,10 @@ export async function getOrders() {
   return request<any[]>('/orders');
 }
 
-export async function updateOrderStatus(id: string, status: string) {
+export async function updateOrderStatus(id: string, status: string, rejectionReason?: string) {
   return request<any>(`/orders/${encodeURIComponent(id)}/status`, {
     method: 'PATCH',
-    body: JSON.stringify({ status })
+    body: JSON.stringify({ status, rejectionReason })
   });
 }
 export function renewSubscription(planId: string): Promise<any> { return request<any>('/subscription/renew', { method: 'POST', body: JSON.stringify({ planId }) }); }

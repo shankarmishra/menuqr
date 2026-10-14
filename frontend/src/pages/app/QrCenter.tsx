@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Download, PackageCheck, QrCode, Printer, Send, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import QRCode from 'qrcode';
-import { toPng, toSvg } from 'html-to-image';
+import { toPng } from 'html-to-image';
 import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerCard';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { createPermanentQr, createStickerRequest, getProfile, getQr, getStickerRequests, getMenu, type AppProfile, type AppQrData, type StickerRequest } from './appStore';
@@ -122,24 +122,6 @@ export default function QrCenter() {
     }
   };
 
-  const downloadSVG = async () => {
-    if (!stickerRef.current) return;
-    try {
-      const svg = await toSvg(stickerRef.current, { cacheBust: true, skipFonts: true });
-      const link = document.createElement('a');
-      const name = qr?.restaurantName || profile?.businessName || 'restaurant';
-      link.download = `MenusQR_${name.replace(/[^a-z0-9]+/gi, '_')}_Sticker.svg`;
-      const blobUrl = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
-      link.href = blobUrl;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-    } catch {
-      showToast('error', 'Could not download SVG.');
-    }
-  };
-
   const handleOrderClick = () => {
     setShowRequestForm(true);
     if (orderSectionRef.current) {
@@ -238,25 +220,18 @@ export default function QrCenter() {
                     <ShoppingBag size={18} /> Order Physical Stickers
                   </button>
 
-                  <div className="grid grid-cols-3 gap-2 w-full sm:w-auto">
+                  <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
                     <button
                       type="button"
                       onClick={() => void downloadPNG()}
-                      className="flex items-center justify-center gap-1.5 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-3 px-3 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-3 px-4 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                     >
                       <Download size={14} /> Download Image
                     </button>
                     <button
                       type="button"
-                      onClick={() => void downloadSVG()}
-                      className="flex items-center justify-center gap-1.5 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-3 px-3 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                    >
-                      <Download size={14} /> Download Vector
-                    </button>
-                    <button
-                      type="button"
                       onClick={() => setShowPrintModal(true)}
-                      className="flex items-center justify-center gap-1.5 bg-[#e8783c] hover:bg-[#f08b55] text-white border border-[#e8783c] py-3 px-3 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 bg-[#e8783c] hover:bg-[#f08b55] text-white border border-[#e8783c] py-3 px-4 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                     >
                       <Printer size={14} /> Print Ready
                     </button>
@@ -379,21 +354,14 @@ export default function QrCenter() {
               <button
                 type="button"
                 onClick={() => void downloadPNG()}
-                className="flex-1 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-2.5 px-4 rounded-xl text-xs font-bold transition-colors"
+                className="flex-1 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-2.5 px-4 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
-                PNG
-              </button>
-              <button
-                type="button"
-                onClick={() => void downloadSVG()}
-                className="flex-1 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-2.5 px-4 rounded-xl text-xs font-bold transition-colors"
-              >
-                SVG
+                Download Image (PNG)
               </button>
               <button
                 type="button"
                 onClick={() => setShowPrintModal(false)}
-                className="flex-1 bg-[#e8783c] hover:bg-[#f08b55] text-white py-2.5 px-4 rounded-xl text-xs font-bold transition-colors"
+                className="flex-1 bg-[#e8783c] hover:bg-[#f08b55] text-white py-2.5 px-4 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 Close
               </button>
