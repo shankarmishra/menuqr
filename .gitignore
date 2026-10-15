@@ -62,3 +62,8 @@ frontend/public/assets/mockups/
 frontend/public/marketing/reference-menu.png
 frontend/public/marketing/iphone-mockup-raw.png
 frontend/public/marketing/phone-mockup.png
+
+# Marketing & creative working files
+marketing/
+menusqr-instagram/
+test_*.js
