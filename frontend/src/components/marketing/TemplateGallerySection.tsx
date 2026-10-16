@@ -74,7 +74,13 @@ export default function TemplateGallerySection() {
             </div>
             <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-menusqr-emerald tracking-tight leading-tight mb-5">
               Menus with a{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D78F45] via-menusqr-orange to-[#B3521E] font-serif italic font-normal pr-4">
+              <span 
+                className="text-transparent bg-clip-text bg-gradient-to-r from-[#D78F45] via-menusqr-orange to-[#B3521E] font-serif italic font-normal pr-4 inline-block"
+                style={{
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
                 point of view.
               </span>
             </h2>

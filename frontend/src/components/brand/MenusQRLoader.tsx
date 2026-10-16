@@ -15,7 +15,7 @@ export function MenusQRLoader() {
 
     const timer = setTimeout(() => {
       setIsVisible(false);
-    }, 1400);
+    }, 950);
 
     return () => clearTimeout(timer);
   }, [isVisible]);
@@ -26,9 +26,9 @@ export function MenusQRLoader() {
         <motion.div
           key="brand-film-loader"
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }}
+          exit={{ opacity: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }}
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden pointer-events-auto"
-          style={{ backgroundColor: '#000000' }}
+          style={{ backgroundColor: '#151C19' }}
           role="status"
           aria-label="Loading MenusQR"
         >

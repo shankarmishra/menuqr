@@ -69,7 +69,7 @@ export default function FinalCtaSection() {
         </motion.div>
 
         {/* Right: Visual */}
-        <div className="relative h-[500px] sm:h-[600px] flex items-center justify-center lg:justify-end z-10">
+        <div className="relative h-[500px] sm:h-[600px] flex items-center justify-center lg:justify-end z-10 overflow-hidden w-full max-w-full">
           
           {/* Phone (Behind) */}
           <motion.div
@@ -101,11 +101,11 @@ export default function FinalCtaSection() {
             whileInView={{ opacity: 1, y: 40, rotate: 5 }}
             viewport={viewportConfig}
             transition={{ ...smoothSpring, delay: 0.4 }}
-            className="absolute bottom-5 lg:bottom-16 right-0 sm:right-[10%] lg:-right-4 z-10"
+            className="absolute bottom-5 lg:bottom-16 right-0 sm:right-[10%] lg:-right-4 z-10 pointer-events-none"
           >
             <PhysicalQRStand 
               tableNumber="TABLE 12"
-              className="scale-[0.75] sm:scale-90 lg:scale-100 drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)]" 
+              className="scale-[0.70] sm:scale-90 lg:scale-100 drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)]" 
             />
           </motion.div>
         </div>

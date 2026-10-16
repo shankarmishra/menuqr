@@ -48,7 +48,7 @@ frontend/techtext*.json
 frontend/test-results/
 test-results/
 visual-audit/
-scripts/
+/scripts/
 .env.development
 frontend/.env.development
 scratch_screenshot/
@@ -63,7 +63,6 @@ frontend/public/marketing/reference-menu.png
 frontend/public/marketing/iphone-mockup-raw.png
 frontend/public/marketing/phone-mockup.png
 
-# Marketing & creative working files
-marketing/
+/marketing/
 menusqr-instagram/
 test_*.js

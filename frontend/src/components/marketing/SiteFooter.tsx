@@ -55,7 +55,7 @@ export default function SiteFooter() {
   return (
     <footer className="relative bg-[#151C19] text-menusqr-white pt-32 pb-12 overflow-hidden selection:bg-menusqr-orange selection:text-white">
       {/* Background Geometry */}
-      <div className="absolute top-0 right-0 pointer-events-none opacity-30">
+      <div className="absolute top-0 right-0 pointer-events-none opacity-30 overflow-hidden max-w-full">
         <svg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="450" cy="150" r="300" stroke="var(--color-menusqr-emerald-dark)" strokeWidth="2" strokeDasharray="10 10"/>
           <circle cx="450" cy="150" r="200" stroke="var(--color-menusqr-orange)" strokeWidth="1" strokeDasharray="4 8" opacity="0.3"/>
@@ -63,7 +63,7 @@ export default function SiteFooter() {
         </svg>
       </div>
 
-      <div className="absolute bottom-0 left-0 pointer-events-none opacity-20">
+      <div className="absolute bottom-0 left-0 pointer-events-none opacity-20 overflow-hidden max-w-full">
         <svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M0 400L400 400L400 0C400 220.914 220.914 400 0 400Z" fill="url(#paint0_linear)"/>
           <defs>
@@ -174,13 +174,13 @@ export default function SiteFooter() {
           <div className="mb-4 md:mb-0">
             &copy; {CURRENT_YEAR} MenusQR. All rights reserved.
           </div>
-          <div className="flex items-center gap-6 flex-wrap justify-center md:justify-end">
-            <a href="tel:+918796530323" className="text-[#aab7b2] hover:text-white transition-colors flex items-center gap-1.5">
+          <div className="flex items-center gap-4 sm:gap-6 flex-wrap justify-center md:justify-end text-xs sm:text-sm">
+            <a href="tel:+918796530323" className="text-[#aab7b2] hover:text-white transition-colors flex items-center gap-1.5 shrink-0">
               <Phone size={13} className="text-menusqr-orange" />
               <span>+91 87965 30323</span>
             </a>
-            <span className="text-[#aab7b2]">Official Domain: <a href="https://menusqr.in" className="text-white hover:underline font-semibold">https://menusqr.in</a></span>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-menusqr-emerald-dark/50 border border-menusqr-emerald-dark">
+            <span className="text-[#aab7b2] break-all sm:break-normal">Official Domain: <a href="https://menusqr.in" className="text-white hover:underline font-semibold">https://menusqr.in</a></span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-menusqr-emerald-dark/50 border border-menusqr-emerald-dark shrink-0">
               <span className="w-2 h-2 rounded-full bg-menusqr-veg animate-pulse"></span>
               <span className="text-xs font-mono font-medium">All systems operational</span>
             </div>

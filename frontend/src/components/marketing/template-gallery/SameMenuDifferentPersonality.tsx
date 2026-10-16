@@ -288,9 +288,9 @@ export const SameMenuDifferentPersonality = () => {
       <div className="pointer-events-none absolute -left-40 bottom-0 h-80 w-80 rounded-full bg-menusqr-emerald/5 blur-3xl" />
 
       <motion.div
-        initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.15 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: 'easeOut' }}
         className="relative mx-auto grid w-full max-w-[1240px] grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-12"
       >
@@ -369,16 +369,16 @@ export const SameMenuDifferentPersonality = () => {
         <div className="lg:col-span-7 flex justify-center items-center relative perspective-[1000px] py-4">
           {/* 3D Floating Motion Wrapper */}
           <motion.div
-            initial={{ opacity: 0, rotateY: 15, scale: 0.92, x: 20 }}
-            whileInView={{ opacity: 1, rotateY: -3, scale: 1, x: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, type: 'spring', bounce: 0.35 }}
+            initial={{ opacity: 0, rotateY: 10, scale: 0.95 }}
+            whileInView={{ opacity: 1, rotateY: 0, scale: 1 }}
+            viewport={{ once: true, amount: 0.05 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
             className="relative shadow-[0_36px_80px_rgba(21,28,25,0.22)] rounded-[52px]"
             style={{ transformStyle: 'preserve-3d' }}
           >
             {/* Ambient Glow behind phone matched to template color */}
             <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[580px] rounded-full blur-[110px] pointer-events-none transition-colors duration-700 opacity-60 mix-blend-multiply"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[580px] rounded-full blur-[110px] pointer-events-none transition-colors duration-700 opacity-25"
               style={{ backgroundColor: selected.accentColor }}
             />
 
@@ -578,7 +578,7 @@ export const SameMenuDifferentPersonality = () => {
                                 alt={dish.name}
                                 loading="lazy"
                                 onError={(e) => {
-                                  e.currentTarget.style.opacity = '0';
+                                  e.currentTarget.style.display = 'none';
                                 }}
                                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                               />

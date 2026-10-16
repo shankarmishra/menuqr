@@ -19,7 +19,7 @@ const routes = [
     description: 'Create a professional digital QR menu for your restaurant. Update dishes, prices, and availability instantly without reprinting your table QR code stands.',
     h1: "Your menu changes. Your QR code doesn't.",
     content: `
-      <main class="max-w-6xl mx-auto px-6 py-20">
+      <main class="bg-[#FAFAF7] min-h-screen text-[#151C19] font-sans max-w-6xl mx-auto px-6 py-20">
         <h1 class="text-4xl md:text-5xl font-extrabold text-[#151C19] tracking-tight">Your menu changes. Your QR code doesn't.</h1>
         <p class="text-lg text-[#53615a] mt-4 max-w-3xl leading-relaxed">Create a professional digital QR menu for your restaurant. Update dishes, prices, and item availability instantly without ever reprinting your table QR code stands.</p>
         <section class="mt-12 space-y-8 text-[#151C19]/80 text-lg leading-relaxed">

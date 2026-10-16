@@ -9,9 +9,16 @@ type HeroStage = 'hidden' | 'entering' | 'aiming' | 'scanning' | 'detected' | 'p
 
 export default function HeroScene() {
   const [stage, setStage] = useState<HeroStage>('hidden');
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: '-50px' });
   const shouldReduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Scroll Parallax
   const { scrollYProgress } = useScroll({
@@ -92,17 +99,17 @@ export default function HeroScene() {
             : stage === 'entering'
             ? { y: '10%', opacity: 1, x: '0%', rotate: 0 }
             : stage === 'aiming'
-            ? { y: '0%', opacity: 1, x: '-10%', rotate: -2 }
+            ? { y: '0%', opacity: 1, x: isMobile ? '0%' : '-10%', rotate: isMobile ? 0 : -2 }
             : stage === 'scanning'
-            ? { y: '0%', opacity: 1, x: '-10%', rotate: -2 }
+            ? { y: '0%', opacity: 1, x: isMobile ? '0%' : '-10%', rotate: isMobile ? 0 : -2 }
             : stage === 'detected'
-            ? { y: '0%', opacity: 1, x: '-8%', rotate: -1 }
+            ? { y: '0%', opacity: 1, x: isMobile ? '0%' : '-8%', rotate: isMobile ? 0 : -1 }
             : stage === 'processing'
-            ? { y: '0%', opacity: 1, x: '-4%', rotate: 0 }
-            : { y: '0%', opacity: 1, x: '18%', rotate: 0 }
+            ? { y: '0%', opacity: 1, x: isMobile ? '0%' : '-4%', rotate: 0 }
+            : { y: '0%', opacity: 1, x: isMobile ? '0%' : '18%', rotate: 0 }
         }
         transition={{ duration: shouldReduceMotion ? 0 : 1.1, type: 'spring', stiffness: 55, damping: 16 }}
-        className="absolute bottom-[4%] sm:bottom-[7%] left-1/2 -translate-x-1/2 z-20 origin-bottom"
+        className="absolute bottom-[2%] sm:bottom-[7%] left-1/2 -translate-x-1/2 z-20 origin-bottom"
       >
         <PremiumIPhoneMockup statusBarTheme="light" statusBarMode="overlay">
           {/* Screen Content: Scan Camera Mode vs Customer Menu */}
