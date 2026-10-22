@@ -1,4 +1,3 @@
-import { useRef, useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { MenuTemplate } from '../../../data/menuTemplates';
@@ -27,16 +26,7 @@ export function TemplateCard({
   className = '',
   style,
 }: TemplateCardProps) {
-  const cardRef = useRef<HTMLElement>(null);
-  const [isRevealed, setIsRevealed] = useState(true);
   const theme = getTemplateCardTheme(template);
-
-  useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    el.classList.add('is-revealed');
-    setIsRevealed(true);
-  }, []);
 
   const colors = [
     template.colors.bg,
@@ -77,11 +67,10 @@ export function TemplateCard({
 
   return (
     <article
-      ref={cardRef}
       data-template-id={template.id}
       data-index={index}
       aria-label={`${template.name} menu template card, ${index + 1} of ${total}`}
-      className={`template-reveal-card ${isRevealed ? 'is-revealed' : ''} group relative grid w-full max-w-[1240px] mx-auto grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[24px] sm:rounded-[32px] md:rounded-[36px] border shadow-2xl ${className}`}
+      className={`template-reveal-card is-revealed group relative grid w-full max-w-[1240px] mx-auto grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[24px] sm:rounded-[32px] md:rounded-[36px] border shadow-2xl ${className}`}
       style={{
         background: 'var(--card-bg)',
         borderColor: 'var(--card-border)',
@@ -94,7 +83,7 @@ export function TemplateCard({
           LEFT / TOP: Premium iPhone Mockup
           ═══════════════════════════════════════════════════════════════════ */}
       <div
-        className="relative flex min-h-[220px] sm:min-h-[300px] md:min-h-[560px] lg:min-h-[620px] w-full items-center justify-center p-2 sm:p-5 md:p-8 lg:p-10 overflow-hidden"
+        className="template-card-stage relative flex min-h-[190px] sm:min-h-[240px] md:min-h-[480px] lg:min-h-[520px] xl:min-h-[580px] w-full items-center justify-center p-2 sm:p-4 md:p-6 lg:p-8 overflow-hidden"
         style={{ background: 'var(--stage-bg)', isolation: 'isolate' }}
       >
         {/* Ambient Glow matching template accent */}
@@ -110,11 +99,11 @@ export function TemplateCard({
 
         <div className="relative z-10 flex items-center justify-center w-full">
           <div
-            className="relative shadow-[0_30px_70px_rgba(0,0,0,0.7)] rounded-[45px] sm:rounded-[50px] scale-[0.72] sm:scale-[0.85] md:scale-100 origin-center my-[-15px] sm:my-[-5px] md:my-0"
+            className="template-card-phone-wrap relative shadow-[0_30px_70px_rgba(0,0,0,0.7)] rounded-[45px] sm:rounded-[50px] scale-[0.68] sm:scale-[0.80] md:scale-95 lg:scale-100 origin-center my-[-20px] sm:my-[-10px] md:my-0"
             style={{ isolation: 'isolate' }}
           >
             <PremiumIPhoneMockup
-              className="!w-[225px] sm:!w-[260px] md:!w-[290px] lg:!w-[315px]"
+              className="template-card-phone"
               badgeText="Live Menu Preview"
               statusBarTheme={isTemplateDark(template) ? 'light' : 'dark'}
               homeIndicatorTheme={isTemplateDark(template) ? 'light' : 'dark'}
@@ -142,12 +131,12 @@ export function TemplateCard({
           RIGHT / BOTTOM: Editorial Narrative & Specifications
           ═══════════════════════════════════════════════════════════════════ */}
       <div
-        className="flex flex-col justify-between px-4 py-4 sm:px-8 sm:py-7 md:px-10 md:py-9 lg:px-12 lg:py-11"
+        className="template-card-editorial flex flex-col justify-between px-4 py-3.5 sm:px-6 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-8 xl:px-12 xl:py-10"
         style={{ background: 'var(--editorial-bg)' }}
       >
         <div>
           {/* Top Index & Badge Header */}
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
+          <div className="flex items-center justify-between mb-2 sm:mb-2.5">
             <p
               className="font-mono text-[11px] sm:text-xs md:text-[13px] font-bold uppercase tracking-widest"
               style={{ color: 'var(--index-color)' }}
@@ -169,7 +158,7 @@ export function TemplateCard({
           </div>
 
           {/* Categories */}
-          <div className="mb-2 sm:mb-3 flex flex-wrap gap-1 sm:gap-1.5 md:gap-2">
+          <div className="mb-2 sm:mb-2.5 flex flex-wrap gap-1 sm:gap-1.5 md:gap-2">
             {template.categories.map((category) => (
               <span
                 key={category}
@@ -187,7 +176,7 @@ export function TemplateCard({
 
           {/* Title in Signature Heading Typography */}
           <h3
-            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight"
+            className="text-lg sm:text-2xl md:text-2xl lg:text-3xl xl:text-4xl font-bold leading-tight"
             style={{
               fontFamily: template.typography.heading,
               color: 'var(--heading-color)',
@@ -197,14 +186,14 @@ export function TemplateCard({
           </h3>
 
           <p
-            className="mt-0.5 sm:mt-1 md:mt-2 text-[11px] sm:text-xs md:text-sm font-medium font-serif italic"
+            className="mt-0.5 sm:mt-1 text-[11px] sm:text-xs md:text-xs lg:text-sm font-medium font-serif italic"
             style={{ color: 'var(--subtitle-color)' }}
           >
             {template.subtitle}
           </p>
 
           <p
-            className="mt-2 sm:mt-3 md:mt-4 max-w-xl text-[11px] sm:text-xs md:text-sm lg:text-base leading-relaxed font-normal line-clamp-2 sm:line-clamp-3 md:line-clamp-none"
+            className="mt-1.5 sm:mt-2.5 md:mt-3 max-w-xl text-[11px] sm:text-xs md:text-xs lg:text-sm xl:text-base leading-relaxed font-normal line-clamp-2 sm:line-clamp-3 md:line-clamp-2 lg:line-clamp-none"
             style={{ color: 'var(--desc-color)' }}
           >
             {template.description}
@@ -212,7 +201,7 @@ export function TemplateCard({
 
           {/* Design Specs Grid */}
           <dl
-            className="mt-3 sm:mt-5 md:mt-6 grid grid-cols-2 gap-x-3 sm:gap-x-4 md:gap-x-5 gap-y-2 sm:gap-y-2.5 md:gap-y-3 border-t pt-2.5 sm:pt-4 md:pt-5 text-[10px] sm:text-xs md:text-sm"
+            className="template-card-specs mt-2.5 sm:mt-3.5 md:mt-4 lg:mt-5 grid grid-cols-2 gap-x-3 sm:gap-x-4 md:gap-x-4 lg:gap-x-5 gap-y-1.5 sm:gap-y-2 md:gap-y-2 lg:gap-y-2.5 border-t pt-2 sm:pt-3 md:pt-3.5 lg:pt-4 text-[10px] sm:text-xs md:text-xs lg:text-sm"
             style={{ borderColor: 'var(--specs-border)' }}
           >
             <div>
@@ -264,10 +253,10 @@ export function TemplateCard({
 
         {/* Palette & CTA Footer */}
         <div
-          className="mt-3 sm:mt-5 md:mt-6 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 pt-2.5 sm:pt-4 border-t"
+          className="template-card-footer mt-2.5 sm:mt-3.5 md:mt-4 lg:mt-5 flex flex-wrap items-center justify-between gap-2 sm:gap-2.5 md:gap-2 lg:gap-3 pt-2 sm:pt-3 border-t"
           style={{ borderColor: 'var(--specs-border)' }}
         >
-          <div className="flex items-center gap-1.5 sm:gap-2.5" aria-label="Template color palette">
+          <div className="flex items-center gap-1.5 sm:gap-2" aria-label="Template color palette">
             <span
               className="text-[9px] sm:text-[10px] font-mono font-bold uppercase mr-1"
               style={{ color: 'var(--palette-label)' }}
@@ -277,7 +266,7 @@ export function TemplateCard({
             {colors.map((color, swatchIndex) => (
               <span
                 key={`${color}-${swatchIndex}`}
-                className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 rounded-full border border-white/20 shadow-sm transition-transform hover:scale-110"
+                className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-4 md:w-4 lg:h-5 lg:w-5 rounded-full border border-white/20 shadow-sm transition-transform hover:scale-110"
                 style={{ backgroundColor: color }}
                 title={color}
               />
@@ -286,7 +275,7 @@ export function TemplateCard({
 
           <Link
             to={`/templates#${template.id}`}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 hover:scale-105 shadow-md shadow-black/20 font-sans cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 md:px-3.5 md:py-2 lg:px-4 lg:py-2.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-bold uppercase tracking-wider transition-all duration-200 hover:scale-105 shadow-md shadow-black/20 font-sans cursor-pointer shrink-0"
             style={{
               backgroundColor: 'var(--cta-bg)',
               color: 'var(--cta-text)',

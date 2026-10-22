@@ -17,7 +17,7 @@ export function sendJson(response, status, data, headers = {}) {
 export async function readRawBody(request) {
   const chunks = [];
   let size = 0;
-  const maxBodyBytes = 20 * 1024 * 1024;
+  const maxBodyBytes = 35 * 1024 * 1024; // 35MB to comfortably accommodate up to 25MB base64 PDF uploads
   for await (const chunk of request) {
     size += chunk.length;
     if (size > maxBodyBytes) throw apiError(413, 'Request body is too large.');

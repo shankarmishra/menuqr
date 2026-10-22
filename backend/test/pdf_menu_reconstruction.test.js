@@ -64,7 +64,7 @@ test('PDF Security & Validation - Rejects Non-PDF Magic Bytes', () => {
 });
 
 test('PDF Security & Validation - Rejects Oversized Files', () => {
-  const fakeBigBuffer = Buffer.alloc(16 * 1024 * 1024);
+  const fakeBigBuffer = Buffer.alloc(26 * 1024 * 1024);
   fakeBigBuffer.write('%PDF-1.4', 0);
   const check = validatePdfBuffer(fakeBigBuffer);
   assert.equal(check.isValid, false);

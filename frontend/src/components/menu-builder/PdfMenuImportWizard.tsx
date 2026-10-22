@@ -122,8 +122,8 @@ export function PdfMenuImportWizard({
       return;
     }
 
-    if (file.size > 15 * 1024 * 1024) {
-      showToast('error', 'PDF file size exceeds 15MB limit. Please upload a smaller menu.');
+    if (file.size > 25 * 1024 * 1024) {
+      showToast('error', 'PDF file size exceeds 25MB limit. Please upload a smaller menu.');
       return;
     }
 
@@ -424,7 +424,7 @@ export function PdfMenuImportWizard({
                     <ShieldCheck size={13} className="text-emerald-400" /> Magic Byte Validated
                   </span>
                   <span>•</span>
-                  <span>Up to 12 Pages</span>
+                  <span>Up to 20 Pages</span>
                   <span>•</span>
                   <span>Hindi & Multilingual Support</span>
                 </div>

@@ -6,8 +6,8 @@ import { PDFParse } from 'pdf-parse';
 import { validateDesignSpecification } from './designSpecValidator.js';
 import { isGeminiAvailable } from './aiDesignService.js';
 
-const MAX_PDF_SIZE_BYTES = 15 * 1024 * 1024; // 15MB
-const MAX_PDF_PAGES = 12;
+const MAX_PDF_SIZE_BYTES = 25 * 1024 * 1024; // 25MB
+const MAX_PDF_PAGES = 20;
 
 // Candidate models for resilience
 const CANDIDATE_MODELS = [
