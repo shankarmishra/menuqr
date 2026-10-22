@@ -432,13 +432,20 @@ export default async function publicRoutes(request, response, url) {
       throw apiError(400, 'Too many unique items in order (maximum 50).');
     }
     
-    // Fetch real prices and variants from database
+    // Fetch real prices, variants, and addon options from database
     const menuItemsRes = await pool.query(
       'SELECT id, price, half_price, full_price, name FROM menu_items WHERE tenant_id = $1 AND is_available = true',
       [client.id]
     );
     const variantsRes = await pool.query(
       'SELECT id, menu_item_id, name, price FROM menu_item_variants WHERE tenant_id = $1 AND is_available = true',
+      [client.id]
+    );
+    const addonOptionsRes = await pool.query(
+      `SELECT o.id, o.addon_group_id, o.name, o.price, o.is_available, g.menu_item_id
+       FROM menu_item_addon_options o
+       JOIN menu_item_addon_groups g ON o.addon_group_id = g.id
+       WHERE o.tenant_id = $1`,
       [client.id]
     );
 
@@ -464,16 +471,37 @@ export default async function publicRoutes(request, response, url) {
       variantsByItem.set(v.menu_item_id, list);
     }
 
+    const addonOptionMap = new Map(addonOptionsRes.rows.map(o => [
+      o.id,
+      {
+        id: o.id,
+        groupId: o.addon_group_id,
+        name: o.name,
+        price: parseFloat(o.price || '0'),
+        isAvailable: Boolean(o.is_available),
+        menuItemId: o.menu_item_id,
+      }
+    ]));
+
     let calculatedTotal = 0;
     let totalOrderQuantity = 0;
     const validatedItems = [];
 
     for (const item of input.items) {
       if (!item || !item.id) throw apiError(400, 'Invalid item in order.');
-      const qty = parseInt(item.quantity, 10);
-      if (isNaN(qty) || qty <= 0 || qty > 100) {
-        throw apiError(400, `Invalid quantity for item: ${item.name || item.id}`);
+
+      const rawQty = typeof item.quantity === 'string' && /^\d+$/.test(item.quantity.trim())
+        ? parseInt(item.quantity.trim(), 10)
+        : (typeof item.quantity === 'number' && Number.isInteger(item.quantity) ? item.quantity : null);
+
+      if (rawQty === null || rawQty <= 0) {
+        throw apiError(400, `Invalid quantity for item: ${item.name || item.id}. Quantity must be a positive integer.`);
       }
+      if (rawQty > 50) {
+        throw apiError(400, `Quantity for item: ${item.name || item.id} exceeds maximum limit of 50.`);
+      }
+      const qty = rawQty;
+
       totalOrderQuantity += qty;
       if (totalOrderQuantity > 200) {
         throw apiError(400, 'Total order quantity cannot exceed 200 items.');
@@ -505,12 +533,45 @@ export default async function publicRoutes(request, response, url) {
         }
       }
 
-      calculatedTotal += unitPrice * qty;
+      // Authoritative server-side add-on validation and calculation
+      const validatedAddons = [];
+      let itemAddonTotal = 0;
+      const rawAddons = Array.isArray(item.addons) ? item.addons : (Array.isArray(item.selectedAddons) ? item.selectedAddons : []);
+
+      for (const addonRef of rawAddons) {
+        const addonId = typeof addonRef === 'string' ? addonRef : (addonRef && addonRef.id ? String(addonRef.id) : null);
+        if (!addonId) {
+          throw apiError(400, `Invalid addon selected for item: ${dbItem.name}`);
+        }
+        const dbAddon = addonOptionMap.get(addonId);
+        if (!dbAddon) {
+          throw apiError(400, `Addon "${addonId}" not found for this restaurant.`);
+        }
+        if (!dbAddon.isAvailable) {
+          throw apiError(400, `Addon "${dbAddon.name}" is currently unavailable.`);
+        }
+        if (dbAddon.menuItemId && dbAddon.menuItemId !== item.id) {
+          throw apiError(400, `Addon "${dbAddon.name}" does not belong to item "${dbItem.name}".`);
+        }
+
+        itemAddonTotal += dbAddon.price;
+        validatedAddons.push({
+          id: dbAddon.id,
+          name: dbAddon.name,
+          price: dbAddon.price,
+        });
+      }
+
+      const lineItemUnitPrice = unitPrice + itemAddonTotal;
+      calculatedTotal += lineItemUnitPrice * qty;
+
       validatedItems.push({
         id: item.id,
         name: dbItem.name,
         variant: variantName || undefined,
         price: unitPrice,
+        addons: validatedAddons.length > 0 ? validatedAddons : undefined,
+        addonTotal: itemAddonTotal > 0 ? itemAddonTotal : undefined,
         quantity: qty,
       });
     }

@@ -32,7 +32,7 @@ export type CustomerOrder = {
   deliveryLandmark?: string | null;
   deliveryCity?: string | null;
   notes?: string | null;
-  items: Array<{ id: string; name: string; quantity: number; price: number; variant?: string }>;
+  items: Array<{ id: string; name: string; quantity: number; price: number; variant?: string; addons?: Array<{ id: string; name: string; price: number }>; addonTotal?: number }>;
   total: number;
   status: 'NEW' | 'ACCEPTED' | 'PREPARING' | 'IN_PROGRESS' | 'READY' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED';
   rejectionReason?: string | null;
@@ -330,9 +330,14 @@ export default function Orders() {
                 <div>
                   <span className="text-white font-semibold">{item.name}</span>
                   {item.variant && <span className="ml-1.5 text-xs text-[#849a90] font-normal">({item.variant})</span>}
+                  {Array.isArray(item.addons) && item.addons.length > 0 && (
+                    <div className="text-xs text-emerald-400 font-medium mt-0.5">
+                      + {item.addons.map(a => `${a.name} (₹${a.price})`).join(', ')}
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="text-[#aab7b2] font-mono text-xs">₹{item.price * item.quantity}</div>
+              <div className="text-[#aab7b2] font-mono text-xs">₹{((item.price || 0) + (Array.isArray(item.addons) ? item.addons.reduce((sum, a) => sum + (a.price || 0), 0) : 0)) * item.quantity}</div>
             </div>
           ))}
         </div>
