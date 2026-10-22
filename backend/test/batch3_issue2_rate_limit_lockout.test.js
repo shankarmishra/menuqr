@@ -150,14 +150,20 @@ test('Batch 3 #2: IP spoof prevention, public order rate limits, and DB-backed a
       assert.ok(userRes.rows[0].failed_attempts >= 5, 'failed_attempts must be tracked in DB');
       assert.ok(userRes.rows[0].locked_until !== null, 'locked_until must be set in DB');
 
-      // 6th attempt with CORRECT password from a 6th NEW IP must STILL be rejected with 429 Account Locked
-      const req6 = mockRequest('POST', { email: userEmail, password: password }, {}, '203.0.113.99');
+      // 6th attempt with WRONG password from locked attacker IP must be rejected with 429
+      const req6 = mockRequest('POST', { email: userEmail, password: 'WrongAgain' }, {}, '203.0.113.5');
       const res6 = mockResponse();
       await assert.rejects(
         async () => authRoutes(req6, res6, new URL('http://localhost/api/auth/login')),
-        (err) => err.status === 429 && err.message.includes('locked'),
-        'Account must remain locked against correct password from any IP until lockout expires'
+        (err) => err.status === 429,
+        'Locked IP must be rejected with 429'
       );
+
+      // Legitimate user with correct password from their own IP is NOT locked out (Victim protection - Check b)
+      const victimReq = mockRequest('POST', { email: userEmail, password: password }, {}, '198.51.100.99');
+      const victimRes = mockResponse();
+      await authRoutes(victimReq, victimRes, new URL('http://localhost/api/auth/login'));
+      assert.equal(victimRes.statusCode, 200, 'Legitimate user with correct password is not denied service');
     } finally {
       await pool.query('DELETE FROM users WHERE id = $1', [userId]);
     }

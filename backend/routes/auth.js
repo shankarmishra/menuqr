@@ -255,8 +255,8 @@ export default async function authRoutes(request, response, url) {
   if (request.method === 'POST' && url.pathname === '/api/auth/login') {
     const address = getClientIp(request);
     const now = Date.now();
-    const attempt = clientLoginAttempts.get(address);
-    if (attempt?.lockedUntil > now) throw apiError(429, 'Too many login attempts. Try again in 1 minute.');
+    const ipAttempt = clientLoginAttempts.get(address);
+    if (ipAttempt?.lockedUntil > now) throw apiError(429, 'Too many login attempts from this IP. Account access is temporarily locked.');
     
     const input = await readJson(request);
     let user = null;
@@ -275,11 +275,15 @@ export default async function authRoutes(request, response, url) {
     const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
     const dbUser = dbRes.rows[0];
 
-    if (dbUser && dbUser.locked_until && new Date(dbUser.locked_until).getTime() > now) {
+    const compoundKey = `${normalizedEmail}:${address}`;
+    const attempt = clientLoginAttempts.get(compoundKey) || ipAttempt;
+    if (attempt?.lockedUntil > now) {
       throw apiError(429, 'Account is temporarily locked due to too many failed attempts. Try again later.');
     }
 
+    let passwordMatches = false;
     if (dbUser && dbUser.role !== 'SUPER_ADMIN' && (await verifyPassword(input.password, dbUser.password_hash))) {
+      passwordMatches = true;
       user = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
       userEmail = dbUser.email;
 
@@ -293,7 +297,18 @@ export default async function authRoutes(request, response, url) {
       }
     }
 
+    // If password does not match AND account is currently locked out:
+    if (!passwordMatches && dbUser && dbUser.locked_until && new Date(dbUser.locked_until).getTime() > now) {
+      throw apiError(429, 'Account is temporarily locked due to too many failed attempts. Try again later.');
+    }
+
     if (!user) {
+      const currentAttempt = attempt && now - attempt.windowStartedAt < 15 * 60 * 1000 ? attempt : { count: 0, windowStartedAt: now, lockedUntil: 0 };
+      currentAttempt.count += 1;
+      if (currentAttempt.count >= 5) currentAttempt.lockedUntil = now + 15 * 60 * 1000;
+      clientLoginAttempts.set(compoundKey, currentAttempt);
+      clientLoginAttempts.set(address, currentAttempt);
+
       if (dbUser && dbUser.role !== 'SUPER_ADMIN') {
         const nextAttempts = (dbUser.failed_attempts || 0) + 1;
         if (nextAttempts >= 5) {
@@ -303,11 +318,6 @@ export default async function authRoutes(request, response, url) {
           await pool.query('UPDATE users SET failed_attempts = $1 WHERE id = $2', [nextAttempts, dbUser.id]);
         }
       }
-
-      const currentAttempt = attempt && now - attempt.windowStartedAt < 15 * 60 * 1000 ? attempt : { count: 0, windowStartedAt: now, lockedUntil: 0 };
-      currentAttempt.count += 1;
-      if (currentAttempt.count >= 5) currentAttempt.lockedUntil = now + clientLoginLockDurationMs;
-      clientLoginAttempts.set(address, currentAttempt);
       throw apiError(401, 'Incorrect credentials.');
     }
 
@@ -315,6 +325,7 @@ export default async function authRoutes(request, response, url) {
       await pool.query('UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = $1', [dbUser.id]);
     }
     
+    clientLoginAttempts.delete(compoundKey);
     clientLoginAttempts.delete(address);
 
     // Create PostgreSQL-backed OTP Challenge
