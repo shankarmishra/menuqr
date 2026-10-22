@@ -241,7 +241,7 @@ function PublicAppRoutes() {
         <Route path="/refund-policy" element={<Navigate to="/refund-cancellation" replace />} />
 
         {/* Customer Onboarding & Checkout Flow */}
-        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/signup" element={<Navigate to="/purchase/details" replace />} />
         <Route path="/onboarding" element={<OnboardingWizard />} />
         <Route path="/purchase/details" element={<PurchaseDetailsPage />} />
         <Route path="/purchase/review" element={<PurchaseReviewPage />} />
