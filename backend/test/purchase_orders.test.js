@@ -15,16 +15,17 @@ function createMockRequest(body, headers = {}, method = 'POST') {
   return req;
 }
 
-function createMockSignedRequest(bodyObj, secretKey = TEST_SECRET, timestamp = '1700000000000', customSig = null) {
+function createMockSignedRequest(bodyObj, secretKey = TEST_SECRET, timestamp = null, customSig = null) {
+  const ts = timestamp ? String(timestamp) : String(Date.now());
   const rawText = JSON.stringify(bodyObj);
-  const payloadToSign = `${timestamp}${rawText}`;
+  const payloadToSign = `${ts}${rawText}`;
   const sig = customSig || createHmac('sha256', secretKey).update(payloadToSign).digest('base64');
   const req = Readable.from([Buffer.from(rawText)]);
   req.method = 'POST';
   req.headers = {
     'content-type': 'application/json',
     'x-webhook-signature': sig,
-    'x-webhook-timestamp': timestamp,
+    'x-webhook-timestamp': ts,
   };
   return req;
 }
@@ -201,7 +202,7 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
   });
 
   await t.test('5. Cashfree webhook missing signature header is rejected with 401', async () => {
-    const req = createMockRequest({ type: 'PAYMENT_SUCCESS_WEBHOOK', data: { order: { order_id: 'order_123' } } }, { 'x-webhook-timestamp': '1700000000000' });
+    const req = createMockRequest({ type: 'PAYMENT_SUCCESS_WEBHOOK', data: { order: { order_id: 'order_123' } } }, { 'x-webhook-timestamp': String(Date.now()) });
     const res = createMockResponse();
     const url = new URL('http://localhost/api/webhooks/cashfree');
 
@@ -224,7 +225,7 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
 
   await t.test('7. Cashfree webhook with invalid signature is rejected with 401', async () => {
     const body = { type: 'PAYMENT_SUCCESS_WEBHOOK', data: { order: { order_id: 'order_123' } } };
-    const req = createMockSignedRequest(body, TEST_SECRET, '1700000000000', 'invalid_signature_hash');
+    const req = createMockSignedRequest(body, TEST_SECRET, String(Date.now()), 'invalid_signature_hash');
     const res = createMockResponse();
     const url = new URL('http://localhost/api/webhooks/cashfree');
 
@@ -236,7 +237,7 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
 
   await t.test('8. Cashfree webhook signed for body A but sending body B is rejected with 401', async () => {
     const bodyA = { type: 'PAYMENT_SUCCESS_WEBHOOK', data: { order: { order_id: 'order_123' } } };
-    const timestamp = '1700000000000';
+    const timestamp = String(Date.now());
     const sigA = createHmac('sha256', TEST_SECRET).update(`${timestamp}${JSON.stringify(bodyA)}`).digest('base64');
 
     const bodyB = { type: 'PAYMENT_SUCCESS_WEBHOOK', data: { order: { order_id: 'order_TAMPERED' } } };
@@ -585,7 +586,7 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
 
   await t.test('20. Malformed JSON payload with valid headers returns 400 Bad Request', async () => {
     const rawText = '{ malformed_json: ';
-    const timestamp = '1700000000000';
+    const timestamp = String(Date.now());
     const sig = createHmac('sha256', TEST_SECRET).update(`${timestamp}${rawText}`).digest('base64');
 
     const req = Readable.from([Buffer.from(rawText)]);
@@ -611,7 +612,7 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
     req.headers = {
       'content-type': 'application/json',
       'x-webhook-signature': 'sig',
-      'x-webhook-timestamp': '123',
+      'x-webhook-timestamp': String(Date.now()),
     };
     const res = createMockResponse();
     const url = new URL('http://localhost/api/webhooks/cashfree');

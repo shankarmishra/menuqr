@@ -614,6 +614,16 @@ export default async function purchaseRoutes(request, response, url) {
       throw apiError(401, 'Missing Cashfree webhook signature or timestamp header.');
     }
 
+    const parsedTimestamp = Number(timestamp);
+    const now = Date.now();
+    const timestampMs = parsedTimestamp > 1e11 ? parsedTimestamp : parsedTimestamp * 1000;
+    const maxToleranceMs = 5 * 60 * 1000;
+
+    if (!Number.isFinite(timestampMs) || Math.abs(now - timestampMs) > maxToleranceMs) {
+      console.warn(`[webhook] Rejection: Webhook timestamp expired or stale (${timestamp}).`);
+      throw apiError(401, 'Webhook timestamp outside allowed 5-minute freshness window.');
+    }
+
     const { parsed: input, rawText } = await readJsonWithRaw(request);
 
     const isValidSignature = verifyCashfreeWebhookSignature({
