@@ -408,7 +408,9 @@ export default async function appRoutes(request, response, url) {
   if (request.method === 'POST' && url.pathname === '/api/app/pdf/approve-and-publish') {
     requireEntitlement(authorization, 'initial_menu_setup');
     const body = await readJson(request);
-    const { importId, restaurant, categories, designSpec, approveContent, approveDesign } = body || {};
+    const { importId, restaurant: rawRestaurant, restaurantInfo, categories, designSpec: rawDesignSpec, designSpecification, approveContent, approveDesign } = body || {};
+    const restaurant = rawRestaurant || restaurantInfo;
+    const designSpec = rawDesignSpec || designSpecification;
 
     if (!Array.isArray(categories) || categories.length === 0) {
       throw apiError(400, 'At least one menu category with dishes is required.');
