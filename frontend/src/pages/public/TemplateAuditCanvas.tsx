@@ -38,6 +38,33 @@ export default function TemplateAuditCanvas() {
       tagline: DEMO_RESTAURANT.tagline,
     });
     spec.composition = composition;
+    if (composition === 'heritage-artboard') {
+      spec.themeId = 'pdf-bespoke-theme';
+      spec.colors = {
+        bg: '#FFFDF9',
+        surface: '#FFFFFF',
+        surfaceAlt: '#FFF9F0',
+        text: '#1F2923',
+        textMuted: '#55635C',
+        heading: '#CE182C',
+        accent: '#FAB700',
+        border: 'rgba(250, 183, 0, 0.5)',
+        badgeBg: '#CE182C',
+        badgeText: '#FFFFFF',
+      };
+      spec.typography = {
+        headingFont: 'Playfair Display, Georgia, serif',
+        bodyFont: 'Plus Jakarta Sans, system-ui, sans-serif',
+        style: 'serif',
+        headingWeight: 'bold',
+      };
+      spec.decorations = {
+        texture: 'subtle-grain',
+        borderRadius: 'xl',
+        borderStyle: 'solid',
+        shadow: 'subtle',
+      };
+    }
     return spec;
   }, [composition]);
 
@@ -271,6 +298,108 @@ export default function TemplateAuditCanvas() {
       };
     }
 
+    if (edgeCase === 'mannat') {
+      const mannatCategories = [
+        { id: 'cat-chaap', name: 'Chaap Specialities', order: 0 },
+        { id: 'cat-paneer', name: 'Paneer Feast', order: 1 },
+        { id: 'cat-kebabs', name: 'Veg Kebabs & Appetizers', order: 2 },
+        { id: 'cat-platters', name: 'Signature Platters', order: 3 },
+        { id: 'cat-rolls', name: 'Chaap Rolls With Gravy', order: 4 },
+        { id: 'cat-crunch', name: 'MTJ Crunch House', order: 5 },
+        { id: 'cat-soups', name: 'Soup Station', order: 6 },
+        { id: 'cat-salads', name: 'Fresh Salads', order: 7 },
+        { id: 'cat-khazana', name: 'Paneer Ka Khazana', order: 8 },
+        { id: 'cat-dal', name: 'Dal Specialities', order: 9 },
+        { id: 'cat-rice', name: 'Rice & Biryani', order: 10 },
+        { id: 'cat-soya-gravy', name: 'MTJ Pure Soya Gravies', order: 11 },
+        { id: 'cat-breads', name: 'Tandoori Breads', order: 12 },
+        { id: 'cat-thalis', name: 'MTJ Thalis', order: 13 },
+        { id: 'cat-street', name: 'Mtj Street Specials', order: 14 },
+        { id: 'cat-momos', name: 'MTJ Momo Junction', order: 15 },
+        { id: 'cat-noodles', name: 'Noodles Bowls', order: 16 },
+        { id: 'cat-chinese', name: 'Mtj Chinese Bowls', order: 17 },
+        { id: 'cat-fries', name: 'Fries & Nachos', order: 18 },
+        { id: 'cat-lebanese', name: 'Lebanese Delights', order: 19 },
+        { id: 'cat-mexican', name: 'Mexican Fiesta', order: 20 },
+        { id: 'cat-pizzas', name: 'Stone Baked Pizzas', order: 21 },
+        { id: 'cat-pastas', name: 'Pasta Selections', order: 22 },
+        { id: 'cat-burgers', name: 'Burgers & Sandwiches', order: 23 },
+        { id: 'cat-garlic-bread', name: 'Garlic Breads', order: 24 },
+        { id: 'cat-coffee', name: 'Hot Coffee', order: 25 },
+        { id: 'cat-cold-brew', name: 'Cold Brew', order: 26 },
+        { id: 'cat-shakes', name: 'Thick Shakes', order: 27 },
+        { id: 'cat-coolers', name: 'Coolers', order: 28 },
+        { id: 'cat-desserts', name: 'Desserts', order: 29 },
+      ];
+
+      const mannatItems = [
+        // Chaap Specialities
+        { id: 'mn-1', name: 'Malai Chaap', description: 'Tender soya chaap marinated in rich cashew cream and fresh herbs', price: 239, halfPrice: 149, fullPrice: 239, category: 'cat-chaap', dietType: 'veg' as const, available: true, isBestseller: true },
+        { id: 'mn-2', name: 'Afghani Chaap', description: 'Charcoal grilled chaap infused with black pepper and mild creamy spices', price: 239, halfPrice: 149, fullPrice: 239, category: 'cat-chaap', dietType: 'veg' as const, available: true },
+        { id: 'mn-3', name: 'Tandoori Chaap', description: 'Classic spicy marinated tandoori chaap roasted over clay oven', price: 219, halfPrice: 139, fullPrice: 219, category: 'cat-chaap', dietType: 'veg' as const, available: true },
+        { id: 'mn-4', name: 'Achari Chaap', description: 'Tangy pickle spiced chaap roasted on tandoor skewers', price: 229, halfPrice: 139, fullPrice: 229, category: 'cat-chaap', dietType: 'veg' as const, available: true },
+        // Paneer Feast
+        { id: 'mn-5', name: 'Paneer Tikka', description: 'Charcoal charred cottage cheese cubes with bell peppers and onions', price: 259, halfPrice: 169, fullPrice: 259, category: 'cat-paneer', dietType: 'veg' as const, available: true, isBestseller: true },
+        { id: 'mn-6', name: 'Malai Paneer Tikka', description: 'Velvety cottage cheese in rich cream and cardamom marinade', price: 279, halfPrice: 179, fullPrice: 279, category: 'cat-paneer', dietType: 'veg' as const, available: true },
+        // Veg Kebabs & Platters
+        { id: 'mn-7', name: 'Dahi Ke Sholay', description: 'Crispy fried bread rolls stuffed with spiced hung curd and herbs', price: 199, category: 'cat-kebabs', dietType: 'veg' as const, available: true, isBestseller: true },
+        { id: 'mn-8', name: 'Veg Seekh Kebab', description: 'Minced vegetable skewers grilled with aromatic tandoor spices', price: 219, category: 'cat-kebabs', dietType: 'veg' as const, available: true },
+        { id: 'mn-9', name: 'Mannat Special Platter', description: 'Assorted tandoori chaaps, paneer tikka, dahi ke sholay & seekh kebabs', price: 449, category: 'cat-platters', dietType: 'veg' as const, available: true, isBestseller: true },
+        // Rolls with Gravy
+        { id: 'mn-10', name: 'Malai Chaap Roll With Gravy', description: 'Succulent malai chaap wrapped in roomali, served with rich makhani gravy', price: 299, variants: [{ name: '2 Pcs', price: 199 }, { name: '4 Pcs', price: 299 }], category: 'cat-rolls', dietType: 'veg' as const, available: true },
+        // Crunch House & Soups & Salads
+        { id: 'mn-11', name: 'Crunchy Soya Popcorn', description: 'Bite-sized golden crispy soya nuggets with peri-peri dip', price: 189, category: 'cat-crunch', dietType: 'veg' as const, available: true, isBestseller: true },
+        { id: 'mn-12', name: 'Greek Salad', description: 'Fresh crisp lettuce, cucumber, kalamata olives, cherry tomatoes and feta', price: 199, category: 'cat-salads', dietType: 'veg' as const, available: true },
+        // Gravies
+        { id: 'mn-13', name: 'Shahi Paneer', description: 'Soft cottage cheese simmered in smooth royal tomato-cashew velvet gravy', price: 289, halfPrice: 179, fullPrice: 289, category: 'cat-khazana', dietType: 'veg' as const, available: true, isBestseller: true },
+        { id: 'mn-14', name: 'Dal Makhani', description: 'Slow-simmered black lentils for 24 hours on tandoor embers with pure butter', price: 259, halfPrice: 159, fullPrice: 259, category: 'cat-dal', dietType: 'veg' as const, available: true, isBestseller: true },
+        { id: 'mn-15', name: 'Veg Hyderabadi Biryani', description: 'Fragrant basmati rice layered with seasoned vegetables, saffron and kewra', price: 239, category: 'cat-rice', dietType: 'veg' as const, available: true },
+        // Soya Gravies & Breads
+        { id: 'mn-16', name: 'Tawa Chaap Gravy', description: '100% pure soya chaap cooked in robust semi-dry spiced onion gravy', price: 279, halfPrice: 169, fullPrice: 279, category: 'cat-soya-gravy', dietType: 'veg' as const, available: true },
+        { id: 'mn-17', name: 'Butter Naan', description: 'Clay oven baked leavened bread brushed with melted butter', price: 55, category: 'cat-breads', dietType: 'veg' as const, available: true },
+        { id: 'mn-18', name: 'Garlic Naan', description: 'Hand-stretched naan garnished with minced garlic, coriander and butter', price: 65, category: 'cat-breads', dietType: 'veg' as const, available: true, isBestseller: true },
+        // Thalis & Street
+        { id: 'mn-19', name: 'Deluxe Thali', description: 'Dal Makhani, Shahi Paneer, Rice, 2 Butter Roti, Raita, Salad & Gulab Jamun', price: 269, category: 'cat-thalis', dietType: 'veg' as const, available: true, isBestseller: true },
+        { id: 'mn-20', name: 'Amritsari Chole Kulche', description: 'Tangy pindi chana served with 2 stuffed tandoori kulchas and pickle', price: 169, category: 'cat-street', dietType: 'veg' as const, available: true },
+        // Momo Junction (3-Tier Matrix)
+        { id: 'mn-21', name: 'Steamed Momos', description: 'Delicate hand-wrapped dumplings steamed with garden fresh filling', price: 149, category: 'cat-momos', dietType: 'veg' as const, available: true, variants: [{ name: 'Veg (6 Pcs)', price: 149 }, { name: 'Paneer (6 Pcs)', price: 169 }, { name: 'Corn N Cheese', price: 189 }] },
+        { id: 'mn-22', name: 'Golden Fry Momos', description: 'Crispy deep-fried momos served with fiery red chutney and mayo', price: 159, category: 'cat-momos', dietType: 'veg' as const, available: true, variants: [{ name: 'Veg (6 Pcs)', price: 159 }, { name: 'Paneer (6 Pcs)', price: 179 }, { name: 'Corn N Cheese', price: 199 }] },
+        { id: 'mn-23', name: 'Kurkure Momos', description: 'Crunchy battered momos crusted in crispy flakes', price: 179, category: 'cat-momos', dietType: 'veg' as const, available: true, isBestseller: true, variants: [{ name: 'Veg (6 Pcs)', price: 179 }, { name: 'Paneer (6 Pcs)', price: 199 }, { name: 'Corn N Cheese', price: 219 }] },
+        { id: 'mn-24', name: 'Tandoori Momos', description: 'Clay oven charred momos tossed with butter and chaat masala', price: 189, category: 'cat-momos', dietType: 'veg' as const, available: true, isBestseller: true, variants: [{ name: 'Veg (6 Pcs)', price: 189 }, { name: 'Paneer (6 Pcs)', price: 209 }, { name: 'Corn N Cheese', price: 229 }] },
+        { id: 'mn-25', name: 'Afghani Momos', description: 'Creamy grilled momos tossed in malai and black pepper dip', price: 199, category: 'cat-momos', dietType: 'veg' as const, available: true, variants: [{ name: 'Veg (6 Pcs)', price: 199 }, { name: 'Paneer (6 Pcs)', price: 219 }, { name: 'Corn N Cheese', price: 239 }] },
+        // Indo-Chinese
+        { id: 'mn-26', name: 'Veg Hakka Noodles', description: 'Wok tossed noodles with crunchy julienned vegetables and soy glaze', price: 189, category: 'cat-noodles', dietType: 'veg' as const, available: true, isBestseller: true },
+        { id: 'mn-27', name: 'Veg Manchurian Gravy', description: 'Fried vegetable rounds in garlic-ginger dark soy gravy', price: 219, category: 'cat-chinese', dietType: 'veg' as const, available: true },
+        // Café & Quick Bites
+        { id: 'mn-28', name: 'Peri Peri French Fries', description: 'Crispy potato fries dusted with piquant peri-peri seasoning', price: 139, category: 'cat-fries', dietType: 'veg' as const, available: true },
+        { id: 'mn-29', name: 'Falafel Hummus Wrap', description: 'Crispy chickpea falafel patties with creamy garlic hummus in pita wrap', price: 199, category: 'cat-lebanese', dietType: 'veg' as const, available: true },
+        { id: 'mn-30', name: 'Loaded Cheesy Nachos', description: 'Crispy corn tortilla chips topped with warm cheese sauce and jalapeños', price: 179, category: 'cat-mexican', dietType: 'veg' as const, available: true },
+        // Pizzas & Burgers
+        { id: 'mn-31', name: 'Margherita Pizza (10")', description: 'Classic stone-baked thin crust pizza with San Marzano tomato sauce and mozzarella', price: 279, category: 'cat-pizzas', dietType: 'veg' as const, available: true, isBestseller: true },
+        { id: 'mn-32', name: 'Brioche Paneer Burger', description: 'Spiced crispy paneer patty on toasted sesame brioche bun with creamy coleslaw', price: 169, category: 'cat-burgers', dietType: 'veg' as const, available: true },
+        { id: 'mn-33', name: 'Cheesy Garlic Bread (4 Pcs)', description: 'Toasted baguette slices with garlic herb butter and melted mozzarella', price: 149, category: 'cat-garlic-bread', dietType: 'veg' as const, available: true },
+        // Brews & Shakes
+        { id: 'mn-34', name: 'Cold Brew Hazelnut Latte', description: 'Slow-steeped cold brew with velvety steamed milk and roasted hazelnut syrup', price: 169, category: 'cat-cold-brew', dietType: 'veg' as const, available: true, isBestseller: true },
+        { id: 'mn-35', name: 'Oreo Cookie Thick Shake', description: 'Rich chocolate and vanilla bean thick shake blended with crunchy Oreos', price: 189, category: 'cat-shakes', dietType: 'veg' as const, available: true },
+        { id: 'mn-36', name: 'Fresh Mint Mojito', description: 'Muddled fresh mint leaves, lime wedges and sparkling soda with crushed ice', price: 139, category: 'cat-coolers', dietType: 'veg' as const, available: true },
+        // Desserts
+        { id: 'mn-37', name: 'Sizzling Hot Fudge Brownie', description: 'Warm Belgian chocolate walnut brownie served on a sizzler plate with vanilla ice cream', price: 199, category: 'cat-desserts', dietType: 'veg' as const, available: true, isBestseller: true },
+      ];
+
+      return {
+        restaurant: {
+          name: 'Mannat Tandoori Junction',
+          tagline: 'Chaap Ka Asli Swad • 100% Pure Soya | Authentic Taste Since 2015',
+          cuisine: 'North Indian • Indo Chinese • Continental',
+          phone: '8591095483',
+          address: 'Main Market Road, Near City Plaza, New Delhi',
+          logo: '/uploads/mannat/assets/dish_malai_chaap.webp',
+        },
+        categories: mannatCategories,
+        items: mannatItems,
+      };
+    }
+
     return {
       restaurant: DEMO_RESTAURANT,
       categories: DEMO_RESTAURANT.categories,
@@ -377,6 +506,17 @@ export default function TemplateAuditCanvas() {
               }`}
             >
               Spec: Compact Bistro
+            </Link>
+
+            <Link
+              to={`/audit-preview/${currentTemplate.id}?composition=heritage-artboard&edge=mannat${isCompact ? '&compact=true' : ''}`}
+              className={`px-2.5 py-1 rounded font-mono text-[11px] border font-bold ${
+                composition === 'heritage-artboard'
+                  ? 'border-[#FAB700] bg-[#FAB700]/20 text-[#FAB700]'
+                  : 'border-[#FAB700]/40 text-[#FAB700] hover:bg-[#FAB700]/10'
+              }`}
+            >
+              ✦ Mannat PDF 1:1 Artboard
             </Link>
 
             <Link
