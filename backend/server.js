@@ -63,7 +63,7 @@ const server = createServer(async (request, response) => {
       'GET, POST, PUT, PATCH, DELETE, OPTIONS'
     );
     response.setHeader('Vary', 'Origin');
-  } else if (requestOrigin && !originAllowed) {
+  } else if (requestOrigin && !originAllowed && !url.pathname.startsWith('/api/webhooks/')) {
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
       sendJson(response, 403, { error: 'Forbidden: Request origin is not allowed.' });
       return;
@@ -71,7 +71,7 @@ const server = createServer(async (request, response) => {
   }
 
   // Referer Defense-in-Depth
-  if (referer && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+  if (referer && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method) && !url.pathname.startsWith('/api/webhooks/')) {
     try {
       const refererOrigin = new URL(referer).origin;
       if (!isAllowedOrigin(refererOrigin)) {
