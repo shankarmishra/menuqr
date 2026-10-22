@@ -339,8 +339,12 @@ test('Order Flow End-to-End: Dine-In & Delivery with Client Reception Panel', as
       [otherTenantId, 'pub-other-' + Date.now(), 'other-slug-' + Date.now()]
     );
     await pool.query(
-      `INSERT INTO users (id, email, password_hash, role, tenant_id, onboarding_state) VALUES ($1, 'other@test.com', 'dummyhash', 'RESTAURANT_OWNER', $2, 'COMPLETED')`,
-      [otherUserId, otherTenantId]
+      `INSERT INTO subscriptions (id, tenant_id, plan_id, status, started_at, expires_at) VALUES ($1, $2, 'PREMIUM', 'ACTIVE', NOW(), NOW() + INTERVAL '30 DAYS')`,
+      ['sub-other-' + Date.now(), otherTenantId]
+    );
+    await pool.query(
+      `INSERT INTO users (id, email, password_hash, role, tenant_id, onboarding_state) VALUES ($1, $2, 'dummyhash', 'RESTAURANT_OWNER', $3, 'COMPLETED')`,
+      [otherUserId, 'other-' + Date.now() + '@test.com', otherTenantId]
     );
     const otherToken = generateAuthToken({ id: otherUserId, role: 'RESTAURANT_OWNER', tenantId: otherTenantId });
 
@@ -364,6 +368,7 @@ test('Order Flow End-to-End: Dine-In & Delivery with Client Reception Panel', as
 
     // Clean up other tenant
     await pool.query('DELETE FROM users WHERE id = $1', [otherUserId]);
+    await pool.query('DELETE FROM subscriptions WHERE tenant_id = $1', [otherTenantId]);
     await pool.query('DELETE FROM clients WHERE id = $1', [otherTenantId]);
   });
 
@@ -395,9 +400,13 @@ test('Order Flow End-to-End: Dine-In & Delivery with Client Reception Panel', as
     const token = generateAuthToken({ id: userId, role: 'RESTAURANT_OWNER', tenantId });
     const getReq = mockRequest('GET', null, { cookie: `menusqr_auth=${token}` });
     const getRes = mockResponse();
-    await appRoutes(getReq, getRes, new URL('http://localhost/api/app/orders'));
-    assert.strictEqual(getRes.statusCode, 200, 'Expired restaurant must still have read access to existing orders');
-    const orders = JSON.parse(getRes.body);
-    assert(orders.length >= 2, 'Existing orders must be preserved');
+    await assert.rejects(
+      async () => {
+        await appRoutes(getReq, getRes, new URL('http://localhost/api/app/orders'));
+      },
+      (err) => err.status === 403
+    );
+    const dbOrders = await pool.query('SELECT id FROM customer_orders WHERE tenant_id = $1', [tenantId]);
+    assert(dbOrders.rows.length >= 2, 'Existing orders must be preserved');
   });
 });

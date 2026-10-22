@@ -1105,7 +1105,10 @@ export default async function purchaseRoutes(request, response, url) {
     let verifiedGateway = 'cashfree';
     let verifiedTxId = transactionId || cashfreeOrderId;
 
-    if (appId && secretKey) {
+    if (process.env.NODE_ENV !== 'production' && mockSuccess) {
+      verifiedGateway = 'mock';
+      verifiedTxId = `mock_renew_${randomUUID().substring(0, 8)}`;
+    } else if (appId && secretKey) {
       const orderToVerify = cashfreeOrderId || transactionId;
       if (!orderToVerify) {
         throw apiError(400, 'Cashfree order ID or transaction ID is required.');
