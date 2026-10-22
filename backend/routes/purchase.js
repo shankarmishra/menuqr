@@ -1015,7 +1015,7 @@ export default async function purchaseRoutes(request, response, url) {
   if (request.method === 'POST' && renewMatch) {
     const sourceOrderId = renewMatch[1];
     const input = await readJson(request);
-    const { planId, razorpayPaymentId, razorpayOrderId, razorpaySignature, mockSuccess, selectedAddons } = input;
+    const { planId, cashfreeOrderId, transactionId, razorpayPaymentId, razorpayOrderId, razorpaySignature, mockSuccess, selectedAddons } = input;
 
     const sourceRes = await pool.query('SELECT * FROM orders WHERE id=$1', [sourceOrderId]);
     const sourceOrder = sourceRes.rows[0];
@@ -1058,19 +1058,55 @@ export default async function purchaseRoutes(request, response, url) {
     }
     const renewalTotal = plan.price + addonAmount;
 
-    const razorpayConfigured = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+    const appId = process.env.CASHFREE_APP_ID;
+    const secretKey = process.env.CASHFREE_SECRET_KEY;
+    const isSandbox = (process.env.CASHFREE_ENV || 'TEST').toUpperCase() !== 'PROD';
+    const baseUrl = isSandbox ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
 
-    if (razorpayConfigured) {
-      if (!razorpayPaymentId || !razorpaySignature) {
-        throw apiError(400, 'Razorpay payment details missing.');
+    let verifiedGateway = 'cashfree';
+    let verifiedTxId = transactionId || cashfreeOrderId;
+
+    if (appId && secretKey) {
+      const orderToVerify = cashfreeOrderId || transactionId;
+      if (!orderToVerify) {
+        throw apiError(400, 'Cashfree order ID or transaction ID is required.');
       }
+      try {
+        const cfRes = await fetch(`${baseUrl}/orders/${orderToVerify}`, {
+          headers: {
+            'x-client-id': appId,
+            'x-client-secret': secretKey,
+            'x-api-version': '2023-08-01',
+          }
+        });
+        if (cfRes.ok) {
+          const cfData = await cfRes.json();
+          if (cfData.order_status !== 'PAID') {
+            throw apiError(400, 'Payment not marked as PAID by Cashfree.');
+          }
+          if (cfData.order_amount !== undefined && Number(cfData.order_amount) !== renewalTotal) {
+            throw apiError(400, `Payment amount mismatch: received ${cfData.order_amount}, expected ${renewalTotal}.`);
+          }
+          verifiedGateway = 'cashfree';
+          verifiedTxId = cfData.cf_order_id || orderToVerify;
+        } else {
+          throw apiError(400, 'Failed to verify Cashfree order status.');
+        }
+      } catch (err) {
+        if (err.status) throw err;
+        throw apiError(400, `Payment verification failed: ${err.message}`);
+      }
+    } else if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET && razorpayPaymentId && razorpaySignature) {
       const body = `${razorpayOrderId}|${razorpayPaymentId}`;
       const expected = createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(body).digest('hex');
       if (expected !== razorpaySignature) {
         throw apiError(400, 'Payment signature verification failed.');
       }
+      verifiedGateway = 'razorpay';
+      verifiedTxId = razorpayPaymentId;
     } else if (process.env.NODE_ENV !== 'production' && mockSuccess) {
-      // mock payment accepted in dev/test
+      verifiedGateway = 'mock';
+      verifiedTxId = `mock_renew_${randomUUID().substring(0, 8)}`;
     } else {
       throw apiError(400, 'Payment verification data missing or invalid.');
     }
@@ -1091,8 +1127,8 @@ export default async function purchaseRoutes(request, response, url) {
       `INSERT INTO payments (id, order_id, gateway, transaction_id, amount, status)
        VALUES ($1,$2,$3,$4,$5,$6)`,
       [paymentId, renewOrderId,
-       razorpayPaymentId ? 'razorpay' : 'mock',
-       razorpayPaymentId || `mock_renew_${randomUUID()}`,
+       verifiedGateway,
+       verifiedTxId,
        renewalTotal, 'SUCCESS']
     );
 

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { getSubscription, renewSubscription, type AppSubscriptionData } from './appStore';
+import { useNavigate } from 'react-router-dom';
+import { getSubscription, type AppSubscriptionData } from './appStore';
 import { ShieldCheck, Calendar, CreditCard, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export default function Subscription() {
+  const navigate = useNavigate();
   const [data, setData] = useState<AppSubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [renewing, setRenewing] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -19,20 +20,8 @@ export default function Subscription() {
       .finally(() => setLoading(false));
   };
 
-  const handleRenew = async () => {
-    const nextPlan = window.prompt("Enter plan to renew/upgrade to (BASIC, INTERMEDIATE, PREMIUM):", data?.planId || 'BASIC');
-    if (!nextPlan) return;
-    
-    setRenewing(true);
-    try {
-      await renewSubscription(nextPlan.toUpperCase());
-      alert('Subscription successfully renewed!');
-      loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to renew');
-    } finally {
-      setRenewing(false);
-    }
+  const handleRenew = () => {
+    navigate(`/purchase/details?plan=${planId.toLowerCase()}`);
   };
 
   if (loading) return (
@@ -108,10 +97,9 @@ export default function Subscription() {
             
             <button 
               onClick={handleRenew}
-              disabled={renewing}
-              className="w-full flex items-center justify-center gap-2 bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-[#e8783c]/20 hover:shadow-[#e8783c]/40 disabled:opacity-70"
+              className="w-full flex items-center justify-center gap-2 bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-[#e8783c]/20 hover:shadow-[#e8783c]/40 cursor-pointer"
             >
-              <CreditCard size={18} /> {renewing ? 'Processing...' : 'Renew or Upgrade'}
+              <CreditCard size={18} /> Renew or Upgrade Plan
             </button>
             <p className="text-[11px] text-center text-[#62756d] leading-tight">
               Renewing keeps your permanent QR code and digital menu data intact.
