@@ -145,18 +145,47 @@ export async function processOrderPaymentAndProvision({
       [orderId, workerLockToken]
     );
     if (lockRes.rowCount === 0) {
-      const reCheck = await pool.query('SELECT status, provisioning_status, activation_email_sent, payment_receipt_email_sent FROM orders WHERE id = $1', [orderId]);
-      const current = reCheck.rows[0];
-      if (current && (current.status === 'PAID' || current.provisioning_status === 'PROCESSING' || current.provisioning_status === 'COMPLETE')) {
-        return {
-          success: true,
-          orderId,
-          status: current.status || 'PAID',
-          provisioning_status: current.provisioning_status || 'PROCESSING',
-          alreadyProvisioned: true,
-          emailSent: Boolean(current?.activation_email_sent && current?.payment_receipt_email_sent),
-        };
+      // Another worker holds the lock or the order was already completed.
+      // Poll briefly so that Worker B only returns alreadyProvisioned: true when provisioning_status is COMPLETE.
+      let current = null;
+      for (let attempt = 0; attempt < 30; attempt++) {
+        const reCheck = await pool.query(
+          'SELECT status, provisioning_status, activation_email_sent, payment_receipt_email_sent FROM orders WHERE id = $1',
+          [orderId]
+        );
+        current = reCheck.rows[0];
+        if (current && current.provisioning_status === 'COMPLETE') {
+          return {
+            success: true,
+            orderId,
+            status: current.status || 'PAID',
+            provisioning_status: 'COMPLETE',
+            alreadyProvisioned: true,
+            emailSent: Boolean(current?.activation_email_sent && current?.payment_receipt_email_sent),
+          };
+        }
+        if (current && current.provisioning_status === 'FAILED') {
+          return {
+            success: false,
+            orderId,
+            status: current.status || 'PAID',
+            provisioning_status: 'FAILED',
+            alreadyProvisioned: false,
+            message: 'Concurrent provisioning worker encountered an error.',
+          };
+        }
+        // Still PROCESSING: wait 50ms before polling again
+        await new Promise((resolve) => setTimeout(resolve, 50));
       }
+
+      return {
+        success: false,
+        orderId,
+        status: current?.status || 'PENDING_PAYMENT',
+        provisioning_status: current?.provisioning_status || 'PROCESSING',
+        alreadyProvisioned: false,
+        message: 'Timed out waiting for concurrent provisioning lock to complete.',
+      };
     }
   }
 

@@ -639,11 +639,13 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
 
     let userInsertCount = 0;
     let lockClaimed = false;
+    let isProvisionComplete = false;
 
     setPool({
       query: async (sql) => {
         if (sql.includes('FROM orders WHERE id = $1')) {
-          return { rows: [lockClaimed ? { ...mockOrder, provisioning_status: 'PROCESSING' } : mockOrder] };
+          const currentStatus = isProvisionComplete ? 'COMPLETE' : (lockClaimed ? 'PROCESSING' : 'PENDING');
+          return { rows: [{ ...mockOrder, provisioning_status: currentStatus, status: isProvisionComplete ? 'PAID' : 'PENDING_PAYMENT' }] };
         }
         if (sql.includes('UPDATE orders') && sql.includes("provisioning_status='PROCESSING'")) {
           if (!lockClaimed) {
@@ -651,6 +653,10 @@ test('POST /api/purchase/orders unit test suite', async (t) => {
             return { rowCount: 1 };
           }
           return { rowCount: 0 };
+        }
+        if (sql.includes("SET provisioning_status='COMPLETE'")) {
+          isProvisionComplete = true;
+          return { rowCount: 1 };
         }
         if (sql.includes('INSERT INTO users')) {
           userInsertCount++;
