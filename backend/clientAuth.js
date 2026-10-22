@@ -49,7 +49,37 @@ async function checkAndApplyClientRateLimits(client, email, ip, prefix = 'client
     }
   }
 
-  // 2. Check 15-minute sliding window rate limits (IP & Email)
+  // 2. Check standalone 15-minute sliding window rate limit on IP (blocks email rotation attacks)
+  const ipKey = createHmac('sha256', getClientOtpSecret()).update(`${prefix}_ip:${ip}`).digest('hex');
+  const ipRateLimitRes = await client.query(`
+    INSERT INTO client_auth_rate_limits (bucket_key, window_started_at, hits, last_request_at, updated_at)
+    VALUES ($1, NOW(), 1, NOW(), NOW())
+    ON CONFLICT (bucket_key) DO UPDATE SET
+      hits = CASE
+        WHEN client_auth_rate_limits.window_started_at <= NOW() - INTERVAL '15 minutes' THEN 1
+        ELSE client_auth_rate_limits.hits + 1
+      END,
+      window_started_at = CASE
+        WHEN client_auth_rate_limits.window_started_at <= NOW() - INTERVAL '15 minutes' THEN NOW()
+        ELSE client_auth_rate_limits.window_started_at
+      END,
+      blocked_until = CASE
+        WHEN client_auth_rate_limits.blocked_until > NOW() THEN client_auth_rate_limits.blocked_until
+        WHEN client_auth_rate_limits.window_started_at <= NOW() - INTERVAL '15 minutes' THEN NULL
+        WHEN client_auth_rate_limits.hits + 1 > $2 THEN NOW() + INTERVAL '15 minutes'
+        ELSE NULL
+      END,
+      last_request_at = NOW(),
+      updated_at = NOW()
+    RETURNING hits, blocked_until
+  `, [ipKey, REQUEST_LIMIT]);
+
+  const ipRateLimit = ipRateLimitRes.rows[0];
+  if (Number(ipRateLimit.hits) > REQUEST_LIMIT || (ipRateLimit.blocked_until && new Date(ipRateLimit.blocked_until) > new Date())) {
+    throw authError('Too many OTP requests from this IP. Please wait 15 minutes before trying again.', 429);
+  }
+
+  // 3. Check 15-minute sliding window rate limits (Joint Email & IP)
   const windowKey = createHmac('sha256', getClientOtpSecret()).update(`${prefix}_request:${normalizedEmail}:${ip}`).digest('hex');
   const rateLimitRes = await client.query(`
     INSERT INTO client_auth_rate_limits (bucket_key, window_started_at, hits, last_request_at, updated_at)

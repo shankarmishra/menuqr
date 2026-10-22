@@ -52,7 +52,7 @@ async function incrementRateLimit(client, scope, identifier, limit) {
   return Boolean(Number(rateLimit.hits) > limit || (rateLimit.blocked_until && new Date(rateLimit.blocked_until) > new Date()));
 }
 
-async function applyRateLimits(client, action, email, ip, emailLimit, ipLimit = 30) {
+async function applyRateLimits(client, action, email, ip, emailLimit, ipLimit = 5) {
   const ipLimited = await incrementRateLimit(client, `${action}:ip`, ip, ipLimit);
   const emailLimited = await incrementRateLimit(client, `${action}:email`, email, emailLimit);
   return ipLimited || emailLimited;
@@ -92,7 +92,7 @@ export async function requestAdminOtp(email, ip) {
     transactionOpen = true;
     await cleanExpiredRateLimits(client);
 
-    if (await applyRateLimits(client, 'request', normalizedEmail, ip, REQUEST_LIMIT, 30)) {
+    if (await applyRateLimits(client, 'request', normalizedEmail, ip, REQUEST_LIMIT, REQUEST_LIMIT)) {
       await client.query('COMMIT');
       transactionOpen = false;
       throw authError('Too many requests. Please try again later.', 429);
