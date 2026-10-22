@@ -4,7 +4,7 @@ import { MenusQRPattern } from '../brand/MenusQRPattern';
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full overflow-x-clip bg-[#FAFAF7] min-h-0 lg:h-[clamp(640px,82vh,780px)] flex items-center pt-24 pb-12 lg:py-0">
+    <section className="relative w-full overflow-x-clip bg-[#FAFAF7] min-h-0 lg:h-[clamp(660px,82vh,780px)] flex items-center pt-24 pb-12 lg:py-0">
       {/* Background Texture & Pattern - 100vw Bleed */}
       <div className="absolute inset-0 bg-[#FAFAF7] pointer-events-none -z-20" />
       <div className="absolute inset-0 texture-fine-noise pointer-events-none -z-10 opacity-30" />

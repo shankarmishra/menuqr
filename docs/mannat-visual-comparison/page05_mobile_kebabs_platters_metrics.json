@@ -1,0 +1,23 @@
+{
+  "output_prefix": "page05_mobile_kebabs_platters",
+  "source_path": "docs/source_pages_hires/page_05.jpg",
+  "web_path": "qa-screenshots/mannat/section_page05_kebabs.png",
+  "source_dimensions": {
+    "width": 2315,
+    "height": 3275
+  },
+  "web_dimensions": {
+    "width": 684,
+    "height": 3184
+  },
+  "aligned_canvas": {
+    "width": 1200,
+    "height": 1697
+  },
+  "metrics": {
+    "ssim": 0.4835,
+    "psnr_db": 6.46,
+    "content_match_pct": 66.57,
+    "color_hist_correlation": 0.36
+  }
+}

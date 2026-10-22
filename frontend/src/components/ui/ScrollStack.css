@@ -51,7 +51,7 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: #000;
+  background: var(--card-scrim, #051612);
   opacity: var(--scroll-stack-dim, 0);
   pointer-events: none;
   z-index: 40;
@@ -62,39 +62,24 @@
   height: 0px;
 }
 
-/* Sizing for TemplateCard phone mockup across viewports */
-.template-reveal-card .template-card-phone {
-  width: 195px !important;
-}
+/* ═══════════════════════════════════════════════════════════════════
+   TemplateCard Responsive Geometry & Viewport Budgeting
+   ═══════════════════════════════════════════════════════════════════ */
 
-@media (min-width: 640px) {
-  .template-reveal-card .template-card-phone {
-    width: 230px !important;
-  }
-}
-
+/* Default responsive bounds for 2-column laptop/desktop display */
 @media (min-width: 768px) {
-  .template-reveal-card .template-card-phone {
-    width: 260px !important;
-  }
-}
-
-@media (min-width: 1024px) {
-  .template-reveal-card .template-card-phone {
-    width: 285px !important;
-  }
-}
-
-@media (min-width: 1280px) {
-  .template-reveal-card .template-card-phone {
-    width: 310px !important;
+  .template-reveal-card {
+    max-height: clamp(480px, 70vh, 600px);
   }
 }
 
 /* Short viewport adaptations (e.g. 1366x768 laptops, landscape displays) */
 @media (min-width: 768px) and (max-height: 820px) {
+  .template-reveal-card {
+    max-height: 520px !important;
+  }
   .template-reveal-card .template-card-stage {
-    min-height: 420px !important;
+    min-height: 400px !important;
     padding: 0.5rem !important;
   }
   .template-reveal-card .template-card-phone-wrap {
@@ -102,19 +87,19 @@
     margin: 0 !important;
   }
   .template-reveal-card .template-card-phone {
-    width: 220px !important;
+    width: 215px !important;
   }
   .template-reveal-card .template-card-editorial {
     padding: 1.25rem 1.75rem !important;
   }
   .template-reveal-card .template-card-specs {
-    margin-top: 0.75rem !important;
-    padding-top: 0.75rem !important;
+    margin-top: 0.6rem !important;
+    padding-top: 0.6rem !important;
     row-gap: 0.35rem !important;
   }
   .template-reveal-card .template-card-footer {
-    margin-top: 0.75rem !important;
-    padding-top: 0.75rem !important;
+    margin-top: 0.6rem !important;
+    padding-top: 0.6rem !important;
   }
 }
 

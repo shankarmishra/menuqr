@@ -1,0 +1,23 @@
+{
+  "output_prefix": "page06_mobile_crunch_soups",
+  "source_path": "docs/source_pages_hires/page_06.jpg",
+  "web_path": "qa-screenshots/mannat/section_page06_crunch.png",
+  "source_dimensions": {
+    "width": 2315,
+    "height": 3275
+  },
+  "web_dimensions": {
+    "width": 684,
+    "height": 2172
+  },
+  "aligned_canvas": {
+    "width": 1200,
+    "height": 1697
+  },
+  "metrics": {
+    "ssim": 0.4934,
+    "psnr_db": 7.24,
+    "content_match_pct": 69.88,
+    "color_hist_correlation": 0.4707
+  }
+}

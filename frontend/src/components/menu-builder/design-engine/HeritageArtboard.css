@@ -30,12 +30,47 @@
   transform: translateY(-1.5px);
 }
 
-/* 3. Authentic Dotted Leader Lines connecting Dish to Price */
-.heritage-leader-line {
-  flex: 1 1 auto;
-  border-bottom: 2px dotted rgba(206, 24, 44, 0.28);
-  margin: 0 8px 4px 8px;
-  min-width: 16px;
+/* 3. Authentic Clean Tabular Leader Spacing */
+.heritage-dish-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.55rem 0.5rem;
+  border-bottom: 1px dashed rgba(206, 24, 44, 0.12);
+  transition: background-color 0.15s ease;
+  border-radius: 8px;
+}
+
+.heritage-dish-row:hover {
+  background-color: rgba(206, 24, 44, 0.03);
+}
+
+.heritage-dish-row:last-child {
+  border-bottom: none;
+}
+
+.heritage-menu-container {
+  background: #FFFDF9;
+  border: 1.5px solid rgba(250, 183, 0, 0.6);
+  border-radius: 20px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+}
+
+.heritage-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9E0D24;
+  border-bottom: 1.5px solid rgba(250, 183, 0, 0.45);
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 /* 4. Section Chapter Banner with Golden Trim & Notched Corners */

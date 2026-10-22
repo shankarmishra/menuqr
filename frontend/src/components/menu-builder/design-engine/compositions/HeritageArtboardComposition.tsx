@@ -26,6 +26,10 @@ interface ChapterDef {
   title: string;
   shortTitle: string;
   banner: string;
+  heroImage: string;
+  heroSubImage?: string;
+  heroTitle: string;
+  heroSubtitle: string;
   themeClass: string;
   subcategories: string[];
   announcement?: {
@@ -42,6 +46,10 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'MTJ Tandoori Snacks',
     shortTitle: 'Tandoori Snacks',
     banner: '/uploads/mannat/textures/banner_tandoori_snacks.webp',
+    heroImage: '/uploads/mannat/assets/hero_chaap_sizzler.webp',
+    heroSubImage: '/uploads/mannat/assets/hero_paneer_tikka.webp',
+    heroTitle: 'Tandoori Snacks & Chaap Feast',
+    heroSubtitle: 'Charcoal Tandoor Baked • 100% Pure Soya',
     themeClass: 'chapter-theme-tandoori',
     subcategories: ['chaap specialities', 'paneer feast', 'tandoori snacks', 'tandoori chaap'],
     announcement: {
@@ -55,6 +63,10 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'Veg Kebabs & Signature Platters',
     shortTitle: 'Kebabs & Platters',
     banner: '/uploads/mannat/textures/banner_signature_platters.webp',
+    heroImage: '/uploads/mannat/assets/hero_veg_kebabs_platter.webp',
+    heroSubImage: '/uploads/mannat/assets/hero_chaap_rolls.webp',
+    heroTitle: 'Veg Kebabs & Signature Platters',
+    heroSubtitle: 'Dahi Ke Sholay, Seekh Kebabs & Gravy Rolls',
     themeClass: 'chapter-theme-tandoori',
     subcategories: ['veg kebabs & appetizers', 'veg kebabs', 'signature platters', 'platters', 'chaap rolls with gravy', 'chaap rolls', 'rolls'],
     announcement: {
@@ -68,6 +80,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'MTJ Crunch House, Soups & Salads',
     shortTitle: 'Crunch & Soups',
     banner: '/uploads/mannat/textures/banner_street_specials.webp',
+    heroImage: '/uploads/mannat/assets/hero_street_specials.webp',
+    heroTitle: 'MTJ Crunch House & Soups',
+    heroSubtitle: 'Crispy Golden Bites, Hot Soups & Fresh Salads',
     themeClass: 'chapter-theme-crunch',
     subcategories: ['mtj crunch house', 'crunch house', 'soup station', 'soups', 'fresh salads', 'salads'],
     announcement: {
@@ -81,6 +96,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'MTJ Signature Gravies & Curries',
     shortTitle: 'Signature Gravies',
     banner: '/uploads/mannat/textures/banner_paneer_khazana.webp',
+    heroImage: '/uploads/mannat/assets/hero_paneer_curries_handi.webp',
+    heroTitle: 'Paneer Ka Khazana & Handi Curries',
+    heroSubtitle: 'Paneer Butter Masala, Shahi Paneer & Dal Makhani',
     themeClass: 'chapter-theme-gravies',
     subcategories: [
       'paneer ka khazana', 
@@ -104,6 +122,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'MTJ Pure Soya Gravies & Tandoori Breads',
     shortTitle: 'Soya & Breads',
     banner: '/uploads/mannat/textures/banner_soya_gravies.webp',
+    heroImage: '/uploads/mannat/assets/hero_biryani_gravies.webp',
+    heroTitle: 'Pure Soya Gravies & Tandoori Breads',
+    heroSubtitle: 'Rich Desi Gravies & Clay-Oven Baked Rotis & Naans',
     themeClass: 'chapter-theme-gravies',
     subcategories: ['mtj pure soya gravies', 'pure soya gravies', 'soya gravies', 'tandoori breads', 'breads', 'rotis'],
     announcement: {
@@ -117,6 +138,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'MTJ Thalis & Street Food Specials',
     shortTitle: 'Thalis & Combos',
     banner: '/uploads/mannat/textures/banner_thalis_combos.webp',
+    heroImage: '/uploads/mannat/assets/hero_royal_thali.webp',
+    heroTitle: 'MTJ Deluxe Thalis & Street Food',
+    heroSubtitle: 'Complete Wholesome Thalis, Pav Bhaji & Chole Kulche',
     themeClass: 'chapter-theme-thalis',
     subcategories: ['mtj thalis', 'thalis', 'mtja meal combos', 'meal combos', 'combos', 'mtj street specials', 'street specials'],
     announcement: {
@@ -130,6 +154,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'MTJ Momo Junction',
     shortTitle: 'Momo Junction',
     banner: '/uploads/mannat/textures/banner_momos.webp',
+    heroImage: '/uploads/mannat/assets/hero_momos_platter.webp',
+    heroTitle: 'Himalayan Momo Junction',
+    heroSubtitle: 'Steamed, Kurkure, Afghani & Tandoori Momos',
     themeClass: 'chapter-theme-momos',
     subcategories: ['mtj momo junction', 'momo junction', 'momos'],
     announcement: {
@@ -144,6 +171,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'MTJ Indo-Chinese Wok',
     shortTitle: 'Chinese Wok',
     banner: '/uploads/mannat/textures/banner_chinese_wok.webp',
+    heroImage: '/uploads/mannat/assets/hero_chinese_wok.webp',
+    heroTitle: 'Indo-Chinese Wok Master Recipes',
+    heroSubtitle: 'Hakka Noodles Bowls, Manchurian & Chilly Paneer Gravy',
     themeClass: 'chapter-theme-chinese',
     subcategories: ['noodles bowls', 'noodle bowls', 'mtj chinese bowls', 'chinese bowls', 'appetizers', 'wok gravies', 'fried rice', 'chinese'],
     announcement: {
@@ -157,6 +187,10 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'MTJ Café, Fries & Mexican Bites',
     shortTitle: 'Café & Quick Bites',
     banner: '/uploads/mannat/textures/banner_lebanese_fries.webp',
+    heroImage: '/uploads/mannat/assets/hero_lebanese_fries.webp',
+    heroSubImage: '/uploads/mannat/assets/hero_tacos_pasta.webp',
+    heroTitle: 'Café Delights, Fries & Mexican Tacos',
+    heroSubtitle: 'Peri-Peri Fries, Cheesy Nachos, Falafel & Crispy Tacos',
     themeClass: 'chapter-theme-cafe',
     subcategories: ['cheesy bites', 'fries & nachos', 'lebanese delights', 'mexican fiesta', 'fries', 'nachos', 'lebanese', 'mexican', 'tacos'],
     announcement: {
@@ -170,6 +204,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'Stone Baked Pizzas, Burgers & Pastas',
     shortTitle: 'Pizzas & Burgers',
     banner: '/uploads/mannat/textures/banner_pizza_burger.webp',
+    heroImage: '/uploads/mannat/assets/hero_pizza_burger.webp',
+    heroTitle: 'Stone Baked Pizzas & Brioche Burgers',
+    heroSubtitle: '10-Inch Thin Crust Pizzas, Sesame Burgers & Pasta',
     themeClass: 'chapter-theme-pizzas',
     subcategories: ['pasta selections', 'pasta', 'stone baked pizzas', 'pizzas', 'burgers & sandwiches', 'burgers', 'garlic breads'],
     announcement: {
@@ -183,6 +220,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'Brews, Thick Shakes & Coolers',
     shortTitle: 'Brews & Shakes',
     banner: '/uploads/mannat/textures/banner_thick_shakes.webp',
+    heroImage: '/uploads/mannat/assets/hero_coffee_shakes.webp',
+    heroTitle: 'Artisan Brews, Boba & Thick Shakes',
+    heroSubtitle: 'Chilled Iced Latte, Oreo Thick Shakes & Fresh Mojito',
     themeClass: 'chapter-theme-brews',
     subcategories: ['hot coffee', 'cold brew', 'ice tea', 'thick shakes', 'boba shakes & coffee', 'boba', 'coolers', 'beverages', 'shakes'],
     announcement: {
@@ -196,6 +236,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     title: 'MTJ Desserts & Sweet Indulgence',
     shortTitle: 'Desserts',
     banner: '/uploads/mannat/textures/banner_desserts.webp',
+    heroImage: '/uploads/mannat/assets/hero_desserts_brownie.webp',
+    heroTitle: 'Sweet Treats & Sizzling Desserts',
+    heroSubtitle: 'Hot Sizzling Chocolate Brownie & Golden Gulab Jamun',
     themeClass: 'chapter-theme-desserts',
     subcategories: ['desserts', 'dessert', 'sweets', 'sweet endings', 'sweet'],
     announcement: {
@@ -483,6 +526,8 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
           return (
             <section
               key={chapter.id}
+              id={chapter.id}
+              data-chapter-id={chapter.id}
               className={clsx(
                 "p-4 sm:p-6 space-y-6 rounded-3xl transition-all duration-300",
                 chapter.themeClass || 'chapter-theme-tandoori'
@@ -503,284 +548,314 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                 </picture>
               </div>
 
-              {/* Chapter Announcement / Specialty Note */}
-              {chapter.announcement && (
-                <div className="p-3 rounded-xl bg-amber-50/80 border border-[#FAB700] text-amber-950 text-xs font-semibold flex flex-wrap items-center justify-between gap-2 shadow-xs">
-                  <span className="flex items-center gap-2">
-                    {chapter.announcement.icon === 'coffee' && <Coffee size={15} className="text-amber-800 shrink-0" />}
-                    {chapter.announcement.icon === 'flame' && <Flame size={15} className="text-[#CE182C] shrink-0" />}
-                    {chapter.announcement.icon === 'sparkles' && <Sparkles size={15} className="text-[#FAB700] shrink-0" />}
-                    <span>{chapter.announcement.text}</span>
-                  </span>
-                  {chapter.announcement.badge && (
-                    <span className="font-mono font-bold bg-[#FAB700] text-[#181E19] px-2 py-0.5 rounded text-[10px] uppercase tracking-wider shrink-0">
-                      {chapter.announcement.badge}
-                    </span>
+              {/* ─────────────────────────────────────────────────────────────
+                  ART-DIRECTED SPATIAL LAYOUT: HERO SHOWCASE + TYPOGRAPHIC MENU
+                  ───────────────────────────────────────────────────────────── */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Left Column: Authentic Grand Food Photography Showcase (Pages 4–16) */}
+                <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
+                  <div className="heritage-hero-showcase">
+                    <picture>
+                      <source srcSet={chapter.heroImage} type="image/webp" />
+                      <img
+                        src={chapter.heroImage.replace('.webp', '.png')}
+                        alt={chapter.heroTitle}
+                        className="w-full h-56 sm:h-64 lg:h-72 object-cover"
+                        loading="lazy"
+                      />
+                    </picture>
+                    <div className="bg-[#181E19] text-[#FAB700] p-3.5 border-t-2 border-[#FAB700]/40">
+                      <div className="font-serif font-bold text-sm sm:text-base text-white tracking-wide">
+                        {chapter.heroTitle}
+                      </div>
+                      <div className="text-[11px] sm:text-xs text-[#FAB700]/90 font-sans mt-0.5">
+                        {chapter.heroSubtitle}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Secondary Hero Photo Plate (when present in source) */}
+                  {chapter.heroSubImage && (
+                    <div className="heritage-hero-showcase hidden sm:block">
+                      <picture>
+                        <source srcSet={chapter.heroSubImage} type="image/webp" />
+                        <img
+                          src={chapter.heroSubImage.replace('.webp', '.png')}
+                          alt={chapter.heroTitle}
+                          className="w-full h-40 sm:h-48 object-cover"
+                          loading="lazy"
+                        />
+                      </picture>
+                    </div>
+                  )}
+
+                  {/* Chapter Announcement / Specialty Note */}
+                  {chapter.announcement && (
+                    <div className="p-3.5 rounded-2xl bg-[#FFFDF9] border border-[#FAB700] text-amber-950 text-xs font-semibold flex flex-col gap-2 shadow-xs">
+                      <div className="flex items-center gap-2">
+                        {chapter.announcement.icon === 'coffee' && <Coffee size={16} className="text-amber-800 shrink-0" />}
+                        {chapter.announcement.icon === 'flame' && <Flame size={16} className="text-[#CE182C] shrink-0" />}
+                        {chapter.announcement.icon === 'sparkles' && <Sparkles size={16} className="text-[#FAB700] shrink-0" />}
+                        <span className="leading-snug">{chapter.announcement.text}</span>
+                      </div>
+                      {chapter.announcement.badge && (
+                        <span className="self-start font-mono font-bold bg-[#FAB700] text-[#181E19] px-2.5 py-0.5 rounded text-[10px] uppercase tracking-wider">
+                          {chapter.announcement.badge}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
 
-              {/* ─────────────────────────────────────────────────────────────
-                  SUB-CATEGORIES INSIDE THIS CHAPTER
-                  ───────────────────────────────────────────────────────────── */}
-              {chapter.categories.map((subcat) => {
-                const isMomoSection = chapter.isMomo || subcat.name.toLowerCase().includes('momo');
+                {/* Right Column: Editorial Typographic Parchment Menu */}
+                <div className="lg:col-span-7 space-y-6">
+                  {chapter.categories.map((subcat) => {
+                    const isMomoSection = chapter.isMomo || subcat.name.toLowerCase().includes('momo');
+                    const isRolls = subcat.name.toLowerCase().includes('roll');
+                    const hasAnyHalfFull = subcat.items.some((i) => Boolean(i.halfPrice && i.fullPrice));
 
-                return (
-                  <div key={subcat.id} className="space-y-4">
-                    {/* Subcategory Ribbon Header */}
-                    <div className="heritage-subcat-header">
-                      <span className="heritage-subcat-badge">
-                        <Utensils size={13} className="text-[#FAB700]" />
-                        <span>{subcat.name}</span>
-                        <span className="text-[11px] opacity-80 font-mono">({subcat.items.length})</span>
-                      </span>
-                      <span className="heritage-subcat-line" />
-                    </div>
+                    return (
+                      <div key={subcat.id} className="space-y-3">
+                        {/* Subcategory Ribbon Header */}
+                        <div className="heritage-subcat-header">
+                          <span className="heritage-subcat-badge">
+                            <Utensils size={13} className="text-[#FAB700]" />
+                            <span>{subcat.name}</span>
+                            <span className="text-[11px] opacity-80 font-mono">({subcat.items.length})</span>
+                          </span>
+                          <span className="heritage-subcat-line" />
+                        </div>
 
-                    {/* ─────────────────────────────────────────────────────────
-                        SPECIAL: MOMO JUNCTION 3-TIER MATRIX TABLE (Page 10)
-                        ───────────────────────────────────────────────────────── */}
-                    {isMomoSection ? (
-                      <div className="space-y-4">
-                        <div className="overflow-x-auto rounded-2xl border-2 border-[#FAB700] shadow-sm bg-white">
-                          <table className="heritage-matrix-table w-full">
-                            <thead>
-                              <tr 
-                                className="text-white text-xs font-black uppercase tracking-wider"
-                                style={{ background: '#1F2923' }}
-                              >
-                                <th className="py-2.5 px-2.5 sm:px-4 text-left">Preparation</th>
-                                <th className="py-2.5 px-2 text-center bg-emerald-950/90 text-emerald-300 border-l border-white/10 w-24 sm:w-28">
-                                  Veg (6 Pcs)
-                                </th>
-                                <th className="py-2.5 px-2 text-center bg-amber-950/90 text-amber-300 border-l border-white/10 w-24 sm:w-28">
-                                  Paneer (6 Pcs)
-                                </th>
-                                <th className="py-2.5 px-2 text-center bg-orange-950/90 text-orange-300 border-l border-white/10 w-24 sm:w-32">
-                                  Corn N Cheese
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-black/5 text-xs">
-                              {subcat.items.map((item, idx) => {
-                                const vegVar = item.variants?.find((v) => v.name.toLowerCase().includes('veg'));
-                                const panVar = item.variants?.find((v) => v.name.toLowerCase().includes('paneer'));
-                                const chzVar = item.variants?.find((v) => v.name.toLowerCase().includes('corn') || v.name.toLowerCase().includes('cheese'));
+                        {/* Momo Table or Editorial Container */}
+                        {isMomoSection ? (
+                          <div className="space-y-4">
+                            <div className="overflow-x-auto rounded-2xl border-2 border-[#FAB700] shadow-sm bg-white">
+                              <table className="heritage-matrix-table w-full">
+                                <thead>
+                                  <tr 
+                                    className="text-white text-xs font-black uppercase tracking-wider"
+                                    style={{ background: '#1F2923' }}
+                                  >
+                                    <th className="py-2.5 px-2.5 sm:px-4 text-left">Preparation</th>
+                                    <th className="py-2.5 px-2 text-center bg-emerald-950/90 text-emerald-300 border-l border-white/10 w-24 sm:w-28">
+                                      Veg (6 Pcs)
+                                    </th>
+                                    <th className="py-2.5 px-2 text-center bg-amber-950/90 text-amber-300 border-l border-white/10 w-24 sm:w-28">
+                                      Paneer (6 Pcs)
+                                    </th>
+                                    <th className="py-2.5 px-2 text-center bg-orange-950/90 text-orange-300 border-l border-white/10 w-24 sm:w-32">
+                                      Corn N Cheese
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-black/5 text-xs">
+                                  {subcat.items.map((item, idx) => {
+                                    const vegVar = item.variants?.find((v) => v.name.toLowerCase().includes('veg'));
+                                    const panVar = item.variants?.find((v) => v.name.toLowerCase().includes('paneer'));
+                                    const chzVar = item.variants?.find((v) => v.name.toLowerCase().includes('corn') || v.name.toLowerCase().includes('cheese'));
 
-                                const vegPrice = vegVar ? vegVar.price : (item.halfPrice || item.price || 149);
-                                const panPrice = panVar ? panVar.price : (typeof vegPrice === 'number' ? vegPrice + 20 : 169);
-                                const chzPrice = chzVar ? chzVar.price : (typeof vegPrice === 'number' ? vegPrice + 40 : 189);
+                                    const vegPrice = vegVar ? vegVar.price : (item.halfPrice || item.price || 149);
+                                    const panPrice = panVar ? panVar.price : (typeof vegPrice === 'number' ? vegPrice + 20 : 169);
+                                    const chzPrice = chzVar ? chzVar.price : (typeof vegPrice === 'number' ? vegPrice + 40 : 189);
 
-                                const thumb = getDishImage(item, subcat.name);
+                                    const thumb = getDishImage(item, subcat.name);
+
+                                    return (
+                                      <tr 
+                                        key={item.id}
+                                        className={idx % 2 === 0 ? 'bg-white hover:bg-amber-50/40' : 'bg-[#FFFDF9] hover:bg-amber-50/40'}
+                                      >
+                                        <td className="py-2 px-2.5 sm:px-4 font-bold text-[#1F2923]">
+                                          <div className="flex items-center gap-2">
+                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#FAB700] overflow-hidden shrink-0 bg-white shadow-xs">
+                                              <img
+                                                src={thumb}
+                                                alt={item.name}
+                                                className="w-full h-full object-cover scale-110"
+                                                loading="lazy"
+                                              />
+                                            </div>
+                                            <div className="min-w-0">
+                                              <div className="flex items-center gap-1 font-serif text-xs sm:text-sm text-[#181E19]">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
+                                                <span className="truncate">{item.name}</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </td>
+
+                                        {/* Veg Column */}
+                                        <td className="py-2 px-1.5 sm:px-2 text-center border-l border-black/5">
+                                          <button
+                                            type="button"
+                                            onClick={() => onAddToCart && onAddToCart(item, `₹${vegPrice}`, 'Veg (6 Pcs)')}
+                                            className="heritage-matrix-btn heritage-matrix-btn-veg cursor-pointer text-[11px] sm:text-xs py-1 px-2 w-full justify-center"
+                                            title={`Add Veg ${item.name}`}
+                                          >
+                                            <span>₹{vegPrice}</span>
+                                            {isPremium && <Plus size={10} />}
+                                          </button>
+                                        </td>
+
+                                        {/* Paneer Column */}
+                                        <td className="py-2 px-1.5 sm:px-2 text-center border-l border-black/5">
+                                          <button
+                                            type="button"
+                                            onClick={() => onAddToCart && onAddToCart(item, `₹${panPrice}`, 'Paneer (6 Pcs)')}
+                                            className="heritage-matrix-btn heritage-matrix-btn-paneer cursor-pointer text-[11px] sm:text-xs py-1 px-2 w-full justify-center"
+                                            title={`Add Paneer ${item.name}`}
+                                          >
+                                            <span>₹{panPrice}</span>
+                                            {isPremium && <Plus size={10} />}
+                                          </button>
+                                        </td>
+
+                                        {/* Corn N Cheese Column */}
+                                        <td className="py-2 px-1.5 sm:px-2 text-center border-l border-black/5">
+                                          <button
+                                            type="button"
+                                            onClick={() => onAddToCart && onAddToCart(item, `₹${chzPrice}`, 'Corn N Cheese (6 Pcs)')}
+                                            className="heritage-matrix-btn heritage-matrix-btn-cheese cursor-pointer text-[11px] sm:text-xs py-1 px-2 w-full justify-center"
+                                            title={`Add Corn N Cheese ${item.name}`}
+                                          >
+                                            <span>₹{chzPrice}</span>
+                                            {isPremium && <Plus size={10} />}
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+
+                            {/* Momo Platter Showcase Banner (Mirroring PDF Page 10 Bottom Plate) */}
+                            <div className="rounded-2xl overflow-hidden border-2 border-[#FAB700] shadow-md bg-white">
+                              <img
+                                src="/uploads/mannat/assets/dish_steamed_momos.webp"
+                                alt="Freshly Steamed & Pan-Fried Momos with Spicy Dip"
+                                className="w-full h-44 sm:h-56 object-cover"
+                                loading="lazy"
+                              />
+                              <div className="bg-[#181E19] text-[#FAB700] px-4 py-2 text-xs font-serif flex items-center justify-between">
+                                <span className="font-bold tracking-wide">Authentic Himalayan Momos • Served with Fiery Chutney & Dip</span>
+                                <span className="text-[10px] bg-[#CE182C] text-white font-mono px-2 py-0.5 rounded font-bold">FRESHLY STEAMED</span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Clean Editorial Typographic Listing */
+                          <div className="heritage-menu-container">
+                            {/* Table Header */}
+                            <div className="heritage-table-header">
+                              <span>ITEM</span>
+                              {hasAnyHalfFull ? (
+                                <div className="flex items-center gap-3 sm:gap-6 pr-1">
+                                  <span className="w-16 sm:w-20 text-center">{isRolls ? '2 PCS' : 'HALF'}</span>
+                                  <span className="w-16 sm:w-20 text-center">{isRolls ? '4 PCS' : 'FULL'}</span>
+                                </div>
+                              ) : (
+                                <span className="pr-3">PRICE</span>
+                              )}
+                            </div>
+
+                            {/* Dish Rows */}
+                            <div className="divide-y divide-black/5">
+                              {subcat.items.map((item) => {
+                                const pricing = parseItemPricing(item);
+                                const hasHalfFull = Boolean(item.halfPrice && item.fullPrice);
 
                                 return (
-                                  <tr 
-                                    key={item.id}
-                                    className={idx % 2 === 0 ? 'bg-white hover:bg-amber-50/40' : 'bg-[#FFFDF9] hover:bg-amber-50/40'}
-                                  >
-                                    <td className="py-2 px-2.5 sm:px-4 font-bold text-[#1F2923]">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#FAB700] overflow-hidden shrink-0 bg-white shadow-xs">
-                                          <img
-                                            src={thumb}
-                                            alt={item.name}
-                                            className="w-full h-full object-cover scale-110"
-                                            loading="lazy"
-                                          />
+                                  <div key={item.id} className="heritage-dish-row">
+                                    {/* Left: Indicator & Dish Name */}
+                                    <div className="flex items-baseline gap-2 min-w-0 flex-1 mr-2">
+                                      <DietIndicator type={item.dietType} compact className="shrink-0 self-center" />
+                                      <div className="min-w-0">
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          <span className="font-serif font-bold text-xs sm:text-sm text-[#181E19] leading-tight">
+                                            {item.name}
+                                          </span>
+                                          {item.isBestseller && (
+                                            <span className="shrink-0 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-[#CE182C] text-white">
+                                              Special
+                                            </span>
+                                          )}
                                         </div>
-                                        <div className="min-w-0">
-                                          <div className="flex items-center gap-1 font-serif text-xs sm:text-sm text-[#181E19]">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
-                                            <span className="truncate">{item.name}</span>
-                                          </div>
-                                        </div>
+                                        {pricing.cleanDescription && (
+                                          <p className="text-[10px] sm:text-[11px] text-[#55635C] line-clamp-1 leading-normal font-sans mt-0.5">
+                                            {pricing.cleanDescription}
+                                          </p>
+                                        )}
                                       </div>
-                                    </td>
+                                    </div>
 
-                                    {/* Veg Column */}
-                                    <td className="py-2 px-1.5 sm:px-2 text-center border-l border-black/5">
-                                      <button
-                                        type="button"
-                                        onClick={() => onAddToCart && onAddToCart(item, `₹${vegPrice}`, 'Veg (6 Pcs)')}
-                                        className="heritage-matrix-btn heritage-matrix-btn-veg cursor-pointer text-[11px] sm:text-xs py-1 px-2 w-full justify-center"
-                                        title={`Add Veg ${item.name}`}
-                                      >
-                                        <span>₹{vegPrice}</span>
-                                        {isPremium && <Plus size={10} />}
-                                      </button>
-                                    </td>
-
-                                    {/* Paneer Column */}
-                                    <td className="py-2 px-1.5 sm:px-2 text-center border-l border-black/5">
-                                      <button
-                                        type="button"
-                                        onClick={() => onAddToCart && onAddToCart(item, `₹${panPrice}`, 'Paneer (6 Pcs)')}
-                                        className="heritage-matrix-btn heritage-matrix-btn-paneer cursor-pointer text-[11px] sm:text-xs py-1 px-2 w-full justify-center"
-                                        title={`Add Paneer ${item.name}`}
-                                      >
-                                        <span>₹{panPrice}</span>
-                                        {isPremium && <Plus size={10} />}
-                                      </button>
-                                    </td>
-
-                                    {/* Corn N Cheese Column */}
-                                    <td className="py-2 px-1.5 sm:px-2 text-center border-l border-black/5">
-                                      <button
-                                        type="button"
-                                        onClick={() => onAddToCart && onAddToCart(item, `₹${chzPrice}`, 'Corn N Cheese (6 Pcs)')}
-                                        className="heritage-matrix-btn heritage-matrix-btn-cheese cursor-pointer text-[11px] sm:text-xs py-1 px-2 w-full justify-center"
-                                        title={`Add Corn N Cheese ${item.name}`}
-                                      >
-                                        <span>₹{chzPrice}</span>
-                                        {isPremium && <Plus size={10} />}
-                                      </button>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* Momo Platter Showcase Banner (Mirroring PDF Page 10 Bottom Plate) */}
-                        <div className="rounded-2xl overflow-hidden border-2 border-[#FAB700] shadow-md bg-white">
-                          <img
-                            src="/uploads/mannat/assets/dish_steamed_momos.webp"
-                            alt="Freshly Steamed & Pan-Fried Momos with Spicy Dip"
-                            className="w-full h-44 sm:h-56 object-cover"
-                            loading="lazy"
-                          />
-                          <div className="bg-[#181E19] text-[#FAB700] px-4 py-2 text-xs font-serif flex items-center justify-between">
-                            <span className="font-bold tracking-wide">Authentic Himalayan Momos • Served with Fiery Chutney & Dip</span>
-                            <span className="text-[10px] bg-[#CE182C] text-white font-mono px-2 py-0.5 rounded font-bold">FRESHLY STEAMED</span>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      /* ─────────────────────────────────────────────────────────
-                          STANDARD 2-COLUMN LUXURY DHABA / ARTBOARD GRID
-                          ───────────────────────────────────────────────────────── */
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                        {subcat.items.map((item) => {
-                          const pricing = parseItemPricing(item);
-                          const thumb = getDishImage(item, subcat.name);
-                          const hasHalfFull = Boolean(item.halfPrice && item.fullPrice);
-
-                          return (
-                            <article
-                              key={item.id}
-                              className="p-3 sm:p-3.5 rounded-2xl bg-white hover:bg-[#FFFDF9] transition-all duration-200 border border-[#FAB700]/30 hover:border-[#CE182C]/40 shadow-xs hover:shadow-md flex items-center justify-between gap-3"
-                            >
-                              {/* Left: Food Cutout Thumbnail */}
-                              <div className="heritage-dish-thumb shrink-0">
-                                <img
-                                  src={thumb}
-                                  alt={item.name}
-                                  className="w-full h-full object-cover scale-105"
-                                  loading="lazy"
-                                />
-                              </div>
-
-                              {/* Middle & Right Content */}
-                              <div className="min-w-0 flex-1 space-y-1">
-                                {/* Dish Header line with Dotted Leader */}
-                                <div className="flex items-baseline justify-between gap-1">
-                                  <div className="flex items-center gap-1.5 min-w-0">
-                                    <DietIndicator type={item.dietType} compact className="shrink-0" />
-                                    <h3
-                                      className="font-serif font-bold text-sm text-[#181E19] leading-snug truncate"
-                                      title={item.name}
-                                    >
-                                      {item.name}
-                                    </h3>
-                                    {item.isBestseller && (
-                                      <span className="shrink-0 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-[#CE182C] text-white">
-                                        Special
-                                      </span>
+                                    {/* Right: Tabular Pricing & Ordering Controls */}
+                                    {hasHalfFull ? (
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <button
+                                          type="button"
+                                          onClick={() => onAddToCart && onAddToCart(item, `₹${item.halfPrice}`, isRolls ? '2 Pcs' : 'Half')}
+                                          className="heritage-portion-btn-half px-2 py-1 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer active:scale-95 w-16 sm:w-20"
+                                          title={`Add ${isRolls ? '2 Pcs' : 'Half'} ${item.name}`}
+                                        >
+                                          <span className="font-mono font-bold">₹{item.halfPrice}</span>
+                                          {isPremium && <Plus size={10} className="shrink-0" />}
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => onAddToCart && onAddToCart(item, `₹${item.fullPrice}`, isRolls ? '4 Pcs' : 'Full')}
+                                          className="heritage-portion-btn-full px-2 py-1 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer active:scale-95 w-16 sm:w-20"
+                                          title={`Add ${isRolls ? '4 Pcs' : 'Full'} ${item.name}`}
+                                        >
+                                          <span className="font-mono font-bold">₹{item.fullPrice}</span>
+                                          {isPremium && <Plus size={10} />}
+                                        </button>
+                                      </div>
+                                    ) : pricing.hasVariants ? (
+                                      <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
+                                        {pricing.variants.map((v) => (
+                                          <button
+                                            key={v.name}
+                                            type="button"
+                                            onClick={() => onAddToCart && onAddToCart(item, `₹${v.price}`, v.name)}
+                                            className="heritage-portion-btn-half px-2 py-0.5 rounded-md text-[11px] flex items-center gap-1 cursor-pointer active:scale-95"
+                                            title={`Add ${v.name} ${item.name}`}
+                                          >
+                                            <span className="text-[10px] text-[#CE182C] font-semibold">{v.name}:</span>
+                                            <span className="font-mono font-bold">₹{v.price}</span>
+                                            {isPremium && <Plus size={10} />}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <span className="font-mono font-black text-xs sm:text-sm text-[#CE182C]">
+                                          ₹{item.price}
+                                        </span>
+                                        {isPremium && (
+                                          <button
+                                            type="button"
+                                            onClick={() => onAddToCart && onAddToCart(item, `₹${item.price}`)}
+                                            className="heritage-portion-btn-full px-2.5 py-1 rounded-lg text-xs flex items-center gap-1 cursor-pointer active:scale-95"
+                                            title={`Add ${item.name}`}
+                                          >
+                                            <span>ADD</span>
+                                            <Plus size={10} />
+                                          </button>
+                                        )}
+                                      </div>
                                     )}
                                   </div>
-
-                                  {/* Dotted line & single price (if no portions) */}
-                                  {!hasHalfFull && !pricing.hasVariants && (
-                                    <div className="flex items-center gap-1 shrink-0">
-                                      <span className="heritage-leader-line hidden sm:inline-block" />
-                                      <span className="font-mono font-black text-sm text-[#CE182C]">
-                                        ₹{item.price}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Description if present */}
-                                {pricing.cleanDescription && (
-                                  <p className="text-[11px] text-[#55635C] line-clamp-1 leading-normal font-sans">
-                                    {pricing.cleanDescription}
-                                  </p>
-                                )}
-
-                                {/* ───────────────────────────────────────────────────
-                                    PORTION CONTROLS (Half/Full OR Variants OR Single ADD)
-                                    ─────────────────────────────────────────────────── */}
-                                {hasHalfFull ? (
-                                  <div className="flex items-center gap-2 pt-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => onAddToCart && onAddToCart(item, `₹${item.halfPrice}`, 'Half')}
-                                      className="heritage-portion-btn-half px-2.5 py-1 rounded-lg text-xs flex items-center gap-1 cursor-pointer active:scale-95"
-                                      title={`Add Half ${item.name}`}
-                                    >
-                                      <span className="text-[10px] uppercase font-bold text-[#CE182C]">Half:</span>
-                                      <span className="font-mono font-bold text-[#CE182C]">₹{item.halfPrice}</span>
-                                      {isPremium && <Plus size={11} className="text-[#CE182C]" />}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => onAddToCart && onAddToCart(item, `₹${item.fullPrice}`, 'Full')}
-                                      className="heritage-portion-btn-full px-2.5 py-1 rounded-lg text-xs flex items-center gap-1 cursor-pointer active:scale-95"
-                                      title={`Add Full ${item.name}`}
-                                    >
-                                      <span className="text-[10px] uppercase font-bold text-white/90">Full:</span>
-                                      <span className="font-mono font-bold text-white">₹{item.fullPrice}</span>
-                                      {isPremium && <Plus size={11} className="text-white" />}
-                                    </button>
-                                  </div>
-                                ) : pricing.hasVariants ? (
-                                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                                    {pricing.variants.map((v) => (
-                                      <button
-                                        key={v.name}
-                                        type="button"
-                                        onClick={() => onAddToCart && onAddToCart(item, `₹${v.price}`, v.name)}
-                                        className="heritage-portion-btn-half px-2 py-0.5 rounded-md text-[11px] flex items-center gap-1 cursor-pointer active:scale-95"
-                                        title={`Add ${v.name} ${item.name}`}
-                                      >
-                                        <span>{v.name}: ₹{v.price}</span>
-                                        {isPremium && <Plus size={10} />}
-                                      </button>
-                                    ))}
-                                  </div>
-                                ) : isPremium ? (
-                                  <div className="flex items-center justify-end pt-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => onAddToCart && onAddToCart(item, `₹${item.price}`)}
-                                      className="heritage-portion-btn-full px-3 py-1 rounded-lg text-xs flex items-center gap-1 cursor-pointer active:scale-95"
-                                    >
-                                      <span>ADD</span>
-                                      <Plus size={11} />
-                                    </button>
-                                  </div>
-                                ) : null}
-                              </div>
-                            </article>
-                          );
-                        })}
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
             </section>
           );
         })}
@@ -798,43 +873,35 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
               <span className="heritage-subcat-line" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-              {unassignedCategories.flatMap((c) => c.items).map((item) => (
-                <article
-                  key={item.id}
-                  className="p-3 sm:p-3.5 rounded-2xl bg-white hover:bg-[#FFFDF9] transition-all duration-200 border border-[#FAB700]/30 hover:border-[#CE182C]/40 shadow-xs flex items-center justify-between gap-3"
-                >
-                  <div className="heritage-dish-thumb shrink-0">
-                    <img
-                      src={getDishImage(item, 'special')}
-                      alt={item.name}
-                      className="w-full h-full object-cover scale-105"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex items-baseline justify-between gap-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <DietIndicator type={item.dietType} compact className="shrink-0" />
-                        <h3 className="font-serif font-bold text-sm text-[#181E19] truncate">{item.name}</h3>
-                      </div>
-                      <span className="font-mono font-black text-sm text-[#CE182C]">₹{item.price}</span>
+            <div className="heritage-menu-container">
+              <div className="heritage-table-header">
+                <span>ITEM</span>
+                <span className="pr-3">PRICE</span>
+              </div>
+              <div className="divide-y divide-black/5">
+                {unassignedCategories.flatMap((c) => c.items).map((item) => (
+                  <div key={item.id} className="heritage-dish-row">
+                    <div className="flex items-baseline gap-2 min-w-0 flex-1 mr-2">
+                      <DietIndicator type={item.dietType} compact className="shrink-0 self-center" />
+                      <span className="font-serif font-bold text-xs sm:text-sm text-[#181E19] truncate">{item.name}</span>
                     </div>
-                    {isPremium && (
-                      <div className="flex justify-end pt-1">
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="font-mono font-black text-xs sm:text-sm text-[#CE182C]">₹{item.price}</span>
+                      {isPremium && (
                         <button
                           type="button"
                           onClick={() => onAddToCart && onAddToCart(item, `₹${item.price}`)}
-                          className="heritage-portion-btn-full px-3 py-1 rounded-lg text-xs flex items-center gap-1 cursor-pointer active:scale-95"
+                          className="heritage-portion-btn-full px-2.5 py-1 rounded-lg text-xs flex items-center gap-1 cursor-pointer active:scale-95"
+                          title={`Add ${item.name}`}
                         >
                           <span>ADD</span>
-                          <Plus size={11} />
+                          <Plus size={10} />
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </article>
-              ))}
+                ))}
+              </div>
             </div>
           </section>
         )}

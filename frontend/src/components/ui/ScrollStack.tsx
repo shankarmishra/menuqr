@@ -84,17 +84,17 @@ export const ScrollStackItem = ({ children, itemClassName = '', style }: ScrollS
 const ScrollStack = ({
   children,
   className = '',
-  itemDistance = 100,
-  itemStackDistance = 24,
-  stackPosition = '15%',
-  itemScale = 0.05,
-  baseScale = 0.8,
-  dimAmount = 0.2,
+  itemDistance = 120,
+  itemStackDistance = 8,
+  stackPosition = '92px',
+  itemScale = 0.025,
+  baseScale = 0.88,
+  dimAmount = 0.14,
   blurAmount = 0,
   tiltAmount = 0,
   rotationAmount = 0,
-  holdDistance = 200,
-  smoothScroll = true,
+  holdDistance = 220,
+  smoothScroll = false,
   snap = false,
   useWindowScroll = false,
   onStackComplete,
@@ -193,11 +193,10 @@ const ScrollStack = ({
       const stackTop = resolveOffset(settings.stackPosition, viewHeight);
       const offset = settings.itemStackDistance;
       const heights = slots.map((slot) => slot.offsetHeight);
-      const lastPin = stackTop + (slots.length - 1) * offset;
       const padTop = windowed ? 0 : stackTop;
       const endHeight =
         settings.holdDistance +
-        (windowed ? 0 : Math.max(0, viewHeight - lastPin - (heights[heights.length - 1] || 0)));
+        (windowed ? 0 : Math.max(0, viewHeight - stackTop - (heights[heights.length - 1] || 0)));
 
       write('padTop', padTop, (value) => {
         inner.style.paddingTop = `${value}px`;
@@ -212,10 +211,10 @@ const ScrollStack = ({
       const points: number[] = [];
       for (let i = 0; i < slots.length; i++) {
         slotDocTops.push(flow);
-        points.push(flow - stackTop - i * offset);
+        points.push(flow - stackTop);
         flow += (heights[i] || 0) + settings.itemDistance;
       }
-      const reach = Math.max(40, ((heights[0] || 0) + settings.itemDistance - offset) / 2);
+      const reach = Math.max(40, ((heights[0] || 0) + settings.itemDistance) / 2);
 
       return {
         viewHeight,
@@ -244,17 +243,17 @@ const ScrollStack = ({
       }
       if (!layoutCache) return;
 
-      const { viewTop, stackTop, offset, heights, slotDocTops } = layoutCache;
+      const { viewTop, stackTop, heights, slotDocTops } = layoutCache;
       const scrollY = readScroll();
 
       const depths = slots.map(() => 0);
       let lastCover = 0;
       for (let j = 1; j < slots.length; j++) {
-        const pinBefore = viewTop + stackTop + (j - 1) * offset;
+        const pinBefore = viewTop + stackTop;
         const start = pinBefore + (heights[j - 1] || 0);
-        const span = Math.max(1, start - pinBefore - offset);
+        const span = Math.max(1, (heights[j - 1] || 0) * 0.85);
         
-        const pinCurrent = viewTop + stackTop + j * offset;
+        const pinCurrent = viewTop + stackTop;
         const unpinnedTop = (slotDocTops[j] || 0) - scrollY;
         const topJ = Math.max(pinCurrent, unpinnedTop);
 
@@ -298,6 +297,7 @@ const ScrollStack = ({
           settings.baseScale,
           1 - Math.min(depth * settings.itemScale, 1 - settings.baseScale)
         );
+        const upwardShift = -Math.min(depth, 3) * (settings.itemStackDistance > 0 ? Math.min(settings.itemStackDistance, 8) : 0);
         const tilt = -lean * settings.tiltAmount;
         const turn = lean * settings.rotationAmount * (i % 2 ? -1 : 1);
         const blur = depth * settings.blurAmount;
@@ -307,8 +307,8 @@ const ScrollStack = ({
           depth < 0.0005
             ? ''
             : has3D
-              ? `perspective(1200px) rotateX(${tilt.toFixed(2)}deg) rotate(${turn.toFixed(2)}deg) scale(${scale.toFixed(4)})`
-              : `scale(${scale.toFixed(4)})`;
+              ? `perspective(1200px) translateY(${upwardShift.toFixed(1)}px) rotateX(${tilt.toFixed(2)}deg) rotate(${turn.toFixed(2)}deg) scale(${scale.toFixed(4)})`
+              : `translateY(${upwardShift.toFixed(1)}px) scale(${scale.toFixed(4)})`;
 
         write(`transform${i}`, transform, (value) => {
           card.style.transform = value;
@@ -454,18 +454,16 @@ const ScrollStack = ({
     >
       <div ref={innerRef} className="scroll-stack__inner">
         {items.map((child, index) => {
-          const gap = itemDistance - (items.length - index) * itemStackDistance;
           return (
             <Fragment key={isValidElement(child) ? (child.key ?? index) : index}>
               {index > 0 && (
-                <div aria-hidden="true" style={{ height: Math.max(0, gap), marginTop: Math.min(0, gap) }} />
+                <div aria-hidden="true" style={{ height: Math.max(0, itemDistance) }} />
               )}
               <div
                 data-stack-slot=""
                 className="scroll-stack__slot"
                 style={{
-                  top: `calc(${toLength(stackPosition)} + ${index * itemStackDistance}px)`,
-                  marginBottom: (items.length - 1 - index) * itemStackDistance,
+                  top: toLength(stackPosition),
                   zIndex: index + 1,
                 }}
               >

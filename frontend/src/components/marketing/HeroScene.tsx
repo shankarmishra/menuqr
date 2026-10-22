@@ -82,7 +82,7 @@ export default function HeroScene() {
         }`}
       >
         <PremiumIPhoneMockup
-          className="w-[210px] sm:w-[235px] md:w-[255px] lg:w-[270px] xl:w-[280px]"
+          className="w-[210px] sm:w-[230px] md:w-[245px] lg:w-[258px] xl:w-[268px]"
           statusBarTheme="light"
           statusBarMode="overlay"
           badgeText="Live Digital Menu"

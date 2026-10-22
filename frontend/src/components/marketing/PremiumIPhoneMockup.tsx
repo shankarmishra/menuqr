@@ -42,10 +42,12 @@ export default function PremiumIPhoneMockup({
 }: PhoneMockupProps) {
   const isLightText = statusBarTheme === 'light';
   const resolvedHomeTheme = homeIndicatorTheme || (isLightText ? 'light' : 'dark');
+  const hasCustomWidth = /\bw-\S+/.test(className);
+  const widthClasses = hasCustomWidth ? '' : 'w-[260px] sm:w-[290px] md:w-[310px]';
 
   return (
     <div
-      className={`relative w-[260px] sm:w-[290px] md:w-[310px] aspect-[393/852] rounded-[48px] sm:rounded-[52px] bg-gradient-to-b from-[#343B37] via-[#1C221F] to-[#0E1210] p-[3px] shadow-[0_28px_70px_-10px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.14)] select-none box-border ${className}`}
+      className={`relative ${widthClasses} aspect-[393/852] rounded-[48px] sm:rounded-[52px] bg-gradient-to-b from-[#343B37] via-[#1C221F] to-[#0E1210] p-[3px] shadow-[0_28px_70px_-10px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.14)] select-none box-border ${className}`}
       style={{ boxSizing: 'border-box', isolation: 'isolate' }}
     >
       {/* Outer Titanium Edge Subtle Chamfer */}

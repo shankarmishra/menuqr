@@ -70,8 +70,8 @@ export default function PhysicalQRStand({
           />
 
           {/* Logo Mark */}
-          <div className={`flex items-center gap-1.5 ${isCompact ? 'mb-1' : 'mb-2 sm:mb-2.5'} relative z-10`}>
-            <MenusQRBrand size={isCompact ? 'xs' : 'sm'} />
+          <div className={`flex items-center gap-1.5 ${isCompact ? 'mb-1 scale-[0.72] origin-center' : 'mb-2 sm:mb-2.5'} relative z-10`}>
+            <MenusQRBrand size="sm" />
           </div>
 
           {/* Headline */}

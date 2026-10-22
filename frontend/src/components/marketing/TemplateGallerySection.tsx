@@ -127,16 +127,16 @@ export default function TemplateGallerySection() {
         <ScrollStack
           className="relative z-10 max-w-[1360px] mx-auto w-full px-4 sm:px-6 md:px-12"
           useWindowScroll={true}
-          itemDistance={isMobile ? 160 : 140}
-          itemStackDistance={isMobile ? 0 : 12}
-          stackPosition={isMobile ? '96px' : '100px'}
+          itemDistance={isMobile ? 120 : 140}
+          itemStackDistance={isMobile ? 0 : 8}
+          stackPosition={isMobile ? '72px' : '92px'}
           itemScale={isMobile ? 0.02 : 0.025}
-          baseScale={0.88}
+          baseScale={0.90}
           dimAmount={0.14}
           blurAmount={0}
           tiltAmount={0}
           rotationAmount={0}
-          holdDistance={260}
+          holdDistance={240}
           smoothScroll={false}
           snap={false}
         >
