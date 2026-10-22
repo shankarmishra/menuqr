@@ -530,7 +530,6 @@ export async function processOrderPaymentAndProvision({
 
   // ── 9. Send account and payment emails ───────────────────────────────
   const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
-  const clearPassword = (order.metadata || {}).clear_password;
 
   const subscriptionResult = await pool.query(
     'SELECT expires_at FROM subscriptions WHERE tenant_id = $1',
@@ -544,7 +543,6 @@ export async function processOrderPaymentAndProvision({
       businessName: order.business_name,
       plan: planMeta.label || order.plan_id.toUpperCase(),
       activationToken: activationTokenRaw,
-      password: clearPassword,
     }),
     sendPaymentSuccessEmail({
       email: order.customer_email,
@@ -911,7 +909,7 @@ export default async function purchaseRoutes(request, response, url) {
     if (input.password) {
       const { hashPassword } = await import('../auth.js');
       const pwdHash = await hashPassword(input.password);
-      metadataJSON = JSON.stringify({ password_hash: pwdHash, clear_password: input.password });
+      metadataJSON = JSON.stringify({ password_hash: pwdHash });
     }
 
     if (isReuse) {
@@ -977,8 +975,9 @@ export default async function purchaseRoutes(request, response, url) {
     if (!res.rows[0]) throw apiError(404, 'Order not found.');
     const order = res.rows[0];
     const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
+    const { metadata, lock_token, provisioning_error, ...safeOrder } = order;
     sendJson(response, 200, {
-      ...order,
+      ...safeOrder,
       planLabel: planMeta.label,
       planFeatures: planMeta.features,
       selectedAddons: order.selected_addons || [],
