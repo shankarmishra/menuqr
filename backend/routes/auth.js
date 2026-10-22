@@ -87,13 +87,16 @@ export default async function authRoutes(request, response, url) {
   // RESEND WEBHOOK ENDPOINT
   if (request.method === 'POST' && url.pathname === '/api/webhooks/resend') {
     const webhookSecret = (process.env.RESEND_WEBHOOK_SECRET || '').trim();
-    if (webhookSecret) {
-      const authHeader = request.headers['authorization'] || '';
-      const resendSig = request.headers['x-resend-signature'] || request.headers['svix-signature'] || request.headers['x-webhook-secret'] || '';
-      const providedSecret = authHeader.replace(/^Bearer\s+/i, '').trim() || resendSig.trim();
-      if (!providedSecret || providedSecret !== webhookSecret) {
-        throw apiError(401, 'Invalid or missing webhook signature secret.');
-      }
+    if (!webhookSecret) {
+      console.error('[webhook] Server misconfiguration: RESEND_WEBHOOK_SECRET is missing.');
+      throw apiError(500, 'Resend webhook secret is not configured on the server.');
+    }
+
+    const authHeader = request.headers['authorization'] || '';
+    const resendSig = request.headers['x-resend-signature'] || request.headers['svix-signature'] || request.headers['x-webhook-secret'] || '';
+    const providedSecret = authHeader.replace(/^Bearer\s+/i, '').trim() || resendSig.trim();
+    if (!providedSecret || providedSecret !== webhookSecret) {
+      throw apiError(401, 'Invalid or missing webhook signature secret.');
     }
 
     const input = await readJson(request);
