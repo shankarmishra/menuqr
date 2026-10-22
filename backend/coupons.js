@@ -219,11 +219,29 @@ export async function validateAndReserveCoupon({ code, planId, orderId }) {
 /**
  * Authoritatively redeem coupon on successful payment
  */
-export async function redeemCouponForOrder({ orderId, client: txClient = null }) {
+export async function redeemCouponForOrder({ orderId, couponCode = null, client: txClient = null }) {
   const executor = txClient || pool;
+  let code = couponCode;
+  if (!code) {
+    const orderRes = await executor.query('SELECT coupon_code FROM orders WHERE id = $1', [orderId]);
+    code = orderRes.rows[0]?.coupon_code || null;
+  }
+
+  if (code) {
+    const res = await executor.query(
+      `UPDATE coupons
+       SET status = 'REDEEMED', redeemed_order_id = $1, redeemed_at = NOW(), reserved_order_id = NULL, updated_at = NOW()
+       WHERE (reserved_order_id = $1 OR code = $2)
+         AND status IN ('RESERVED', 'AVAILABLE')
+       RETURNING *`,
+      [orderId, code]
+    );
+    return res.rows[0] || null;
+  }
+
   const res = await executor.query(
     `UPDATE coupons
-     SET status = 'REDEEMED', redeemed_order_id = $1, redeemed_at = NOW(), updated_at = NOW()
+     SET status = 'REDEEMED', redeemed_order_id = $1, redeemed_at = NOW(), reserved_order_id = NULL, updated_at = NOW()
      WHERE reserved_order_id = $1 AND status = 'RESERVED'
      RETURNING *`,
     [orderId]

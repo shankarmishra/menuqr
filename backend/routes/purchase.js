@@ -428,7 +428,7 @@ export async function processOrderPaymentAndProvision({
       // Redeem coupon if attached
       if (order.coupon_code) {
         const { redeemCouponForOrder } = await import('../coupons.js');
-        await redeemCouponForOrder({ orderId, client });
+        await redeemCouponForOrder({ orderId, couponCode: order.coupon_code, client });
       }
 
       // ── 3. Create subscription ──────────────────────────────────────────
