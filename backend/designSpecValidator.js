@@ -7,7 +7,7 @@ export function isValidColor(val) {
   return SAFE_COLOR_REGEX.test(val.trim());
 }
 
-const ALLOWED_COMPOSITIONS = ['editorial', 'image-showcase', 'compact-bistro'];
+const ALLOWED_COMPOSITIONS = ['editorial', 'image-showcase', 'compact-bistro', 'heritage-artboard'];
 const ALLOWED_TYPOGRAPHY_STYLES = ['serif', 'sans', 'display', 'editorial'];
 const ALLOWED_WEIGHTS = ['light', 'normal', 'bold', 'black'];
 const ALLOWED_HEADER_STYLES = ['centered-crest', 'split-masthead', 'minimal-stacked', 'banner-hero'];

@@ -7,6 +7,7 @@ import type { DesignSpecification } from './types';
 import { EditorialFineDiningComposition } from './compositions/EditorialFineDiningComposition';
 import { ModernImageLedComposition } from './compositions/ModernImageLedComposition';
 import { CompactBistroComposition } from './compositions/CompactBistroComposition';
+import { HeritageArtboardComposition } from './compositions/HeritageArtboardComposition';
 
 export interface DynamicDesignEngineProps extends LayoutProps {
   spec: DesignSpecification;
@@ -41,9 +42,18 @@ export const DynamicDesignEngine: React.FC<DynamicDesignEngineProps> = (props) =
         backgroundImage: pattern !== 'none' ? pattern : undefined,
       }}
     >
-      {spec.composition === 'editorial' && <EditorialFineDiningComposition {...props} />}
-      {spec.composition === 'image-showcase' && <ModernImageLedComposition {...props} />}
-      {spec.composition === 'compact-bistro' && <CompactBistroComposition {...props} />}
+      {(spec.composition === 'heritage-artboard' || spec.themeId === 'pdf-bespoke-theme') && (
+        <HeritageArtboardComposition {...props} />
+      )}
+      {spec.composition === 'editorial' && spec.themeId !== 'pdf-bespoke-theme' && (
+        <EditorialFineDiningComposition {...props} />
+      )}
+      {spec.composition === 'image-showcase' && spec.themeId !== 'pdf-bespoke-theme' && (
+        <ModernImageLedComposition {...props} />
+      )}
+      {spec.composition === 'compact-bistro' && spec.themeId !== 'pdf-bespoke-theme' && (
+        <CompactBistroComposition {...props} />
+      )}
     </div>
   );
 };

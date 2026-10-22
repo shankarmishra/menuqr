@@ -2,7 +2,7 @@
 
 import type { LayoutProps } from '../templates/types';
 
-export type DesignCompositionStrategy = 'editorial' | 'image-showcase' | 'compact-bistro';
+export type DesignCompositionStrategy = 'editorial' | 'image-showcase' | 'compact-bistro' | 'heritage-artboard';
 
 export type RestaurantPositioning = 'fine-dining' | 'casual' | 'contemporary' | 'rustic' | 'minimalist';
 
@@ -95,7 +95,7 @@ export function validateDesignSpecification(raw: unknown): DesignSpecification |
 
   if (data.version !== '1.0') return null;
 
-  const validCompositions: DesignCompositionStrategy[] = ['editorial', 'image-showcase', 'compact-bistro'];
+  const validCompositions: DesignCompositionStrategy[] = ['editorial', 'image-showcase', 'compact-bistro', 'heritage-artboard'];
   if (!data.composition || !validCompositions.includes(data.composition)) {
     return null;
   }

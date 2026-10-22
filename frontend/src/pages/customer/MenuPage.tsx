@@ -10,7 +10,6 @@ import {
   Star, 
   ExternalLink,
   UtensilsCrossed,
-  BookOpen,
   Bike,
   Phone,
   ChevronRight,
@@ -30,7 +29,6 @@ import {
 import { useToast } from '../../components/feedback/ToastProvider';
 import { menuTemplates } from '../../data/menuTemplates';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
-import { PdfBookletViewer, type MenuPageItem } from '../../components/menu-builder/PdfBookletViewer';
 import { SEO } from '../../seo/SEO';
 import './MenuPage.css';
 
@@ -71,14 +69,7 @@ export default function MenuPage() {
 
   const currentMenuResult = menuResult?.slug === slug ? menuResult : undefined;
   const client = currentMenuResult?.client;
-  const menuPages: MenuPageItem[] = (client?.accentConfiguration as { menuPages?: MenuPageItem[] } | undefined)?.menuPages || [];
-  const [activeMenuTab, setActiveMenuTab] = useState<'booklet' | 'interactive'>('booklet');
 
-  useEffect(() => {
-    if (menuPages.length > 0) {
-      setActiveMenuTab('booklet');
-    }
-  }, [menuPages.length]);
   const template = menuTemplates.find((option) => option.id === client?.templateId) ?? menuTemplates[0];
   
   // Strict plan gating: Customer ordering is exclusive to highest plan (Premium)
@@ -411,47 +402,7 @@ export default function MenuPage() {
       </header>
 
       <main className="flex-1 pb-28">
-        {menuPages.length > 0 && (
-          <div className="flex items-center justify-center pt-3 pb-1 px-4">
-            <div className="inline-flex items-center p-1 rounded-2xl bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 shadow-sm">
-              <button
-                type="button"
-                onClick={() => setActiveMenuTab('booklet')}
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  activeMenuTab === 'booklet'
-                    ? 'bg-[#CE182C] text-white shadow-md'
-                    : 'text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                <BookOpen size={14} />
-                <span>Original PDF (17 Pages)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveMenuTab('interactive')}
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  activeMenuTab === 'interactive'
-                    ? 'bg-[#CE182C] text-white shadow-md'
-                    : 'text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                <UtensilsCrossed size={14} />
-                <span>Quick Order & Search</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {menuPages.length > 0 && activeMenuTab === 'booklet' ? (
-          <PdfBookletViewer
-            pages={menuPages}
-            restaurantName={client.businessName}
-            brandColor="#CE182C"
-            accentColor="#FAB700"
-            onOpenQuickOrder={() => setActiveMenuTab('interactive')}
-          />
-        ) : (
-          <MenuTemplateRenderer
+        <MenuTemplateRenderer
           templateId={client.templateId || 'royal-maharaja'}
           restaurant={{
             name: client.businessName,
@@ -468,7 +419,6 @@ export default function MenuPage() {
           isPremium={isPremium}
           accentConfiguration={client.accentConfiguration}
         />
-        )}
       </main>
 
       {/* Google Reviews Add-on Section */}
