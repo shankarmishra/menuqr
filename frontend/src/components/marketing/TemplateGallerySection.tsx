@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Sparkles } from 'lucide-react';
 import { menuTemplates, type MenuTemplate } from '../../data/menuTemplates';
 import { TemplateCard } from './template-gallery/TemplateCard';
@@ -48,6 +48,21 @@ export default function TemplateGallerySection() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handleCategoryChange = useCallback((cat: string) => {
+    setActiveCategory(cat);
+    const sectionEl = document.getElementById('templates');
+    if (sectionEl) {
+      const rect = sectionEl.getBoundingClientRect();
+      // If user has scrolled past the showcase header, align view back to the top of the gallery
+      if (rect.top < -80) {
+        window.scrollTo({
+          top: window.scrollY + rect.top + 80,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, []);
+
   const filteredTemplates = useMemo(() => {
     if (activeCategory === 'All') return signatureTemplates;
     return signatureTemplates.filter((t) =>
@@ -95,7 +110,7 @@ export default function TemplateGallerySection() {
               <button
                 key={cat}
                 type="button"
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => handleCategoryChange(cat)}
                 className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[13px] font-bold tracking-wide uppercase transition-all duration-300 cursor-pointer ${
                   activeCategory === cat
                     ? 'bg-menusqr-emerald text-[#FAF8F5] shadow-[0_8px_20px_-6px_rgba(6,79,67,0.35)] scale-105'
@@ -108,17 +123,16 @@ export default function TemplateGallerySection() {
           </div>
         </div>
 
-        {/* TEMPLATE SHOWCASE LIST: REACT BITS SCROLLSTACK */}
+        {/* TEMPLATE SHOWCASE LIST: STABLE HIGH-PERFORMANCE SCROLLSTACK */}
         <ScrollStack
-          key={`${activeCategory}-${isMobile ? 'mobile' : 'desktop'}`}
           className="relative z-10 max-w-[1360px] mx-auto w-full px-4 sm:px-6 md:px-12"
           useWindowScroll={true}
-          itemDistance={isMobile ? 180 : 130}
-          itemStackDistance={isMobile ? 16 : 28}
-          stackPosition={isMobile ? '76px' : '100px'}
-          itemScale={isMobile ? 0.025 : 0.035}
-          baseScale={0.82}
-          dimAmount={0.16}
+          itemDistance={isMobile ? 160 : 140}
+          itemStackDistance={isMobile ? 0 : 12}
+          stackPosition={isMobile ? '96px' : '100px'}
+          itemScale={isMobile ? 0.02 : 0.025}
+          baseScale={0.88}
+          dimAmount={0.14}
           blurAmount={0}
           tiltAmount={0}
           rotationAmount={0}

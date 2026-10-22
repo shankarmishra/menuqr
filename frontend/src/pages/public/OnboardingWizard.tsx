@@ -1,13 +1,13 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ArrowRight, ArrowLeft, Store, Palette, Utensils, Sparkles, Smartphone, Monitor, Upload, X, Image as ImageIcon, Plus, Trash2, Leaf } from 'lucide-react';
+import { Check, ArrowRight, ArrowLeft, Store, Palette, Utensils, Sparkles, Smartphone, Monitor, Upload, X, Image as ImageIcon, Plus, Trash2, Leaf, Edit3, CheckCircle2 } from 'lucide-react';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import ScannableQRCode from '../../components/marketing/ScannableQRCode';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import QRGenerationSequence from '../../components/qr-studio/QRGenerationSequence';
 import { menuTemplates } from '../../data/menuTemplates';
-import { createPermanentQr, getQr, getSubscription, saveOnboarding, type AppQrData } from '../app/appStore';
+import { createPermanentQr, getQr, getSubscription, getProfile, saveOnboarding, type AppQrData } from '../app/appStore';
 import { useToast } from '../../components/feedback/ToastProvider';
 import PdfMenuImportWizard from '../../components/menu-builder/PdfMenuImportWizard';
 
@@ -111,13 +111,38 @@ export default function OnboardingWizard() {
   const showToast = useToast();
   const [planId, setPlanId] = useState('PREMIUM');
   const [showPdfWizard, setShowPdfWizard] = useState(false);
+  const [isPreloaded, setIsPreloaded] = useState(false);
+  const [isEditingIdentity, setIsEditingIdentity] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   useEffect(() => {
-    getSubscription().then(sub => {
-      if (sub?.planId) {
-        setPlanId(sub.planId.toUpperCase());
+    Promise.allSettled([
+      getSubscription(),
+      getProfile()
+    ]).then(([subResult, profileResult]) => {
+      if (subResult.status === 'fulfilled' && subResult.value?.planId) {
+        setPlanId(subResult.value.planId.toUpperCase());
       }
-    }).catch(console.error);
+      if (profileResult.status === 'fulfilled' && profileResult.value) {
+        const p = profileResult.value;
+        if (p.businessName || p.phone || p.city || p.address) {
+          setRestaurantData((prev) => ({
+            ...prev,
+            name: p.businessName || prev.name,
+            tagline: p.tagline || prev.tagline,
+            phone: p.phone || prev.phone,
+            city: p.city || prev.city,
+            address: p.address || prev.address,
+            logoUrl: p.logoUrl || prev.logoUrl,
+          }));
+          setIsPreloaded(true);
+        }
+      }
+      setIsLoadingProfile(false);
+    }).catch((err) => {
+      console.error(err);
+      setIsLoadingProfile(false);
+    });
   }, []);
 
   const getSteps = () => {
@@ -151,7 +176,13 @@ export default function OnboardingWizard() {
     receptionDevice: 'none',
   });
 
-  const nextStep = () => setCurrentStepIdx((prev) => Math.min(prev + 1, steps.length - 1));
+  const nextStep = () => {
+    if (currentStep === 'identity' && !restaurantData.name.trim()) {
+      showToast('error', 'Please enter your restaurant or business name.');
+      return;
+    }
+    setCurrentStepIdx((prev) => Math.min(prev + 1, steps.length - 1));
+  };
   const prevStep = () => setCurrentStepIdx((prev) => Math.max(prev - 1, 0));
 
   const getStepTitle = (stepId: string) => {
@@ -293,7 +324,11 @@ export default function OnboardingWizard() {
                 <div className="space-y-2">
                   <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5"><Store size={14} /> Step 1</span>
                   <h2 className="text-2xl sm:text-3xl font-black text-white">Restaurant Identity</h2>
-                  <p className="text-xs sm:text-sm text-[#AAB7B2]">Enter basic restaurant details to customize your QR menu.</p>
+                  <p className="text-xs sm:text-sm text-[#AAB7B2]">
+                    {isPreloaded && !isEditingIdentity
+                      ? 'Your restaurant details are already saved from registration. Review below or proceed.'
+                      : 'Enter basic restaurant details to customize your QR menu.'}
+                  </p>
                 </div>
 
                 {/* PDF Fast-Track Banner */}
@@ -320,28 +355,109 @@ export default function OnboardingWizard() {
                     <Upload size={14} /> Upload Menu PDF
                   </button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-[#AAB7B2]">Restaurant / Business Name *</label>
-                    <input type="text" aria-label="Restaurant name" placeholder="e.g. Royal Punjab Dhaba" value={restaurantData.name} onChange={(e) => setRestaurantData({ ...restaurantData, name: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+
+                {/* Preloaded Summary Card (Auto-filled from checkout) */}
+                {isLoadingProfile ? (
+                  <div className="p-8 rounded-2xl bg-[#151C19] border border-white/10 flex items-center justify-center gap-3 text-sm text-[#AAB7B2]">
+                    <div className="w-5 h-5 border-2 border-[#E8783C] border-t-transparent rounded-full animate-spin" />
+                    <span>Loading your registration details...</span>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-[#AAB7B2]">Tagline / Subtitle</label>
-                    <input type="text" placeholder="e.g. Authentic Punjabi Cuisine Since 1998" value={restaurantData.tagline} onChange={(e) => setRestaurantData({ ...restaurantData, tagline: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                ) : isPreloaded && !isEditingIdentity ? (
+                  <div className="bg-[#151C19] border border-emerald-500/30 rounded-2xl p-5 sm:p-6 space-y-5 shadow-lg">
+                    <div className="flex items-center justify-between pb-4 border-b border-white/10 flex-wrap gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                          <CheckCircle2 size={16} />
+                        </span>
+                        <div>
+                          <p className="text-xs font-bold text-white">Auto-filled from your registration details</p>
+                          <p className="text-[11px] text-emerald-300/80">You don't need to re-enter anything. Edit if something changed or proceed directly.</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingIdentity(true)}
+                        className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors border border-white/10"
+                      >
+                        <Edit3 size={13} className="text-[#E8783C]" /> Edit Details
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                      <div className="bg-[#1D2723]/70 p-3.5 rounded-xl border border-white/5">
+                        <span className="text-[10px] font-mono text-[#AAB7B2] uppercase tracking-wider block mb-1">Restaurant / Business Name</span>
+                        <span className="font-bold text-white text-base flex items-center gap-1.5">
+                          <Store size={15} className="text-[#E8783C] shrink-0" />
+                          {restaurantData.name || 'Not provided'}
+                        </span>
+                      </div>
+                      <div className="bg-[#1D2723]/70 p-3.5 rounded-xl border border-white/5">
+                        <span className="text-[10px] font-mono text-[#AAB7B2] uppercase tracking-wider block mb-1">Phone Number</span>
+                        <span className="font-semibold text-white">
+                          {restaurantData.phone || <span className="text-white/40 italic">Not provided</span>}
+                        </span>
+                      </div>
+                      <div className="bg-[#1D2723]/70 p-3.5 rounded-xl border border-white/5">
+                        <span className="text-[10px] font-mono text-[#AAB7B2] uppercase tracking-wider block mb-1">City / Location</span>
+                        <span className="font-semibold text-white">
+                          {restaurantData.city || <span className="text-white/40 italic">Not provided</span>}
+                        </span>
+                      </div>
+                      <div className="bg-[#1D2723]/70 p-3.5 rounded-xl border border-white/5">
+                        <span className="text-[10px] font-mono text-[#AAB7B2] uppercase tracking-wider block mb-1">Full Address</span>
+                        <span className="font-semibold text-white">
+                          {restaurantData.address || <span className="text-white/40 italic">Not provided</span>}
+                        </span>
+                      </div>
+                      {restaurantData.tagline && (
+                        <div className="sm:col-span-2 bg-[#1D2723]/70 p-3.5 rounded-xl border border-white/5">
+                          <span className="text-[10px] font-mono text-[#AAB7B2] uppercase tracking-wider block mb-1">Tagline</span>
+                          <span className="text-white italic">"{restaurantData.tagline}"</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-[#AAB7B2]">Phone Number</label>
-                    <input type="tel" aria-label="Restaurant phone" placeholder="e.g. +91 98XXXXXXXX" value={restaurantData.phone} onChange={(e) => setRestaurantData({ ...restaurantData, phone: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                ) : (
+                  /* Editable Form Inputs */
+                  <div className="space-y-4">
+                    {isPreloaded && (
+                      <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span className="text-xs text-[#AAB7B2] flex items-center gap-1.5">
+                          <Edit3 size={12} className="text-[#E8783C]" /> Editing restaurant details
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsEditingIdentity(false)}
+                          className="text-xs text-[#E8783C] hover:underline font-semibold"
+                        >
+                          Keep Details / Done Editing &times;
+                        </button>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-semibold text-[#AAB7B2]">Restaurant / Business Name *</label>
+                        <input type="text" aria-label="Restaurant name" placeholder="e.g. Royal Punjab Dhaba" value={restaurantData.name} onChange={(e) => setRestaurantData({ ...restaurantData, name: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-semibold text-[#AAB7B2]">Tagline / Subtitle</label>
+                        <input type="text" placeholder="e.g. Authentic Punjabi Cuisine Since 1998" value={restaurantData.tagline} onChange={(e) => setRestaurantData({ ...restaurantData, tagline: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-semibold text-[#AAB7B2]">Phone Number</label>
+                        <input type="tel" aria-label="Restaurant phone" placeholder="e.g. +91 98XXXXXXXX" value={restaurantData.phone} onChange={(e) => setRestaurantData({ ...restaurantData, phone: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-semibold text-[#AAB7B2]">City / Location</label>
+                        <input type="text" aria-label="Restaurant city" placeholder="e.g. Mumbai" value={restaurantData.city} onChange={(e) => setRestaurantData({ ...restaurantData, city: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                      </div>
+                      <div className="sm:col-span-2 space-y-1.5">
+                        <label className="block text-xs font-semibold text-[#AAB7B2]">Full Address</label>
+                        <input type="text" aria-label="Restaurant address" placeholder="e.g. Shop 12, Main Street, Bandra West, Mumbai" value={restaurantData.address} onChange={(e) => setRestaurantData({ ...restaurantData, address: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-[#AAB7B2]">City / Location</label>
-                    <input type="text" aria-label="Restaurant city" placeholder="e.g. Mumbai" value={restaurantData.city} onChange={(e) => setRestaurantData({ ...restaurantData, city: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
-                  </div>
-                  <div className="sm:col-span-2 space-y-1.5">
-                    <label className="block text-xs font-semibold text-[#AAB7B2]">Full Address</label>
-                    <input type="text" aria-label="Restaurant address" placeholder="e.g. Shop 12, Main Street, Bandra West, Mumbai" value={restaurantData.address} onChange={(e) => setRestaurantData({ ...restaurantData, address: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
-                  </div>
-                </div>
+                )}
               </motion.div>
             )}
 
@@ -777,7 +893,7 @@ export default function OnboardingWizard() {
 
             {currentStepIdx < steps.length - 1 ? (
               <button onClick={nextStep} className="px-6 py-2.5 rounded-xl bg-[#E8783C] text-xs font-bold text-white hover:bg-[#f08b55] flex items-center gap-2 shadow-md transition-colors">
-                Continue <ArrowRight size={14} />
+                {currentStep === 'identity' && isPreloaded && !isEditingIdentity ? 'Confirm & Continue' : 'Continue'} <ArrowRight size={14} />
               </button>
             ) : (
               <button onClick={handleComplete} disabled={isSubmitting} className="px-7 py-3 rounded-xl bg-[#34B56A] text-xs font-bold text-white hover:bg-emerald-600 flex items-center gap-2 shadow-lg disabled:opacity-70 transition-colors">
