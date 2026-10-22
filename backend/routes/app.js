@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { resolveTenantAuthorization, requireEntitlement, withContentChange, getContentUsage } from '../authorization.js';
 import { detectColumnMappings, validateAndPreviewImport, executeImportTransaction } from '../menuImporter.js';
 import { invalidatePublicMenuCache } from './public.js';
+import { generateAiMenuDesign, isGeminiAvailable } from '../aiDesignService.js';
 
 function inputText(value, maxLength = 255) {
   if (value === undefined || value === null) return '';
@@ -183,8 +184,64 @@ export default async function appRoutes(request, response, url) {
       WHERE u.id = $1 AND c.id = $2
     `, [user.id, user.tenantId]);
     if (!res.rows[0]) throw apiError(404, 'Profile not found.');
+    invalidatePublicMenuCache(user.tenantId);
     sendJson(response, 200, res.rows[0]);
     return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/app/ai/status') {
+    requireEntitlement(authorization, 'templates', 'AI design features require an Intermediate or Premium plan.');
+    sendJson(response, 200, {
+      available: isGeminiAvailable(),
+      provider: isGeminiAvailable() ? 'gemini' : 'deterministic-fallback',
+      model: isGeminiAvailable() ? 'gemini-3.5-flash-lite' : null,
+      capabilities: {
+        multimodalReference: isGeminiAvailable(),
+        designGeneration: true,
+        revisions: true,
+      },
+    });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/ai/generate-menu-design') {
+    requireEntitlement(authorization, 'templates', 'AI design features require an Intermediate or Premium plan.');
+    const body = await readJson(request);
+    const { profile, brief, referenceImage, previousSpec, isRevision } = body || {};
+
+    if (!profile || typeof profile !== 'object') {
+      throw apiError(400, 'A valid restaurant profile is required for AI design generation.');
+    }
+
+    if (!profile.businessName || !profile.cuisine) {
+      throw apiError(400, 'Restaurant name and cuisine are required.');
+    }
+
+    try {
+      const result = await generateAiMenuDesign({
+        tenantId: user.tenantId,
+        profile,
+        brief: inputText(brief, 2000),
+        referenceImage: typeof referenceImage === 'string' ? referenceImage : null,
+        previousSpec,
+        isRevision: Boolean(isRevision),
+      });
+
+      sendJson(response, 200, {
+        success: true,
+        spec: result.spec,
+        provider: result.provider,
+        model: result.model || null,
+        warning: result.warning || null,
+        message: result.message || null,
+      });
+      return true;
+    } catch (err) {
+      if (err.message && err.message.includes('Rate limit')) {
+        throw apiError(429, err.message);
+      }
+      throw apiError(500, err.message || 'Failed to generate AI menu design.');
+    }
   }
 
   if (request.method === 'GET' && url.pathname === '/api/app/dashboard') {
@@ -402,6 +459,7 @@ export default async function appRoutes(request, response, url) {
       input.accentConfiguration
     ]);
     
+    invalidatePublicMenuCache(user.tenantId);
     sendJson(response, 200, res.rows[0]);
     return true;
   }
@@ -1087,7 +1145,7 @@ export default async function appRoutes(request, response, url) {
 
   // Customer Orders (Reception Dashboard)
   if (request.method === 'GET' && url.pathname === '/api/app/orders') {
-    // Phase 2 Rule 3: Preserve restaurant access to existing orders even if subscription expired or downgraded
+    requireEntitlement(authorization, 'reception_orders', 'Access to customer reception orders requires an active Premium plan.');
     const res = await pool.query(`
       SELECT 
         id, 
