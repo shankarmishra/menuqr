@@ -30,6 +30,12 @@ export function maskEmail(email) {
 
 export function getEmailConfig(environment = process.env) {
   const apiKey = (environment.RESEND_API_KEY || '').trim();
+  const smtpHost = (environment.SMTP_HOST || environment.MAIL_HOST || '').trim();
+  const smtpPort = Number(environment.SMTP_PORT || environment.MAIL_PORT || 587);
+  const smtpUser = (environment.SMTP_USER || environment.SMTP_USERNAME || environment.MAIL_USERNAME || '').trim();
+  const smtpPass = (environment.SMTP_PASS || environment.SMTP_PASSWORD || environment.MAIL_PASSWORD || '').trim();
+  const smtpSecure = environment.SMTP_SECURE === 'true' || smtpPort === 465;
+
   const rawFromAddress = (environment.EMAIL_FROM || environment.MAIL_FROM_ADDRESS || 'onboarding@resend.dev').trim();
 
   let fromAddress = rawFromAddress;
@@ -44,25 +50,72 @@ export function getEmailConfig(environment = process.env) {
   }
 
   const fromName = (environment.MAIL_FROM_NAME || extractedName || 'MENUSQR').trim();
+  const provider = apiKey ? 'resend' : (smtpHost ? 'smtp' : 'none');
 
   return {
     apiKey,
+    smtp: {
+      host: smtpHost,
+      port: smtpPort,
+      user: smtpUser,
+      pass: smtpPass,
+      secure: smtpSecure,
+    },
     fromAddress,
     fromName,
     formattedFrom: `"${fromName}" <${fromAddress}>`,
-    configured: Boolean(apiKey),
+    configured: provider !== 'none',
+    provider,
   };
 }
 
 export async function sendEmailDirectly(message, label = 'transactional email') {
   const config = getEmailConfig();
 
-  if (!config.apiKey) {
-    const errMsg = 'RESEND_API_KEY environment variable is missing.';
+  if (config.provider === 'smtp') {
+    try {
+      const nodemailerModule = await import('nodemailer');
+      const createTransport = nodemailerModule.default?.createTransport || nodemailerModule.createTransport;
+      const transporter = createTransport({
+        host: config.smtp.host,
+        port: config.smtp.port,
+        secure: config.smtp.secure,
+        auth: config.smtp.user ? {
+          user: config.smtp.user,
+          pass: config.smtp.pass,
+        } : undefined,
+      });
+
+      const info = await transporter.sendMail({
+        from: config.formattedFrom,
+        to: message.to,
+        subject: message.subject,
+        html: message.html,
+        text: message.text,
+      });
+
+      console.info(`[email] ${label} sent successfully to ${maskEmail(message.to)} via SMTP (Message ID: ${info.messageId || 'unknown'}).`);
+      return {
+        ok: true,
+        provider: 'smtp',
+        messageId: info.messageId,
+      };
+    } catch (err) {
+      console.error(`[email] SMTP send failed for ${label}:`, err.message);
+      return {
+        ok: false,
+        provider: 'smtp',
+        error: err.message,
+      };
+    }
+  }
+
+  if (config.provider !== 'resend') {
+    const errMsg = 'No email transport configured. Either RESEND_API_KEY or SMTP credentials (SMTP_HOST, SMTP_USER, SMTP_PASS) must be provisioned.';
     console.error(`[email] Direct send failed for ${label}: ${errMsg}`);
     return {
       ok: false,
-      provider: 'resend',
+      provider: 'none',
       error: errMsg,
     };
   }
@@ -234,6 +287,7 @@ export async function processEmailOutboxQueue() {
           await updateClient.query(`
             UPDATE email_outbox
             SET status = 'PROVIDER_ACCEPTED',
+                attempt_count = attempt_count + 1,
                 provider_message_id = $1,
                 last_error = NULL,
                 updated_at = NOW()

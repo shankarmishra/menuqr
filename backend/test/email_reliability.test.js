@@ -14,7 +14,9 @@ test('Email Reliability & OTP Test Suite', async (t) => {
 
   await t.test('2. Missing RESEND_API_KEY handles error gracefully without crashing', async () => {
     const originalKey = process.env.RESEND_API_KEY;
+    const originalSmtp = process.env.SMTP_HOST;
     delete process.env.RESEND_API_KEY;
+    delete process.env.SMTP_HOST;
 
     const config = getEmailConfig(process.env);
     assert.equal(config.configured, false);
@@ -27,9 +29,10 @@ test('Email Reliability & OTP Test Suite', async (t) => {
     }, 'test label');
 
     assert.equal(res.ok, false);
-    assert.match(res.error, /RESEND_API_KEY/);
+    assert.match(res.error, /No email transport configured|RESEND_API_KEY/);
 
-    process.env.RESEND_API_KEY = originalKey || 're_test_key_123';
+    if (originalKey) process.env.RESEND_API_KEY = originalKey;
+    if (originalSmtp) process.env.SMTP_HOST = originalSmtp;
   });
 
   await t.test('3. Client OTP hashing and HMAC matching work as expected', () => {
