@@ -42,7 +42,7 @@ export function getAddon(addonId) {
 // ---------------------------------------------------------------------------
 // Helpers & Signature Verification
 // ---------------------------------------------------------------------------
-function makePlanKey(raw) { return (raw || '').toLowerCase().trim(); }
+export function makePlanKey(raw) { return (raw || '').toLowerCase().trim(); }
 
 function generateActivationToken() {
   const raw = randomBytes(32).toString('hex');
