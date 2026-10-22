@@ -231,8 +231,12 @@ export async function redeemCouponForOrder({ orderId, couponCode = null, client:
     const res = await executor.query(
       `UPDATE coupons
        SET status = 'REDEEMED', redeemed_order_id = $1, redeemed_at = NOW(), reserved_order_id = NULL, updated_at = NOW()
-       WHERE (reserved_order_id = $1 OR code = $2)
-         AND status IN ('RESERVED', 'AVAILABLE')
+       WHERE code = $2
+         AND (
+           (status = 'RESERVED' AND reserved_order_id = $1)
+           OR
+           (status = 'AVAILABLE')
+         )
        RETURNING *`,
       [orderId, code]
     );
