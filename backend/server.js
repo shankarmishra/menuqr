@@ -3,6 +3,8 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 import './env.js';
 import dns from 'node:dns';
 import { createServer } from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Render free tier IPv6 outbound routing is broken; force IPv4 for SMTP & external APIs.
 dns.setDefaultResultOrder('ipv4first');
@@ -181,6 +183,30 @@ const server = createServer(async (request, response) => {
         timestamp: new Date().toISOString()
       });
       return;
+    }
+
+        // Static file serving for uploads (dish images, logos, covers)
+    if (request.method === 'GET' && url.pathname.startsWith('/uploads/')) {
+      const sanitized = path.normalize(url.pathname.replace(/^\/uploads\//, '')).replace(/^(\.\.[\/\\])+/, '');
+      const filePath = path.join(process.cwd(), 'uploads', sanitized);
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes = {
+          '.png': 'image/png',
+          '.jpg': 'image/jpeg',
+          '.jpeg': 'image/jpeg',
+          '.webp': 'image/webp',
+          '.svg': 'image/svg+xml'
+        };
+        const contentType = mimeTypes[ext] || 'application/octet-stream';
+        response.writeHead(200, {
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+          'Access-Control-Allow-Origin': '*'
+        });
+        fs.createReadStream(filePath).pipe(response);
+        return;
+      }
     }
 
     if (await authRoutes(request, response, url)) return;

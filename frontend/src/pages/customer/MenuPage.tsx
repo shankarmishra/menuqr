@@ -344,6 +344,7 @@ export default function MenuPage() {
     category: item.category,
     dietType: (item.dietType === 'non-veg' ? 'non-veg' : item.dietType === 'vegan' ? 'vegan' : 'veg') as 'veg' | 'non-veg' | 'vegan',
     available: item.available !== false,
+    image: item.image,
   }));
 
   const cartTotalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -377,8 +378,12 @@ export default function MenuPage() {
     }
   };
 
+  const bespokeColors = (client?.accentConfiguration as { colors?: { bg?: string; text?: string } } | undefined)?.colors;
+  const effectiveBg = bespokeColors?.bg || template.colors.bg;
+  const effectiveText = bespokeColors?.text || template.colors.text;
+
   return (
-    <div className="min-h-screen flex flex-col font-sans" style={{ backgroundColor: template.colors.bg, color: template.colors.text }}>
+    <div className="min-h-screen flex flex-col font-sans transition-colors duration-300" style={{ backgroundColor: effectiveBg, color: effectiveText }}>
       <SEO 
         title={`${client?.businessName || 'Restaurant Menu'} | MenusQR`} 
         description={`Digital QR menu for ${client?.businessName || 'this restaurant'}.`} 

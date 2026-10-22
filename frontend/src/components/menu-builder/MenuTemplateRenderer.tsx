@@ -34,6 +34,8 @@ export interface MenuTemplateRendererProps {
     dietType: 'veg' | 'non-veg' | 'vegan';
     available?: boolean;
     isBestseller?: boolean;
+    image?: string;
+    imageUrl?: string;
     variants?: Array<{ id?: string; name: string; price: number | string; variantGroup?: string }>;
   }>;
   compact?: boolean;

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import * as XLSX from 'xlsx';
 import {
   Upload,
   FileSpreadsheet,
@@ -43,6 +42,17 @@ const TARGET_FIELDS = [
   { key: 'ignore', label: '-- Ignore Field --', required: false, description: 'Skip this column' }
 ];
 
+let xlsxPromise: Promise<typeof import('xlsx')> | null = null;
+function getXLSX(): Promise<typeof import('xlsx')> {
+  if (!xlsxPromise) {
+    xlsxPromise = import('xlsx').catch((err) => {
+      xlsxPromise = null;
+      throw err;
+    });
+  }
+  return xlsxPromise;
+}
+
 export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWizardProps) {
   const showToast = useToast();
   const [step, setStep] = useState<Step>('upload');
@@ -57,6 +67,7 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
   
   const [importMode, setImportMode] = useState<ImportMode>('add');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [importModeType, setImportModeType] = useState<'pdf' | 'excel'>('pdf');
@@ -76,6 +87,7 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
 
   const handleFileUpload = (file: File) => {
     if (!file) return;
+    if (isProcessing) return;
     const name = file.name;
     const ext = name.split('.').pop()?.toLowerCase();
     if (!['xlsx', 'xls', 'csv'].includes(ext || '')) {
@@ -90,6 +102,7 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
     reader.onload = async (e) => {
       try {
         const buffer = e.target?.result;
+        const XLSX = await getXLSX();
         const workbook = XLSX.read(buffer, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
@@ -129,7 +142,10 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
 
         setStep('mapping');
       } catch (error) {
-        showToast('error', 'Failed to parse workbook file. Ensure it is not corrupted.');
+        const msg = error instanceof Error && error.message.includes('fetch')
+          ? 'Failed to load Excel engine. Please check your network connection.'
+          : 'Failed to parse workbook file. Ensure it is not corrupted.';
+        showToast('error', msg);
       } finally {
         setIsProcessing(false);
       }
@@ -139,6 +155,7 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    if (isProcessing) return;
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileUpload(e.dataTransfer.files[0]);
     }
@@ -191,34 +208,52 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
     }
   };
 
-  const downloadTemplateFormatA = () => {
-    const data = [
-      ['Category', 'Item Name', 'Price', 'Description', 'Diet Type', 'Available'],
-      ['Starters', 'Paneer Tikka', 240, 'Char-grilled cottage cheese with spices', 'veg', 'yes'],
-      ['Starters', 'Chicken Tikka', 280, 'Tandoori marinated chicken morsels', 'non-veg', 'yes'],
-      ['Main Course', 'Paneer Butter Masala', 260, 'Rich tomato cashew gravy', 'veg', 'yes'],
-      ['Main Course', 'Dal Makhani', 220, 'Slow cooked black lentils', 'veg', 'yes'],
-      ['Beverages', 'Mango Lassi', 90, 'Chilled mango yogurt drink', 'veg', 'yes']
-    ];
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Menu Template');
-    XLSX.writeFile(wb, 'MENUQR_Standard_Menu_Template.xlsx');
+  const downloadTemplateFormatA = async () => {
+    if (isDownloadingTemplate) return;
+    setIsDownloadingTemplate(true);
+    try {
+      const XLSX = await getXLSX();
+      const data = [
+        ['Category', 'Item Name', 'Price', 'Description', 'Diet Type', 'Available'],
+        ['Starters', 'Paneer Tikka', 240, 'Char-grilled cottage cheese with spices', 'veg', 'yes'],
+        ['Starters', 'Chicken Tikka', 280, 'Tandoori marinated chicken morsels', 'non-veg', 'yes'],
+        ['Main Course', 'Paneer Butter Masala', 260, 'Rich tomato cashew gravy', 'veg', 'yes'],
+        ['Main Course', 'Dal Makhani', 220, 'Slow cooked black lentils', 'veg', 'yes'],
+        ['Beverages', 'Mango Lassi', 90, 'Chilled mango yogurt drink', 'veg', 'yes']
+      ];
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Menu Template');
+      XLSX.writeFile(wb, 'MENUQR_Standard_Menu_Template.xlsx');
+    } catch {
+      showToast('error', 'Failed to load Excel export processor. Please try again.');
+    } finally {
+      setIsDownloadingTemplate(false);
+    }
   };
 
-  const downloadTemplateFormatB = () => {
-    const data = [
-      ['Category', 'Item Name', 'Description', 'Variant Name', 'Variant Price', 'Diet Type', 'Available'],
-      ['Pizza', 'Margherita Pizza', 'Classic mozzarella and basil', 'Small', 199, 'veg', 'yes'],
-      ['Pizza', 'Margherita Pizza', 'Classic mozzarella and basil', 'Medium', 299, 'veg', 'yes'],
-      ['Pizza', 'Margherita Pizza', 'Classic mozzarella and basil', 'Large', 449, 'veg', 'yes'],
-      ['Curries', 'Paneer Butter Masala', 'Royal paneer gravy', 'Half Plate', 180, 'veg', 'yes'],
-      ['Curries', 'Paneer Butter Masala', 'Royal paneer gravy', 'Full Plate', 320, 'veg', 'yes']
-    ];
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Advanced Menu');
-    XLSX.writeFile(wb, 'MENUQR_Variants_Menu_Template.xlsx');
+  const downloadTemplateFormatB = async () => {
+    if (isDownloadingTemplate) return;
+    setIsDownloadingTemplate(true);
+    try {
+      const XLSX = await getXLSX();
+      const data = [
+        ['Category', 'Item Name', 'Description', 'Variant Name', 'Variant Price', 'Diet Type', 'Available'],
+        ['Pizza', 'Margherita Pizza', 'Classic mozzarella and basil', 'Small', 199, 'veg', 'yes'],
+        ['Pizza', 'Margherita Pizza', 'Classic mozzarella and basil', 'Medium', 299, 'veg', 'yes'],
+        ['Pizza', 'Margherita Pizza', 'Classic mozzarella and basil', 'Large', 449, 'veg', 'yes'],
+        ['Curries', 'Paneer Butter Masala', 'Royal paneer gravy', 'Half Plate', 180, 'veg', 'yes'],
+        ['Curries', 'Paneer Butter Masala', 'Royal paneer gravy', 'Full Plate', 320, 'veg', 'yes']
+      ];
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Advanced Menu');
+      XLSX.writeFile(wb, 'MENUQR_Variants_Menu_Template.xlsx');
+    } catch {
+      showToast('error', 'Failed to load Excel export processor. Please try again.');
+    } finally {
+      setIsDownloadingTemplate(false);
+    }
   };
 
   const toggleCategoryExpand = (name: string) => {
@@ -327,7 +362,8 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
                   <button
                     type="button"
                     onClick={downloadTemplateFormatA}
-                    className="flex items-center gap-2 rounded-lg border border-[#384841] bg-[#1d2723] px-3.5 py-2 text-xs font-medium text-white hover:border-[#e8783c] hover:text-[#e8783c]"
+                    disabled={isDownloadingTemplate}
+                    className="flex items-center gap-2 rounded-lg border border-[#384841] bg-[#1d2723] px-3.5 py-2 text-xs font-medium text-white hover:border-[#e8783c] hover:text-[#e8783c] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Download className="h-3.5 w-3.5" />
                     Format A: Standard Single Price Template
@@ -335,7 +371,8 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
                   <button
                     type="button"
                     onClick={downloadTemplateFormatB}
-                    className="flex items-center gap-2 rounded-lg border border-[#384841] bg-[#1d2723] px-3.5 py-2 text-xs font-medium text-white hover:border-[#e8783c] hover:text-[#e8783c]"
+                    disabled={isDownloadingTemplate}
+                    className="flex items-center gap-2 rounded-lg border border-[#384841] bg-[#1d2723] px-3.5 py-2 text-xs font-medium text-white hover:border-[#e8783c] hover:text-[#e8783c] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Download className="h-3.5 w-3.5" />
                     Format B: Multi-Size / Variants Template

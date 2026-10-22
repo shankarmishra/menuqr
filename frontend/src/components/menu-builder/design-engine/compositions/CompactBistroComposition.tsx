@@ -198,6 +198,15 @@ export const CompactBistroComposition: React.FC<CompositionProps> = ({
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
                         <DietIndicator type={item.dietType} compact className="shrink-0" />
+                        {item.image && (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded object-cover shrink-0 border"
+                            style={{ borderColor: colors.border }}
+                            loading="lazy"
+                          />
+                        )}
                         <h3
                           className="font-semibold text-xs sm:text-sm truncate"
                           style={{ color: colors.text }}

@@ -429,8 +429,29 @@ OUTPUT FORMAT: Return ONLY a valid JSON object matching this exact structure:
 }
 
 CRITICAL RULES:
-- If an item has Half and Full prices (e.g. "Half 140 / Full 260"), set pricingType to "portion", halfPrice to 140, fullPrice to 260, price to 260, and variants to [{"name":"Half","price":140},{"name":"Full","price":260}].
-- Contrast Rule: Ensure WCAG readable contrast between text/heading and bg/surface. Never output black text on black background.
+- Multi-Column / Matrix Tables (Momo Junction, Sizzlers, Combos, Platters):
+  When dishes have multiple columns for fillings/sizes (e.g. "Veg 6 Pcs | Paneer 6 Pcs | Corn N Cheese 6 Pcs" or "Small | Medium | Large"):
+  * You MUST extract EVERY column as an entry in the item's "variants" array: e.g. [{"name":"Veg (6 Pcs)","price":109},{"name":"Paneer (6 Pcs)","price":149},{"name":"Corn N Cheese (6 Pcs)","price":189}].
+  * Set pricingType to "variants".
+  * Set price to the minimum starting price (e.g. 109).
+  * NEVER drop columns or arbitrarily pick only one price!
+
+- Portion & Quantity Labels:
+  * If the menu states "2 Pcs / 4 Pcs", "6 Pcs / 12 Pcs", "Single / Double", or custom sizes like "10 inch", preserve the exact label in the variants array (e.g. [{"name":"2 Pcs","price":209},{"name":"4 Pcs","price":309}]).
+  * If an item has Half and Full prices (e.g. "Half 140 / Full 260"), set pricingType to "portion", halfPrice to 140, fullPrice to 260, price to 260, and variants to [{"name":"Half","price":140},{"name":"Full","price":260}].
+
+- Add-on Groups & Customizations:
+  * Extract notes like "Add Extra Cheese ₹40", "Flavor Syrups: Hazelnut, Caramel ₹39", "100% Pure Soya Upgrade ₹49" into the item's "addonGroups" array with individual options and prices.
+
+- Visual Theme & Color Palette Rules:
+  * "bg" MUST be the background canvas color of the menu page (e.g. "#FFFDF9" or "#FFF9F0" for warm cream/ivory menus, "#121212" or "#1A1A1A" for dark menus, "#FFFFFF" for clean white). NEVER set "bg" to a vivid primary brand red, yellow, or navy!
+  * "heading" MUST be the brand's primary color (e.g. "#CE182C" for crimson red, "#1A202C" for bold charcoal).
+  * "accent" MUST be the brand's secondary highlight or metallic color (e.g. "#FAB700" for mustard gold).
+  * "surface" MUST be "#FFFFFF" (on light theme) or card surface color with high readability.
+  * "text" MUST be high-contrast body color (e.g. "#1F2923" on light bg).
+  * "composition": If the PDF contains food photos, dish cards, sizzlers, or meal graphics, select "image-showcase". If it is an upscale traditional text layout, use "editorial". Only use "compact-bistro" for ultra-dense single-page price sheets without photos.
+
+- Contrast Rule: Ensure WCAG readable contrast between text/heading and bg/surface. Never output dark text on dark background or red on red.
 - Dietary Rule: Assign dietType = "veg", "non-veg", "vegan", or "egg" accurately based on dish name, ingredients, or green/red dots on the PDF.
 `;
 
