@@ -1,9 +1,37 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import clsx from 'clsx';
 import { menuTemplates, isTemplateDark, isColorDark } from '../../data/menuTemplates';
 import { getTemplateComponent, getTemplateTextureKey, TEMPLATE_TEXTURES, type CategoryGroup } from './templates';
 import { UniversalMenuSearch } from './templates/shared/UniversalMenuSearch';
-import { validateDesignSpecification, DynamicDesignEngine } from './design-engine';
+import { validateDesignSpecification } from './design-engine/types';
+
+const DynamicDesignEngine = React.lazy(() =>
+  import('./design-engine/DynamicDesignEngine').then((m) => ({ default: m.DynamicDesignEngine }))
+);
+
+function TemplateFallback({ compact, isDark }: { compact?: boolean; isDark?: boolean }) {
+  return (
+    <div
+      className={clsx(
+        'w-full flex flex-col items-center justify-center p-6 space-y-4 animate-pulse',
+        compact ? 'min-h-[460px]' : 'min-h-[500px]'
+      )}
+      aria-label="Loading menu template..."
+      role="status"
+    >
+      <div
+        className={clsx(
+          'w-9 h-9 rounded-full border-2 border-t-transparent animate-spin opacity-60',
+          isDark ? 'border-amber-400' : 'border-emerald-600'
+        )}
+      />
+      <div className="space-y-2 w-full max-w-[180px] flex flex-col items-center">
+        <div className={clsx('h-2.5 w-3/4 rounded-full', isDark ? 'bg-white/15' : 'bg-black/10')} />
+        <div className={clsx('h-2 w-1/2 rounded-full', isDark ? 'bg-white/10' : 'bg-black/5')} />
+      </div>
+    </div>
+  );
+}
 
 export interface MenuTemplateRendererProps {
   templateId: string;
@@ -121,22 +149,24 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
     );
 
     return (
-      <DynamicDesignEngine
-        spec={validatedSpec}
-        template={template}
-        restaurant={restaurant}
-        categories={filteredCategories}
-        rawCategories={rawCategories}
-        compact={compact}
-        onAddToCart={effectiveAddToCart}
-        isPremium={isPremium}
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        searchBar={searchBar}
-        className={className}
-      />
+      <Suspense fallback={<TemplateFallback compact={compact} isDark={isDark} />}>
+        <DynamicDesignEngine
+          spec={validatedSpec}
+          template={template}
+          restaurant={restaurant}
+          categories={filteredCategories}
+          rawCategories={rawCategories}
+          compact={compact}
+          onAddToCart={effectiveAddToCart}
+          isPremium={isPremium}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          searchBar={searchBar}
+          className={className}
+        />
+      </Suspense>
     );
   }
 
@@ -170,20 +200,22 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
       }}
     >
       <div className={clsx('mx-auto relative z-10', compact ? 'max-w-xl' : 'max-w-6xl')}>
-        <TemplateComponent
-          template={template}
-          restaurant={restaurant}
-          categories={filteredCategories}
-          rawCategories={rawCategories}
-          compact={compact}
-          onAddToCart={effectiveAddToCart}
-          isPremium={isPremium}
-          activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          searchBar={searchBar}
-        />
+        <Suspense fallback={<TemplateFallback compact={compact} isDark={isDark} />}>
+          <TemplateComponent
+            template={template}
+            restaurant={restaurant}
+            categories={filteredCategories}
+            rawCategories={rawCategories}
+            compact={compact}
+            onAddToCart={effectiveAddToCart}
+            isPremium={isPremium}
+            activeCategory={activeCategory}
+            setActiveCategory={setActiveCategory}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            searchBar={searchBar}
+          />
+        </Suspense>
 
         {/* Global Empty Search State if no dishes matched */}
         {!compact && normalizedQuery && filteredCategories.length === 0 && (

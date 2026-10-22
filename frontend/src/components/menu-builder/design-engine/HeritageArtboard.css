@@ -158,3 +158,155 @@
 .heritage-hero-showcase:hover img {
   transform: scale(1.02);
 }
+
+
+/* 10. Interactive Half / Full and Variant Pricing Buttons */
+.heritage-portion-btn-half {
+  background: #FFF9F0;
+  color: #991B1B;
+  border: 1.5px solid #FAB700;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.heritage-portion-btn-half:hover {
+  background: #FAB700;
+  color: #1F2923;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(250, 183, 0, 0.35);
+}
+
+.heritage-portion-btn-full {
+  background: linear-gradient(135deg, #CE182C 0%, #991B1B 100%);
+  color: #FFFFFF;
+  border: 1.5px solid #FAB700;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(206, 24, 44, 0.25);
+}
+
+.heritage-portion-btn-full:hover {
+  background: linear-gradient(135deg, #E52D3D 0%, #B71C1C 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(206, 24, 44, 0.4);
+}
+
+/* Momo 3-Tier Matrix Variant Buttons */
+.heritage-matrix-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.heritage-matrix-btn:active {
+  transform: scale(0.95);
+}
+
+.heritage-matrix-btn-veg {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1.5px solid #A7F3D0;
+}
+
+.heritage-matrix-btn-veg:hover {
+  background: #059669;
+  color: #FFFFFF;
+  border-color: #059669;
+}
+
+.heritage-matrix-btn-paneer {
+  background: #FFFBEB;
+  color: #92400E;
+  border: 1.5px solid #FDE68A;
+}
+
+.heritage-matrix-btn-paneer:hover {
+  background: #D97706;
+  color: #FFFFFF;
+  border-color: #D97706;
+}
+
+.heritage-matrix-btn-cheese {
+  background: #FFF7ED;
+  color: #9A3412;
+  border: 1.5px solid #FED7AA;
+}
+
+.heritage-matrix-btn-cheese:hover {
+  background: #EA580C;
+  color: #FFFFFF;
+  border-color: #EA580C;
+}
+
+/* 11. Corner Flourishes */
+.heritage-corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.heritage-corner-tl {
+  top: 6px;
+  left: 6px;
+  border-top: 2px solid #FAB700;
+  border-left: 2px solid #FAB700;
+  border-top-left-radius: 6px;
+}
+
+.heritage-corner-tr {
+  top: 6px;
+  right: 6px;
+  border-top: 2px solid #FAB700;
+  border-right: 2px solid #FAB700;
+  border-top-right-radius: 6px;
+}
+
+.heritage-corner-bl {
+  bottom: 6px;
+  left: 6px;
+  border-bottom: 2px solid #FAB700;
+  border-left: 2px solid #FAB700;
+  border-bottom-left-radius: 6px;
+}
+
+.heritage-corner-br {
+  bottom: 6px;
+  right: 6px;
+  border-bottom: 2px solid #FAB700;
+  border-right: 2px solid #FAB700;
+  border-bottom-right-radius: 6px;
+}
+
+/* 12. Royal Crimson & Gold Floating Cart Bar Integration */
+.heritage-canvas ~ .menu-floating-cart-bar,
+.heritage-cart-bar {
+  background: linear-gradient(135deg, #7F1D1D 0%, #991B1B 35%, #CE182C 75%, #B71C1C 100%) !important;
+  border: 2px solid #FAB700 !important;
+  box-shadow: 0 14px 36px rgba(153, 27, 27, 0.45), 0 0 18px rgba(250, 183, 0, 0.35) !important;
+}
+
+.heritage-canvas ~ .menu-floating-cart-bar .cart-bar-count {
+  color: #FAB700 !important;
+}
+
+.heritage-canvas ~ .menu-floating-cart-bar .cart-bar-action {
+  background: #FAB700 !important;
+  color: #1F2923 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(250, 183, 0, 0.35) !important;
+}
+
+.heritage-canvas ~ .menu-floating-cart-bar .cart-bar-action:hover {
+  background: #FFE082 !important;
+  transform: scale(1.02) !important;
+}

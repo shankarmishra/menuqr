@@ -2,23 +2,82 @@ import React from 'react';
 import type { LayoutProps } from './types';
 import { TEMPLATE_TEXTURES } from './assets/textures';
 
-import { RoyalMaharajaTemplate } from './RoyalMaharaja/RoyalMaharajaTemplate';
-import { RajasthaniHeritageTemplate } from './RajasthaniHeritage/RajasthaniHeritageTemplate';
-import { MughalLuxeTemplate } from './MughalLuxe/MughalLuxeTemplate';
-import { BanarasiGoldTemplate } from './BanarasiGold/BanarasiGoldTemplate';
-import { SouthIndianHeritageTemplate } from './SouthIndianHeritage/SouthIndianHeritageTemplate';
-import { IndianStreetKitchenTemplate } from './IndianStreetKitchen/IndianStreetKitchenTemplate';
-import { ModernIndiaTemplate } from './ModernIndia/ModernIndiaTemplate';
-import { SpiceHouseTemplate } from './SpiceHouse/SpiceHouseTemplate';
-import { MaisonNoirTemplate } from './MaisonNoir/MaisonNoirTemplate';
-import { IvoryDiningTemplate } from './IvoryDining/IvoryDiningTemplate';
-import { GrandTableTemplate } from './GrandTable/GrandTableTemplate';
-import { CoffeeHouseTemplate } from './CoffeeHouse/CoffeeHouseTemplate';
-import { PaperCafeTemplate } from './PaperCafe/PaperCafeTemplate';
-import { BombayStreetTemplate } from './BombayStreet/BombayStreetTemplate';
-import { MinimalEditorialTemplate } from './MinimalEditorial/MinimalEditorialTemplate';
+export type TemplateComponentType = React.ComponentType<LayoutProps> | React.LazyExoticComponent<React.ComponentType<LayoutProps>>;
 
-export const getTemplateComponent = (id: string): React.FC<LayoutProps> => {
+const lazyTemplate = (
+  importer: () => Promise<any>,
+  namedExport: string
+): React.LazyExoticComponent<React.ComponentType<LayoutProps>> => {
+  return React.lazy(() =>
+    importer().then((mod) => ({
+      default: mod[namedExport] || mod.default,
+    }))
+  );
+};
+
+// Module-scoped lazy singletons — instantiated once so promise and component references remain stable
+const RoyalMaharajaTemplate = lazyTemplate(
+  () => import('./RoyalMaharaja/RoyalMaharajaTemplate'),
+  'RoyalMaharajaTemplate'
+);
+const RajasthaniHeritageTemplate = lazyTemplate(
+  () => import('./RajasthaniHeritage/RajasthaniHeritageTemplate'),
+  'RajasthaniHeritageTemplate'
+);
+const MughalLuxeTemplate = lazyTemplate(
+  () => import('./MughalLuxe/MughalLuxeTemplate'),
+  'MughalLuxeTemplate'
+);
+const BanarasiGoldTemplate = lazyTemplate(
+  () => import('./BanarasiGold/BanarasiGoldTemplate'),
+  'BanarasiGoldTemplate'
+);
+const SouthIndianHeritageTemplate = lazyTemplate(
+  () => import('./SouthIndianHeritage/SouthIndianHeritageTemplate'),
+  'SouthIndianHeritageTemplate'
+);
+const IndianStreetKitchenTemplate = lazyTemplate(
+  () => import('./IndianStreetKitchen/IndianStreetKitchenTemplate'),
+  'IndianStreetKitchenTemplate'
+);
+const ModernIndiaTemplate = lazyTemplate(
+  () => import('./ModernIndia/ModernIndiaTemplate'),
+  'ModernIndiaTemplate'
+);
+const SpiceHouseTemplate = lazyTemplate(
+  () => import('./SpiceHouse/SpiceHouseTemplate'),
+  'SpiceHouseTemplate'
+);
+const MaisonNoirTemplate = lazyTemplate(
+  () => import('./MaisonNoir/MaisonNoirTemplate'),
+  'MaisonNoirTemplate'
+);
+const IvoryDiningTemplate = lazyTemplate(
+  () => import('./IvoryDining/IvoryDiningTemplate'),
+  'IvoryDiningTemplate'
+);
+const GrandTableTemplate = lazyTemplate(
+  () => import('./GrandTable/GrandTableTemplate'),
+  'GrandTableTemplate'
+);
+const CoffeeHouseTemplate = lazyTemplate(
+  () => import('./CoffeeHouse/CoffeeHouseTemplate'),
+  'CoffeeHouseTemplate'
+);
+const PaperCafeTemplate = lazyTemplate(
+  () => import('./PaperCafe/PaperCafeTemplate'),
+  'PaperCafeTemplate'
+);
+const BombayStreetTemplate = lazyTemplate(
+  () => import('./BombayStreet/BombayStreetTemplate'),
+  'BombayStreetTemplate'
+);
+const MinimalEditorialTemplate = lazyTemplate(
+  () => import('./MinimalEditorial/MinimalEditorialTemplate'),
+  'MinimalEditorialTemplate'
+);
+
+export const getTemplateComponent = (id: string): TemplateComponentType => {
   switch (id) {
     case '01':
     case 'royal-maharaja':
