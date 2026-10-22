@@ -46,11 +46,33 @@ export async function readJson(request) {
 }
 
 export function getClientIp(request) {
-  const forwarded = request.headers['x-forwarded-for'];
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
+  const trustProxy = process.env.TRUST_PROXY === 'true';
+  const remoteAddr = request.socket?.remoteAddress || '';
+
+  if (trustProxy) {
+    const trustedProxies = (process.env.TRUSTED_PROXY_IPS || '')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const isTrusted = trustedProxies.length === 0 || trustedProxies.includes(remoteAddr) || remoteAddr === '127.0.0.1' || remoteAddr === '::1';
+
+    if (isTrusted) {
+      const cfIp = request.headers['cf-connecting-ip'];
+      if (cfIp) return String(cfIp).trim();
+
+      const xRealIp = request.headers['x-real-ip'];
+      if (xRealIp) return String(xRealIp).trim();
+
+      const forwarded = request.headers['x-forwarded-for'];
+      if (forwarded) {
+        const ips = forwarded.split(',').map(s => s.trim()).filter(Boolean);
+        if (ips.length > 0) return ips[0];
+      }
+    }
   }
-  return request.socket.remoteAddress || 'unknown';
+
+  return remoteAddr || 'unknown';
 }
 
 export function normalizeEmail(value) {

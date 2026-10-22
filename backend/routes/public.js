@@ -186,6 +186,38 @@ export async function getFullPublicMenuData(tenantId) {
   return result;
 }
 
+
+const orderIpRateLimits = new Map();
+const orderRestaurantRateLimits = new Map();
+
+function checkOrderRateLimits(clientIp, tenantId) {
+  const now = Date.now();
+  const windowMs = 60 * 1000;
+
+  const ipEntry = orderIpRateLimits.get(clientIp) || { count: 0, resetAt: now + windowMs };
+  if (now > ipEntry.resetAt) {
+    ipEntry.count = 0;
+    ipEntry.resetAt = now + windowMs;
+  }
+  if (ipEntry.count >= 15) {
+    throw apiError(429, 'Order rate limit exceeded. Please wait a moment before trying again.');
+  }
+
+  const restEntry = orderRestaurantRateLimits.get(tenantId) || { count: 0, resetAt: now + windowMs };
+  if (now > restEntry.resetAt) {
+    restEntry.count = 0;
+    restEntry.resetAt = now + windowMs;
+  }
+  if (restEntry.count >= 40) {
+    throw apiError(429, 'Restaurant order queue is busy. Please wait a moment before trying again.');
+  }
+
+  ipEntry.count++;
+  restEntry.count++;
+  orderIpRateLimits.set(clientIp, ipEntry);
+  orderRestaurantRateLimits.set(tenantId, restEntry);
+}
+
 export default async function publicRoutes(request, response, url) {
   if (!url.pathname.startsWith('/api/public/')) return false;
 
@@ -295,6 +327,8 @@ export default async function publicRoutes(request, response, url) {
     if (!client) {
       throw apiError(404, 'Menu not found.');
     }
+    const clientIp = getClientIp(request);
+    checkOrderRateLimits(clientIp, client.id);
     
     const authorization = await resolveTenantAuthorization({ id: null, tenantId: client.id });
     if (!authorization.active) {

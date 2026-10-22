@@ -275,6 +275,10 @@ export default async function authRoutes(request, response, url) {
     const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
     const dbUser = dbRes.rows[0];
 
+    if (dbUser && dbUser.locked_until && new Date(dbUser.locked_until).getTime() > now) {
+      throw apiError(429, 'Account is temporarily locked due to too many failed attempts. Try again later.');
+    }
+
     if (dbUser && dbUser.role !== 'SUPER_ADMIN' && (await verifyPassword(input.password, dbUser.password_hash))) {
       user = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
       userEmail = dbUser.email;
@@ -290,11 +294,25 @@ export default async function authRoutes(request, response, url) {
     }
 
     if (!user) {
+      if (dbUser && dbUser.role !== 'SUPER_ADMIN') {
+        const nextAttempts = (dbUser.failed_attempts || 0) + 1;
+        if (nextAttempts >= 5) {
+          const lockExpiry = new Date(now + 15 * 60 * 1000);
+          await pool.query('UPDATE users SET failed_attempts = $1, locked_until = $2 WHERE id = $3', [nextAttempts, lockExpiry, dbUser.id]);
+        } else {
+          await pool.query('UPDATE users SET failed_attempts = $1 WHERE id = $2', [nextAttempts, dbUser.id]);
+        }
+      }
+
       const currentAttempt = attempt && now - attempt.windowStartedAt < 15 * 60 * 1000 ? attempt : { count: 0, windowStartedAt: now, lockedUntil: 0 };
       currentAttempt.count += 1;
       if (currentAttempt.count >= 5) currentAttempt.lockedUntil = now + clientLoginLockDurationMs;
       clientLoginAttempts.set(address, currentAttempt);
       throw apiError(401, 'Incorrect credentials.');
+    }
+
+    if (dbUser && (dbUser.failed_attempts > 0 || dbUser.locked_until)) {
+      await pool.query('UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = $1', [dbUser.id]);
     }
     
     clientLoginAttempts.delete(address);
