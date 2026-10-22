@@ -4,7 +4,7 @@ import { MenusQRPattern } from '../brand/MenusQRPattern';
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full overflow-hidden bg-[#FAFAF7] min-h-0 lg:h-[clamp(720px,78vh,820px)] flex items-center pt-28 pb-16 lg:py-0">
+    <section className="relative w-full overflow-x-clip bg-[#FAFAF7] min-h-0 lg:h-[clamp(640px,82vh,780px)] flex items-center pt-24 pb-12 lg:py-0">
       {/* Background Texture & Pattern - 100vw Bleed */}
       <div className="absolute inset-0 bg-[#FAFAF7] pointer-events-none -z-20" />
       <div className="absolute inset-0 texture-fine-noise pointer-events-none -z-10 opacity-30" />
@@ -13,9 +13,9 @@ export default function HeroSection() {
       </div>
 
       {/* Constrained Content Container - perfectly aligned with SiteHeader */}
-      <div className="relative z-10 w-full max-w-[1448px] mx-auto px-6 md:px-12 h-full translate-y-2 lg:translate-y-6">
+      <div className="relative z-10 w-full max-w-[1448px] mx-auto px-6 md:px-12 h-full">
         {/* CSS Grid split: ~44% (left copy) / 56% (right scene) */}
-        <div className="grid grid-cols-1 lg:grid-cols-[44fr_56fr] gap-10 lg:gap-8 h-full items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-[44fr_56fr] gap-8 lg:gap-8 h-full items-center">
           
           {/* Left Editorial Copy */}
           <div className="flex flex-col justify-center h-full">
@@ -23,7 +23,7 @@ export default function HeroSection() {
           </div>
 
           {/* Right Hero Interactive Scene (Physical Table + QR + iPhone Mockup) */}
-          <div className="flex justify-center lg:justify-end h-auto lg:h-full items-center relative lg:scale-[0.92] origin-center w-full">
+          <div className="flex justify-center lg:justify-end h-auto lg:h-full items-center relative origin-center w-full">
             <HeroScene />
           </div>
         </div>
