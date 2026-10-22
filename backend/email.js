@@ -433,7 +433,9 @@ export async function sendClientWelcomeEmail(client) {
   if (!recipient) return { ok: false, error: 'Recipient email is required.' };
 
   const name = client.ownerName?.trim() || client.businessName;
-  const loginUrl = `${process.env.APP_URL || 'https://menusqr.in'}/admin/login?mode=restaurant`;
+  const baseUrl = process.env.APP_URL || 'https://menusqr.in';
+  const loginUrl = `${baseUrl}/admin/login?mode=restaurant&email=${encodeURIComponent(recipient)}`;
+  const setPasswordUrl = `${baseUrl}/admin/login?mode=restaurant&action=forgot&email=${encodeURIComponent(recipient)}`;
 
   const bodyHtml = `
     <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #111827;">Account Activated &mdash; Welcome to MENUSQR</h1>
@@ -442,8 +444,12 @@ export async function sendClientWelcomeEmail(client) {
       Your digital restaurant account for <strong>${client.businessName}</strong> has been provisioned and is live.
     </p>
     <div style="margin: 28px 0; text-align: left;">
-      <a href="${loginUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 6px; text-decoration: none;">Sign In to Client Portal &rarr;</a>
+      <a href="${loginUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin-right: 12px;">Sign In to Client Portal &rarr;</a>
+      <a href="${setPasswordUrl}" style="display: inline-block; background-color: #f1f5f9; color: #0f172a; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 6px; text-decoration: none; border: 1px solid #cbd5e1;">Set Password</a>
     </div>
+    <p style="margin: 16px 0 0 0; font-size: 13px; line-height: 1.5; color: #64748b;">
+      You can sign in using an instant one-time security code (OTP) sent to this email, or set a permanent password anytime via the Set Password link.
+    </p>
   `;
 
   return queueEmailOutbox({
@@ -451,7 +457,7 @@ export async function sendClientWelcomeEmail(client) {
     recipient,
     subject: `Account Credentials & Confirmation - ${client.businessName}`,
     html: buildCorporateEmailHtml({ title: `Account Activated - ${client.businessName}`, bodyHtml }),
-    text: `Welcome to MENUSQR. Restaurant: ${client.businessName}. Login URL: ${loginUrl}.`,
+    text: `Welcome to MENUSQR. Restaurant: ${client.businessName}. Login URL: ${loginUrl}. Set Password URL: ${setPasswordUrl}.`,
     idempotencyKey: `welcome_${client.id || recipient}`,
   });
 }
@@ -462,19 +468,21 @@ export async function sendActivationEmail({ email, ownerName, businessName, plan
 
   const name = ownerName?.trim() || 'Partner';
   const baseUrl = process.env.APP_URL || 'https://menusqr.in';
-  const restaurantLoginUrl = `${baseUrl}/admin/login?mode=restaurant`;
-  const loginUrl = (activationToken && !password)
-    ? `${baseUrl}/#/auth/activate?token=${encodeURIComponent(activationToken)}`
-    : restaurantLoginUrl;
+  const loginUrl = `${baseUrl}/admin/login?mode=restaurant&email=${encodeURIComponent(email)}`;
+  const setPasswordUrl = `${baseUrl}/admin/login?mode=restaurant&action=forgot&email=${encodeURIComponent(email)}`;
 
   const bodyHtml = `
     <h1 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #111827;">Workspace successfully provisioned</h1>
     <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #4b5563;">
       Hello ${name},<br>Your digital menu workspace for <strong>${businessName || 'your restaurant'}</strong> is active.
     </p>
-    <div style="margin: 32px 0;">
-      <a href="${loginUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 13px; font-weight: 500; padding: 10px 24px; border-radius: 6px; text-decoration: none;">Access Dashboard &rarr;</a>
+    <div style="margin: 28px 0; text-align: left;">
+      <a href="${loginUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 13px; font-weight: 600; padding: 10px 24px; border-radius: 6px; text-decoration: none; margin-right: 12px;">Access Dashboard &rarr;</a>
+      <a href="${setPasswordUrl}" style="display: inline-block; background-color: #f1f5f9; color: #0f172a; font-size: 13px; font-weight: 600; padding: 10px 24px; border-radius: 6px; text-decoration: none; border: 1px solid #cbd5e1;">Set / Reset Password</a>
     </div>
+    <p style="margin: 16px 0 0 0; font-size: 13px; line-height: 1.5; color: #64748b;">
+      You can sign in directly using email OTP or set your permanent password anytime using the link above.
+    </p>
   `;
 
   return queueEmailOutbox({
@@ -482,7 +490,7 @@ export async function sendActivationEmail({ email, ownerName, businessName, plan
     recipient: email,
     subject: `Your MENUSQR workspace is ready - ${businessName || 'Restaurant'}`,
     html: buildCorporateEmailHtml({ title: 'Workspace Ready', bodyHtml }),
-    text: `Your MENUSQR workspace is ready. Log in at: ${loginUrl}.`,
+    text: `Your MENUSQR workspace is ready. Log in at: ${loginUrl}. Set password at: ${setPasswordUrl}.`,
     idempotencyKey: `activation_${email}_${businessName}`,
   });
 }

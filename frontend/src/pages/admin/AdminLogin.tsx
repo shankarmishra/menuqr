@@ -19,8 +19,15 @@ export default function AdminLogin() {
   const isAdminPage = isAdminHostname(window.location.hostname, import.meta.env.VITE_ADMIN_HOSTNAME);
 
   // Login State
-  const [mode, setMode] = useState<AuthMode>('LOGIN');
-  const [email, setEmail] = useState('');
+  const [mode, setMode] = useState<AuthMode>(() => {
+    if (typeof window === 'undefined') return 'LOGIN';
+    const params = new URLSearchParams(window.location.search);
+    return (params.get('action') === 'forgot' || params.get('mode') === 'forgot') ? 'FORGOT_EMAIL' : 'LOGIN';
+  });
+  const [email, setEmail] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return new URLSearchParams(window.location.search).get('email') || '';
+  });
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState('');
@@ -28,7 +35,10 @@ export default function AdminLogin() {
   const [targetEmail, setTargetEmail] = useState('');
 
   // Forgot Password State
-  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotEmail, setForgotEmail] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return new URLSearchParams(window.location.search).get('email') || '';
+  });
   const [forgotOtp, setForgotOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
