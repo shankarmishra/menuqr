@@ -17,7 +17,7 @@ export interface DynamicDesignEngineProps extends LayoutProps {
 const TEXTURE_PATTERNS: Record<DesignSpecification['decorations']['texture'], string> = {
   'subtle-grain': `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0z' fill='none'/%3E%3Cpath d='M20 20l2 2-2 2-2-2z' fill='%23FFFFFF' fill-opacity='0.03'/%3E%3C/svg%3E")`,
   'silk-lattice': `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z M30 12L48 30L30 48L12 30Z'/%3E%3C/g%3E%3C/svg%3E")`,
-  'parchment': `url("data:image/svg+xml,%3Csvg width='40' height='24' viewBox='0 0 40 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 24 C0 12, 10 0, 20 0 C30 0, 40 12, 40 24' fill='none' stroke='%23D4AE68' stroke-opacity='0.05' stroke-width='1'/%3E%3C/svg%3E")`,
+  'parchment': `url('/uploads/mannat/assets/texture_parchment.webp')`,
   'dots': `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='3' cy='3' r='1.5' fill='%23FFFFFF' fill-opacity='0.04'/%3E%3C/svg%3E")`,
   'clean': 'none',
 };

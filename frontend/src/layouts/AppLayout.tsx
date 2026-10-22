@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePlan } from '../lib/usePlan';
@@ -154,7 +154,16 @@ export default function AppLayout() {
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto bg-[#0a100d]">
           <div className="w-full h-full">
-            <Outlet />
+            <Suspense fallback={
+              <div className="flex h-64 items-center justify-center text-sm text-[#aab7b2]" role="status" aria-live="polite">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#aab7b2]/20 border-t-[#e8783c]" />
+                  <span>Loading section...</span>
+                </div>
+              </div>
+            }>
+              <Outlet />
+            </Suspense>
           </div>
         </main>
       </div>

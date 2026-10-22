@@ -1,0 +1,160 @@
+/* ═════════════════════════════════════════════════════════════════════════════
+   MENUQR HERITAGE ARTBOARD CSS — LUXURY INDIAN TANDOOR & ROYAL DHABA AESTHETICS
+   Authentic 1:1 Digital Artboard Styling Matching Professional Menu PDFs
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Parchment & Luxury Canvas Atmosphere */
+.heritage-canvas {
+  background-color: #FFFDF9;
+  background-image: 
+    radial-gradient(#CE182C0D 1px, transparent 1px),
+    url('/uploads/mannat/assets/texture_parchment.webp');
+  background-size: 24px 24px, 400px 400px;
+  background-repeat: repeat;
+}
+
+/* 2. Royal Double Border Frame with Gold Accents */
+.heritage-card-frame {
+  background: #FFFFFF;
+  border: 1.5px solid rgba(206, 24, 44, 0.16);
+  border-radius: 16px;
+  box-shadow: 
+    0 4px 18px -2px rgba(206, 24, 44, 0.06),
+    0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  position: relative;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.heritage-card-frame:hover {
+  border-color: rgba(206, 24, 44, 0.38);
+  box-shadow: 
+    0 8px 28px -4px rgba(206, 24, 44, 0.12),
+    0 4px 12px -2px rgba(250, 183, 0, 0.15);
+  transform: translateY(-1.5px);
+}
+
+/* 3. Authentic Dotted Leader Lines connecting Dish to Price */
+.heritage-leader-line {
+  flex: 1 1 auto;
+  border-bottom: 2px dotted rgba(206, 24, 44, 0.28);
+  margin: 0 8px 4px 8px;
+  min-width: 16px;
+}
+
+/* 4. Section Chapter Banner with Golden Trim & Notched Corners */
+.heritage-ribbon-banner {
+  background: linear-gradient(135deg, #881313 0%, #CE182C 48%, #A81423 85%, #6B0F1A 100%);
+  border: 2px solid #FAB700;
+  border-radius: 16px;
+  box-shadow: 
+    0 8px 24px -4px rgba(206, 24, 44, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  position: relative;
+}
+
+.heritage-ribbon-banner::before,
+.heritage-ribbon-banner::after {
+  content: '✦';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #FAB700;
+  font-size: 11px;
+}
+
+.heritage-ribbon-banner::before {
+  left: 14px;
+}
+
+.heritage-ribbon-banner::after {
+  right: 14px;
+}
+
+/* 5. Gold Foil Embellished Text */
+.heritage-gold-text {
+  background: linear-gradient(135deg, #FFF176 0%, #FAB700 45%, #D48806 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+/* 6. Momo 3-Tier Matrix Table Styling */
+.heritage-matrix-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.heritage-matrix-table th {
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.heritage-matrix-table td {
+  transition: background-color 0.15s ease;
+}
+
+.heritage-matrix-table tr:hover td {
+  background-color: rgba(206, 24, 44, 0.03);
+}
+
+/* 7. Circular Food Photo Gold Rings */
+.heritage-dish-thumb {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(250, 183, 0, 0.75);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  background-color: #FFFFFF;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.heritage-dish-thumb:hover {
+  transform: scale(1.08);
+  border-color: #FAB700;
+}
+
+/* 8. Filigree Divider */
+.heritage-filigree-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #FAB700;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.heritage-filigree-divider::before,
+.heritage-filigree-divider::after {
+  content: '';
+  flex: 1;
+  max-width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #FAB700, transparent);
+}
+
+/* 9. Hero Photography Showcase Container */
+.heritage-hero-showcase {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid rgba(250, 183, 0, 0.65);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+  background: #1F2923;
+  position: relative;
+}
+
+.heritage-hero-showcase img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.heritage-hero-showcase:hover img {
+  transform: scale(1.02);
+}

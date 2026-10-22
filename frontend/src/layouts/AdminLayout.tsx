@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, Utensils, Store, Coffee, QrCode, Settings, Menu, X, Bell, ClipboardPlus, LogOut, Trash2, Receipt, CreditCard, PackageCheck, Tag } from 'lucide-react';
@@ -267,7 +267,16 @@ export default function AdminLayout() {
               transition={{ duration: 0.24, ease: 'easeOut' }}
               className="mx-auto min-h-full max-w-[1440px]"
             >
-              <Outlet />
+              <Suspense fallback={
+                <div className="flex h-64 items-center justify-center text-sm text-[#aab7b2]" role="status" aria-live="polite">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#aab7b2]/20 border-t-[#e8783c]" />
+                    <span>Loading admin...</span>
+                  </div>
+                </div>
+              }>
+                <Outlet />
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </div>
