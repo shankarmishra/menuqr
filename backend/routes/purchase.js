@@ -328,7 +328,7 @@ export async function processOrderPaymentAndProvision({
     } else {
       userId = randomUUID();
       const orderMeta = order.metadata || {};
-      const pwdHash = orderMeta.password_hash || hashPassword(randomUUID().substring(0, 32));
+      const pwdHash = orderMeta.password_hash || await hashPassword(randomUUID().substring(0, 32));
       const { raw, hashed } = generateActivationToken();
       activationTokenRaw = raw;
       const tokenExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h

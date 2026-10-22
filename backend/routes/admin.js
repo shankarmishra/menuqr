@@ -544,7 +544,7 @@ export default async function adminRoutes(request, response, url) {
 
     const rawPassword = input.password || randomUUID().slice(0, 8);
     const { hashPassword } = await import('../auth.js');
-    const passwordHash = hashPassword(rawPassword);
+    const passwordHash = await hashPassword(rawPassword);
     const userId = randomUUID();
 
     await pool.query(
