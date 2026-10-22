@@ -1,6 +1,6 @@
 import { pool } from '../db.js';
 import { generateAuthCookie, clearAuthCookie, getAuthenticatedUser, verifyPassword, enforceSuperAdmin, hashPassword, isLegacyHash } from '../auth.js';
-import { apiError, sendJson, readJson, getClientIp, normalizeEmail } from '../utils.js';
+import { apiError, sendJson, readJson, getClientIp, normalizeEmail, detectEmailTypoDomain } from '../utils.js';
 import { createAdminSessionCookieOptions, createClearedAdminSessionCookieOptions } from '../adminSessionCookie.js';
 import { randomUUID } from 'node:crypto';
 import slugify from 'slugify';
@@ -561,6 +561,16 @@ export default async function authRoutes(request, response, url) {
     if (!email) throw apiError(400, 'Email address is required.');
 
     const normEmail = normalizeEmail(email);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normEmail)) {
+      throw apiError(400, 'Please enter a valid email address.');
+    }
+
+    const typoCorrection = detectEmailTypoDomain(normEmail);
+    if (typoCorrection) {
+      throw apiError(400, `Did you mean @${typoCorrection}? Please check your email address spelling.`);
+    }
+
     const address = getClientIp(request);
 
     const { createClientOtpChallenge, invalidateClientOtpChallenge } = await import('../clientAuth.js');

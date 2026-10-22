@@ -21,6 +21,36 @@ const PLANS: Record<string, { price: number; label: string; features: string[] }
   }
 };
 
+const EMAIL_TYPO_MAP: Record<string, string> = {
+  'gmai.com': 'gmail.com',
+  'gamil.com': 'gmail.com',
+  'gmial.com': 'gmail.com',
+  'gmaill.com': 'gmail.com',
+  'gmaik.com': 'gmail.com',
+  'gmal.com': 'gmail.com',
+  'gmeil.com': 'gmail.com',
+  'gmaili.com': 'gmail.com',
+  'yaho.com': 'yahoo.com',
+  'yahooo.com': 'yahoo.com',
+  'yhoo.com': 'yahoo.com',
+  'hotmial.com': 'hotmail.com',
+  'hotmaill.com': 'hotmail.com',
+  'hotmil.com': 'hotmail.com',
+  'outloo.com': 'outlook.com',
+  'outlok.com': 'outlook.com',
+  'icld.com': 'icloud.com',
+  'icloud.con': 'icloud.com',
+};
+
+function getSuggestedEmail(email: string): string | null {
+  if (!email || !email.includes('@')) return null;
+  const parts = email.trim().toLowerCase().split('@');
+  if (parts.length !== 2) return null;
+  const domain = parts[1];
+  const suggestedDomain = EMAIL_TYPO_MAP[domain];
+  return suggestedDomain ? parts[0] + '@' + suggestedDomain : null;
+}
+
 export default function PurchaseDetailsPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -55,6 +85,16 @@ export default function PurchaseDetailsPage() {
   const [emailChallengeId, setEmailChallengeId] = useState('');
   const [emailOtpInput, setEmailOtpInput] = useState('');
   const [emailOtpVerifying, setEmailOtpVerifying] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [emailOtpError, setEmailOtpError] = useState('');
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   // Coupon State
   const [couponValidating, setCouponValidating] = useState(false);
@@ -319,6 +359,12 @@ export default function PurchaseDetailsPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'customerEmail') {
+      setEmailVerified(false);
+      setEmailOtpSent(false);
+      setEmailVerificationToken('');
+      setEmailOtpError('');
+    }
     if (validationErrors[name]) {
       setValidationErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -386,17 +432,17 @@ export default function PurchaseDetailsPage() {
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="block text-xs font-semibold text-[#151C19]">Email Address *</label>
                       {emailVerified ? (
-                        <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
-                          <CheckCircle2 size={12} /> Verified
+                        <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 shadow-sm">
+                          <CheckCircle2 size={13} /> Verified
                         </span>
                       ) : (
                         <button
                           type="button"
                           onClick={handleSendEmailOtp}
-                          disabled={emailOtpSending}
+                          disabled={emailOtpSending || !formData.customerEmail.trim() || resendCooldown > 0}
                           className="text-[11px] font-semibold text-[#E8783C] hover:underline disabled:opacity-50"
                         >
-                          {emailOtpSending ? 'Sending OTP...' : 'Verify Email'}
+                          {emailOtpSending ? 'Sending OTP...' : resendCooldown > 0 ? `Wait ${resendCooldown}s` : emailOtpSent ? 'Resend Code' : 'Verify Email'}
                         </button>
                       )}
                     </div>
@@ -408,31 +454,96 @@ export default function PurchaseDetailsPage() {
                       className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-sm ${
                         validationErrors.customerEmail ? 'border-rose-300 bg-rose-50' : 'border-gray-200'
                       }`}
-                      placeholder="john@example.com"
+                      placeholder="e.g. owner@gmail.com"
                     />
-                    {validationErrors.customerEmail && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.customerEmail}</p>}
+
+                    {/* Smart Typo Detection Banner */}
+                    {getSuggestedEmail(formData.customerEmail) && !emailVerified && (
+                      <div className="mt-1.5 p-2.5 bg-amber-50/90 border border-amber-300 rounded-xl flex items-center justify-between text-xs text-amber-900 shadow-sm animate-fade-in">
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <AlertCircle size={14} className="text-amber-600 shrink-0" />
+                          Did you mean <strong className="font-bold underline text-amber-950">{getSuggestedEmail(formData.customerEmail)}</strong>?
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const fixed = getSuggestedEmail(formData.customerEmail);
+                            if (fixed) {
+                              setFormData(prev => ({ ...prev, customerEmail: fixed }));
+                              setValidationErrors(prev => ({ ...prev, customerEmail: '' }));
+                            }
+                          }}
+                          className="font-bold text-[11px] bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-400 px-2.5 py-1 rounded-lg transition-colors shrink-0 ml-2 shadow-xs"
+                        >
+                          Fix Spelling
+                        </button>
+                      </div>
+                    )}
+
+                    {validationErrors.customerEmail && (
+                      <p className="text-rose-500 text-[11px] mt-1.5 font-medium flex items-center gap-1">
+                        <AlertCircle size={12} className="shrink-0" /> {validationErrors.customerEmail}
+                      </p>
+                    )}
 
                     {emailOtpSent && !emailVerified && (
-                      <div className="mt-2 p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs">
-                        <p className="font-semibold text-amber-800 mb-1.5">Enter 6-digit code sent to {formData.customerEmail}:</p>
-                        <div className="flex gap-2">
+                      <div className="mt-2.5 p-3.5 bg-amber-50/80 rounded-xl border border-amber-200 text-xs shadow-sm">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="font-semibold text-amber-900">
+                            Enter 6-digit code sent to <span className="font-bold underline text-amber-950">{formData.customerEmail}</span>:
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEmailOtpSent(false);
+                              setEmailOtpInput('');
+                              setEmailOtpError('');
+                            }}
+                            className="text-[11px] text-gray-500 hover:text-gray-900 underline ml-2 shrink-0 font-medium"
+                          >
+                            Change Email
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2">
                           <input
                             type="text"
                             maxLength={6}
                             value={emailOtpInput}
-                            onChange={(e) => setEmailOtpInput(e.target.value)}
-                            className="w-28 px-3 py-1 border rounded-lg text-center font-mono font-bold"
+                            onChange={(e) => {
+                              setEmailOtpInput(e.target.value.replace(/[^0-9]/g, ''));
+                              if (emailOtpError) setEmailOtpError('');
+                            }}
+                            className="w-32 px-3 py-2 border border-amber-300 rounded-xl text-center font-mono font-bold text-base tracking-widest bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E8783C]/30 focus:border-[#E8783C]"
                             placeholder="123456"
                           />
                           <button
                             type="button"
                             onClick={handleVerifyEmailOtp}
                             disabled={emailOtpVerifying || emailOtpInput.length !== 6}
-                            className="px-3 py-1 bg-[#E8783C] text-white font-bold rounded-lg disabled:opacity-50"
+                            className="px-4 py-2 bg-[#E8783C] hover:bg-[#d36428] text-white font-bold rounded-xl disabled:opacity-50 transition-colors shadow-sm text-xs"
                           >
                             {emailOtpVerifying ? 'Checking...' : 'Confirm'}
                           </button>
+                          {resendCooldown > 0 ? (
+                            <span className="text-[11px] text-gray-400 font-medium ml-1">
+                              Resend in {resendCooldown}s
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={handleSendEmailOtp}
+                              disabled={emailOtpSending}
+                              className="text-[11px] text-[#E8783C] font-semibold hover:underline ml-1 disabled:opacity-50"
+                            >
+                              {emailOtpSending ? 'Sending...' : 'Resend Code'}
+                            </button>
+                          )}
                         </div>
+                        {emailOtpError && (
+                          <p className="mt-2 text-rose-600 text-xs font-medium flex items-center gap-1 bg-rose-50 p-2 rounded-lg border border-rose-200">
+                            <AlertCircle size={14} className="shrink-0" /> {emailOtpError}
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>

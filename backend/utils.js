@@ -95,3 +95,33 @@ export function getClientIp(request) {
 export function normalizeEmail(value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : '';
 }
+
+export const COMMON_EMAIL_TYPO_DOMAINS = {
+  'gmai.com': 'gmail.com',
+  'gamil.com': 'gmail.com',
+  'gmial.com': 'gmail.com',
+  'gmaill.com': 'gmail.com',
+  'gmaik.com': 'gmail.com',
+  'gmal.com': 'gmail.com',
+  'gmeil.com': 'gmail.com',
+  'gmaili.com': 'gmail.com',
+  'yaho.com': 'yahoo.com',
+  'yahooo.com': 'yahoo.com',
+  'yhoo.com': 'yahoo.com',
+  'hotmial.com': 'hotmail.com',
+  'hotmaill.com': 'hotmail.com',
+  'hotmil.com': 'hotmail.com',
+  'outloo.com': 'outlook.com',
+  'outlok.com': 'outlook.com',
+  'icld.com': 'icloud.com',
+  'icloud.con': 'icloud.com',
+};
+
+export function detectEmailTypoDomain(email) {
+  if (typeof email !== 'string' || !email.includes('@')) return null;
+  const parts = email.trim().toLowerCase().split('@');
+  if (parts.length !== 2) return null;
+  const domain = parts[1];
+  return COMMON_EMAIL_TYPO_DOMAINS[domain] || null;
+}
+
