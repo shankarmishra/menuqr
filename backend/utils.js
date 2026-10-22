@@ -4,14 +4,14 @@ export function apiError(status, message) {
   return error;
 }
 
-export function sendJson(response, status, value, headers = {}) {
+export function sendJson(response, status, data, headers = {}) {
+  const body = JSON.stringify(data);
   response.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'no-store',
-    'X-Content-Type-Options': 'nosniff',
+    'Content-Length': Buffer.byteLength(body),
     ...headers,
   });
-  response.end(JSON.stringify(value));
+  response.end(body);
 }
 
 export async function readRawBody(request) {
@@ -45,6 +45,17 @@ export async function readJson(request) {
   return parsed;
 }
 
+function isInternalIp(ip) {
+  if (!ip) return false;
+  const clean = ip.replace(/^::ffff:/, '').trim();
+  if (clean === '127.0.0.1' || clean === '::1' || clean === 'localhost') return true;
+  if (/^10\./.test(clean)) return true;
+  if (/^192\.168\./.test(clean)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(clean)) return true;
+  if (/^169\.254\./.test(clean)) return true;
+  return false;
+}
+
 export function getClientIp(request) {
   const trustProxy = process.env.TRUST_PROXY === 'true';
   const remoteAddr = request.socket?.remoteAddress || '';
@@ -55,7 +66,7 @@ export function getClientIp(request) {
       .map(s => s.trim())
       .filter(Boolean);
 
-    const isTrusted = trustedProxies.length === 0 || trustedProxies.includes(remoteAddr) || remoteAddr === '127.0.0.1' || remoteAddr === '::1';
+    const isTrusted = trustedProxies.length === 0 || trustedProxies.includes(remoteAddr) || isInternalIp(remoteAddr);
 
     if (isTrusted) {
       const cfIp = request.headers['cf-connecting-ip'];
@@ -67,6 +78,12 @@ export function getClientIp(request) {
       const forwarded = request.headers['x-forwarded-for'];
       if (forwarded) {
         const ips = forwarded.split(',').map(s => s.trim()).filter(Boolean);
+        // Traverse backwards from right to left, skipping internal proxy hops
+        for (let i = ips.length - 1; i >= 0; i--) {
+          if (!isInternalIp(ips[i])) {
+            return ips[i];
+          }
+        }
         if (ips.length > 0) return ips[0];
       }
     }
