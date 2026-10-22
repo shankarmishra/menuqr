@@ -35,6 +35,38 @@ import { verifyCsrfToken } from './csrf.js';
 const port = Number(process.env.PORT || process.env.API_PORT || 3001);
 const isAllowedOrigin = createCorsOriginChecker(process.env);
 
+export function checkPaymentGatewayConfig() {
+  const appId = process.env.CASHFREE_APP_ID;
+  const secretKey = process.env.CASHFREE_SECRET_KEY;
+  const env = (process.env.CASHFREE_ENV || 'TEST').toUpperCase();
+  const isProd = env === 'PROD';
+  
+  const configured = Boolean(appId && secretKey);
+  const errors = [];
+  const warnings = [];
+
+  if (!appId || !secretKey) {
+    errors.push('CASHFREE_APP_ID and/or CASHFREE_SECRET_KEY is missing.');
+  }
+
+  if (appId) {
+    const isTestKey = appId.startsWith('TEST') || appId.includes('TEST');
+    if (isProd && isTestKey) {
+      warnings.push("CASHFREE_ENV is 'PROD' but CASHFREE_APP_ID appears to be a sandbox/test key.");
+    } else if (!isProd && !isTestKey) {
+      warnings.push(`CASHFREE_ENV is '${env}' but CASHFREE_APP_ID does not appear to be a sandbox/test key.`);
+    }
+  }
+
+  return {
+    configured,
+    provider: 'cashfree',
+    env,
+    errors,
+    warnings,
+  };
+}
+
 async function initializeStore() {
   await connectDB(process.env.DATABASE_URL);
   startOutboxWorker();
@@ -127,14 +159,24 @@ const server = createServer(async (request, response) => {
         dbConnected = false;
       }
 
-      sendJson(response, dbConnected ? 200 : 503, {
-        status: dbConnected ? 'ok' : 'degraded',
+      const pgCfg = checkPaymentGatewayConfig();
+      const isDegraded = !dbConnected || (process.env.NODE_ENV === 'production' && !pgCfg.configured);
+
+      sendJson(response, isDegraded ? 503 : 200, {
+        status: isDegraded ? 'degraded' : 'ok',
         database: 'postgresql',
         dbConnected,
+        paymentGateway: {
+          configured: pgCfg.configured,
+          provider: pgCfg.provider,
+          env: pgCfg.env,
+          warnings: pgCfg.warnings.length > 0 ? pgCfg.warnings : undefined,
+          errors: pgCfg.errors.length > 0 ? pgCfg.errors : undefined,
+        },
+        cashfreeConfigured: pgCfg.configured,
         emailProvider: getEmailConfig().provider,
         emailConfigured: getEmailConfig().configured,
         resendConfigured: getEmailConfig().configured,
-        cashfreeConfigured: Boolean(process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY),
         uptimeSeconds: Math.floor(process.uptime()),
         timestamp: new Date().toISOString()
       });
@@ -163,8 +205,11 @@ const server = createServer(async (request, response) => {
   }
 });
 
-await initializeStore();
-const PORT = process.env.PORT || port || 3001;
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`MenusQR API listening on port ${PORT}`);
-});
+const isTest = Boolean(process.env.NODE_TEST_CONTEXT || process.env.NODE_ENV === 'test' || process.argv.includes('--test') || process.argv.some(a => a.includes('test')));
+if (!isTest) {
+  await initializeStore();
+  const PORT = process.env.PORT || port || 3001;
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`MenusQR API listening on port ${PORT}`);
+  });
+}

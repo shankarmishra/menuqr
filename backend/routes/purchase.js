@@ -937,10 +937,22 @@ export default async function purchaseRoutes(request, response, url) {
           const cfData = await cfRes.json();
           paymentSessionId = cfData.payment_session_id;
         } else {
-          console.error('Cashfree order creation response:', await cfRes.text());
+          const errText = await cfRes.text();
+          console.error('[cashfree] Cashfree order creation response error:', errText);
+          if (process.env.NODE_ENV !== 'test') {
+            throw apiError(502, `Payment gateway failed to initialize session: ${errText}`);
+          }
         }
       } catch (err) {
-        console.error('Cashfree order creation network error:', err.message);
+        console.error('[cashfree] Cashfree order creation network error:', err.message);
+        if (process.env.NODE_ENV !== 'test') {
+          throw apiError(502, `Payment gateway communication error: ${err.message}`);
+        }
+      }
+    } else {
+      console.warn('[cashfree] CASHFREE_APP_ID or CASHFREE_SECRET_KEY is missing');
+      if (process.env.NODE_ENV !== 'test') {
+        throw apiError(503, 'Payment gateway is not configured on the server. Please contact support.');
       }
     }
 
