@@ -1,5 +1,6 @@
 // MENUQR Design Engine — Authentic Heritage Artboard Composition
 // Bespoke 1:1 Digital Artboard for Indian Tandoor, Chaap & Royal Dhaba Menus
+// Powered by Authentic Extracted PDF Artboard Banners, Textures & 3-Tier Interactive Matrix
 
 import React from 'react';
 import clsx from 'clsx';
@@ -9,7 +10,6 @@ import {
   MapPin, 
   Phone, 
   Coffee, 
-  Flame, 
   Plus
 } from 'lucide-react';
 
@@ -27,39 +27,24 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
 }) => {
   const { colors, typography } = spec;
 
-  // Category Hero Image Mapping (directly matching PDF artboard pages)
-  const getCategoryHeroImage = (catName: string): string | null => {
+  // Chapter Banner Mapping (Directly from Art Board 3.pdf pages)
+  const getCategoryBanner = (catName: string): string => {
     const lower = catName.toLowerCase();
-    if (lower.includes('momo')) return '/uploads/mannat/momos.png';
-    if (lower.includes('pizza')) return '/uploads/mannat/pizza.png';
-    if (lower.includes('burger')) return '/uploads/mannat/burger.png';
-    if (lower.includes('coffee') || lower.includes('brew') || lower.includes('tea')) return '/uploads/mannat/iced_coffee.png';
-    if (lower.includes('garlic bread')) return '/uploads/mannat/garlic_bread.png';
-    if (lower.includes('shake')) return '/uploads/mannat/shake.png';
-    if (lower.includes('dessert')) return '/uploads/mannat/dessert.png';
-    if (lower.includes('labanese') || lower.includes('lebanese')) return '/uploads/mannat/falafel.png';
-    if (lower.includes('fries') || lower.includes('nachos')) return '/uploads/mannat/fries.png';
-    if (lower.includes('chaap') || lower.includes('paneer feast') || lower.includes('platter')) return '/uploads/mannat/hero_chaap.png';
-    return null;
-  };
-
-  // Category Hindi Subtitle mapping (from PDF Artboard)
-  const getCategoryHindiSubtitle = (catName: string): string => {
-    const lower = catName.toLowerCase();
-    if (lower.includes('chaap')) return 'चांप का असली स्वाद • 100% शुद्ध सोया';
-    if (lower.includes('paneer')) return 'शाही पनीर का खज़ाना';
-    if (lower.includes('momo')) return 'स्टीम्ड • कुरकुरे • तंदूरी • मलाई मोमोज़';
-    if (lower.includes('roll')) return 'गरमा-गरम रुमाली रोल्स विथ स्पेशल ग्रेवी';
-    if (lower.includes('pizza')) return 'स्टोन बेक्ड थिन क्रस्ट पिज़्ज़ा';
-    if (lower.includes('burger')) return 'गॉरमेट लोडेड बर्गर व सैंडविच';
-    if (lower.includes('coffee') || lower.includes('brew')) return 'हॉट व कोल्ड अरेबिका कॉफी';
-    if (lower.includes('shake')) return 'गाढ़े व स्वादिष्ट थिक शेक्स';
-    if (lower.includes('dessert')) return 'सिज़लिंग ब्राउनी व गुलाब जामुन';
-    if (lower.includes('dal')) return 'दाल मखनी व स्पेशल तड़का';
-    if (lower.includes('biryani') || lower.includes('rice')) return 'दम बिरयानी व पुलाव';
-    if (lower.includes('bread')) return 'तंदूरी रोटी, नान व पराठा';
-    if (lower.includes('thali') || lower.includes('combo')) return 'स्पेशल थाली व भोजन कॉम्बो';
-    return 'मनपसंद शुद्ध शाकाहारी व्यंजन';
+    if (lower.includes('momo')) return '/uploads/mannat/textures/banner_momos.webp';
+    if (lower.includes('pizza') || lower.includes('burger') || lower.includes('sandwich')) return '/uploads/mannat/textures/banner_pizza_burger.webp';
+    if (lower.includes('coffee') || lower.includes('brew') || lower.includes('tea') || lower.includes('garlic bread')) return '/uploads/mannat/textures/banner_coffee_garlicbread.webp';
+    if (lower.includes('shake') || lower.includes('boba')) return '/uploads/mannat/textures/banner_thick_shakes.webp';
+    if (lower.includes('dessert') || lower.includes('cooler')) return '/uploads/mannat/textures/banner_desserts.webp';
+    if (lower.includes('labanese') || lower.includes('lebanese') || lower.includes('fries') || lower.includes('nachos')) return '/uploads/mannat/textures/banner_lebanese_fries.webp';
+    if (lower.includes('chinese') || lower.includes('noodle') || lower.includes('wok') || lower.includes('fried rice')) return '/uploads/mannat/textures/banner_chinese_wok.webp';
+    if (lower.includes('thali') || lower.includes('combo')) return '/uploads/mannat/textures/banner_thalis_combos.webp';
+    if (lower.includes('street')) return '/uploads/mannat/textures/banner_street_specials.webp';
+    if (lower.includes('soya grav')) return '/uploads/mannat/textures/banner_soya_gravies.webp';
+    if (lower.includes('desi') || lower.includes('rice') || lower.includes('biryani')) return '/uploads/mannat/textures/banner_desi_junction.webp';
+    if (lower.includes('khazana') || lower.includes('dal')) return '/uploads/mannat/textures/banner_paneer_khazana.webp';
+    if (lower.includes('platter') || lower.includes('kebab')) return '/uploads/mannat/textures/banner_signature_platters.webp';
+    if (lower.includes('paneer feast') || lower.includes('roll')) return '/uploads/mannat/textures/banner_paneer_feast.webp';
+    return '/uploads/mannat/textures/banner_chaap.webp';
   };
 
   return (
@@ -71,103 +56,48 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
       }}
     >
       {/* ═══════════════════════════════════════════════════════════════════════
-          MASTHEAD: ROYAL ARTBOARD CREST (PDF Page 1 & 17 style)
+          MASTHEAD: AUTHENTIC PDF COVER ARTBOARD (Page 1)
           ═══════════════════════════════════════════════════════════════════════ */}
-      <header
-        className="relative overflow-hidden p-6 sm:p-8 rounded-3xl shadow-xl border text-center transition-all"
-        style={{
-          backgroundColor: '#FFFFFF',
-          borderColor: 'rgba(206, 24, 44, 0.25)',
-          boxShadow: '0 10px 30px -10px rgba(206, 24, 44, 0.15)',
-        }}
-      >
-        {/* Subtle Ornamental Top Filigree Banner */}
-        <div 
-          className="absolute top-0 left-0 right-0 h-2" 
-          style={{ 
-            background: 'linear-gradient(90deg, #FAB700 0%, #CE182C 50%, #FAB700 100%)' 
-          }} 
-        />
+      <header className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-[#FAB700]/50 bg-white">
+        <picture>
+          <source srcSet="/uploads/mannat/textures/masthead_main.webp" type="image/webp" />
+          <img
+            src="/uploads/mannat/textures/masthead_main.png"
+            alt={restaurant.name}
+            className="w-full h-auto object-cover select-none"
+            loading="eager"
+          />
+        </picture>
 
-        <div className="flex flex-col items-center justify-center space-y-3.5 max-w-2xl mx-auto">
-          {/* Circular Mascot Emblem with Concentric Gold Rings */}
-          {restaurant.logo ? (
-            <div 
-              className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1.5 shadow-xl border-2 flex items-center justify-center bg-white"
-              style={{ borderColor: '#FAB700' }}
-            >
-              <img
-                src={restaurant.logo}
-                alt={restaurant.name}
-                className="w-full h-full object-contain rounded-full"
-              />
+        {/* Contact Quick Action Strip below the authentic banner */}
+        {(restaurant.address || restaurant.phone) && (
+          <div className="bg-[#1F2923] text-white px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs border-t-2 border-[#FAB700]">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-bold text-[#FAB700] uppercase tracking-wider text-[11px]">
+                Chaap Ka Asli Swad • 100% Pure Soya
+              </span>
             </div>
-          ) : (
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center font-black text-2xl border-2 shadow-lg"
-              style={{
-                backgroundColor: '#CE182C',
-                borderColor: '#FAB700',
-                color: '#FFFFFF',
-              }}
-            >
-              {restaurant.name.charAt(0)}
-            </div>
-          )}
 
-          {/* Restaurant Title (Bold Royal Serif) */}
-          <div className="space-y-1">
-            <h1
-              className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight leading-tight"
-              style={{
-                fontFamily: typography.headingFont || "'Playfair Display', serif",
-                color: '#CE182C',
-                textShadow: '0 1px 2px rgba(206, 24, 44, 0.1)',
-              }}
-            >
-              {restaurant.name}
-            </h1>
-
-            {/* Tagline & Slogan */}
-            {restaurant.tagline && (
-              <p
-                className="text-xs sm:text-sm font-bold tracking-wide uppercase flex items-center justify-center gap-2"
-                style={{ color: '#FAB700' }}
-              >
-                <span className="hidden sm:inline">⚜</span>
-                <span className="text-[#CE182C] dark:text-[#E53935]">{restaurant.tagline}</span>
-                <span className="hidden sm:inline">⚜</span>
-              </p>
-            )}
-          </div>
-
-          {/* 100% Pure Soya & Veg Assurance Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-sm">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
-            <span>100% PURE VEG & SOYA SPECIALITIES</span>
-          </div>
-
-          {/* Contact & Address Bar */}
-          {(restaurant.address || restaurant.phone) && (
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-1 text-[11px] font-medium text-[#55635C]">
+            <div className="flex items-center gap-4 text-[11px] font-medium">
               {restaurant.phone && (
                 <a
                   href={`tel:${restaurant.phone}`}
-                  className="flex items-center gap-1.5 hover:text-[#CE182C] transition-colors"
+                  className="flex items-center gap-1.5 text-white/90 hover:text-[#FAB700] transition-colors"
                 >
-                  <Phone size={12} className="text-[#CE182C]" />
+                  <Phone size={12} className="text-[#FAB700]" />
                   <span>{restaurant.phone}</span>
                 </a>
               )}
               {restaurant.address && (
-                <div className="flex items-center gap-1.5">
-                  <MapPin size={12} className="text-[#CE182C]" />
+                <div className="hidden sm:flex items-center gap-1.5 text-white/80">
+                  <MapPin size={12} className="text-[#FAB700]" />
                   <span>{restaurant.address}</span>
                 </div>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </header>
 
       {/* ═══════════════════════════════════════════════════════════════════════
@@ -220,8 +150,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
           ═══════════════════════════════════════════════════════════════════════ */}
       <div className="space-y-10">
         {categories.map((cat) => {
-          const heroImage = getCategoryHeroImage(cat.name);
-          const hindiSubtitle = getCategoryHindiSubtitle(cat.name);
+          const chapterBanner = getCategoryBanner(cat.name);
           const isMomoSection = cat.name.toLowerCase().includes('momo');
 
           return (
@@ -233,47 +162,23 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
               }}
             >
               {/* ─────────────────────────────────────────────────────────────
-                  SECTION RIBBON HEADER (Exact PDF Page Banner)
+                  CHAPTER HEADER BANNER (Authentic PDF Artboard Plate)
                   ───────────────────────────────────────────────────────────── */}
-              <div 
-                className="relative overflow-hidden rounded-2xl p-4 sm:p-5 text-center text-white shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4"
-                style={{
-                  background: 'linear-gradient(135deg, #B71C1C 0%, #CE182C 50%, #991B1B 100%)',
-                  border: '2px solid #FAB700',
-                  boxShadow: '0 4px 15px rgba(206, 24, 44, 0.25)',
-                }}
-              >
-                <div className="text-center sm:text-left space-y-1 flex-1">
-                  <div className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-[#FAB700]">
-                    <Flame size={12} />
-                    <span>Mannat Special Chapter</span>
-                  </div>
-                  <h2 
-                    className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white"
-                    style={{ fontFamily: typography.headingFont || "'Playfair Display', serif" }}
-                  >
-                    {cat.name}
-                  </h2>
-                  <p className="text-xs font-medium text-amber-200/90 font-serif">
-                    {hindiSubtitle}
-                  </p>
-                </div>
-
-                {/* Section Hero Photo Badge if available */}
-                {heroImage && (
-                  <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-[#FAB700] shadow-md bg-white p-1">
-                    <img
-                      src={heroImage}
-                      alt={cat.name}
-                      className="w-full h-full object-cover rounded-xl"
-                    />
-                  </div>
-                )}
+              <div className="rounded-2xl overflow-hidden shadow-lg border-2 border-[#FAB700]/70 bg-[#1F2923]">
+                <picture>
+                  <source srcSet={chapterBanner} type="image/webp" />
+                  <img
+                    src={chapterBanner.replace('.webp', '.png')}
+                    alt={cat.name}
+                    className="w-full h-auto object-cover select-none"
+                    loading="lazy"
+                  />
+                </picture>
               </div>
 
               {/* Coffee Syrup Callout Notice if beverage */}
               {(cat.name.toLowerCase().includes('coffee') || cat.name.toLowerCase().includes('brew')) && (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-center justify-between">
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-center justify-between shadow-xs">
                   <span className="flex items-center gap-1.5">
                     <Coffee size={14} className="text-amber-700" />
                     <span>Flavour Syrups: Hazelnut • Caramel • Irish • Vanilla • Chocolate</span>
@@ -286,7 +191,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                   SPECIAL LAYOUT: MOMO JUNCTION 3-TIER MATRIX TABLE (Page 10)
                   ───────────────────────────────────────────────────────────── */}
               {isMomoSection ? (
-                <div className="overflow-x-auto rounded-2xl border border-black/10 shadow-sm">
+                <div className="overflow-x-auto rounded-2xl border-2 border-[#FAB700]/50 shadow-md">
                   <table className="w-full text-left border-collapse min-w-[500px]">
                     <thead>
                       <tr 
@@ -415,7 +320,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                             </p>
                           )}
 
-                          {/* Variants / Portion chips */}
+                          {/* Variants / Portion chips (Half / Full / 2 Pcs / 4 Pcs) */}
                           {pricing.hasVariants && (
                             <div className="flex flex-wrap gap-1.5 pt-1">
                               {pricing.variants.map((v) => (
@@ -469,17 +374,18 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          FOOTER CREST: GUARANTEE & THANKS
+          FOOTER CREST: AUTHENTIC PDF ARTBOARD MASCOT FOOTER (Page 17)
           ═══════════════════════════════════════════════════════════════════════ */}
-      <footer className="pt-8 pb-12 text-center space-y-2 border-t border-[#CE182C]/20">
-        <div className="text-xs font-bold uppercase tracking-wider text-[#CE182C] flex items-center justify-center gap-2">
-          <span>⚜</span>
-          <span>Mannat Tandoori Junction</span>
-          <span>⚜</span>
-        </div>
-        <p className="text-xs text-[#55635C]">
-          Authentic North Indian, Chaap Specialities & Tandoor Delights. Prepared fresh with care.
-        </p>
+      <footer className="pt-6 pb-12 rounded-3xl overflow-hidden shadow-2xl border-2 border-[#FAB700]/50 bg-white">
+        <picture>
+          <source srcSet="/uploads/mannat/textures/footer_mascot.webp" type="image/webp" />
+          <img
+            src="/uploads/mannat/textures/footer_mascot.png"
+            alt="Mannat Tandoori Junction Footer"
+            className="w-full h-auto object-cover select-none"
+            loading="lazy"
+          />
+        </picture>
       </footer>
     </div>
   );
