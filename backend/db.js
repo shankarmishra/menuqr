@@ -41,6 +41,10 @@ export async function connectDB(uri) {
     connectionString: uri,
   });
 
+  pool.on('error', (err) => {
+    console.error('[db] Unexpected error on idle PostgreSQL client:', err.message);
+  });
+
   // Test connection
   const client = await pool.connect();
   try {

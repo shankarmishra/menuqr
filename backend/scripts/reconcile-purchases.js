@@ -6,13 +6,17 @@ import { sendActivationEmail, sendPaymentSuccessEmail } from '../email.js';
 export async function reconcilePaidOrders({ dryRun = true } = {}) {
   console.log(`[reconcile] Starting purchase reconciliation audit (dryRun=${dryRun})...`);
 
-  // 1. Find PAID orders where email flags are false or outbox jobs failed or provisioning is not COMPLETE
+  // 1. Find PAID orders that are FAILED, stale PROCESSING (>5m), or COMPLETE with missing emails
   const paidOrdersRes = await pool.query(`
     SELECT o.id, o.customer_email, o.customer_name, o.business_name, o.plan_id, o.amount, o.status,
-           o.provisioning_status, o.activation_email_sent, o.payment_receipt_email_sent, o.metadata, o.created_at
+           o.provisioning_status, o.activation_email_sent, o.payment_receipt_email_sent, o.metadata, o.created_at, o.updated_at
     FROM orders o
     WHERE o.status = 'PAID'
-      AND (o.activation_email_sent = false OR o.payment_receipt_email_sent = false OR o.provisioning_status != 'COMPLETE')
+      AND (
+        o.provisioning_status = 'FAILED'
+        OR (o.provisioning_status = 'PROCESSING' AND o.updated_at < NOW() - INTERVAL '5 minutes')
+        OR (o.provisioning_status = 'COMPLETE' AND (o.activation_email_sent = false OR o.payment_receipt_email_sent = false))
+      )
     ORDER BY o.created_at DESC
   `);
 

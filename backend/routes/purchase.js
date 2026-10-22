@@ -1105,7 +1105,7 @@ export default async function purchaseRoutes(request, response, url) {
     let verifiedGateway = 'cashfree';
     let verifiedTxId = transactionId || cashfreeOrderId;
 
-    if (process.env.NODE_ENV !== 'production' && mockSuccess) {
+    if (process.env.NODE_ENV === 'test' && mockSuccess) {
       verifiedGateway = 'mock';
       verifiedTxId = `mock_renew_${randomUUID().substring(0, 8)}`;
     } else if (appId && secretKey) {
@@ -1146,11 +1146,19 @@ export default async function purchaseRoutes(request, response, url) {
       }
       verifiedGateway = 'razorpay';
       verifiedTxId = razorpayPaymentId;
-    } else if (process.env.NODE_ENV !== 'production' && mockSuccess) {
-      verifiedGateway = 'mock';
-      verifiedTxId = `mock_renew_${randomUUID().substring(0, 8)}`;
     } else {
       throw apiError(400, 'Payment verification data missing or invalid.');
+    }
+
+    // Check if this payment transaction was already applied
+    if (verifiedGateway !== 'mock') {
+      const dupPayment = await pool.query(
+        'SELECT id FROM payments WHERE transaction_id = $1 AND status = $2',
+        [verifiedTxId, 'SUCCESS']
+      );
+      if (dupPayment.rows.length > 0) {
+        throw apiError(400, 'This payment transaction has already been applied for a renewal.');
+      }
     }
 
     const renewOrderId = `order_${randomUUID().replace(/-/g, '').substring(0, 16)}`;

@@ -142,4 +142,23 @@ test('Batch 2 #8: Reconcile PAID + FAILED orders retry logic', async (t) => {
     assert.equal(userInserted, true, 'User record should have been provisioned');
     assert.equal(clientInserted, true, 'Client record should have been provisioned');
   });
+
+  await t.test('SQL query excludes active fresh PROCESSING orders and only targets FAILED, stale PROCESSING, or unsent emails', async () => {
+    let capturedSql = '';
+    setPool({
+      query: async (sql) => {
+        if (sql.includes('FROM orders o')) {
+          capturedSql = sql;
+          return { rows: [] };
+        }
+        return { rows: [], rowCount: 1 };
+      }
+    });
+
+    await reconcilePaidOrders({ dryRun: true });
+
+    assert.ok(capturedSql.includes("o.provisioning_status = 'FAILED'"), 'Must query FAILED orders');
+    assert.ok(capturedSql.includes("o.provisioning_status = 'PROCESSING' AND o.updated_at < NOW() - INTERVAL '5 minutes'"), 'Must only query stale PROCESSING orders older than 5 minutes');
+    assert.ok(!capturedSql.includes("o.provisioning_status != 'COMPLETE'"), 'Must not blindly target all non-COMPLETE orders including fresh PROCESSING ones');
+  });
 });

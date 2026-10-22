@@ -7,6 +7,15 @@ import { createServer } from 'node:http';
 // Render free tier IPv6 outbound routing is broken; force IPv4 for SMTP & external APIs.
 dns.setDefaultResultOrder('ipv4first');
 
+process.on('uncaughtException', (err) => {
+  console.error('[server] Uncaught exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[server] Unhandled rejection:', reason);
+});
+
+
 import { connectDB, pool } from './db.js';
 import { apiError, sendJson } from './utils.js';
 import { createCorsOriginChecker } from './cors.js';
@@ -122,7 +131,8 @@ const server = createServer(async (request, response) => {
         status: dbConnected ? 'ok' : 'degraded',
         database: 'postgresql',
         dbConnected,
-        emailProvider: 'resend',
+        emailProvider: getEmailConfig().provider,
+        emailConfigured: getEmailConfig().configured,
         resendConfigured: getEmailConfig().configured,
         cashfreeConfigured: Boolean(process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY),
         uptimeSeconds: Math.floor(process.uptime()),
