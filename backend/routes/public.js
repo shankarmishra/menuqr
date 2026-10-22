@@ -166,10 +166,12 @@ export async function getFullPublicMenuData(tenantId) {
       phone: client.phone,
       address: client.address,
       city: client.city,
+      logo: appearance.logo || client.logo_url || '',
     },
     plan: authorization.planId,
     orderingEnabled: Boolean(authorization.active && authorization.entitlements.includes('customer_ordering')),
     templateId: appearance.template_id || 'royal-maharaja',
+    accentConfiguration: appearance.accent_configuration || null,
     googleReviews,
     categories,
     items,
@@ -491,6 +493,8 @@ export default async function publicRoutes(request, response, url) {
          idempotency_key, tracking_token
        )
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'NEW', $13, $14)
+       ON CONFLICT (tenant_id, idempotency_key) WHERE idempotency_key IS NOT NULL
+       DO NOTHING
        RETURNING 
          id, 
          order_type as "orderType",
@@ -524,9 +528,41 @@ export default async function publicRoutes(request, response, url) {
       ]
     );
     
-    const newOrder = res.rows[0];
-    newOrder.total = parseFloat(newOrder.total);
-    sendJson(response, 201, newOrder);
+    let orderToReturn = res.rows[0];
+    let statusCode = 201;
+
+    // If an insert conflict occurred because a concurrent worker inserted with the same idempotency key:
+    if (!orderToReturn && idempotencyKey) {
+      const existingRes = await pool.query(`
+        SELECT 
+          id, 
+          order_type as "orderType",
+          table_number as "tableNumber", 
+          customer_name as "customerName",
+          customer_phone as "customerPhone",
+          delivery_address as "deliveryAddress",
+          delivery_landmark as "deliveryLandmark",
+          delivery_city as "deliveryCity",
+          notes,
+          items, 
+          total, 
+          status, 
+          rejection_reason as "rejectionReason",
+          tracking_token as "trackingToken",
+          created_at as time
+        FROM customer_orders
+        WHERE tenant_id = $1 AND idempotency_key = $2
+      `, [client.id, idempotencyKey]);
+      orderToReturn = existingRes.rows[0];
+      statusCode = 200;
+    }
+
+    if (!orderToReturn) {
+      throw apiError(500, 'Failed to create or retrieve order.');
+    }
+
+    orderToReturn.total = parseFloat(orderToReturn.total);
+    sendJson(response, statusCode, orderToReturn);
     return true;
   }
 

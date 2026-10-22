@@ -602,5 +602,16 @@ ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS delivery_city VARCHAR(255);
 ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
 ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(128);
 ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS tracking_token VARCHAR(64);
-CREATE INDEX IF NOT EXISTS idx_customer_orders_idempotency ON customer_orders (tenant_id, idempotency_key);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_customer_orders_tenant_idempotency ON customer_orders (tenant_id, idempotency_key) WHERE idempotency_key IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_customer_orders_tracking_token ON customer_orders (id, tracking_token);
+
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS opening_hours VARCHAR(255);
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS cuisine VARCHAR(255);
+
+ALTER TABLE menu_imports ADD COLUMN IF NOT EXISTS import_type VARCHAR(50) DEFAULT 'excel';
+ALTER TABLE menu_imports ADD COLUMN IF NOT EXISTS draft_payload JSONB;
+ALTER TABLE menu_imports ADD COLUMN IF NOT EXISTS page_count INTEGER DEFAULT 1;
+ALTER TABLE menu_imports ADD COLUMN IF NOT EXISTS is_scanned BOOLEAN DEFAULT false;
+ALTER TABLE menu_imports ADD COLUMN IF NOT EXISTS design_specification JSONB;
+ALTER TABLE menu_imports ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
