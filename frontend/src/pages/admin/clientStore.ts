@@ -31,6 +31,7 @@ export interface ClientRecord {
   city: string;
   state: string;
   templateId?: string;
+  accentConfiguration?: unknown;
   postalCode: string;
   country: string;
   menuSlug: string;
@@ -64,6 +65,7 @@ export interface PublicMenuRecord {
   plan?: string;
   orderingEnabled?: boolean;
   templateId?: string;
+  accentConfiguration?: unknown;
   googleReviews?: {
     enabled: boolean;
     reviewUrl?: string;
@@ -317,10 +319,12 @@ interface RawPublicMenuApiResponse {
     phone?: string;
     address?: string;
     city?: string;
+    logo?: string;
   };
   plan: string;
   orderingEnabled?: boolean;
   templateId?: string;
+  accentConfiguration?: unknown;
   googleReviews?: {
     enabled: boolean;
     reviewUrl?: string;
@@ -363,7 +367,7 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
   return {
     businessName: raw.restaurant.name,
     tagline: raw.restaurant.tagline ?? '',
-    logoUrl: undefined,
+    logoUrl: raw.restaurant.logo || undefined,
     category: (raw.restaurant.category ?? 'restaurants') as ClientCategory,
     phone: raw.restaurant.phone ?? '',
     address: raw.restaurant.address ?? '',
@@ -378,6 +382,7 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     plan: raw.plan,
     orderingEnabled: raw.orderingEnabled,
     templateId: raw.templateId,
+    accentConfiguration: raw.accentConfiguration,
     googleReviews: raw.googleReviews,
   };
 }

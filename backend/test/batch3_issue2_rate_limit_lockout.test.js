@@ -95,8 +95,8 @@ test('Batch 3 #2: IP spoof prevention, public order rate limits, and DB-backed a
       };
 
       let rateLimited = false;
-      // Send 25 orders rapidly from the same IP (limit is 15/min)
-      for (let i = 0; i < 25; i++) {
+      // Send 25 orders rapidly from the same IP (limit is 30/min)
+      for (let i = 0; i < 35; i++) {
         const req = mockRequest('POST', { ...orderPayload, idempotencyKey: `spam_${timestamp}_${i}` }, {}, '198.51.100.99');
         const res = mockResponse();
         try {

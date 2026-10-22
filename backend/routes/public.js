@@ -199,7 +199,7 @@ function checkOrderRateLimits(clientIp, tenantId) {
     ipEntry.count = 0;
     ipEntry.resetAt = now + windowMs;
   }
-  if (ipEntry.count >= 15) {
+  if (ipEntry.count >= 30) {
     throw apiError(429, 'Order rate limit exceeded. Please wait a moment before trying again.');
   }
 
@@ -208,7 +208,7 @@ function checkOrderRateLimits(clientIp, tenantId) {
     restEntry.count = 0;
     restEntry.resetAt = now + windowMs;
   }
-  if (restEntry.count >= 40) {
+  if (restEntry.count >= 60) {
     throw apiError(429, 'Restaurant order queue is busy. Please wait a moment before trying again.');
   }
 

@@ -9,6 +9,7 @@ import QRGenerationSequence from '../../components/qr-studio/QRGenerationSequenc
 import { menuTemplates } from '../../data/menuTemplates';
 import { createPermanentQr, getQr, getSubscription, saveOnboarding, type AppQrData } from '../app/appStore';
 import { useToast } from '../../components/feedback/ToastProvider';
+import PdfMenuImportWizard from '../../components/menu-builder/PdfMenuImportWizard';
 
 type OnboardingCategory = { id: string; name: string; description: string; order: number };
 type OnboardingItem = { id: string; name: string; description: string; price: number; category: string; dietType: 'veg' | 'non-veg' | 'vegan'; available: boolean; imageUrl: string };
@@ -109,6 +110,7 @@ export default function OnboardingWizard() {
   const navigate = useNavigate();
   const showToast = useToast();
   const [planId, setPlanId] = useState('PREMIUM');
+  const [showPdfWizard, setShowPdfWizard] = useState(false);
 
   useEffect(() => {
     getSubscription().then(sub => {
@@ -292,6 +294,31 @@ export default function OnboardingWizard() {
                   <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5"><Store size={14} /> Step 1</span>
                   <h2 className="text-2xl sm:text-3xl font-black text-white">Restaurant Identity</h2>
                   <p className="text-xs sm:text-sm text-[#AAB7B2]">Enter basic restaurant details to customize your QR menu.</p>
+                </div>
+
+                {/* PDF Fast-Track Banner */}
+                <div className="bg-gradient-to-r from-[#E8783C]/20 via-[#34B56A]/10 to-transparent p-4 sm:p-5 rounded-2xl border border-[#E8783C]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#E8783C] text-white flex items-center justify-center shrink-0 shadow-md">
+                      <Sparkles size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        Have an existing printed menu?
+                        <span className="bg-[#34B56A]/20 text-[#34B56A] text-[10px] font-mono px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Fastest Setup</span>
+                      </h3>
+                      <p className="text-xs text-[#AAB7B2] mt-0.5">
+                        Upload your PDF to automatically extract dishes, Half/Full prices, and recreate your menu design.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPdfWizard(true)}
+                    className="shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#E8783C] hover:bg-[#d66a30] text-white text-xs font-bold shadow-md transition-all hover:scale-[1.02]"
+                  >
+                    <Upload size={14} /> Upload Menu PDF
+                  </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
@@ -769,6 +796,15 @@ export default function OnboardingWizard() {
           onClose={() => setIsPrinterOpen(false)}
         />
       )}
+
+      <PdfMenuImportWizard
+        isOpen={showPdfWizard}
+        onClose={() => setShowPdfWizard(false)}
+        onSuccess={() => {
+          showToast('success', 'Menu imported from PDF and published to your permanent QR code!');
+          navigate('/app/dashboard', { replace: true });
+        }}
+      />
     </div>
   );
 }

@@ -410,6 +410,7 @@ export default function MenuPage() {
           compact={false}
           onAddToCart={isPremium ? addToCart : undefined}
           isPremium={isPremium}
+          accentConfiguration={client.accentConfiguration}
         />
       </main>
 

@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import clsx from 'clsx';
-import { menuTemplates, isTemplateDark } from '../../data/menuTemplates';
+import { menuTemplates, isTemplateDark, isColorDark } from '../../data/menuTemplates';
 import { getTemplateComponent, getTemplateTextureKey, TEMPLATE_TEXTURES, type CategoryGroup } from './templates';
 import { UniversalMenuSearch } from './templates/shared/UniversalMenuSearch';
+import { validateDesignSpecification, DynamicDesignEngine } from './design-engine';
 
 export interface MenuTemplateRendererProps {
   templateId: string;
@@ -39,6 +40,7 @@ export interface MenuTemplateRendererProps {
   className?: string;
   onAddToCart?: (item: any, priceStr?: string, variant?: string) => void;
   isPremium?: boolean;
+  accentConfiguration?: unknown;
 }
 
 export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
@@ -50,6 +52,7 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
   className,
   onAddToCart,
   isPremium = false,
+  accentConfiguration,
 }) => {
   const template = menuTemplates.find((t) => t.id === templateId || t.name.toLowerCase().replace(/\s+/g, '-') === templateId) || menuTemplates[0];
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -97,6 +100,43 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
     }
     return true;
   });
+
+  const validatedSpec = useMemo(() => {
+    return accentConfiguration ? validateDesignSpecification(accentConfiguration) : null;
+  }, [accentConfiguration]);
+
+  // If a valid custom Design Specification exists, render through the Dynamic Design Engine
+  if (validatedSpec) {
+    const isDark = isColorDark(validatedSpec.colors.bg);
+    const searchBar = compact ? null : (
+      <UniversalMenuSearch
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        accentColor={validatedSpec.colors.accent || validatedSpec.colors.heading}
+        placeholder="Search dishes..."
+        isDarkTheme={isDark}
+      />
+    );
+
+    return (
+      <DynamicDesignEngine
+        spec={validatedSpec}
+        template={template}
+        restaurant={restaurant}
+        categories={filteredCategories}
+        rawCategories={rawCategories}
+        compact={compact}
+        onAddToCart={effectiveAddToCart}
+        isPremium={isPremium}
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        searchBar={searchBar}
+        className={className}
+      />
+    );
+  }
 
   const TemplateComponent = getTemplateComponent(template.id);
   const textureKey = getTemplateTextureKey(template.id);

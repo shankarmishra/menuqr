@@ -198,6 +198,143 @@ export function updateAppearance(data: AppAppearanceData): Promise<AppAppearance
   return request<AppAppearanceData>('/appearance', { method: 'PUT', body: JSON.stringify(data) });
 }
 
+export interface AiDesignStatus {
+  available: boolean;
+  provider: string;
+  model: string | null;
+  capabilities: {
+    multimodalReference: boolean;
+    designGeneration: boolean;
+    revisions: boolean;
+  };
+}
+
+export interface GenerateAiMenuDesignPayload {
+  profile: {
+    businessName: string;
+    cuisine: string;
+    positioning?: string;
+    mood?: string;
+    hasPhotography?: boolean;
+    menuDensity?: string;
+    tagline?: string;
+    logoUrl?: string;
+    brandColors?: {
+      primary?: string;
+      accent?: string;
+      bg?: string;
+    };
+  };
+  brief?: string;
+  referenceImage?: string | null;
+  previousSpec?: unknown;
+  isRevision?: boolean;
+}
+
+export interface GenerateAiMenuDesignResponse {
+  success: boolean;
+  spec: any;
+  provider: 'gemini' | 'deterministic-fallback';
+  model?: string | null;
+  warning?: string | null;
+  message?: string | null;
+}
+
+export function getAiDesignStatus(): Promise<AiDesignStatus> {
+  return request<AiDesignStatus>('/ai/status');
+}
+
+export function generateAiMenuDesign(data: GenerateAiMenuDesignPayload): Promise<GenerateAiMenuDesignResponse> {
+  return request<GenerateAiMenuDesignResponse>('/ai/generate-menu-design', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export interface ExtractedPdfItem {
+  id?: string;
+  name: string;
+  description: string;
+  price: number | null;
+  halfPrice?: number | null;
+  fullPrice?: number | null;
+  pricingType: 'single' | 'portion' | 'variants';
+  variants?: Array<{ name: string; price: number }>;
+  addonGroups?: Array<{ name: string; isRequired?: boolean; minSelect?: number; maxSelect?: number; options: Array<{ name: string; price: number }> }>;
+  dietType: 'veg' | 'non-veg' | 'vegan' | 'egg';
+  confidence: number;
+  warnings?: string[];
+}
+
+export interface ExtractedPdfCategory {
+  id?: string;
+  name: string;
+  description?: string;
+  items: ExtractedPdfItem[];
+}
+
+export interface ExtractedPdfRestaurantInfo {
+  name: string;
+  cuisine: string;
+  tagline?: string;
+  description?: string;
+  address?: string;
+  phone?: string;
+  openingHours?: string;
+}
+
+export interface PdfExtractionResponse {
+  success: boolean;
+  importId: string;
+  pageCount: number;
+  isScanned: boolean;
+  restaurant: ExtractedPdfRestaurantInfo;
+  categories: ExtractedPdfCategory[];
+  designSpec: any;
+  warnings: string[];
+  provider: 'gemini' | 'deterministic-fallback';
+  model?: string | null;
+}
+
+export function extractPdfMenu(pdfBase64: string, filename: string): Promise<PdfExtractionResponse> {
+  return request<PdfExtractionResponse>('/pdf/extract', {
+    method: 'POST',
+    body: JSON.stringify({ pdfBase64, filename }),
+  });
+}
+
+export function refinePdfDesign(importId: string | undefined, prompt: string, currentSpec: any): Promise<{ success: boolean; spec: any; provider: string; model?: string; warning?: string }> {
+  return request<{ success: boolean; spec: any; provider: string; model?: string; warning?: string }>('/pdf/refine-design', {
+    method: 'POST',
+    body: JSON.stringify({ importId, prompt, currentSpec }),
+  });
+}
+
+export function savePdfDraft(data: { importId: string; restaurant?: any; categories: any[]; designSpec?: any }): Promise<{ success: boolean }> {
+  return request<{ success: boolean }>('/pdf/save-draft', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export function getPdfDraft(importId: string): Promise<any> {
+  return request<any>(`/pdf/draft/${encodeURIComponent(importId)}`);
+}
+
+export function approveAndPublishPdfMenu(data: {
+  importId: string;
+  restaurant?: any;
+  categories: any[];
+  designSpec?: any;
+  approveContent?: boolean;
+  approveDesign?: boolean;
+}): Promise<{ success: boolean; menuId: string; menuSlug: string; publicUrl: string }> {
+  return request<{ success: boolean; menuId: string; menuSlug: string; publicUrl: string }>('/pdf/approve-and-publish', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
 export function getMenu(): Promise<AppMenuData> {
   return request<AppMenuData>('/menu');
 }

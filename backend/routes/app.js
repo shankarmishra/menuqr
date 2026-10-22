@@ -6,6 +6,8 @@ import { resolveTenantAuthorization, requireEntitlement, withContentChange, getC
 import { detectColumnMappings, validateAndPreviewImport, executeImportTransaction } from '../menuImporter.js';
 import { invalidatePublicMenuCache } from './public.js';
 import { generateAiMenuDesign, isGeminiAvailable } from '../aiDesignService.js';
+import { extractMenuFromPdf, refinePdfDesign } from '../pdfMenuService.js';
+import { validateDesignSpecification } from '../designSpecValidator.js';
 
 function inputText(value, maxLength = 255) {
   if (value === undefined || value === null) return '';
@@ -241,6 +243,282 @@ export default async function appRoutes(request, response, url) {
         throw apiError(429, err.message);
       }
       throw apiError(500, err.message || 'Failed to generate AI menu design.');
+    }
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/pdf/extract') {
+    requireEntitlement(authorization, 'initial_menu_setup');
+    const body = await readJson(request);
+    const { pdfBase64, filename } = body || {};
+
+    if (!pdfBase64 || typeof pdfBase64 !== 'string') {
+      throw apiError(400, 'A valid base64-encoded PDF file is required.');
+    }
+
+    const cleanBase64 = pdfBase64.replace(/^data:application\/pdf;base64,/i, '').trim();
+    let buffer;
+    try {
+      buffer = Buffer.from(cleanBase64, 'base64');
+    } catch {
+      throw apiError(400, 'Invalid base64 payload.');
+    }
+
+    const cleanFilename = inputText(filename, 255) || 'Uploaded_Menu.pdf';
+    try {
+      const result = await extractMenuFromPdf({
+        buffer,
+        filename: cleanFilename,
+        tenantId: user.tenantId,
+      });
+
+      const importId = randomUUID();
+      const totalItems = result.categories?.reduce((acc, c) => acc + (c.items?.length || 0), 0) || 0;
+
+      await pool.query(`
+        INSERT INTO menu_imports (
+          id, tenant_id, filename, import_type, status, categories_count, items_count, 
+          page_count, is_scanned, draft_payload, design_specification
+        ) VALUES ($1, $2, $3, 'pdf', 'DRAFT', $4, $5, $6, $7, $8, $9)
+      `, [
+        importId,
+        user.tenantId,
+        cleanFilename,
+        result.categories?.length || 0,
+        totalItems,
+        result.pageCount || 1,
+        Boolean(result.isScanned),
+        JSON.stringify({ restaurant: result.restaurant, categories: result.categories }),
+        JSON.stringify(result.designSpec)
+      ]);
+
+      sendJson(response, 200, {
+        success: true,
+        importId,
+        pageCount: result.pageCount,
+        isScanned: result.isScanned,
+        restaurant: result.restaurant,
+        categories: result.categories,
+        designSpec: result.designSpec,
+        warnings: result.warnings,
+        provider: result.provider,
+        model: result.model || null,
+      });
+      return true;
+    } catch (err) {
+      throw apiError(400, err.message || 'Failed to extract menu from PDF document.');
+    }
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/pdf/refine-design') {
+    requireEntitlement(authorization, 'initial_menu_setup');
+    const body = await readJson(request);
+    const { importId, prompt, currentSpec } = body || {};
+
+    if (!currentSpec || typeof currentSpec !== 'object') {
+      throw apiError(400, 'Current design specification is required.');
+    }
+
+    const validatedSpec = validateDesignSpecification(currentSpec);
+    if (!validatedSpec) {
+      throw apiError(400, 'Invalid current design specification.');
+    }
+
+    const result = await refinePdfDesign({
+      previousSpec: validatedSpec,
+      prompt: inputText(prompt, 2000),
+      tenantId: user.tenantId,
+    });
+
+    if (importId && typeof importId === 'string') {
+      await pool.query(
+        'UPDATE menu_imports SET design_specification = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND tenant_id = $3',
+        [JSON.stringify(result.spec), importId, user.tenantId]
+      );
+    }
+
+    sendJson(response, 200, {
+      success: true,
+      spec: result.spec,
+      provider: result.provider,
+      model: result.model || null,
+      warning: result.warning || null,
+    });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/pdf/save-draft') {
+    requireEntitlement(authorization, 'initial_menu_setup');
+    const body = await readJson(request);
+    const { importId, restaurant, categories, designSpec } = body || {};
+
+    if (!importId || typeof importId !== 'string') {
+      throw apiError(400, 'Import ID is required to save draft.');
+    }
+
+    const draftPayload = JSON.stringify({ restaurant, categories });
+    const validatedSpec = designSpec ? validateDesignSpecification(designSpec) : null;
+
+    const updateRes = await pool.query(`
+      UPDATE menu_imports 
+      SET draft_payload = $1, design_specification = $2, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = $3 AND tenant_id = $4
+    `, [
+      draftPayload,
+      validatedSpec ? JSON.stringify(validatedSpec) : null,
+      importId,
+      user.tenantId
+    ]);
+
+    if (updateRes.rowCount === 0) {
+      throw apiError(404, 'Draft import not found.');
+    }
+
+    sendJson(response, 200, { success: true });
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname.startsWith('/api/app/pdf/draft/')) {
+    requireEntitlement(authorization, 'initial_menu_setup');
+    const importId = url.pathname.replace('/api/app/pdf/draft/', '').trim();
+    if (!importId) throw apiError(400, 'Import ID is required.');
+
+    const res = await pool.query(
+      'SELECT id, filename, import_type as "importType", status, page_count as "pageCount", is_scanned as "isScanned", draft_payload as "draftPayload", design_specification as "designSpec", updated_at as "updatedAt" FROM menu_imports WHERE id = $1 AND tenant_id = $2',
+      [importId, user.tenantId]
+    );
+
+    if (!res.rows[0]) throw apiError(404, 'Draft import not found.');
+    const row = res.rows[0];
+    const parsedDraft = row.draftPayload || {};
+
+    sendJson(response, 200, {
+      importId: row.id,
+      filename: row.filename,
+      status: row.status,
+      pageCount: row.pageCount,
+      isScanned: row.isScanned,
+      restaurant: parsedDraft.restaurant || null,
+      categories: parsedDraft.categories || [],
+      designSpec: row.designSpec || null,
+      updatedAt: row.updatedAt,
+    });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/pdf/approve-and-publish') {
+    requireEntitlement(authorization, 'initial_menu_setup');
+    const body = await readJson(request);
+    const { importId, restaurant, categories, designSpec, approveContent, approveDesign } = body || {};
+
+    if (!Array.isArray(categories) || categories.length === 0) {
+      throw apiError(400, 'At least one menu category with dishes is required.');
+    }
+
+    if (importId && typeof importId === 'string') {
+      const checkRes = await pool.query(
+        'SELECT id FROM menu_imports WHERE id = $1 AND tenant_id = $2',
+        [importId, user.tenantId]
+      );
+      if (!checkRes.rows[0]) {
+        throw apiError(404, 'Import record not found or does not belong to your account.');
+      }
+    }
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      let menuId;
+      const menuRes = await client.query('SELECT id FROM menus WHERE tenant_id = $1 LIMIT 1', [user.tenantId]);
+      if (menuRes.rows.length > 0) {
+        menuId = menuRes.rows[0].id;
+      } else {
+        menuId = randomUUID();
+        await client.query(
+          'INSERT INTO menus (id, tenant_id, name, status, published_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)',
+          [menuId, user.tenantId, restaurant?.name ? `${restaurant.name} Menu` : 'Main Menu', 'PUBLISHED']
+        );
+      }
+
+      if (approveContent !== false) {
+        await executeImportTransaction(client, user.tenantId, menuId, categories, 'update', 'reconstructed_menu.pdf');
+      }
+
+      const validatedSpec = designSpec ? validateDesignSpecification(designSpec) : null;
+      if (approveDesign !== false && validatedSpec) {
+        const settingId = randomUUID();
+        await client.query(`
+          INSERT INTO appearance_settings (id, tenant_id, template_id, accent_configuration, restaurant_display_name, tagline)
+          VALUES ($1, $2, $3, $4, $5, $6)
+          ON CONFLICT (tenant_id)
+          DO UPDATE SET
+            template_id = COALESCE(EXCLUDED.template_id, appearance_settings.template_id),
+            accent_configuration = EXCLUDED.accent_configuration,
+            restaurant_display_name = COALESCE(EXCLUDED.restaurant_display_name, appearance_settings.restaurant_display_name),
+            tagline = COALESCE(EXCLUDED.tagline, appearance_settings.tagline),
+            updated_at = CURRENT_TIMESTAMP
+        `, [
+          settingId,
+          user.tenantId,
+          validatedSpec.themeId || 'pdf-bespoke-theme',
+          JSON.stringify(validatedSpec),
+          inputText(restaurant?.name, 255) || null,
+          inputText(restaurant?.tagline, 255) || null
+        ]);
+      }
+
+      if (restaurant && typeof restaurant === 'object') {
+        await client.query(`
+          UPDATE clients
+          SET 
+            business_name = COALESCE($1, business_name),
+            tagline = COALESCE($2, tagline),
+            cuisine = COALESCE($3, cuisine),
+            description = COALESCE($4, description),
+            address = COALESCE($5, address),
+            phone = COALESCE($6, phone),
+            opening_hours = COALESCE($7, opening_hours),
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = $8
+        `, [
+          inputText(restaurant.name, 255) || null,
+          inputText(restaurant.tagline, 255) || null,
+          inputText(restaurant.cuisine, 255) || null,
+          inputText(restaurant.description, 2000) || null,
+          inputText(restaurant.address, 1000) || null,
+          inputText(restaurant.phone, 50) || null,
+          inputText(restaurant.openingHours, 255) || null,
+          user.tenantId
+        ]);
+      }
+
+      if (importId && typeof importId === 'string') {
+        await client.query(
+          "UPDATE menu_imports SET status = 'PUBLISHED', updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND tenant_id = $2",
+          [importId, user.tenantId]
+        );
+      }
+
+      await client.query("UPDATE users SET onboarding_state = 'COMPLETED', updated_at = CURRENT_TIMESTAMP WHERE id = $1", [user.id]);
+      await client.query('COMMIT');
+
+      invalidatePublicMenuCache(user.tenantId);
+
+      const clientRes = await pool.query('SELECT menu_slug FROM clients WHERE id = $1', [user.tenantId]);
+      const menuSlug = clientRes.rows[0]?.menu_slug || '';
+
+      sendJson(response, 200, {
+        success: true,
+        menuId,
+        menuSlug,
+        publicUrl: `/m/${menuSlug}`,
+      });
+      return true;
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw apiError(500, err.message || 'Failed to approve and publish reconstructed menu.');
+    } finally {
+      client.release();
     }
   }
 

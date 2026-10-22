@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useMatch } from 'r
 import { HelmetProvider } from 'react-helmet-async';
 import ScrollToTop from './components/navigation/ScrollToTop';
 import HomePage from './pages/HomePage';
-import SignupPage from './pages/public/SignupPage';
 import OnboardingWizard from './pages/public/OnboardingWizard';
 import PricingPage from './pages/purchase/PricingPage';
 import PurchaseDetailsPage from './pages/purchase/PurchaseDetailsPage';
