@@ -1,6 +1,12 @@
 import https from 'node:https';
+import dns from 'node:dns';
 import { randomUUID } from 'node:crypto';
 import { pool } from './db.js';
+
+// Force IPv4 lookup for all SMTP & external API calls (fixes ENETUNREACH on Render/cloud containers)
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch {}
 
 export function getSmtpTimeoutOptions(environment = process.env) {
   const timeoutValue = (value, fallback) => {
@@ -80,18 +86,26 @@ export function getEmailConfig(environment = process.env) {
   };
 }
 
-async function sendViaSmtp(config, message, label = 'transactional email') {
+async function sendViaSmtp(config, message, label = 'transactional email', retryPort = null) {
+  const port = retryPort || config.smtp.port;
+  const secure = retryPort ? (retryPort === 465) : config.smtp.secure;
+  const timeouts = getSmtpTimeoutOptions();
+
   try {
     const nodemailerModule = await import('nodemailer');
     const createTransport = nodemailerModule.default?.createTransport || nodemailerModule.createTransport;
     const transporter = createTransport({
       host: config.smtp.host,
-      port: config.smtp.port,
-      secure: config.smtp.secure,
+      port,
+      secure,
       auth: config.smtp.user ? {
         user: config.smtp.user,
         pass: config.smtp.pass,
       } : undefined,
+      family: 4, // CRITICAL: Force IPv4 connection to prevent ENETUNREACH on Render/cloud containers
+      connectionTimeout: timeouts.connectionTimeout,
+      greetingTimeout: timeouts.greetingTimeout,
+      socketTimeout: timeouts.socketTimeout,
     });
 
     const info = await transporter.sendMail({
@@ -102,14 +116,19 @@ async function sendViaSmtp(config, message, label = 'transactional email') {
       text: message.text,
     });
 
-    console.info(`[email] ${label} sent successfully to ${maskEmail(message.to)} via SMTP (Message ID: ${info.messageId || 'unknown'}).`);
+    console.info(`[email] ${label} sent successfully to ${maskEmail(message.to)} via SMTP (port ${port}, Message ID: ${info.messageId || 'unknown'}).`);
     return {
       ok: true,
       provider: 'smtp',
       messageId: info.messageId,
     };
   } catch (err) {
-    console.error(`[email] SMTP send failed for ${label}:`, err.message);
+    console.error(`[email] SMTP send failed for ${label} (port ${port}):`, err.message);
+    // If port 587 failed and host is Gmail, retry immediately on port 465 (SSL/TLS direct)
+    if (!retryPort && port === 587 && config.smtp.host === 'smtp.gmail.com') {
+      console.warn(`[email] Retrying Gmail SMTP for ${label} on port 465 (SSL/TLS, family 4)...`);
+      return sendViaSmtp(config, message, label, 465);
+    }
     return {
       ok: false,
       provider: 'smtp',
@@ -131,6 +150,7 @@ async function sendViaResend(config, message, label = 'transactional email') {
     hostname: 'api.resend.com',
     path: '/emails',
     method: 'POST',
+    family: 4, // CRITICAL: Force IPv4 to prevent hanging/timeout on IPv6-broken cloud containers
     headers: {
       'Authorization': `Bearer ${config.apiKey}`,
       'Content-Type': 'application/json',
@@ -185,8 +205,8 @@ async function sendViaResend(config, message, label = 'transactional email') {
       });
     });
 
-    req.setTimeout(15_000, () => {
-      req.destroy(new Error('Resend API request timed out after 15 seconds.'));
+    req.setTimeout(8_000, () => {
+      req.destroy(new Error('Resend API request timed out after 8 seconds.'));
     });
 
     req.write(payload);
