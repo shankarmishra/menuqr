@@ -117,6 +117,7 @@ export function getEmailConfig(environment = process.env) {
     },
     fromAddress,
     fromName,
+    brevoSender: (environment.BREVO_SENDER_EMAIL || environment.MAIL_FROM_ADDRESS || environment.SMTP_USER || '').trim(),
     formattedFrom: `"${fromName}" <${fromAddress}>`,
     configured: provider !== 'none',
     provider,
@@ -286,8 +287,12 @@ async function sendViaBrevo(config, message, label = 'transactional email') {
     };
   }
 
-  // If fromAddress is @resend.dev, Brevo requires a valid non-resend.dev sender email
-  const senderEmail = config.fromAddress.includes('@resend.dev') ? 'support@menusqr.in' : config.fromAddress;
+  // Determine sender email for Brevo: prefer explicit brevoSender or non-resend email
+  const senderEmail = (
+    config.brevoSender && !config.brevoSender.includes('@resend.dev')
+      ? config.brevoSender
+      : (!config.fromAddress.includes('@resend.dev') ? config.fromAddress : 'support@menusqr.in')
+  );
 
   const payload = JSON.stringify({
     sender: {
@@ -329,6 +334,8 @@ async function sendViaBrevo(config, message, label = 'transactional email') {
     let errorMsg = `Brevo API returned status ${res.status}`;
     if (res.status === 401) {
       errorMsg = 'Brevo API key is invalid (401). Please check BREVO_API_KEY in Render environment settings.';
+    } else if (res.status === 400 && data.message?.toLowerCase().includes('sender')) {
+      errorMsg = `Brevo API error (400): Sender email "${senderEmail}" is not verified in your Brevo account. Add it at https://app.brevo.com/senders or set BREVO_SENDER_EMAIL to your Brevo signup email.`;
     } else if (data.message) {
       errorMsg = `Brevo API error (${res.status}): ${data.message}`;
     }
