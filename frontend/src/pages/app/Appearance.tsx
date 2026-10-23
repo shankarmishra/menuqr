@@ -28,6 +28,7 @@ export default function Appearance() {
   const [sub, setSub] = useState<AppSubscriptionData | null>(null);
   const [templateId, setTemplateId] = useState('royal-maharaja');
   const [customDesignSpec, setCustomDesignSpec] = useState<DesignSpecification | null>(null);
+  const [hasSavedSpec, setHasSavedSpec] = useState(false);
   const [activeMode, setActiveMode] = useState<'ai-studio' | 'classic'>('ai-studio');
   const [previewMode, setPreviewMode] = useState<'phone' | 'desktop'>('phone');
   const [loading, setLoading] = useState(true);
@@ -49,25 +50,11 @@ export default function Appearance() {
 
       if (savedSpec) {
         setCustomDesignSpec(savedSpec);
+        setHasSavedSpec(true);
         setActiveMode('ai-studio');
       } else {
-        // Generate an initial tailored bespoke specification
-        const engine = new DeterministicDesignEngine();
-        const hasPhotos = Boolean(menuData.categories?.some(c => c.items?.some(i => Boolean(i.image_url))));
-        const totalItems = menuData.categories?.reduce((acc, c) => acc + (c.items?.length || 0), 0) || 0;
-
-        engine.generateDesign({
-          businessName: profileData?.businessName || 'Your Restaurant',
-          cuisine: 'Contemporary Dining',
-          positioning: 'contemporary',
-          mood: 'royal-heritage',
-          hasPhotography: hasPhotos,
-          menuDensity: totalItems > 50 ? 'compact' : 'balanced',
-          logoUrl: profileData?.logoUrl,
-          tagline: profileData?.tagline,
-        }).then(spec => {
-          if (current) setCustomDesignSpec(spec);
-        });
+        setCustomDesignSpec(null);
+        setHasSavedSpec(false);
       }
     }).catch(() => {
       if (current) showToast('error', 'Your menu design could not be loaded. Please refresh and try again.');
@@ -85,12 +72,14 @@ export default function Appearance() {
           templateId: customDesignSpec.themeId || templateId,
           accentConfiguration: customDesignSpec,
         });
+        setHasSavedSpec(true);
         showToast('success', 'Bespoke AI design published! Your permanent QR code now displays this look.');
       } else {
         await updateAppearance({ 
           templateId,
           accentConfiguration: null,
         });
+        setHasSavedSpec(false);
         showToast('success', 'Classic template applied! The same QR code now displays this theme.');
       }
     } catch (error) {
@@ -231,6 +220,7 @@ export default function Appearance() {
               onSpecChange={setCustomDesignSpec}
               hasPhotography={hasPhotos}
               itemCount={previewItems.length}
+              hasSavedSpec={hasSavedSpec}
             />
           ) : (
             <section aria-label="Available menu themes" className="grid grid-cols-1 sm:grid-cols-2 gap-4">

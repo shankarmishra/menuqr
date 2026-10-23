@@ -39,6 +39,7 @@ interface AIDesignStudioProps {
   onSpecChange: (spec: DesignSpecification) => void;
   hasPhotography: boolean;
   itemCount: number;
+  hasSavedSpec?: boolean;
 }
 
 const COMPOSITION_OPTIONS: Array<{
@@ -92,6 +93,7 @@ export const AIDesignStudio: React.FC<AIDesignStudioProps> = ({
   onSpecChange,
   hasPhotography,
   itemCount,
+  hasSavedSpec = false,
 }) => {
   const [engine] = useState(() => new DeterministicDesignEngine());
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -291,6 +293,14 @@ export const AIDesignStudio: React.FC<AIDesignStudioProps> = ({
   }
 
   function handleCompositionSelect(comp: DesignCompositionStrategy) {
+    if (hasSavedSpec) {
+      if (!currentSpec) return;
+      onSpecChange({
+        ...currentSpec,
+        composition: comp,
+      });
+      return;
+    }
     if (!currentSpec) {
       handleGenerate(false, comp);
       return;
@@ -339,22 +349,36 @@ export const AIDesignStudio: React.FC<AIDesignStudioProps> = ({
               )}
             </div>
             <p className="text-xs text-[#849a90] mt-0.5">
-              {aiStatus?.available 
+              {hasSavedSpec
+                ? 'Your bespoke menu design is established and active on your permanent QR code. Re-generation is locked to preserve your live restaurant identity.'
+                : aiStatus?.available 
                 ? 'Synthesizes multimodal photo cues, restaurant atmosphere, and typography into a production web menu.'
                 : 'Generates tailored typography, balanced color harmonies, and responsive layouts via verified fallback rules.'}
             </p>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => handleGenerate(false)}
-          disabled={generating}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#e8783c] hover:bg-[#f08b55] text-white text-xs font-bold transition-all shadow-md shadow-[#e8783c]/20 shrink-0 cursor-pointer disabled:opacity-50"
-        >
-          {generating ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
-          {generating ? 'Composing...' : (currentSpec ? 'Re-Generate Spec' : 'Generate Menu Design')}
-        </button>
+        {hasSavedSpec ? (
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold shrink-0">
+            <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+            <span>Design Active & Locked</span>
+          </div>
+        ) : !currentSpec ? (
+          <button
+            type="button"
+            onClick={() => handleGenerate(false)}
+            disabled={generating}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#e8783c] hover:bg-[#f08b55] text-white text-xs font-bold transition-all shadow-md shadow-[#e8783c]/20 shrink-0 cursor-pointer disabled:opacity-50"
+          >
+            {generating ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
+            {generating ? 'Composing...' : 'Generate Menu Design'}
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#e8783c]/15 border border-[#e8783c]/30 text-[#e8783c] text-xs font-semibold shrink-0">
+            <Check size={16} className="text-[#e8783c] shrink-0" />
+            <span>1st-Time Design Generated</span>
+          </div>
+        )}
       </div>
 
       {/* FEEDBACK BANNER */}
@@ -543,9 +567,9 @@ export const AIDesignStudio: React.FC<AIDesignStudioProps> = ({
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          SECTION 4: REVISION FLOW (When currentSpec exists)
+          SECTION 4: REVISION FLOW (Only available during initial 1st-time draft)
           ═══════════════════════════════════════════════════════════════════════ */}
-      {currentSpec && (
+      {!hasSavedSpec && currentSpec && (
         <div className="bg-[#19221e] border border-[#e8783c]/30 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-[#e8783c] flex items-center gap-2">
@@ -597,7 +621,15 @@ export const AIDesignStudio: React.FC<AIDesignStudioProps> = ({
                 key={m.id}
                 type="button"
                 onClick={() => {
+                  if (hasSavedSpec) {
+                    setFeedbackMessage({
+                      type: 'info',
+                      text: 'Your bespoke menu design is established and locked. Re-generation is disabled to preserve brand consistency.',
+                    });
+                    return;
+                  }
                   setMood(m.id);
+                  if (!currentSpec) return;
                   const profile: RestaurantDesignProfile = {
                     businessName,
                     cuisine,

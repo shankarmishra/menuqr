@@ -5,6 +5,12 @@ import { createClientOtpChallenge, verifyClientOtpChallenge, invalidateClientOtp
 import { connectDB, pool } from '../db.js';
 
 test('Email Reliability & OTP Test Suite', async (t) => {
+  const originalEnv = { ...process.env };
+  process.env.ENABLE_EMAIL_SERVICE = 'true';
+
+  t.after(() => {
+    process.env = { ...originalEnv };
+  });
 
   await t.test('1. Mask email utility hides sensitive recipient details', () => {
     assert.equal(maskEmail('xshankarmishra@gmail.com'), 'x***a@g***.com');
@@ -132,6 +138,18 @@ test('Email Reliability & OTP Test Suite', async (t) => {
     assert.equal(dbRes.rows.length, 1);
     assert.equal(dbRes.rows[0].recipient, recipient);
     assert.equal(dbRes.rows[0].idempotency_key, idempotencyKey);
+  });
+
+  await t.test('9. When email service is paused (ENABLE_EMAIL_SERVICE is not true), emails are skipped cleanly', async () => {
+    delete process.env.ENABLE_EMAIL_SERVICE;
+    const res = await sendEmailDirectly({
+      to: 'paused@example.com',
+      subject: 'Paused',
+      text: 'Paused',
+    });
+    assert.equal(res.ok, true);
+    assert.equal(res.disabled, true);
+    assert.equal(res.provider, 'disabled');
   });
 
 });

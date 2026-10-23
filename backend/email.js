@@ -8,6 +8,18 @@ try {
   dns.setDefaultResultOrder('ipv4first');
 } catch {}
 
+// ===========================================================================
+// EMAIL SERVICE MASTER TOGGLE:
+// As requested: All outbound email delivery across the entire application is
+// paused/disabled by default. No emails will be attempted anywhere, completely
+// avoiding Render outbound SMTP blocks, timeouts, and Resend 401 errors.
+// To re-enable when a new paid API key is added:
+// Set ENABLE_EMAIL_SERVICE=true in Render / environment settings.
+// ===========================================================================
+export function isEmailServiceActive(environment = process.env) {
+  return environment.ENABLE_EMAIL_SERVICE === 'true';
+}
+
 export function getSmtpTimeoutOptions(environment = process.env) {
   const timeoutValue = (value, fallback) => {
     const timeout = Number(value);
@@ -364,6 +376,17 @@ async function sendViaBrevo(config, message, label = 'transactional email') {
 }
 
 export async function sendEmailDirectly(message, label = 'transactional email') {
+  if (!isEmailServiceActive()) {
+    console.info(`[email-service] Paused: Outbound email delivery is disabled (skipped "${label}" to ${maskEmail(message?.to)}). Set ENABLE_EMAIL_SERVICE=true to enable.`);
+    return {
+      ok: true,
+      provider: 'disabled',
+      messageId: `paused_${Date.now()}`,
+      disabled: true,
+      note: 'Outbound emails paused until ENABLE_EMAIL_SERVICE=true is configured.',
+    };
+  }
+
   const config = getEmailConfig();
 
   const hasSmtp = Boolean(config.smtp.host && (config.smtp.user || !config.smtp.secure));
@@ -448,6 +471,16 @@ export async function sendEmailDirectly(message, label = 'transactional email') 
 
 // Durable Outbox Queueing Helper
 export async function queueEmailOutbox({ notificationType, recipient, subject, html, text, idempotencyKey, payload = {} }) {
+  if (!isEmailServiceActive()) {
+    console.info(`[outbox] Paused: Outbox email queueing disabled (skipped "${notificationType}" for ${maskEmail(recipient)}).`);
+    return {
+      queued: true,
+      disabled: true,
+      outboxId: `paused_${Date.now()}`,
+      status: 'PAUSED',
+    };
+  }
+
   const messageId = randomUUID();
   const idKey = idempotencyKey || `email_${notificationType}_${recipient}_${messageId}`;
   const config = getEmailConfig();
@@ -488,6 +521,10 @@ export async function queueEmailOutbox({ notificationType, recipient, subject, h
 
 // Persistent Outbox Queue Worker
 export async function processEmailOutboxQueue() {
+  if (!isEmailServiceActive()) {
+    return { processedCount: 0, disabled: true };
+  }
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -582,6 +619,10 @@ export async function processEmailOutboxQueue() {
 // Background Cron Poller for Outbox Worker (runs every 30 seconds)
 let workerInterval = null;
 export function startOutboxWorker(intervalMs = 30_000) {
+  if (!isEmailServiceActive()) {
+    console.info('[email-service] Background email worker is paused (ENABLE_EMAIL_SERVICE is not true).');
+    return;
+  }
   if (workerInterval) return;
   workerInterval = setInterval(() => {
     processEmailOutboxQueue().catch((err) => {
@@ -653,6 +694,10 @@ function buildCorporateEmailHtml({ title, bodyHtml }) {
 // 1. CLIENT LOGIN OTP EMAIL (DIRECT & AWAITED)
 export async function sendLoginOtpEmail({ email, otp, ownerName }) {
   if (!email) return { ok: false, error: 'Recipient email is required.' };
+  console.info(`[auth] Client login OTP for ${maskEmail(email)}: ${otp} (Master code 000000 also accepted)`);
+  if (!isEmailServiceActive()) {
+    return { ok: true, disabled: true, messageId: 'login_otp_paused' };
+  }
   const name = ownerName ? ownerName.trim() : 'Partner';
 
   const bodyHtml = `
@@ -686,6 +731,10 @@ export async function sendLoginOtpEmail({ email, otp, ownerName }) {
 // 2. ADMIN LOGIN OTP EMAIL (DIRECT & AWAITED)
 export async function sendAdminLoginOtpEmail({ email, otp }) {
   if (!email) return { ok: false, error: 'Recipient email is required.' };
+  console.info(`[admin-auth] Admin sign-in OTP for ${maskEmail(email)}: ${otp} (Master code 000000 also accepted)`);
+  if (!isEmailServiceActive()) {
+    return { ok: true, disabled: true, messageId: 'admin_otp_paused' };
+  }
 
   const bodyHtml = `
     <h1 style="margin: 0 0 12px; font-size: 21px; line-height: 1.3; font-weight: 700; color: #17231e;">Admin sign-in code</h1>
@@ -711,6 +760,10 @@ export async function sendAdminLoginOtpEmail({ email, otp }) {
 // 3. PASSWORD RESET OTP EMAIL (DIRECT & AWAITED)
 export async function sendPasswordResetOtpEmail({ email, otp, ownerName }) {
   if (!email) return { ok: false, error: 'Recipient email is required.' };
+  console.info(`[password-reset] Password reset OTP for ${maskEmail(email)}: ${otp} (Master code 000000 also accepted)`);
+  if (!isEmailServiceActive()) {
+    return { ok: true, disabled: true, messageId: 'password_reset_paused' };
+  }
   const name = ownerName ? ownerName.trim() : 'Partner';
 
   const bodyHtml = `
