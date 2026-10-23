@@ -52,15 +52,15 @@ export function getEmailConfig(environment = process.env) {
   const fromName = (environment.MAIL_FROM_NAME || extractedName || 'MENUSQR').trim();
   const preferredProvider = (environment.EMAIL_PROVIDER || '').trim().toLowerCase();
 
+  // Prefer direct SMTP by default whenever SMTP credentials are provisioned (e.g. Gmail SMTP),
+  // completely bypassing Resend unless explicitly forced via EMAIL_PROVIDER=resend.
   let provider = 'none';
-  if (preferredProvider === 'smtp' && smtpHost) {
-    provider = 'smtp';
-  } else if (preferredProvider === 'resend' && apiKey) {
-    provider = 'resend';
-  } else if (apiKey) {
+  if (preferredProvider === 'resend' && apiKey) {
     provider = 'resend';
   } else if (smtpHost) {
     provider = 'smtp';
+  } else if (apiKey) {
+    provider = 'resend';
   }
 
   return {

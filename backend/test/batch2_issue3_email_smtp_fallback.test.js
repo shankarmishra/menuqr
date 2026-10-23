@@ -53,7 +53,19 @@ test('Batch 2 #3: Email SMTP (nodemailer) fallback when RESEND_API_KEY is missin
     assert.match(res.error, /No email transport configured|SMTP/);
   });
 
-  await t.test('Falls back to SMTP when RESEND_API_KEY is invalid (e.g. 401 error) but SMTP is configured', async () => {
+  await t.test('Prefers direct SMTP by default even if RESEND_API_KEY is present', async () => {
+    process.env.RESEND_API_KEY = 're_invalid_test_key_12345';
+    process.env.SMTP_HOST = 'smtp.mockserver.local';
+    process.env.SMTP_PORT = '587';
+    process.env.SMTP_USER = 'smtp_test_user';
+    process.env.SMTP_PASS = 'smtp_test_pass';
+
+    const cfg = getEmailConfig(process.env);
+    assert.equal(cfg.provider, 'smtp', 'Direct SMTP must be preferred by default');
+  });
+
+  await t.test('Falls back to SMTP when EMAIL_PROVIDER=resend fails (e.g. 401 error)', async () => {
+    process.env.EMAIL_PROVIDER = 'resend';
     process.env.RESEND_API_KEY = 're_invalid_test_key_12345';
     process.env.SMTP_HOST = 'smtp.mockserver.local';
     process.env.SMTP_PORT = '587';
