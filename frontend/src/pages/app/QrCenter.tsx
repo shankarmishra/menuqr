@@ -64,7 +64,7 @@ export default function QrCenter() {
     QRCode.toDataURL(menuUrl, {
       width: 600,
       margin: 2,
-      color: { dark: '#1C1209', light: '#FFFFFF' },
+      color: { dark: '#140D07', light: '#00000000' },
       errorCorrectionLevel: 'H',
     }).then((url) => {
       if (isCurrent) setQrImage(url);

@@ -381,8 +381,8 @@ export default function Coupons() {
                     onChange={(e: any) => setGenPlan(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl font-semibold text-white focus:outline-none focus:border-[#e8783c]"
                   >
-                    <option value="PREMIUM">Premium (₹8499/yr)</option>
-                    <option value="INTERMEDIATE">Intermediate (₹3999/yr)</option>
+                    <option value="PREMIUM">Premium (₹6799/yr)</option>
+                    <option value="INTERMEDIATE">Intermediate (₹3199/yr)</option>
                   </select>
                 </div>
 

@@ -89,18 +89,18 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
 
     await t.test('Coupon discount applies strictly to base plan, add-on amount is added to net amount', () => {
       // Test formula: payable = (plan.price - couponDiscount) + addonAmount
-      const planPrice = PLANS.intermediate.price; // 3999
+      const planPrice = PLANS.intermediate.price; // 3199
       const addonPrice = ADDONS.google_reviews.price; // 499
       const discountPct = 10;
-      const discountAmount = Math.round((planPrice * discountPct) / 100); // 400
-      const netPlanPrice = planPrice - discountAmount; // 3599
-      const totalPayable = netPlanPrice + addonPrice; // 4098
+      const discountAmount = Math.round((planPrice * discountPct) / 100); // 320
+      const netPlanPrice = planPrice - discountAmount; // 2879
+      const totalPayable = netPlanPrice + addonPrice; // 3378
 
-      assert.equal(planPrice, 3999);
+      assert.equal(planPrice, 3199);
       assert.equal(addonPrice, 499);
-      assert.equal(discountAmount, 400);
-      assert.equal(netPlanPrice, 3599);
-      assert.equal(totalPayable, 4098);
+      assert.equal(discountAmount, 320);
+      assert.equal(netPlanPrice, 2879);
+      assert.equal(totalPayable, 3378);
     });
   });
 
@@ -180,8 +180,8 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
           city: 'Mumbai',
           state: 'Maharashtra',
           address: '42 Marine Drive',
-          planId: 'BASIC', // 2499
-          selectedAddons: ['google_reviews'], // +499 = 2998
+          planId: 'BASIC', // 1999
+          selectedAddons: ['google_reviews'], // +499 = 2498
           emailVerificationToken: grantToken,
         }),
       };
@@ -201,7 +201,7 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
       const dbOrder = await pool.query('SELECT * FROM orders WHERE id = $1', [res.json.orderId]);
       assert.equal(dbOrder.rows.length, 1);
       const row = dbOrder.rows[0];
-      assert.equal(Number(row.amount), 2998, 'Basic (2499) + Google Reviews (499) must equal 2998');
+      assert.equal(Number(row.amount), 2498, 'Basic (1999) + Google Reviews (499) must equal 2498');
       assert.equal(Number(row.addon_amount), 499);
       assert.equal(row.selected_addons[0].id, 'google_reviews');
     });
@@ -223,7 +223,7 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
         city: 'Mumbai',
         state: 'Maharashtra',
         address: '42 Marine Drive',
-        planId: 'BASIC', // 2499
+        planId: 'BASIC', // 1999
         selectedAddons: ['google_reviews', 'google_reviews'], // Should deduplicate to 1
         emailVerificationToken: grantToken2,
       });
@@ -240,7 +240,7 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
 
       const dbOrder = await pool.query('SELECT * FROM orders WHERE id = $1', [res.json.orderId]);
       const row = dbOrder.rows[0];
-      assert.equal(Number(row.amount), 2998, 'Must charge 499 once, not twice');
+      assert.equal(Number(row.amount), 2498, 'Must charge 499 once, not twice');
       assert.equal(row.selected_addons[0].id, 'google_reviews');
       assert.equal(row.selected_addons.length, 1);
     });
@@ -729,8 +729,8 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
         city: 'Pune',
         state: 'Maharashtra',
         address: '10 FC Road',
-        planId: 'BASIC', // 2499
-        selectedAddons: ['google_reviews'], // + 499 = 2998
+        planId: 'BASIC', // 1999
+        selectedAddons: ['google_reviews'], // + 499 = 2498
         emailVerificationToken: grantToken,
       });
       const streamReq = Readable.from([Buffer.from(orderBody)]);
@@ -746,7 +746,7 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
       assert.ok(e2eOrderId);
 
       const dbOrder = await pool.query('SELECT * FROM orders WHERE id = $1', [e2eOrderId]);
-      assert.equal(Number(dbOrder.rows[0].amount), 2998);
+      assert.equal(Number(dbOrder.rows[0].amount), 2498);
       assert.equal(Number(dbOrder.rows[0].addon_amount), 499);
       assert.equal(dbOrder.rows[0].selected_addons[0].id, 'google_reviews');
     });
@@ -757,7 +757,7 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
         orderId: e2eOrderId,
         mockSuccess: true,
         transactionId: `cf_journey_${randomUUID()}`,
-        payloadAmount: 2998,
+        payloadAmount: 2498,
         payloadCurrency: 'INR',
         payloadEmail: e2eEmail,
       });

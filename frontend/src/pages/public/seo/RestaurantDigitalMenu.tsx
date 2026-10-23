@@ -52,7 +52,7 @@ export default function RestaurantDigitalMenu() {
           <div className="pt-6 border-t border-gray-100 flex flex-wrap gap-4 items-center justify-between">
             <div>
               <h3 className="text-xl font-bold text-[#151C19]">Ready to elevate your menu experience?</h3>
-              <p className="text-sm text-[#53615a]">Choose a plan starting at just ₹699/month (₹2,499/year).</p>
+              <p className="text-sm text-[#53615a]">Choose a plan starting at just ₹559/month (₹1,999/year).</p>
             </div>
             <Link to="/plans" className="bg-[#E8783C] text-white px-6 py-3 rounded-full font-bold hover:bg-[#d66a30] transition-colors">
               Compare Subscription Plans

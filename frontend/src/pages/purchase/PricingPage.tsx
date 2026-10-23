@@ -16,10 +16,10 @@ export default function PricingPage() {
     {
       id: 'basic',
       name: 'BASIC',
-      monthlyPrice: '₹699',
-      yearlyPrice: '₹2,499',
+      monthlyPrice: '₹559',
+      yearlyPrice: '₹1,999',
       savings: 'Save 70%',
-      effectiveMonthly: '₹208/mo when billed yearly',
+      effectiveMonthly: '₹166/mo when billed yearly',
       description: 'Perfect for small cafes and food stalls starting their digital journey.',
       features: [
         'Permanent Table QR Code',
@@ -35,10 +35,10 @@ export default function PricingPage() {
     {
       id: 'intermediate',
       name: 'INTERMEDIATE',
-      monthlyPrice: '₹1,199',
-      yearlyPrice: '₹3,999',
+      monthlyPrice: '₹959',
+      yearlyPrice: '₹3,199',
       savings: 'Save 72%',
-      effectiveMonthly: '₹333/mo when billed yearly',
+      effectiveMonthly: '₹266/mo when billed yearly',
       description: 'Ideal for growing restaurants needing more flexibility and style.',
       features: [
         'Permanent Table QR Code',
@@ -55,10 +55,10 @@ export default function PricingPage() {
     {
       id: 'premium',
       name: 'PREMIUM',
-      monthlyPrice: '₹1,399',
-      yearlyPrice: '₹8,499',
+      monthlyPrice: '₹1,119',
+      yearlyPrice: '₹6,799',
       savings: 'Save 49%',
-      effectiveMonthly: '₹708/mo when billed yearly',
+      effectiveMonthly: '₹566/mo when billed yearly',
       description: 'Everything you need to run a world-class digital menu for your restaurant.',
       features: [
         'Permanent Table QR Code',
@@ -79,7 +79,7 @@ export default function PricingPage() {
       <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="MenusQR Pricing | Digital Menu Plans for Restaurants"
-        description="View MenusQR pricing plans. Basic from ₹699/mo (₹2,499/yr), Intermediate from ₹1,199/mo (₹3,999/yr), and Premium from ₹1,399/mo (₹8,499/yr). Create your digital restaurant QR menu today."
+        description="View MenusQR pricing plans. Basic from ₹559/mo (₹1,999/yr), Intermediate from ₹959/mo (₹3,199/yr), and Premium from ₹1,119/mo (₹6,799/yr). Create your digital restaurant QR menu today."
         canonicalUrl="/plans"
         schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs)]}
       />

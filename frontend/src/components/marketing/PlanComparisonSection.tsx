@@ -22,9 +22,9 @@ const plans: Array<{
   price: string;
   summary: string;
 }> = [
-  { key: 'basic', name: 'Basic', price: '₹2,499/YR', summary: 'Start with a digital menu and a permanent QR.' },
-  { key: 'intermediate', name: 'Intermediate', price: '₹3,999/YR', summary: 'More creative control and unlimited menu updates.' },
-  { key: 'premium', name: 'Premium', price: '₹8,499/YR', summary: 'Turn every scan into a complete table experience.' },
+  { key: 'basic', name: 'Basic', price: '₹1,999/YR', summary: 'Start with a digital menu and a permanent QR.' },
+  { key: 'intermediate', name: 'Intermediate', price: '₹3,199/YR', summary: 'More creative control and unlimited menu updates.' },
+  { key: 'premium', name: 'Premium', price: '₹6,799/YR', summary: 'Turn every scan into a complete table experience.' },
 ];
 
 export default function PlanComparisonSection() {

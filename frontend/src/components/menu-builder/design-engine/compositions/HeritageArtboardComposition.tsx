@@ -1,7 +1,7 @@
 // MENUQR Design Engine — Authentic Heritage Artboard Composition
-// 100% Source-Fidelity Recreation of Art Board 3.pdf (Mannat Tandoori Junction)
-// Authentic Cover Page 1 Artwork + Elegant Coded HTML/CSS Artboards for Interior Menu
-// Razor-Sharp Typography, Dual/Single Price Tables, Zero Truncation, Interactive Cart
+// Source-Fidelity Recreation of Art Board 3.pdf (Mannat Tandoori Junction)
+// Individual DOM Elements for Cover Page 1 + 100% Dynamic Database-Driven Menu Chapters
+// Dynamic Prices, Dynamic Items, Real Cart & Table QR Order Flow with Authentic Tandoor Aesthetics
 
 import React, { useMemo, useState } from 'react';
 import clsx from 'clsx';
@@ -17,131 +17,7 @@ import {
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Authentic Dish Data Types
-// ─────────────────────────────────────────────────────────────────────────────
-interface PdfDishItem {
-  id: string;
-  name: string;
-  halfPrice?: number;
-  fullPrice: number;
-  isChefSpecial?: boolean;
-  isSpicy?: boolean;
-  isPureSoya?: boolean;
-  category: string;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Chapter 1: MTJ Tandoori Snacks & Paneer Feast (Art Board 3.pdf Page 4)
-// ─────────────────────────────────────────────────────────────────────────────
-const PAGE04_CHAAP_ITEMS: PdfDishItem[] = [
-  { id: 'chaap-01', name: 'Malai Chaap', halfPrice: 149, fullPrice: 239, isChefSpecial: true, category: 'Chaap Specialities' },
-  { id: 'chaap-02', name: 'Tandoori Chaap', halfPrice: 149, fullPrice: 239, category: 'Chaap Specialities' },
-  { id: 'chaap-03', name: 'Punjabi Chaap', halfPrice: 149, fullPrice: 239, isSpicy: true, category: 'Chaap Specialities' },
-  { id: 'chaap-04', name: 'Achari Chaap', halfPrice: 149, fullPrice: 239, category: 'Chaap Specialities' },
-  { id: 'chaap-05', name: 'Masala Chaap', halfPrice: 149, fullPrice: 239, isSpicy: true, category: 'Chaap Specialities' },
-  { id: 'chaap-06', name: 'Chatpati Chaap', halfPrice: 149, fullPrice: 239, category: 'Chaap Specialities' },
-  { id: 'chaap-07', name: 'Haryali Chaap', halfPrice: 159, fullPrice: 249, category: 'Chaap Specialities' },
-  { id: 'chaap-08', name: 'Garlic Chaap', halfPrice: 159, fullPrice: 249, category: 'Chaap Specialities' },
-  { id: 'chaap-09', name: 'Mirch Malai Chaap', halfPrice: 159, fullPrice: 249, isSpicy: true, category: 'Chaap Specialities' },
-  { id: 'chaap-10', name: 'Diet Chaap', halfPrice: 159, fullPrice: 249, category: 'Chaap Specialities' },
-  { id: 'chaap-11', name: 'Afghani Chaap', halfPrice: 159, fullPrice: 249, isChefSpecial: true, category: 'Chaap Specialities' },
-  { id: 'chaap-12', name: 'Nizami Chaap', halfPrice: 169, fullPrice: 259, isChefSpecial: true, category: 'Chaap Specialities' },
-  { id: 'chaap-13', name: 'Toofani Chaap', halfPrice: 169, fullPrice: 259, isChefSpecial: true, isSpicy: true, category: 'Chaap Specialities' },
-  { id: 'chaap-14', name: 'Mastani Chaap', halfPrice: 169, fullPrice: 259, isChefSpecial: true, category: 'Chaap Specialities' },
-  { id: 'chaap-15', name: 'Veg Chicken Tikka Chaap (Pure Soya)', halfPrice: 169, fullPrice: 259, isChefSpecial: true, isPureSoya: true, category: 'Chaap Specialities' },
-  { id: 'chaap-16', name: 'Veg Fish Tikka Chaap (Pure Soya)', halfPrice: 169, fullPrice: 259, isChefSpecial: true, isPureSoya: true, category: 'Chaap Specialities' },
-  { id: 'chaap-17', name: 'Veg Creamy Butter Leg Piece (Pure Soya)', halfPrice: 169, fullPrice: 259, isChefSpecial: true, isPureSoya: true, category: 'Chaap Specialities' },
-  { id: 'chaap-18', name: 'Stuffed Chaap Tandoori', fullPrice: 189, category: 'Chaap Specialities' },
-  { id: 'chaap-19', name: 'Stuffed Chaap Afghani', fullPrice: 189, category: 'Chaap Specialities' },
-];
-
-const PAGE04_PANEER_ITEMS: PdfDishItem[] = [
-  { id: 'paneer-01', name: 'Paneer Tikka', halfPrice: 189, fullPrice: 289, category: 'Paneer Feast' },
-  { id: 'paneer-02', name: 'Achari Paneer Tikka', halfPrice: 189, fullPrice: 289, category: 'Paneer Feast' },
-  { id: 'paneer-03', name: 'Pudina Paneer Tikka', halfPrice: 189, fullPrice: 289, category: 'Paneer Feast' },
-  { id: 'paneer-04', name: 'Kali Mirch Paneer Tikka', halfPrice: 189, fullPrice: 289, category: 'Paneer Feast' },
-  { id: 'paneer-05', name: 'Afghani Paneer Tikka', halfPrice: 209, fullPrice: 309, category: 'Paneer Feast' },
-  { id: 'paneer-06', name: 'Paneer Malai Tikka', halfPrice: 209, fullPrice: 309, isChefSpecial: true, category: 'Paneer Feast' },
-  { id: 'paneer-07', name: 'Paneer Cheese Corn Tikka', fullPrice: 329, category: 'Paneer Feast' },
-  { id: 'paneer-08', name: 'Silk Roll Paneer Tikka', fullPrice: 339, isChefSpecial: true, category: 'Paneer Feast' },
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Chapter 2: Veg Kebabs & Signature Platters (Art Board 3.pdf Page 5)
-// ─────────────────────────────────────────────────────────────────────────────
-const PAGE05_KEBAB_ITEMS: PdfDishItem[] = [
-  { id: 'kebab-01', name: 'Mushroom Tikka', fullPrice: 249, category: 'Veg Kebabs & Appetizers' },
-  { id: 'kebab-02', name: 'Veg Kebab', fullPrice: 249, category: 'Veg Kebabs & Appetizers' },
-  { id: 'kebab-03', name: 'Tandoori Stuffed Aloo', fullPrice: 259, category: 'Veg Kebabs & Appetizers' },
-  { id: 'kebab-04', name: 'Peele Moti Ke Kebab (6 Pcs)', fullPrice: 259, isChefSpecial: true, isSpicy: true, category: 'Veg Kebabs & Appetizers' },
-  { id: 'kebab-05', name: 'Dahi Ke Sholay (6 Pcs)', fullPrice: 259, isChefSpecial: true, category: 'Veg Kebabs & Appetizers' },
-  { id: 'kebab-06', name: 'Veg Malai Chicken Kebab (3 Pcs)', fullPrice: 269, isPureSoya: true, category: 'Veg Kebabs & Appetizers' },
-  { id: 'kebab-07', name: 'Veg Mutton Soya Kebab (3 Pcs)', fullPrice: 269, isPureSoya: true, category: 'Veg Kebabs & Appetizers' },
-  { id: 'kebab-08', name: 'Dahi Ke Kebab (6 Pcs)', fullPrice: 279, isChefSpecial: true, category: 'Veg Kebabs & Appetizers' },
-  { id: 'kebab-09', name: 'Hara Bhara Kebab (6 Pcs)', fullPrice: 279, isChefSpecial: true, category: 'Veg Kebabs & Appetizers' },
-  { id: 'kebab-10', name: 'Beetroot Kebab (6 Pcs)', fullPrice: 279, category: 'Veg Kebabs & Appetizers' },
-  { id: 'kebab-11', name: 'Stuffed Mushroom Tikka', fullPrice: 299, isChefSpecial: true, category: 'Veg Kebabs & Appetizers' },
-];
-
-const PAGE05_PLATTER_ITEMS: PdfDishItem[] = [
-  { id: 'platter-01', name: 'Chaap Platter', fullPrice: 369, category: 'Signature Platters' },
-  { id: 'platter-02', name: 'MTJ Tandoori Platter', fullPrice: 389, category: 'Signature Platters' },
-  { id: 'platter-03', name: 'Tandoori Platter (Pure Soya)', fullPrice: 499, isPureSoya: true, category: 'Signature Platters' },
-];
-
-const PAGE05_ROLL_ITEMS: PdfDishItem[] = [
-  { id: 'roll-01', name: 'Malai Chaap Roll With Gravy', halfPrice: 199, fullPrice: 299, category: 'Chaap Rolls With Gravy' },
-  { id: 'roll-02', name: 'Tandoori Chaap Roll With Gravy', halfPrice: 199, fullPrice: 299, category: 'Chaap Rolls With Gravy' },
-  { id: 'roll-03', name: 'Punjabi Chaap Roll With Gravy', halfPrice: 199, fullPrice: 299, isSpicy: true, category: 'Chaap Rolls With Gravy' },
-  { id: 'roll-04', name: 'Haryali Chaap Roll With Gravy', halfPrice: 199, fullPrice: 299, category: 'Chaap Rolls With Gravy' },
-  { id: 'roll-05', name: 'Afghani Chaap Roll With Gravy', halfPrice: 209, fullPrice: 309, category: 'Chaap Rolls With Gravy' },
-  { id: 'roll-06', name: 'Veg Malai Chicken Kebab Roll (Pure Soya)', halfPrice: 219, fullPrice: 359, isPureSoya: true, category: 'Chaap Rolls With Gravy' },
-  { id: 'roll-07', name: 'Veg Mutton Soya Kebab Roll (Pure Soya)', halfPrice: 219, fullPrice: 359, isPureSoya: true, category: 'Chaap Rolls With Gravy' },
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Chapter 3: MTJ Crunch House & Soups & Salads (Art Board 3.pdf Page 6)
-// ─────────────────────────────────────────────────────────────────────────────
-const PAGE06_CRUNCH_ITEMS: PdfDishItem[] = [
-  { id: 'crunch-01', name: 'Crunchy Soya Chaap PopCorn (12 Pcs)', fullPrice: 190, category: 'MTJ Crunch House' },
-  { id: 'crunch-02', name: 'Veg Happy Juicy Tikka (5 Pcs)', fullPrice: 190, category: 'MTJ Crunch House' },
-  { id: 'crunch-03', name: 'Crispy Soya Satay Sticks (4 Pcs)', fullPrice: 200, category: 'MTJ Crunch House' },
-  { id: 'crunch-04', name: 'Veg Leg Piece Fry (3 Pcs)', fullPrice: 200, category: 'MTJ Crunch House' },
-  { id: 'crunch-05', name: 'Soya Singada Fish Nuggets (4 Pcs)', fullPrice: 210, category: 'MTJ Crunch House' },
-  { id: 'crunch-06', name: 'Crunchy Soya Chaap Chicken Nuggets (6 Pcs)', fullPrice: 230, category: 'MTJ Crunch House' },
-  { id: 'crunch-07', name: 'Crispy Soya Tikka (12 Pcs)', fullPrice: 230, category: 'MTJ Crunch House' },
-  { id: 'crunch-08', name: 'Soya Crumb Fish Fry (2 Pcs)', fullPrice: 230, category: 'MTJ Crunch House' },
-  { id: 'crunch-09', name: 'Veg Shammi Kebab (4 Pcs)', fullPrice: 230, category: 'MTJ Crunch House' },
-  { id: 'crunch-10', name: 'Kurkuri Soya Chaap (6 Pcs)', fullPrice: 240, category: 'MTJ Crunch House' },
-  { id: 'crunch-11', name: 'Soya Chaap Crispy Fish Fingers (6 Pcs)', fullPrice: 240, category: 'MTJ Crunch House' },
-  { id: 'crunch-12', name: 'Barbie Doll Chaap (5 Pcs)', fullPrice: 260, category: 'MTJ Crunch House' },
-  { id: 'crunch-13', name: 'Crunchy Soya Chaap Drumsticks (4 Pcs)', fullPrice: 260, category: 'MTJ Crunch House' },
-  { id: 'crunch-14', name: 'Soya Chaap Fish Nuggets (6 Pcs)', fullPrice: 270, category: 'MTJ Crunch House' },
-  { id: 'crunch-15', name: 'Soya Japanese Fish Fry (6 Pcs)', fullPrice: 310, category: 'MTJ Crunch House' },
-  { id: 'crunch-16', name: 'Veg Pemfret Fish Fry', fullPrice: 350, category: 'MTJ Crunch House' },
-];
-
-const PAGE06_SOUP_ITEMS: PdfDishItem[] = [
-  { id: 'soup-01', name: 'Cream of Tomato Soup', fullPrice: 129, category: 'Soup Station' },
-  { id: 'soup-02', name: 'Sweet Corn Soup', fullPrice: 129, category: 'Soup Station' },
-  { id: 'soup-03', name: 'Veggie Sweet Corn Soup', fullPrice: 139, category: 'Soup Station' },
-  { id: 'soup-04', name: 'Lemon Coriander Soup', fullPrice: 139, category: 'Soup Station' },
-  { id: 'soup-05', name: 'Hot N Sour Soup', fullPrice: 139, category: 'Soup Station' },
-  { id: 'soup-06', name: 'Manchow Soup', fullPrice: 139, category: 'Soup Station' },
-  { id: 'soup-07', name: 'Creamy Mushroom Soup', fullPrice: 159, category: 'Soup Station' },
-  { id: 'soup-08', name: 'Broccoli & Almond Soup', fullPrice: 189, category: 'Soup Station' },
-];
-
-const PAGE06_SALAD_ITEMS: PdfDishItem[] = [
-  { id: 'salad-01', name: 'Garden Green Salad', fullPrice: 119, category: 'Fresh Salads' },
-  { id: 'salad-02', name: 'Greek Salad', fullPrice: 209, category: 'Fresh Salads' },
-  { id: 'salad-03', name: 'Veg Caesar Salad', fullPrice: 229, category: 'Fresh Salads' },
-  { id: 'salad-04', name: 'Watermelon Feta Cheese Salad', fullPrice: 259, category: 'Fresh Salads' },
-  { id: 'salad-05', name: 'Couscous Salad', fullPrice: 259, category: 'Fresh Salads' },
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 12 Authentic PDF Chapters
+// 12 Authentic PDF Chapters (Mirroring Art Board 3.pdf Structure)
 // ─────────────────────────────────────────────────────────────────────────────
 interface ChapterDef {
   id: string;
@@ -295,7 +171,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
   // Active Chapter Navigation State
   const [selectedChapterId, setSelectedChapterId] = useState<string>('all');
 
-  // Effective add to cart dispatcher
+  // Effective add to cart dispatcher using REAL dynamic item
   const handleAddToCart = (dish: any, priceStr: string, variant?: string) => {
     const fn = onAddToCart || menuCart.onAddToCart;
     if (fn) {
@@ -315,7 +191,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
     return fn ? fn(dishId, variant) : 0;
   };
 
-  // Group rawCategories into the authentic 12 Chapters with enriched counts
+  // Group dynamic categories into the authentic 12 Chapters
   const chaptersWithCategories = useMemo(() => {
     const list = rawCategories.length > 0 ? rawCategories : categories;
 
@@ -325,16 +201,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
         return chDef.subcategories.some((kw) => catNameLower.includes(kw));
       });
 
-      let totalItems = matchedCats.reduce((sum, c) => sum + c.items.length, 0);
-
-      // Chapter-specific source-accurate item overrides
-      if (chDef.id === 'chapter-tandoori-snacks') {
-        totalItems = PAGE04_CHAAP_ITEMS.length + PAGE04_PANEER_ITEMS.length; // 27
-      } else if (chDef.id === 'chapter-kebabs-platters') {
-        totalItems = PAGE05_KEBAB_ITEMS.length + PAGE05_PLATTER_ITEMS.length + PAGE05_ROLL_ITEMS.length; // 21
-      } else if (chDef.id === 'chapter-crunch-soups') {
-        totalItems = PAGE06_CRUNCH_ITEMS.length + PAGE06_SOUP_ITEMS.length + PAGE06_SALAD_ITEMS.length; // 29
-      }
+      const totalItems = matchedCats.reduce((sum, c) => sum + c.items.length, 0);
 
       return {
         ...chDef,
@@ -353,8 +220,9 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
   }, [selectedChapterId, chaptersWithCategories]);
 
   const totalAllItems = useMemo(() => {
-    return chaptersWithCategories.reduce((sum, c) => sum + c.totalItems, 0);
-  }, [chaptersWithCategories]);
+    const list = rawCategories.length > 0 ? rawCategories : categories;
+    return list.reduce((sum, c) => sum + c.items.length, 0);
+  }, [rawCategories, categories]);
 
   return (
     <div
@@ -379,11 +247,10 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
               loading="eager"
             />
           </picture>
-          <h1 className="sr-only">Mannat Tandoori Junction - Chaap Ka Asli Swad</h1>
         </div>
 
         {/* Storefront Contact & Badges Strip */}
-        <div className="bg-[#181E19] text-[#FAF4EC] px-4 py-2.5 sm:px-6 flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#FAB700]/50">
+        <div className="bg-[#181E19] text-[#FAF4EC] px-4 py-2.5 sm:px-6 flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#FAB700]/50 relative z-20">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-bold text-[#FAB700] uppercase tracking-wider text-[11px] sm:text-xs font-serif">
@@ -472,7 +339,8 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
       </nav>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          CHAPTERS: 100% CODED HTML/CSS REAL ARTBOARD ARCHITECTURE
+          CHAPTERS: 100% DYNAMIC MENU DRIVEN BY DATABASE RECORDS
+          Themed with Authentic PDF Luxury Indian Tandoor Visual Identity
           ═══════════════════════════════════════════════════════════════════════ */}
       <div className="space-y-12">
         {visibleChapters.map((chapter) => {
@@ -509,14 +377,13 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
               />
 
               {/* ─────────────────────────────────────────────────────────────
-                  CHAPTER 1: REAL CODED HTML/CSS ASYMMETRICAL SPLIT OF PAGE 4
-                  MTJ Tandoori Snacks & Chaap Specialities (Art Board 3.pdf Page 4)
+                  CHAPTER 1: DYNAMIC ASYMMETRICAL SPLIT (PAGE 4 THEME)
+                  MTJ Tandoori Snacks & Chaap Specialities
                   ───────────────────────────────────────────────────────────── */}
               {isTandooriChapter ? (
                 <div className="grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden border-2 border-[#FAB700] shadow-xl relative bg-[#CD1B2D]">
-                  {/* Left Column: Real Coded Crimson Hero Panel (Sticky on Desktop) */}
+                  {/* Left Column: Crimson Hero Panel (Sticky on Desktop) */}
                   <div className="lg:col-span-5 artboard-left-panel p-5 sm:p-7 flex flex-col justify-between relative overflow-hidden lg:sticky lg:top-24 self-start">
-                    {/* Watermark text */}
                     <div className="absolute inset-0 flex flex-col justify-around items-center pointer-events-none opacity-10 select-none">
                       <span className="text-white font-black text-6xl tracking-widest">PURE</span>
                       <span className="text-white font-black text-6xl tracking-widest">CHAAP</span>
@@ -540,7 +407,6 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                       </p>
                     </div>
 
-                    {/* Sizzler Skillet Platter Cutout from 300DPI PDF */}
                     <div className="relative mt-6 sm:mt-8 flex justify-center z-10">
                       <img
                         src="/uploads/mannat/assets/p4_paneer_skillet_left.webp"
@@ -550,9 +416,8 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                     </div>
                   </div>
 
-                  {/* Right Column: Real Coded Parchment Panel with Tables */}
+                  {/* Right Column: Dynamic Coded Tables */}
                   <div className="lg:col-span-7 artboard-right-panel p-4 sm:p-6 space-y-6 relative overflow-hidden">
-                    {/* Top Right Floating Plate from 300DPI PDF */}
                     <div className="absolute top-0 right-0 w-32 sm:w-44 pointer-events-none select-none z-10 overflow-hidden">
                       <img
                         src="/uploads/mannat/assets/p4_malai_plate_clean.webp"
@@ -561,255 +426,205 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                       />
                     </div>
 
-                    {/* Section 1: CHAAP SPECIALITIES */}
-                    <div className="space-y-3 relative z-20">
-                      <div className="border-b-4 border-[#CE182C] pb-1 max-w-[220px]">
-                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#CE182C] tracking-tight uppercase leading-none">
-                          CHAAP
-                        </h3>
-                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#CE182C] tracking-tight uppercase leading-none">
-                          SPECIALITIES
-                        </h3>
-                      </div>
+                    {chapter.categories.map((subcat) => {
+                      const hasPortions = subcat.items.some((i) => Boolean(i.halfPrice || (i as any).half_price));
 
-                      {/* Dual Column Header: ITEM | HALF | FULL */}
-                      <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
-                        <span className="text-left">ITEM</span>
-                        <span className="text-[#CE182C]">HALF</span>
-                        <span className="text-[#CE182C]">FULL</span>
-                      </div>
+                      return (
+                        <div key={subcat.id} className="space-y-3 relative z-20">
+                          <div className="border-b-4 border-[#CE182C] pb-1 max-w-[260px]">
+                            <h3 className="font-sans font-black text-xl sm:text-2xl text-[#CE182C] tracking-tight uppercase leading-none">
+                              {subcat.name}
+                            </h3>
+                          </div>
 
-                      {/* 19 Chaap Items */}
-                      <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
-                        {PAGE04_CHAAP_ITEMS.map((dish) => {
-                          const halfQty = dish.halfPrice ? getDishQty(dish.id, 'Half') : 0;
-                          const fullQty = getDishQty(dish.id, 'Full');
+                          <div className={`heritage-grid-header ${hasPortions ? 'heritage-dual-grid' : 'heritage-single-grid'} text-center font-bold`}>
+                            <span className="text-left">ITEM</span>
+                            {hasPortions ? (
+                              <>
+                                <span className="text-[#CE182C]">HALF</span>
+                                <span className="text-[#CE182C]">FULL</span>
+                              </>
+                            ) : (
+                              <span className="text-[#CE182C]">PRICE</span>
+                            )}
+                          </div>
 
-                          return (
-                            <div key={dish.id} className="heritage-grid-row heritage-dual-grid py-2">
-                              {/* Col 1: Name & Badges */}
-                              <div className="min-w-0 pr-1">
-                                <div className="flex items-center gap-1.5 font-sans font-bold text-xs sm:text-sm text-[#181E19]">
-                                  {dish.isChefSpecial && (
-                                    <span title="Chef Special" className="text-sm">👨‍🍳</span>
-                                  )}
-                                  <span className="break-words leading-tight">{dish.name}</span>
-                                  {dish.isSpicy && (
-                                    <span title="Mild Spicy" className="text-sm">🌶️</span>
-                                  )}
-                                </div>
-                                {dish.isPureSoya && (
-                                  <div className="text-[10px] text-emerald-700 font-bold font-sans">
-                                    (Pure Soya)
-                                  </div>
-                                )}
-                              </div>
+                          <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
+                            {subcat.items.map((dish) => {
+                              const halfVal = dish.halfPrice || (dish as any).half_price;
+                              const fullVal = dish.fullPrice || (dish as any).full_price || dish.price;
+                              const halfQty = halfVal ? getDishQty(dish.id, 'Half') : 0;
+                              const fullQty = getDishQty(dish.id, hasPortions ? 'Full' : undefined);
 
-                              {/* Col 2: Half Price & Controls */}
-                              <div className="flex justify-center">
-                                {dish.halfPrice ? (
-                                  halfQty > 0 ? (
-                                    <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleRemoveFromCart(dish.id, 'Half')}
-                                        className="text-red-700 hover:scale-110"
-                                      >
-                                        <Minus size={11} />
-                                      </button>
-                                      <span>{halfQty}</span>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                        className="text-emerald-700 hover:scale-110"
-                                      >
-                                        <Plus size={11} />
-                                      </button>
+                              const isChef = dish.name.toLowerCase().includes('malai') || 
+                                             dish.name.toLowerCase().includes('nizami') || 
+                                             dish.name.toLowerCase().includes('afghani') || 
+                                             dish.name.toLowerCase().includes('special');
+                              const isSpicy = dish.name.toLowerCase().includes('punjabi') || 
+                                              dish.name.toLowerCase().includes('masala') || 
+                                              dish.name.toLowerCase().includes('toofani') || 
+                                              dish.name.toLowerCase().includes('mirch');
+                              const isSoya = dish.name.toLowerCase().includes('pure soya');
+
+                              return hasPortions ? (
+                                <div key={dish.id} className="heritage-grid-row heritage-dual-grid py-2">
+                                  {/* Col 1: Dish Name & Badges */}
+                                  <div className="min-w-0 pr-1">
+                                    <div className="flex items-center gap-1.5 font-sans font-bold text-xs sm:text-sm text-[#181E19]">
+                                      {isChef && <span title="Chef Special" className="text-sm">👨‍🍳</span>}
+                                      <span className="break-words leading-tight">{dish.name}</span>
+                                      {isSpicy && <span title="Mild Spicy" className="text-sm">🌶️</span>}
                                     </div>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                      className="heritage-portion-btn-half cursor-pointer"
-                                    >
-                                      <span>₹{dish.halfPrice}</span>
-                                      <Plus size={11} className="opacity-70" />
-                                    </button>
-                                  )
-                                ) : (
-                                  <span className="text-gray-400 font-bold">-</span>
-                                )}
-                              </div>
-
-                              {/* Col 3: Full Price & Controls */}
-                              <div className="flex justify-center">
-                                {fullQty > 0 ? (
-                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleRemoveFromCart(dish.id, 'Full')}
-                                      className="text-red-700 hover:scale-110"
-                                    >
-                                      <Minus size={11} />
-                                    </button>
-                                    <span>{fullQty}</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
-                                      className="text-emerald-700 hover:scale-110"
-                                    >
-                                      <Plus size={11} />
-                                    </button>
+                                    {isSoya && (
+                                      <div className="text-[10px] text-emerald-700 font-bold font-sans">
+                                        (Pure Soya)
+                                      </div>
+                                    )}
                                   </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
-                                    className="heritage-portion-btn-full cursor-pointer"
-                                  >
-                                    <span>₹{dish.fullPrice}</span>
-                                    <Plus size={11} className="opacity-70" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
 
-                      {/* ADD ON Banner matching PDF Page 4 */}
-                      <div className="rounded-xl bg-[#CE182C]/10 border border-[#CE182C]/30 p-2.5 flex items-center justify-between text-xs">
-                        <div>
-                          <span className="font-sans font-black text-[#CE182C] uppercase tracking-wide text-[11px] sm:text-xs">
-                            ADD ON : 100% SOYA UPGRADE
-                          </span>
-                          <span className="block text-[10px] text-[#881313] font-semibold uppercase tracking-wider">
-                            NO MAIDA &nbsp;|&nbsp; NO WHEAT &nbsp;|&nbsp; NO GLUTEN &nbsp;|&nbsp; HIGH PROTEIN
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 sm:gap-6 font-mono font-black text-sm text-[#CE182C] shrink-0">
-                          <span className="text-center w-10 sm:w-12">₹49</span>
-                          <span className="text-center w-10 sm:w-12">₹79</span>
-                        </div>
-                      </div>
+                                  {/* Col 2: Half Price */}
+                                  <div className="flex justify-center">
+                                    {halfVal ? (
+                                      halfQty > 0 ? (
+                                        <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                          <button
+                                            type="button"
+                                            onClick={() => handleRemoveFromCart(dish.id, 'Half')}
+                                            className="text-red-700 hover:scale-110"
+                                          >
+                                            <Minus size={11} />
+                                          </button>
+                                          <span>{halfQty}</span>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleAddToCart(dish, `₹${halfVal}`, 'Half')}
+                                            className="text-emerald-700 hover:scale-110"
+                                          >
+                                            <Plus size={11} />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleAddToCart(dish, `₹${halfVal}`, 'Half')}
+                                          className="heritage-portion-btn-half cursor-pointer"
+                                        >
+                                          <span>₹{halfVal}</span>
+                                          <Plus size={11} className="opacity-70" />
+                                        </button>
+                                      )
+                                    ) : (
+                                      <span className="text-gray-400 font-bold">-</span>
+                                    )}
+                                  </div>
 
-                      {/* Emerald Green Announcement Bar */}
-                      <div className="rounded-xl bg-[#0E8345] text-white p-2.5 text-center text-[11px] sm:text-xs font-semibold leading-relaxed shadow-xs">
-                        <p>*All Chaap Specialities are prepared using our Multigrain Chaap.</p>
-                        <p className="opacity-95 font-medium">Add-on upgrade available for Premium 100% Plant-Based Soya Chaap.</p>
+                                  {/* Col 3: Full Price */}
+                                  <div className="flex justify-center">
+                                    {fullQty > 0 ? (
+                                      <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveFromCart(dish.id, 'Full')}
+                                          className="text-red-700 hover:scale-110"
+                                        >
+                                          <Minus size={11} />
+                                        </button>
+                                        <span>{fullQty}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleAddToCart(dish, `₹${fullVal}`, 'Full')}
+                                          className="text-emerald-700 hover:scale-110"
+                                        >
+                                          <Plus size={11} />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAddToCart(dish, `₹${fullVal}`, 'Full')}
+                                        className="heritage-portion-btn-full cursor-pointer"
+                                      >
+                                        <span>₹{fullVal}</span>
+                                        <Plus size={11} className="opacity-70" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div key={dish.id} className="heritage-grid-row heritage-single-grid py-2">
+                                  <div className="min-w-0 pr-1">
+                                    <div className="flex items-center gap-1.5 font-sans font-bold text-xs sm:text-sm text-[#181E19]">
+                                      {isChef && <span title="Chef Special" className="text-sm">👨‍🍳</span>}
+                                      <span className="break-words leading-tight">{dish.name}</span>
+                                      {isSpicy && <span title="Mild Spicy" className="text-sm">🌶️</span>}
+                                    </div>
+                                    {isSoya && (
+                                      <div className="text-[10px] text-emerald-700 font-bold font-sans">
+                                        (Pure Soya)
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex justify-center">
+                                    {fullQty > 0 ? (
+                                      <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveFromCart(dish.id)}
+                                          className="text-red-700 hover:scale-110"
+                                        >
+                                          <Minus size={11} />
+                                        </button>
+                                        <span>{fullQty}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleAddToCart(dish, `₹${fullVal}`)}
+                                          className="text-emerald-700 hover:scale-110"
+                                        >
+                                          <Plus size={11} />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAddToCart(dish, `₹${fullVal}`)}
+                                        className="heritage-portion-btn-full cursor-pointer"
+                                      >
+                                        <span>₹{fullVal}</span>
+                                        <Plus size={11} className="opacity-70" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* ADD ON Banner matching PDF Page 4 */}
+                    <div className="rounded-xl bg-[#CE182C]/10 border border-[#CE182C]/30 p-2.5 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-sans font-black text-[#CE182C] uppercase tracking-wide text-[11px] sm:text-xs">
+                          ADD ON : 100% SOYA UPGRADE
+                        </span>
+                        <span className="block text-[10px] text-[#881313] font-semibold uppercase tracking-wider">
+                          NO MAIDA &nbsp;|&nbsp; NO WHEAT &nbsp;|&nbsp; NO GLUTEN &nbsp;|&nbsp; HIGH PROTEIN
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 sm:gap-6 font-mono font-black text-sm text-[#CE182C] shrink-0">
+                        <span className="text-center w-10 sm:w-12">₹49</span>
+                        <span className="text-center w-10 sm:w-12">₹79</span>
                       </div>
                     </div>
 
-                    {/* Section 2: PANEER FEAST */}
-                    <div className="space-y-3 relative z-20">
-                      <div className="border-b-4 border-[#CE182C] pb-1 max-w-[180px]">
-                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#CE182C] tracking-tight uppercase leading-none">
-                          PANEER FEAST
-                        </h3>
-                      </div>
-
-                      {/* Dual Column Header: ITEM | HALF | FULL */}
-                      <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
-                        <span className="text-left">ITEM</span>
-                        <span className="text-[#CE182C]">HALF</span>
-                        <span className="text-[#CE182C]">FULL</span>
-                      </div>
-
-                      {/* 8 Paneer Items */}
-                      <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
-                        {PAGE04_PANEER_ITEMS.map((dish) => {
-                          const halfQty = dish.halfPrice ? getDishQty(dish.id, 'Half') : 0;
-                          const fullQty = getDishQty(dish.id, 'Full');
-
-                          return (
-                            <div key={dish.id} className="heritage-grid-row heritage-dual-grid py-2">
-                              {/* Col 1: Name */}
-                              <div className="min-w-0 pr-1">
-                                <div className="flex items-center gap-1.5 font-sans font-bold text-xs sm:text-sm text-[#181E19]">
-                                  {dish.isChefSpecial && (
-                                    <span title="Chef Special" className="text-sm">👨‍🍳</span>
-                                  )}
-                                  <span className="break-words leading-tight">{dish.name}</span>
-                                  {dish.isSpicy && (
-                                    <span title="Mild Spicy" className="text-sm">🌶️</span>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Col 2: Half Price */}
-                              <div className="flex justify-center">
-                                {dish.halfPrice ? (
-                                  halfQty > 0 ? (
-                                    <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleRemoveFromCart(dish.id, 'Half')}
-                                        className="text-red-700 hover:scale-110"
-                                      >
-                                        <Minus size={11} />
-                                      </button>
-                                      <span>{halfQty}</span>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                        className="text-emerald-700 hover:scale-110"
-                                      >
-                                        <Plus size={11} />
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                      className="heritage-portion-btn-half cursor-pointer"
-                                    >
-                                      <span>₹{dish.halfPrice}</span>
-                                      <Plus size={11} className="opacity-70" />
-                                    </button>
-                                  )
-                                ) : (
-                                  <span className="text-gray-400 font-bold">-</span>
-                                )}
-                              </div>
-
-                              {/* Col 3: Full Price */}
-                              <div className="flex justify-center">
-                                {fullQty > 0 ? (
-                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleRemoveFromCart(dish.id, 'Full')}
-                                      className="text-red-700 hover:scale-110"
-                                    >
-                                      <Minus size={11} />
-                                    </button>
-                                    <span>{fullQty}</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
-                                      className="text-emerald-700 hover:scale-110"
-                                    >
-                                      <Plus size={11} />
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
-                                    className="heritage-portion-btn-full cursor-pointer"
-                                  >
-                                    <span>₹{dish.fullPrice}</span>
-                                    <Plus size={11} className="opacity-70" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                    {/* Emerald Green Announcement Bar */}
+                    <div className="rounded-xl bg-[#0E8345] text-white p-2.5 text-center text-[11px] sm:text-xs font-semibold leading-relaxed shadow-xs">
+                      <p>*All Chaap Specialities are prepared using our Multigrain Chaap.</p>
+                      <p className="opacity-95 font-medium">Add-on upgrade available for Premium 100% Plant-Based Soya Chaap.</p>
                     </div>
 
-                    {/* Legend Badges Matching PDF */}
+                    {/* Legend Badges */}
                     <div className="flex flex-wrap items-center gap-2.5 pt-2 text-xs font-bold relative z-20">
                       <span className="px-3 py-1 rounded-full bg-white text-[#CE182C] border-2 border-[#CE182C] shadow-xs flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
                         👨‍🍳 CHEF SPECIAL
@@ -822,10 +637,9 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                 </div>
               ) : isKebabsChapter ? (
                 /* ─────────────────────────────────────────────────────────────
-                   CHAPTER 2: VEG KEBABS, PLATTERS & GRAVY ROLLS (PAGE 5)
+                   CHAPTER 2: VEG KEBABS, PLATTERS & GRAVY ROLLS (PAGE 5 THEME)
                    ───────────────────────────────────────────────────────────── */
                 <div className="grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden border-2 border-[#FAB700] shadow-xl relative bg-[#CD1B2D]">
-                  {/* Left Column: Crimson Hero Panel with Kebab Platter */}
                   <div className="lg:col-span-5 artboard-left-panel p-5 sm:p-7 flex flex-col justify-between relative overflow-hidden lg:sticky lg:top-24 self-start">
                     <div className="space-y-2 relative z-10">
                       <h2 className="font-sans font-black text-white text-3xl sm:text-5xl lg:text-4xl xl:text-5xl tracking-tight leading-none uppercase">
@@ -846,213 +660,156 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                     </div>
                   </div>
 
-                  {/* Right Column: Coded Tables */}
                   <div className="lg:col-span-7 artboard-right-panel p-4 sm:p-6 space-y-6 relative overflow-hidden">
-                    {/* Section 1: VEG KEBABS & APPETIZERS */}
-                    <div className="space-y-3 relative z-20">
-                      <div className="border-b-4 border-[#CE182C] pb-1 max-w-[240px]">
-                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#CE182C] tracking-tight uppercase leading-none">
-                          VEG KEBABS &amp; APPETIZERS
-                        </h3>
-                      </div>
+                    {chapter.categories.map((subcat) => {
+                      const isRolls = subcat.name.toLowerCase().includes('roll');
+                      const hasPortions = subcat.items.some((i) => Boolean(i.halfPrice || (i as any).half_price));
 
-                      <div className="heritage-grid-header heritage-single-grid text-center font-bold">
-                        <span className="text-left">ITEM</span>
-                        <span className="text-[#CE182C]">PRICE</span>
-                      </div>
+                      return (
+                        <div key={subcat.id} className="space-y-3 relative z-20">
+                          <div className="border-b-4 border-[#CE182C] pb-1 max-w-[260px]">
+                            <h3 className="font-sans font-black text-xl sm:text-2xl text-[#CE182C] tracking-tight uppercase leading-none">
+                              {subcat.name}
+                            </h3>
+                          </div>
 
-                      <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
-                        {PAGE05_KEBAB_ITEMS.map((dish) => {
-                          const singleQty = getDishQty(dish.id);
-
-                          return (
-                            <div key={dish.id} className="heritage-grid-row heritage-single-grid py-2">
-                              <div className="min-w-0 pr-1">
-                                <div className="flex items-center gap-1.5 font-sans font-bold text-xs sm:text-sm text-[#181E19]">
-                                  {dish.isChefSpecial && <span title="Chef Special" className="text-sm">👨‍🍳</span>}
-                                  <span className="break-words leading-tight">{dish.name}</span>
-                                  {dish.isSpicy && <span title="Mild Spicy" className="text-sm">🌶️</span>}
-                                </div>
-                                {dish.isPureSoya && (
-                                  <div className="text-[10px] text-emerald-700 font-bold font-sans">
-                                    (Pure Soya)
-                                  </div>
-                                )}
+                          {hasPortions ? (
+                            <>
+                              <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
+                                <span className="text-left">ITEM</span>
+                                <span className="text-[#CE182C]">{isRolls ? '2 PCS' : 'HALF'}</span>
+                                <span className="text-[#CE182C]">{isRolls ? '4 PCS' : 'FULL'}</span>
                               </div>
 
-                              <div className="flex justify-center">
-                                {singleQty > 0 ? (
-                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                    <button type="button" onClick={() => handleRemoveFromCart(dish.id)} className="text-red-700 hover:scale-110"><Minus size={11} /></button>
-                                    <span>{singleQty}</span>
-                                    <button type="button" onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`)} className="text-emerald-700 hover:scale-110"><Plus size={11} /></button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`)}
-                                    className="heritage-portion-btn-full cursor-pointer"
-                                  >
-                                    <span>₹{dish.fullPrice}</span>
-                                    <Plus size={11} className="opacity-70" />
-                                  </button>
-                                )}
+                              <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
+                                {subcat.items.map((dish) => {
+                                  const halfVal = dish.halfPrice || (dish as any).half_price;
+                                  const fullVal = dish.fullPrice || (dish as any).full_price || dish.price;
+                                  const halfLabel = isRolls ? '2 Pcs' : 'Half';
+                                  const fullLabel = isRolls ? '4 Pcs' : 'Full';
+                                  const halfQty = halfVal ? getDishQty(dish.id, halfLabel) : 0;
+                                  const fullQty = getDishQty(dish.id, fullLabel);
+
+                                  return (
+                                    <div key={dish.id} className="heritage-grid-row heritage-dual-grid py-2">
+                                      <div className="min-w-0 pr-1">
+                                        <div className="flex items-center gap-1.5 font-sans font-bold text-xs sm:text-sm text-[#181E19]">
+                                          <span className="break-words leading-tight">{dish.name}</span>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex justify-center">
+                                        {halfVal ? (
+                                          halfQty > 0 ? (
+                                            <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                              <button type="button" onClick={() => handleRemoveFromCart(dish.id, halfLabel)} className="text-red-700 hover:scale-110"><Minus size={11} /></button>
+                                              <span>{halfQty}</span>
+                                              <button type="button" onClick={() => handleAddToCart(dish, `₹${halfVal}`, halfLabel)} className="text-emerald-700 hover:scale-110"><Plus size={11} /></button>
+                                            </div>
+                                          ) : (
+                                            <button
+                                              type="button"
+                                              onClick={() => handleAddToCart(dish, `₹${halfVal}`, halfLabel)}
+                                              className="heritage-portion-btn-half cursor-pointer"
+                                            >
+                                              <span>₹{halfVal}</span>
+                                              <Plus size={11} className="opacity-70" />
+                                            </button>
+                                          )
+                                        ) : (
+                                          <span className="text-gray-400 font-bold">-</span>
+                                        )}
+                                      </div>
+
+                                      <div className="flex justify-center">
+                                        {fullQty > 0 ? (
+                                          <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                            <button type="button" onClick={() => handleRemoveFromCart(dish.id, fullLabel)} className="text-red-700 hover:scale-110"><Minus size={11} /></button>
+                                            <span>{fullQty}</span>
+                                            <button type="button" onClick={() => handleAddToCart(dish, `₹${fullVal}`, fullLabel)} className="text-emerald-700 hover:scale-110"><Plus size={11} /></button>
+                                          </div>
+                                        ) : (
+                                          <button
+                                            type="button"
+                                            onClick={() => handleAddToCart(dish, `₹${fullVal}`, fullLabel)}
+                                            className="heritage-portion-btn-full cursor-pointer"
+                                          >
+                                            <span>₹{fullVal}</span>
+                                            <Plus size={11} className="opacity-70" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
-                            </div>
-                          );
-                        })}
+                            </>
+                          ) : (
+                            <>
+                              <div className="heritage-grid-header heritage-single-grid text-center font-bold">
+                                <span className="text-left">ITEM</span>
+                                <span className="text-[#CE182C]">PRICE</span>
+                              </div>
+
+                              <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
+                                {subcat.items.map((dish) => {
+                                  const singleQty = getDishQty(dish.id);
+                                  const priceVal = dish.price || (dish as any).full_price;
+
+                                  return (
+                                    <div key={dish.id} className="heritage-grid-row heritage-single-grid py-2">
+                                      <div className="min-w-0 pr-1">
+                                        <div className="flex items-center gap-1.5 font-sans font-bold text-xs sm:text-sm text-[#181E19]">
+                                          <span className="break-words leading-tight">{dish.name}</span>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex justify-center">
+                                        {singleQty > 0 ? (
+                                          <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                            <button type="button" onClick={() => handleRemoveFromCart(dish.id)} className="text-red-700 hover:scale-110"><Minus size={11} /></button>
+                                            <span>{singleQty}</span>
+                                            <button type="button" onClick={() => handleAddToCart(dish, `₹${priceVal}`)} className="text-emerald-700 hover:scale-110"><Plus size={11} /></button>
+                                          </div>
+                                        ) : (
+                                          <button
+                                            type="button"
+                                            onClick={() => handleAddToCart(dish, `₹${priceVal}`)}
+                                            className="heritage-portion-btn-full cursor-pointer"
+                                          >
+                                            <span>₹{priceVal}</span>
+                                            <Plus size={11} className="opacity-70" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    <div className="rounded-xl bg-[#CE182C]/10 border border-[#CE182C]/30 p-2.5 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-sans font-black text-[#CE182C] uppercase tracking-wide text-[11px] sm:text-xs">
+                          ADD ON : 100% SOYA UPGRADE
+                        </span>
+                        <span className="block text-[10px] text-[#881313] font-semibold uppercase tracking-wider">
+                          NO MAIDA &nbsp;|&nbsp; NO WHEAT &nbsp;|&nbsp; NO GLUTEN &nbsp;|&nbsp; HIGH PROTEIN
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 sm:gap-6 font-mono font-black text-sm text-[#CE182C] shrink-0">
+                        <span className="text-center w-10 sm:w-12">₹49</span>
+                        <span className="text-center w-10 sm:w-12">₹79</span>
                       </div>
                     </div>
 
-                    {/* Section 2: SIGNATURE PLATTERS */}
-                    <div className="space-y-3 relative z-20">
-                      <div className="border-b-4 border-[#CE182C] pb-1 max-w-[220px]">
-                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#CE182C] tracking-tight uppercase leading-none">
-                          SIGNATURE PLATTERS
-                        </h3>
-                      </div>
-
-                      <div className="heritage-grid-header heritage-single-grid text-center font-bold">
-                        <span className="text-left">ITEM</span>
-                        <span className="text-[#CE182C]">PRICE</span>
-                      </div>
-
-                      <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
-                        {PAGE05_PLATTER_ITEMS.map((dish) => {
-                          const singleQty = getDishQty(dish.id);
-
-                          return (
-                            <div key={dish.id} className="heritage-grid-row heritage-single-grid py-2">
-                              <div className="min-w-0 pr-1">
-                                <div className="flex items-center gap-1.5 font-sans font-bold text-xs sm:text-sm text-[#181E19]">
-                                  <span className="break-words leading-tight">{dish.name}</span>
-                                </div>
-                                {dish.isPureSoya && (
-                                  <div className="text-[10px] text-emerald-700 font-bold font-sans">
-                                    (Pure Soya)
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="flex justify-center">
-                                {singleQty > 0 ? (
-                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                    <button type="button" onClick={() => handleRemoveFromCart(dish.id)} className="text-red-700 hover:scale-110"><Minus size={11} /></button>
-                                    <span>{singleQty}</span>
-                                    <button type="button" onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`)} className="text-emerald-700 hover:scale-110"><Plus size={11} /></button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`)}
-                                    className="heritage-portion-btn-full cursor-pointer"
-                                  >
-                                    <span>₹{dish.fullPrice}</span>
-                                    <Plus size={11} className="opacity-70" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Section 3: CHAAP ROLLS WITH GRAVY (2 Pcs / 4 Pcs) */}
-                    <div className="space-y-3 relative z-20">
-                      <div className="border-b-4 border-[#CE182C] pb-1 max-w-[240px]">
-                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#CE182C] tracking-tight uppercase leading-none">
-                          CHAAP ROLLS WITH GRAVY
-                        </h3>
-                      </div>
-
-                      <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
-                        <span className="text-left">ITEM</span>
-                        <span className="text-[#CE182C]">2 PCS</span>
-                        <span className="text-[#CE182C]">4 PCS</span>
-                      </div>
-
-                      <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
-                        {PAGE05_ROLL_ITEMS.map((dish) => {
-                          const halfQty = getDishQty(dish.id, '2 Pcs');
-                          const fullQty = getDishQty(dish.id, '4 Pcs');
-
-                          return (
-                            <div key={dish.id} className="heritage-grid-row heritage-dual-grid py-2">
-                              <div className="min-w-0 pr-1">
-                                <div className="flex items-center gap-1.5 font-sans font-bold text-xs sm:text-sm text-[#181E19]">
-                                  <span className="break-words leading-tight">{dish.name}</span>
-                                  {dish.isSpicy && <span title="Mild Spicy" className="text-sm">🌶️</span>}
-                                </div>
-                                {dish.isPureSoya && (
-                                  <div className="text-[10px] text-emerald-700 font-bold font-sans">
-                                    (Pure Soya)
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="flex justify-center">
-                                {halfQty > 0 ? (
-                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                    <button type="button" onClick={() => handleRemoveFromCart(dish.id, '2 Pcs')} className="text-red-700 hover:scale-110"><Minus size={11} /></button>
-                                    <span>{halfQty}</span>
-                                    <button type="button" onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, '2 Pcs')} className="text-emerald-700 hover:scale-110"><Plus size={11} /></button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, '2 Pcs')}
-                                    className="heritage-portion-btn-half cursor-pointer"
-                                  >
-                                    <span>₹{dish.halfPrice}</span>
-                                    <Plus size={11} className="opacity-70" />
-                                  </button>
-                                )}
-                              </div>
-
-                              <div className="flex justify-center">
-                                {fullQty > 0 ? (
-                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                    <button type="button" onClick={() => handleRemoveFromCart(dish.id, '4 Pcs')} className="text-red-700 hover:scale-110"><Minus size={11} /></button>
-                                    <span>{fullQty}</span>
-                                    <button type="button" onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, '4 Pcs')} className="text-emerald-700 hover:scale-110"><Plus size={11} /></button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, '4 Pcs')}
-                                    className="heritage-portion-btn-full cursor-pointer"
-                                  >
-                                    <span>₹{dish.fullPrice}</span>
-                                    <Plus size={11} className="opacity-70" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Add on banner */}
-                      <div className="rounded-xl bg-[#CE182C]/10 border border-[#CE182C]/30 p-2.5 flex items-center justify-between text-xs">
-                        <div>
-                          <span className="font-sans font-black text-[#CE182C] uppercase tracking-wide text-[11px] sm:text-xs">
-                            ADD ON : 100% SOYA UPGRADE
-                          </span>
-                          <span className="block text-[10px] text-[#881313] font-semibold uppercase tracking-wider">
-                            NO MAIDA &nbsp;|&nbsp; NO WHEAT &nbsp;|&nbsp; NO GLUTEN &nbsp;|&nbsp; HIGH PROTEIN
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 sm:gap-6 font-mono font-black text-sm text-[#CE182C] shrink-0">
-                          <span className="text-center w-10 sm:w-12">₹49</span>
-                          <span className="text-center w-10 sm:w-12">₹79</span>
-                        </div>
-                      </div>
-
-                      <div className="rounded-xl bg-[#0E8345] text-white p-2.5 text-center text-[11px] sm:text-xs font-semibold leading-relaxed shadow-xs">
-                        <p>*All MTJ Rolls are prepared using our Multigrain Chaap.</p>
-                        <p className="opacity-95 font-medium">Add-on upgrade available for Premium Plant-Based Soya Chaap.</p>
-                      </div>
+                    <div className="rounded-xl bg-[#0E8345] text-white p-2.5 text-center text-[11px] sm:text-xs font-semibold leading-relaxed shadow-xs">
+                      <p>*All MTJ Rolls are prepared using our Multigrain Chaap.</p>
+                      <p className="opacity-95 font-medium">Add-on upgrade available for Premium Plant-Based Soya Chaap.</p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2.5 pt-2 text-xs font-bold relative z-20">
@@ -1067,152 +824,59 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                 </div>
               ) : isCrunchChapter ? (
                 /* ─────────────────────────────────────────────────────────────
-                   CHAPTER 3: CRUNCH HOUSE, SOUPS & SALADS (PAGE 6)
+                   CHAPTER 3: CRUNCH HOUSE, SOUPS & SALADS (PAGE 6 THEME)
                    ───────────────────────────────────────────────────────────── */
                 <div className="grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden border-2 border-[#FAB700] shadow-xl relative bg-[#D97706]">
-                  {/* Left Column: Coded Items */}
                   <div className="lg:col-span-7 artboard-right-panel p-4 sm:p-6 space-y-6 relative overflow-hidden order-2 lg:order-1">
-                    {/* Section 1: MTJ CRUNCH HOUSE */}
-                    <div className="space-y-3 relative z-20">
-                      <div className="border-b-4 border-[#D97706] pb-1 max-w-[240px]">
-                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#D97706] tracking-tight uppercase leading-none">
-                          MTJ CRUNCH HOUSE
-                        </h3>
-                        <p className="text-[11px] font-bold text-amber-900 mt-1">Crispy Plant-Based Soya Delights (Fried)</p>
-                      </div>
+                    {chapter.categories.map((subcat) => (
+                      <div key={subcat.id} className="space-y-3 relative z-20">
+                        <div className="border-b-4 border-[#D97706] pb-1 max-w-[260px]">
+                          <h3 className="font-sans font-black text-xl sm:text-2xl text-[#D97706] tracking-tight uppercase leading-none">
+                            {subcat.name}
+                          </h3>
+                        </div>
 
-                      <div className="heritage-grid-header heritage-single-grid text-center font-bold">
-                        <span className="text-left">ITEM</span>
-                        <span className="text-[#D97706]">PRICE</span>
-                      </div>
+                        <div className="heritage-grid-header heritage-single-grid text-center font-bold">
+                          <span className="text-left">ITEM</span>
+                          <span className="text-[#D97706]">PRICE</span>
+                        </div>
 
-                      <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
-                        {PAGE06_CRUNCH_ITEMS.map((dish) => {
-                          const singleQty = getDishQty(dish.id);
+                        <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
+                          {subcat.items.map((dish) => {
+                            const singleQty = getDishQty(dish.id);
+                            const priceVal = dish.price || (dish as any).full_price;
 
-                          return (
-                            <div key={dish.id} className="heritage-grid-row heritage-single-grid py-2">
-                              <div className="min-w-0 pr-1">
-                                <span className="font-sans font-bold text-xs sm:text-sm text-[#181E19] break-words leading-tight">{dish.name}</span>
+                            return (
+                              <div key={dish.id} className="heritage-grid-row heritage-single-grid py-2">
+                                <div className="min-w-0 pr-1">
+                                  <span className="font-sans font-bold text-xs sm:text-sm text-[#181E19] break-words leading-tight">{dish.name}</span>
+                                </div>
+                                <div className="flex justify-center">
+                                  {singleQty > 0 ? (
+                                    <div className="flex items-center gap-1 bg-amber-50 border border-amber-300 rounded px-1.5 py-0.5 text-xs font-bold text-amber-900">
+                                      <button type="button" onClick={() => handleRemoveFromCart(dish.id)} className="text-red-700 hover:scale-110"><Minus size={11} /></button>
+                                      <span>{singleQty}</span>
+                                      <button type="button" onClick={() => handleAddToCart(dish, `₹${priceVal}`)} className="text-amber-700 hover:scale-110"><Plus size={11} /></button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddToCart(dish, `₹${priceVal}`)}
+                                      className="heritage-portion-btn-full cursor-pointer !bg-[#D97706]"
+                                    >
+                                      <span>₹{priceVal}</span>
+                                      <Plus size={11} className="opacity-70" />
+                                    </button>
+                                  )}
+                                </div>
                               </div>
-                              <div className="flex justify-center">
-                                {singleQty > 0 ? (
-                                  <div className="flex items-center gap-1 bg-amber-50 border border-amber-300 rounded px-1.5 py-0.5 text-xs font-bold text-amber-900">
-                                    <button type="button" onClick={() => handleRemoveFromCart(dish.id)} className="text-red-700 hover:scale-110"><Minus size={11} /></button>
-                                    <span>{singleQty}</span>
-                                    <button type="button" onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`)} className="text-amber-700 hover:scale-110"><Plus size={11} /></button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`)}
-                                    className="heritage-portion-btn-full cursor-pointer !bg-[#D97706]"
-                                  >
-                                    <span>₹{dish.fullPrice}</span>
-                                    <Plus size={11} className="opacity-70" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Section 2: SOUP STATION */}
-                    <div className="space-y-3 relative z-20">
-                      <div className="border-b-4 border-[#D97706] pb-1 max-w-[200px]">
-                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#D97706] tracking-tight uppercase leading-none">
-                          SOUP STATION
-                        </h3>
-                      </div>
-
-                      <div className="heritage-grid-header heritage-single-grid text-center font-bold">
-                        <span className="text-left">ITEM</span>
-                        <span className="text-[#D97706]">PRICE</span>
-                      </div>
-
-                      <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
-                        {PAGE06_SOUP_ITEMS.map((dish) => {
-                          const singleQty = getDishQty(dish.id);
-
-                          return (
-                            <div key={dish.id} className="heritage-grid-row heritage-single-grid py-2">
-                              <div className="min-w-0 pr-1">
-                                <span className="font-sans font-bold text-xs sm:text-sm text-[#181E19] break-words leading-tight">{dish.name}</span>
-                              </div>
-                              <div className="flex justify-center">
-                                {singleQty > 0 ? (
-                                  <div className="flex items-center gap-1 bg-amber-50 border border-amber-300 rounded px-1.5 py-0.5 text-xs font-bold text-amber-900">
-                                    <button type="button" onClick={() => handleRemoveFromCart(dish.id)} className="text-red-700 hover:scale-110"><Minus size={11} /></button>
-                                    <span>{singleQty}</span>
-                                    <button type="button" onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`)} className="text-amber-700 hover:scale-110"><Plus size={11} /></button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`)}
-                                    className="heritage-portion-btn-full cursor-pointer !bg-[#D97706]"
-                                  >
-                                    <span>₹{dish.fullPrice}</span>
-                                    <Plus size={11} className="opacity-70" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Section 3: FRESH SALADS */}
-                    <div className="space-y-3 relative z-20">
-                      <div className="border-b-4 border-[#D97706] pb-1 max-w-[200px]">
-                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#D97706] tracking-tight uppercase leading-none">
-                          FRESH SALADS
-                        </h3>
-                      </div>
-
-                      <div className="heritage-grid-header heritage-single-grid text-center font-bold">
-                        <span className="text-left">ITEM</span>
-                        <span className="text-[#D97706]">PRICE</span>
-                      </div>
-
-                      <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
-                        {PAGE06_SALAD_ITEMS.map((dish) => {
-                          const singleQty = getDishQty(dish.id);
-
-                          return (
-                            <div key={dish.id} className="heritage-grid-row heritage-single-grid py-2">
-                              <div className="min-w-0 pr-1">
-                                <span className="font-sans font-bold text-xs sm:text-sm text-[#181E19] break-words leading-tight">{dish.name}</span>
-                              </div>
-                              <div className="flex justify-center">
-                                {singleQty > 0 ? (
-                                  <div className="flex items-center gap-1 bg-amber-50 border border-amber-300 rounded px-1.5 py-0.5 text-xs font-bold text-amber-900">
-                                    <button type="button" onClick={() => handleRemoveFromCart(dish.id)} className="text-red-700 hover:scale-110"><Minus size={11} /></button>
-                                    <span>{singleQty}</span>
-                                    <button type="button" onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`)} className="text-amber-700 hover:scale-110"><Plus size={11} /></button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`)}
-                                    className="heritage-portion-btn-full cursor-pointer !bg-[#D97706]"
-                                  >
-                                    <span>₹{dish.fullPrice}</span>
-                                    <Plus size={11} className="opacity-70" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    ))}
                   </div>
 
-                  {/* Right Column: Golden Amber Hero Panel (Sticky on Desktop) */}
                   <div className="lg:col-span-5 p-5 sm:p-7 flex flex-col justify-between relative overflow-hidden lg:sticky lg:top-24 self-start bg-[#D97706] order-1 lg:order-2">
                     <div className="space-y-2 relative z-10">
                       <h2 className="font-sans font-black text-white text-3xl sm:text-5xl lg:text-4xl xl:text-5xl tracking-tight leading-none uppercase">
@@ -1235,10 +899,9 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                 </div>
               ) : (
                 /* ─────────────────────────────────────────────────────────────
-                   REMAINING CHAPTERS: CLEAN CODED RESTAURANT TABLES (NO BANNER)
+                   REMAINING CHAPTERS: DYNAMIC HERITAGE MENU (NO DUPLICATE BANNER)
                    ───────────────────────────────────────────────────────────── */
                 <div className="space-y-6">
-                  {/* Authentic Chapter Header */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-[#FAB700]/60 pb-3 gap-2">
                     <div>
                       <span className="text-[10px] sm:text-xs font-mono font-black uppercase tracking-widest text-[#CE182C] bg-[#CE182C]/10 px-2.5 py-1 rounded-full border border-[#CE182C]/30">
@@ -1254,7 +917,6 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    {/* Left Column: Hero Food Showcase (Sticky on Desktop) */}
                     <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24 self-start">
                       <div className="heritage-hero-showcase">
                         <picture>
@@ -1277,17 +939,15 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                       </div>
                     </div>
 
-                    {/* Right Column: Categories & Dishes */}
                     <div className="lg:col-span-7 space-y-6">
                       {chapter.categories.map((subcat, idx) => {
                         const isRolls = subcat.name.toLowerCase().includes('roll');
-                        const hasAnyHalfFull = subcat.items.some((i) => Boolean(i.halfPrice && i.fullPrice));
+                        const hasAnyHalfFull = subcat.items.some((i) => Boolean(i.halfPrice || (i as any).half_price));
 
                         return (
                           <div key={subcat.id} className="space-y-3">
                             {idx > 0 && <div className="heritage-divider-raster" />}
 
-                            {/* Subcategory Header */}
                             <div className="heritage-subcat-header">
                               <span className="heritage-subcat-badge">
                                 <Utensils size={13} className="text-[#FAB700]" />
@@ -1297,7 +957,6 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                               <span className="heritage-subcat-line" />
                             </div>
 
-                            {/* Dishes Table */}
                             <div className="space-y-2">
                               <div className="heritage-menu-container p-2 sm:p-3">
                                 {hasAnyHalfFull ? (
@@ -1309,8 +968,12 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                                     </div>
                                     <div className="divide-y divide-black/5">
                                       {subcat.items.map((item) => {
-                                        const halfQty = getDishQty(item.id, isRolls ? '2 Pcs' : 'Half');
-                                        const fullQty = getDishQty(item.id, isRolls ? '4 Pcs' : 'Full');
+                                        const halfVal = item.halfPrice || (item as any).half_price;
+                                        const fullVal = item.fullPrice || (item as any).full_price || item.price;
+                                        const halfLabel = isRolls ? '2 Pcs' : 'Half';
+                                        const fullLabel = isRolls ? '4 Pcs' : 'Full';
+                                        const halfQty = halfVal ? getDishQty(item.id, halfLabel) : 0;
+                                        const fullQty = getDishQty(item.id, fullLabel);
 
                                         return (
                                           <div key={item.id} className="heritage-grid-row heritage-dual-grid">
@@ -1322,38 +985,42 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                                             </div>
 
                                             <div className="flex justify-center">
-                                              {halfQty > 0 ? (
-                                                <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                                  <button type="button" onClick={() => handleRemoveFromCart(item.id, isRolls ? '2 Pcs' : 'Half')}><Minus size={11} /></button>
-                                                  <span>{halfQty}</span>
-                                                  <button type="button" onClick={() => handleAddToCart(item, `₹${item.halfPrice}`, isRolls ? '2 Pcs' : 'Half')}><Plus size={11} /></button>
-                                                </div>
+                                              {halfVal ? (
+                                                halfQty > 0 ? (
+                                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                                    <button type="button" onClick={() => handleRemoveFromCart(item.id, halfLabel)}><Minus size={11} /></button>
+                                                    <span>{halfQty}</span>
+                                                    <button type="button" onClick={() => handleAddToCart(item, `₹${halfVal}`, halfLabel)}><Plus size={11} /></button>
+                                                  </div>
+                                                ) : (
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => handleAddToCart(item, `₹${halfVal}`, halfLabel)}
+                                                    className="heritage-portion-btn-half cursor-pointer"
+                                                  >
+                                                    <span>₹{halfVal}</span>
+                                                    <Plus size={11} className="opacity-70" />
+                                                  </button>
+                                                )
                                               ) : (
-                                                <button
-                                                  type="button"
-                                                  onClick={() => handleAddToCart(item, `₹${item.halfPrice}`, isRolls ? '2 Pcs' : 'Half')}
-                                                  className="heritage-portion-btn-half cursor-pointer"
-                                                >
-                                                  <span>₹{item.halfPrice}</span>
-                                                  <Plus size={11} className="opacity-70" />
-                                                </button>
+                                                <span className="text-gray-400 font-bold">-</span>
                                               )}
                                             </div>
 
                                             <div className="flex justify-center">
                                               {fullQty > 0 ? (
                                                 <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                                  <button type="button" onClick={() => handleRemoveFromCart(item.id, isRolls ? '4 Pcs' : 'Full')}><Minus size={11} /></button>
+                                                  <button type="button" onClick={() => handleRemoveFromCart(item.id, fullLabel)}><Minus size={11} /></button>
                                                   <span>{fullQty}</span>
-                                                  <button type="button" onClick={() => handleAddToCart(item, `₹${item.fullPrice}`, isRolls ? '4 Pcs' : 'Full')}><Plus size={11} /></button>
+                                                  <button type="button" onClick={() => handleAddToCart(item, `₹${fullVal}`, fullLabel)}><Plus size={11} /></button>
                                                 </div>
                                               ) : (
                                                 <button
                                                   type="button"
-                                                  onClick={() => handleAddToCart(item, `₹${item.fullPrice}`, isRolls ? '4 Pcs' : 'Full')}
+                                                  onClick={() => handleAddToCart(item, `₹${fullVal}`, fullLabel)}
                                                   className="heritage-portion-btn-full cursor-pointer"
                                                 >
-                                                  <span>₹{item.fullPrice}</span>
+                                                  <span>₹{fullVal}</span>
                                                   <Plus size={11} className="opacity-70" />
                                                 </button>
                                               )}
@@ -1372,6 +1039,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                                     <div className="divide-y divide-black/5">
                                       {subcat.items.map((item) => {
                                         const singleQty = getDishQty(item.id);
+                                        const priceVal = item.price || (item as any).full_price;
 
                                         return (
                                           <div key={item.id} className="heritage-grid-row heritage-single-grid">
@@ -1387,15 +1055,15 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                                                 <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
                                                   <button type="button" onClick={() => handleRemoveFromCart(item.id)}><Minus size={11} /></button>
                                                   <span>{singleQty}</span>
-                                                  <button type="button" onClick={() => handleAddToCart(item, `₹${item.price}`)}><Plus size={11} /></button>
+                                                  <button type="button" onClick={() => handleAddToCart(item, `₹${priceVal}`)}><Plus size={11} /></button>
                                                 </div>
                                               ) : (
                                                 <button
                                                   type="button"
-                                                  onClick={() => handleAddToCart(item, `₹${item.price}`)}
+                                                  onClick={() => handleAddToCart(item, `₹${priceVal}`)}
                                                   className="heritage-portion-btn-half cursor-pointer"
                                                 >
-                                                  <span>₹{item.price}</span>
+                                                  <span>₹{priceVal}</span>
                                                   <Plus size={11} className="opacity-70" />
                                                 </button>
                                               )}

@@ -5,20 +5,20 @@ import { AlertCircle, CheckCircle2, ChevronRight, ShieldCheck, MapPin, Star, Ext
 
 const PLANS: Record<string, { monthlyPrice: number; yearlyPrice: number; label: string; features: string[] }> = {
   basic: {
-    monthlyPrice: 699,
-    yearlyPrice: 2499,
+    monthlyPrice: 559,
+    yearlyPrice: 1999,
     label: 'Basic',
     features: ['1 QR Code', 'Unlimited menu views', 'Up to 50 items', 'Basic templates', 'Email support']
   },
   intermediate: {
-    monthlyPrice: 1199,
-    yearlyPrice: 3999,
+    monthlyPrice: 959,
+    yearlyPrice: 3199,
     label: 'Intermediate',
     features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', 'Priority support', 'Analytics dashboard']
   },
   premium: {
-    monthlyPrice: 1399,
-    yearlyPrice: 8499,
+    monthlyPrice: 1119,
+    yearlyPrice: 6799,
     label: 'Premium',
     features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', '24/7 support', 'Analytics dashboard', 'Table ordering']
   }

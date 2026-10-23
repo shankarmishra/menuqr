@@ -54,7 +54,7 @@ export default function QrOrderingForRestaurants() {
           <div className="pt-6 border-t border-gray-100 flex flex-wrap gap-4 items-center justify-between">
             <div>
               <h3 className="text-xl font-bold text-[#151C19]">Ready to enable direct table ordering?</h3>
-              <p className="text-sm text-[#53615a]">Premium Plan includes complete order management at ₹1,399/month or ₹8,499/year.</p>
+              <p className="text-sm text-[#53615a]">Premium Plan includes complete order management at ₹1,119/month or ₹6,799/year.</p>
             </div>
             <Link to="/plans" className="bg-[#E8783C] text-white px-6 py-3 rounded-full font-bold hover:bg-[#d66a30] transition-colors">
               Get Premium Plan

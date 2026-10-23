@@ -56,7 +56,7 @@ export default async function authRoutes(request, response, url) {
       { name: 'Password Reset OTP', fn: () => emailObj.sendPasswordResetOtpEmail({ email: to, otp: '592014', ownerName: 'Shankar Mishra' }) },
       { name: 'Restaurant Login OTP', fn: () => emailObj.sendLoginOtpEmail({ email: to, otp: '310482', ownerName: 'Shankar Mishra' }) },
       { name: 'Client Welcome & Credentials', fn: () => emailObj.sendClientWelcomeEmail({ email: to, ownerName: 'Shankar Mishra', businessName: 'Mishra Dhaba', plan: 'YEARLY PREMIUM', billingCycle: 'Yearly', password: 'DemoPassword2026!' }) },
-      { name: 'Payment Success Receipt', fn: () => emailObj.sendPaymentSuccessEmail({ email: to, businessName: 'Mishra Dhaba', plan: 'YEARLY PREMIUM', amount: 8499, expiresAt: new Date(Date.now() + 365*86400000).toISOString() }) },
+      { name: 'Payment Success Receipt', fn: () => emailObj.sendPaymentSuccessEmail({ email: to, businessName: 'Mishra Dhaba', plan: 'YEARLY PREMIUM', amount: 6799, expiresAt: new Date(Date.now() + 365*86400000).toISOString() }) },
       { name: 'Workspace Activation', fn: () => emailObj.sendActivationEmail({ email: to, ownerName: 'Shankar Mishra', businessName: 'Mishra Dhaba', plan: 'YEARLY PREMIUM', password: 'DemoPassword2026!' }) },
       { name: 'Subscription Expiration Warning', fn: () => emailObj.sendSubscriptionWarningEmail({ email: to, businessName: 'Mishra Dhaba', daysRemaining: 7, expiresAt: new Date(Date.now() + 7*86400000).toISOString() }) },
       { name: 'Subscription Expired Notice', fn: () => emailObj.sendSubscriptionExpiredEmail({ email: to, businessName: 'Mishra Dhaba' }) },

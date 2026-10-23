@@ -185,8 +185,8 @@ function FlagshipCulinaryStandeeCard({
   const [standeeImg, setStandeeImg] = React.useState('/assets/standee/flagship_culinary_standee_master.webp');
 
   return (
-    <div className="relative w-full aspect-[815/1255] overflow-hidden rounded-[2.2rem] select-none font-sans">
-      {/* Photorealistic 3D Table Standee Base Layer */}
+    <div className="relative w-full aspect-[816/1280] overflow-hidden rounded-[2.2rem] select-none font-sans">
+      {/* Photorealistic 3D Table Standee Base Layer (100% Straight, De-skewed Orthographic) */}
       <img
         src={standeeImg}
         alt="MenusQR Physical Table Standee"
@@ -199,8 +199,8 @@ function FlagshipCulinaryStandeeCard({
         className="absolute z-10 flex flex-col items-center text-center"
         style={{
           top: '3.6%',
-          left: '18%',
-          right: '18%',
+          left: '16%',
+          right: '16%',
         }}
       >
         {/* Official MenusQR Brand Badge */}
@@ -208,21 +208,23 @@ function FlagshipCulinaryStandeeCard({
           <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
             <MenusQRMark color="#FFFFFF" orange="#EA580C" />
           </div>
-          <span className="text-[10px] font-black tracking-[0.24em] text-[#FEF3C7] uppercase">
+          <span className="text-[9.5px] font-black tracking-[0.24em] text-[#FEF3C7] uppercase">
             MENUSQR
           </span>
           <span className="text-[#D4AF37] text-[7px]">✦</span>
-          <span className="text-[8px] font-bold tracking-widest text-[#E8C15A] uppercase">
+          <span className="text-[7.5px] font-bold tracking-widest text-[#E8C15A] uppercase">
             {headerText || 'DIGITAL MENU'}
           </span>
         </div>
 
         {/* Dynamic Client Restaurant Name (Embossed 3D Gold Typography) */}
         <h2
-          className={`font-black tracking-tight leading-tight w-full max-w-[320px] px-2 break-words text-center uppercase mt-1 ${
-            restaurantName.length > 24
+          className={`font-black tracking-tight leading-tight w-full px-1 text-center uppercase mt-1.5 ${
+            restaurantName.length > 28
+              ? 'text-sm sm:text-base'
+              : restaurantName.length > 20
               ? 'text-base sm:text-lg'
-              : restaurantName.length > 15
+              : restaurantName.length > 12
               ? 'text-lg sm:text-xl'
               : 'text-xl sm:text-2xl'
           }`}
@@ -231,37 +233,37 @@ function FlagshipCulinaryStandeeCard({
             background: 'linear-gradient(135deg, #FFF9D2 0%, #F5D77F 25%, #D4AF37 55%, #9E7412 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.95)) drop-shadow(0 0 14px rgba(212,175,55,0.45))',
+            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.95)) drop-shadow(0 0 12px rgba(212,175,55,0.4))',
           }}
         >
           {restaurantName}
         </h2>
 
         {/* Dynamic Cuisine Category with Gold Accents */}
-        <div className="flex items-center justify-center gap-2 mt-0.5 max-w-[280px]">
-          <span className="h-[1px] w-5 bg-gradient-to-r from-transparent to-[#D4AF37]" />
-          <p className="text-[8.5px] sm:text-[9.5px] font-extrabold uppercase tracking-[0.22em] text-[#E8C15A] truncate drop-shadow">
+        <div className="flex items-center justify-center gap-1.5 mt-1 max-w-[310px]">
+          <span className="h-[1px] w-4 bg-gradient-to-r from-transparent to-[#D4AF37]" />
+          <p className="text-[8px] sm:text-[8.5px] font-extrabold uppercase tracking-[0.2em] text-[#E8C15A] text-center drop-shadow">
             {category || 'AUTHENTIC FLAVORS • TABLE SERVICE'}
           </p>
-          <span className="h-[1px] w-5 bg-gradient-to-l from-transparent to-[#D4AF37]" />
+          <span className="h-[1px] w-4 bg-gradient-to-l from-transparent to-[#D4AF37]" />
         </div>
 
         {/* Tagline */}
         {tagline && (
-          <p className="text-[8px] italic text-[#FEF3C7]/80 max-w-[240px] truncate mt-0.5 drop-shadow">
+          <p className="text-[7.5px] italic text-[#FEF3C7]/80 max-w-[280px] truncate mt-0.5 drop-shadow">
             "{tagline}"
           </p>
         )}
       </div>
 
-      {/* --- CENTER 3D GOLD QR CHAMBER --- */}
+      {/* --- CENTER 3D GOLD QR CHAMBER (Exact 327x327 square dock) --- */}
       <div
         className="absolute z-10 flex items-center justify-center rounded-[1.2rem] sm:rounded-[1.4rem] overflow-hidden p-2 sm:p-2.5"
         style={{
-          left: '32.88%',
-          top: '41.27%',
-          width: '36.81%',
-          height: '23.90%',
+          left: '33.33%',
+          top: '40.70%',
+          width: '40.07%',
+          height: '25.55%',
         }}
       >
         {qrImage ? (
@@ -274,7 +276,7 @@ function FlagshipCulinaryStandeeCard({
             />
             {/* Center MenusQR Seal */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-[#110D0B] border-2 border-[#D4AF37] p-1 flex items-center justify-center shadow-lg">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#110D0B] border-2 border-[#D4AF37] p-1 flex items-center justify-center shadow-lg">
                 <MenusQRMark color="#FFFFFF" orange="#EA580C" />
               </div>
             </div>
@@ -289,7 +291,7 @@ function FlagshipCulinaryStandeeCard({
         <div
           className="absolute z-20 px-3.5 py-0.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#FFF1B0] to-[#D4AF37] text-[#1A120B] font-black text-[9px] sm:text-[10px] tracking-widest uppercase shadow-xl border border-black/30"
           style={{
-            top: '66.2%',
+            top: '67.2%',
             left: '50%',
             transform: 'translateX(-50%)',
           }}

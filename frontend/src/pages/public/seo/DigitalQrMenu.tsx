@@ -62,7 +62,7 @@ export default function DigitalQrMenu() {
           <div className="pt-6 border-t border-gray-100 flex flex-wrap gap-4 items-center justify-between">
             <div>
               <h3 className="text-xl font-bold text-[#151C19]">Ready to build your digital menu?</h3>
-              <p className="text-sm text-[#53615a]">Explore pricing options starting at ₹699/month (₹2,499/year).</p>
+              <p className="text-sm text-[#53615a]">Explore pricing options starting at ₹559/month (₹1,999/year).</p>
             </div>
             <Link to="/plans" className="bg-[#E8783C] text-white px-6 py-3 rounded-full font-bold hover:bg-[#d66a30] transition-colors">
               Explore Plans & Pricing
