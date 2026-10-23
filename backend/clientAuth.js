@@ -155,9 +155,19 @@ export async function createClientOtpChallenge(email, ip) {
   }
 }
 
-export async function invalidateClientOtpChallenge(challengeId) {
-  if (!challengeId) return;
-  await pool.query('UPDATE client_otp_challenges SET used = true WHERE id = $1', [challengeId]);
+export async function invalidateClientOtpChallenge(challengeId, email = null) {
+  if (challengeId) {
+    await pool.query('UPDATE client_otp_challenges SET used = true WHERE id = $1', [challengeId]);
+  }
+  if (email && typeof email === 'string') {
+    try {
+      const normalizedEmail = email.trim().toLowerCase();
+      const cooldownKey = createHmac('sha256', getClientOtpSecret()).update(`client_cooldown:${normalizedEmail}`).digest('hex');
+      await pool.query('DELETE FROM client_auth_rate_limits WHERE bucket_key = $1', [cooldownKey]);
+    } catch (err) {
+      console.warn('[clientAuth] Failed to reset cooldown on email failure:', err.message);
+    }
+  }
 }
 
 export async function verifyClientOtpChallenge(challengeId, otp) {

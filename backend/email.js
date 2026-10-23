@@ -36,6 +36,7 @@ export function maskEmail(email) {
 
 export function getEmailConfig(environment = process.env) {
   const apiKey = (environment.RESEND_API_KEY || '').trim();
+  const brevoApiKey = (environment.BREVO_API_KEY || environment.SENDINBLUE_API_KEY || '').trim();
   const smtpHost = (environment.SMTP_HOST || environment.MAIL_HOST || '').trim();
   const smtpPort = Number(environment.SMTP_PORT || environment.MAIL_PORT || 587);
   const smtpUser = (environment.SMTP_USER || environment.SMTP_USERNAME || environment.MAIL_USERNAME || '').trim();
@@ -58,19 +59,42 @@ export function getEmailConfig(environment = process.env) {
   const fromName = (environment.MAIL_FROM_NAME || extractedName || 'MENUSQR').trim();
   const preferredProvider = (environment.EMAIL_PROVIDER || '').trim().toLowerCase();
 
-  // Prefer direct SMTP by default whenever SMTP credentials are provisioned (e.g. Gmail SMTP),
-  // completely bypassing Resend unless explicitly forced via EMAIL_PROVIDER=resend.
+  // Detect whether running in a cloud container like Render
+  const isRender = Boolean(environment.RENDER || environment.RENDER_SERVICE_ID || environment.ON_RENDER);
+
   let provider = 'none';
   if (preferredProvider === 'resend' && apiKey) {
     provider = 'resend';
-  } else if (smtpHost) {
+  } else if (preferredProvider === 'brevo' && brevoApiKey) {
+    provider = 'brevo';
+  } else if (preferredProvider === 'smtp' && smtpHost) {
     provider = 'smtp';
-  } else if (apiKey) {
-    provider = 'resend';
+  } else if (isRender) {
+    // CRITICAL: Render Free Tier permanently blocks outbound SMTP traffic on ports 25, 465, and 587!
+    // Therefore, in Render environment, prioritize HTTPS REST API providers (Resend or Brevo) on Port 443!
+    if (apiKey) {
+      provider = 'resend';
+    } else if (brevoApiKey) {
+      provider = 'brevo';
+    } else if (smtpHost) {
+      provider = 'smtp';
+    }
+  } else {
+    // Non-Render / local development environment:
+    // Prefer direct SMTP by default whenever SMTP credentials are provisioned (e.g. Gmail SMTP),
+    // otherwise Resend or Brevo
+    if (smtpHost) {
+      provider = 'smtp';
+    } else if (apiKey) {
+      provider = 'resend';
+    } else if (brevoApiKey) {
+      provider = 'brevo';
+    }
   }
 
   return {
     apiKey,
+    brevoApiKey,
     smtp: {
       host: smtpHost,
       port: smtpPort,
@@ -83,13 +107,17 @@ export function getEmailConfig(environment = process.env) {
     formattedFrom: `"${fromName}" <${fromAddress}>`,
     configured: provider !== 'none',
     provider,
+    isRender,
   };
 }
 
 async function sendViaSmtp(config, message, label = 'transactional email', retryPort = null) {
+  const isRender = Boolean(process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.ON_RENDER);
   const port = retryPort || config.smtp.port;
   const secure = retryPort ? (retryPort === 465) : config.smtp.secure;
   const timeouts = getSmtpTimeoutOptions();
+  // On Render free tier, outbound SMTP is permanently blocked. Use aggressive timeout (2.5s) to avoid 10s-20s UI freezing!
+  const connectionTimeout = isRender ? Math.min(timeouts.connectionTimeout, 2500) : timeouts.connectionTimeout;
 
   try {
     const nodemailerModule = await import('nodemailer');
@@ -103,9 +131,9 @@ async function sendViaSmtp(config, message, label = 'transactional email', retry
         pass: config.smtp.pass,
       } : undefined,
       family: 4, // CRITICAL: Force IPv4 connection to prevent ENETUNREACH on Render/cloud containers
-      connectionTimeout: timeouts.connectionTimeout,
-      greetingTimeout: timeouts.greetingTimeout,
-      socketTimeout: timeouts.socketTimeout,
+      connectionTimeout,
+      greetingTimeout: isRender ? 2500 : timeouts.greetingTimeout,
+      socketTimeout: isRender ? 5000 : timeouts.socketTimeout,
     });
 
     const info = await transporter.sendMail({
@@ -124,8 +152,20 @@ async function sendViaSmtp(config, message, label = 'transactional email', retry
     };
   } catch (err) {
     console.error(`[email] SMTP send failed for ${label} (port ${port}):`, err.message);
-    // If port 587 failed and host is Gmail, retry immediately on port 465 (SSL/TLS direct)
-    if (!retryPort && port === 587 && config.smtp.host === 'smtp.gmail.com') {
+
+    // If running on Render, ALL standard outbound SMTP ports (25, 465, 587) are blocked at the firewall level.
+    // Retrying on 465 will only cause another 10s hang!
+    const isNetworkBlocked = err.code === 'ENETUNREACH' || err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED' || err.message?.includes('timeout');
+    if (isRender && isNetworkBlocked) {
+      return {
+        ok: false,
+        provider: 'smtp',
+        error: `Render Free Tier blocks outbound SMTP traffic on ports 25, 465, and 587 (${err.message}). An HTTPS API provider (Resend or Brevo) on Port 443 must be used.`,
+      };
+    }
+
+    // Off Render: if port 587 failed and host is Gmail, retry immediately on port 465 (SSL/TLS direct)
+    if (!isRender && !retryPort && port === 587 && config.smtp.host === 'smtp.gmail.com') {
       console.warn(`[email] Retrying Gmail SMTP for ${label} on port 465 (SSL/TLS, family 4)...`);
       return sendViaSmtp(config, message, label, 465);
     }
@@ -138,6 +178,14 @@ async function sendViaSmtp(config, message, label = 'transactional email', retry
 }
 
 async function sendViaResend(config, message, label = 'transactional email') {
+  if (!config.apiKey) {
+    return {
+      ok: false,
+      provider: 'resend',
+      error: 'RESEND_API_KEY environment variable is missing.',
+    };
+  }
+
   const payload = JSON.stringify({
     from: config.formattedFrom,
     to: [message.to],
@@ -146,72 +194,140 @@ async function sendViaResend(config, message, label = 'transactional email') {
     text: message.text,
   });
 
-  const options = {
-    hostname: 'api.resend.com',
-    path: '/emails',
-    method: 'POST',
-    family: 4, // CRITICAL: Force IPv4 to prevent hanging/timeout on IPv6-broken cloud containers
-    headers: {
-      'Authorization': `Bearer ${config.apiKey}`,
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload),
-    },
-  };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
 
-  return new Promise((resolve) => {
-    const req = https.request(options, (res) => {
-      let responseText = '';
-      res.on('data', (chunk) => { responseText += chunk; });
-      res.on('end', () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          let messageId = null;
-          try {
-            const parsed = JSON.parse(responseText);
-            messageId = parsed.id || null;
-          } catch (e) {
-            // Ignore JSON parse error if body empty
-          }
-
-          console.info(`[email] ${label} sent successfully to ${maskEmail(message.to)} via Resend HTTPS API (Message ID: ${messageId || 'unknown'}).`);
-          resolve({
-            ok: true,
-            provider: 'resend',
-            messageId,
-          });
-        } else {
-          let errorMsg = `Resend API returned status ${res.statusCode}: ${responseText}`;
-          try {
-            const parsed = JSON.parse(responseText);
-            if (parsed.message) errorMsg = `Resend API error (${res.statusCode}): ${parsed.message}`;
-          } catch (e) {
-            // Keep default text
-          }
-          console.warn(`[email] Resend API failed for ${label} to ${maskEmail(message.to)}: ${errorMsg}`);
-          resolve({
-            ok: false,
-            provider: 'resend',
-            error: errorMsg,
-          });
-        }
-      });
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: payload,
+      signal: controller.signal,
     });
 
-    req.on('error', (err) => {
-      console.error(`[email] Resend API network error for ${label}:`, err.message);
-      resolve({
-        ok: false,
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+      console.info(`[email] ${label} sent successfully to ${maskEmail(message.to)} via Resend HTTPS API (Message ID: ${data.id || 'unknown'}).`);
+      return {
+        ok: true,
         provider: 'resend',
-        error: `Network error: ${err.message}`,
-      });
-    });
+        messageId: data.id || null,
+      };
+    }
 
-    req.setTimeout(8_000, () => {
-      req.destroy(new Error('Resend API request timed out after 8 seconds.'));
-    });
+    let errorMsg = `Resend API returned status ${res.status}`;
+    if (res.status === 401) {
+      errorMsg = 'Resend API key is invalid (401). Please update RESEND_API_KEY in Render environment settings with an active key from https://resend.com/api-keys.';
+    } else if (res.status === 403 && data.message?.includes('testing emails')) {
+      errorMsg = `Resend Free Domain Restriction (403): ${data.message} - To send OTPs to any email address, verify your domain in the Resend dashboard or configure BREVO_API_KEY.`;
+    } else if (data.message) {
+      errorMsg = `Resend API error (${res.status}): ${data.message}`;
+    }
 
-    req.write(payload);
-    req.end();
+    console.warn(`[email] Resend API failed for ${label} to ${maskEmail(message.to)}: ${errorMsg}`);
+    return {
+      ok: false,
+      provider: 'resend',
+      status: res.status,
+      error: errorMsg,
+    };
+  } catch (err) {
+    const isTimeout = err.name === 'AbortError' || err.message?.includes('aborted');
+    const errorMsg = isTimeout
+      ? 'Resend API request timed out after 6 seconds.'
+      : `Network error: ${err.message}`;
+    console.error(`[email] Resend API network error for ${label}:`, errorMsg);
+    return {
+      ok: false,
+      provider: 'resend',
+      error: errorMsg,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function sendViaBrevo(config, message, label = 'transactional email') {
+  if (!config.brevoApiKey) {
+    return {
+      ok: false,
+      provider: 'brevo',
+      error: 'BREVO_API_KEY environment variable is missing.',
+    };
+  }
+
+  // If fromAddress is @resend.dev, Brevo requires a valid non-resend.dev sender email
+  const senderEmail = config.fromAddress.includes('@resend.dev') ? 'support@menusqr.in' : config.fromAddress;
+
+  const payload = JSON.stringify({
+    sender: {
+      name: config.fromName,
+      email: senderEmail,
+    },
+    to: [{ email: message.to }],
+    subject: message.subject,
+    htmlContent: message.html,
+    textContent: message.text,
   });
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
+
+  try {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': config.brevoApiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: payload,
+      signal: controller.signal,
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok || res.status === 201) {
+      console.info(`[email] ${label} sent successfully to ${maskEmail(message.to)} via Brevo HTTPS API (Message ID: ${data.messageId || 'unknown'}).`);
+      return {
+        ok: true,
+        provider: 'brevo',
+        messageId: data.messageId || null,
+      };
+    }
+
+    let errorMsg = `Brevo API returned status ${res.status}`;
+    if (res.status === 401) {
+      errorMsg = 'Brevo API key is invalid (401). Please check BREVO_API_KEY in Render environment settings.';
+    } else if (data.message) {
+      errorMsg = `Brevo API error (${res.status}): ${data.message}`;
+    }
+
+    console.warn(`[email] Brevo API failed for ${label} to ${maskEmail(message.to)}: ${errorMsg}`);
+    return {
+      ok: false,
+      provider: 'brevo',
+      status: res.status,
+      error: errorMsg,
+    };
+  } catch (err) {
+    const isTimeout = err.name === 'AbortError' || err.message?.includes('aborted');
+    const errorMsg = isTimeout
+      ? 'Brevo API request timed out after 6 seconds.'
+      : `Network error: ${err.message}`;
+    console.error(`[email] Brevo API network error for ${label}:`, errorMsg);
+    return {
+      ok: false,
+      provider: 'brevo',
+      error: errorMsg,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function sendEmailDirectly(message, label = 'transactional email') {
@@ -219,55 +335,81 @@ export async function sendEmailDirectly(message, label = 'transactional email') 
 
   const hasSmtp = Boolean(config.smtp.host && (config.smtp.user || !config.smtp.secure));
   const hasResend = Boolean(config.apiKey);
+  const hasBrevo = Boolean(config.brevoApiKey);
 
-  if (config.provider === 'smtp') {
-    const res = await sendViaSmtp(config, message, label);
-    if (res.ok) return res;
-    if (hasResend) {
-      console.warn(`[email] Primary SMTP failed for ${label} (${res.error}). Attempting automatic fallback to Resend...`);
-      const resendRes = await sendViaResend(config, message, label);
-      if (resendRes.ok) {
-        return {
-          ...resendRes,
-          fallbackFrom: 'smtp',
-        };
-      }
-      return {
-        ok: false,
-        provider: 'resend',
-        error: `SMTP failed (${res.error}), and Resend fallback also failed: ${resendRes.error}`,
-      };
-    }
-    return res;
+  if (!hasSmtp && !hasResend && !hasBrevo) {
+    const errMsg = config.isRender
+      ? 'No email transport configured. On Render Free Tier, SMTP is blocked; please set a valid RESEND_API_KEY or BREVO_API_KEY in Render environment variables.'
+      : 'No email transport configured. Either RESEND_API_KEY, BREVO_API_KEY, or SMTP credentials (SMTP_HOST, SMTP_USER, SMTP_PASS) must be provisioned.';
+    console.error(`[email] Direct send failed for ${label}: ${errMsg}`);
+    return {
+      ok: false,
+      provider: 'none',
+      error: errMsg,
+    };
   }
 
-  if (config.provider === 'resend') {
-    const res = await sendViaResend(config, message, label);
-    if (res.ok) return res;
-    if (hasSmtp) {
-      console.warn(`[email] Primary Resend failed for ${label} (${res.error}). Attempting automatic fallback to SMTP...`);
-      const smtpRes = await sendViaSmtp(config, message, label);
-      if (smtpRes.ok) {
-        return {
-          ...smtpRes,
-          fallbackFrom: 'resend',
-        };
-      }
-      return {
-        ok: false,
-        provider: 'smtp',
-        error: `Resend failed (${res.error}), and SMTP fallback also failed: ${smtpRes.error}`,
-      };
-    }
-    return res;
+  // Determine priority order of providers to try
+  const providersToTry = [];
+  if (config.provider && config.provider !== 'none') {
+    providersToTry.push(config.provider);
   }
 
-  const errMsg = 'No email transport configured. Either RESEND_API_KEY or SMTP credentials (SMTP_HOST, SMTP_USER, SMTP_PASS) must be provisioned.';
-  console.error(`[email] Direct send failed for ${label}: ${errMsg}`);
+  // Add remaining configured providers as automatic fallbacks
+  const allConfigured = [];
+  if (config.isRender) {
+    // On Render, always prefer HTTPS REST APIs (Port 443) over blocked SMTP
+    if (hasResend) allConfigured.push('resend');
+    if (hasBrevo) allConfigured.push('brevo');
+    if (hasSmtp) allConfigured.push('smtp');
+  } else {
+    if (hasSmtp) allConfigured.push('smtp');
+    if (hasResend) allConfigured.push('resend');
+    if (hasBrevo) allConfigured.push('brevo');
+  }
+
+  for (const p of allConfigured) {
+    if (!providersToTry.includes(p)) {
+      providersToTry.push(p);
+    }
+  }
+
+  const errors = [];
+  for (let i = 0; i < providersToTry.length; i++) {
+    const providerName = providersToTry[i];
+    if (i > 0) {
+      console.warn(`[email] Attempting automatic fallback to ${providerName.toUpperCase()} for ${label}...`);
+    }
+
+    let res;
+    if (providerName === 'smtp') {
+      res = await sendViaSmtp(config, message, label);
+    } else if (providerName === 'resend') {
+      res = await sendViaResend(config, message, label);
+    } else if (providerName === 'brevo') {
+      res = await sendViaBrevo(config, message, label);
+    }
+
+    if (res && res.ok) {
+      if (i > 0) {
+        return {
+          ...res,
+          fallbackFrom: providersToTry[0],
+        };
+      }
+      return res;
+    }
+
+    if (res && res.error) {
+      errors.push(`${providerName.toUpperCase()}: ${res.error}`);
+    }
+  }
+
+  const combinedError = errors.join(' | ');
   return {
     ok: false,
-    provider: 'none',
-    error: errMsg,
+    provider: providersToTry[providersToTry.length - 1] || 'none',
+    error: combinedError,
   };
 }
 

@@ -347,7 +347,7 @@ export default async function authRoutes(request, response, url) {
     });
 
     if (!emailResult.ok) {
-      await invalidateClientOtpChallenge(challenge.challengeId);
+      await invalidateClientOtpChallenge(challenge.challengeId, userEmail);
       throw apiError(500, `Failed to send verification code email: ${emailResult.error || 'Provider rejected request'}`);
     }
 
@@ -437,7 +437,7 @@ export default async function authRoutes(request, response, url) {
     });
 
     if (!emailResult.ok) {
-      await invalidateClientOtpChallenge(newChallenge.challengeId);
+      await invalidateClientOtpChallenge(newChallenge.challengeId, userEmail);
       throw apiError(500, `Failed to send new verification code email: ${emailResult.error || 'Provider rejected request'}`);
     }
 
@@ -591,7 +591,7 @@ export default async function authRoutes(request, response, url) {
     });
 
     if (!emailResult.ok) {
-      await invalidateClientOtpChallenge(challenge.challengeId);
+      await invalidateClientOtpChallenge(challenge.challengeId, normEmail);
       throw apiError(500, `Failed to send email OTP: ${emailResult.error || 'Provider rejected request'}`);
     }
 
