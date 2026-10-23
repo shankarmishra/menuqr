@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { toPng } from 'html-to-image';
 import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerCard';
-import { STICKER_TEMPLATES, type StickerThemeId } from '../../components/sticker/StickerTemplates';
+import { type StickerThemeId } from '../../components/sticker/StickerTemplates';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { createPermanentQr, createStickerRequest, getProfile, getQr, getStickerRequests, getMenu, type AppProfile, type AppQrData, type StickerRequest } from './appStore';
 
@@ -18,7 +18,7 @@ export default function QrCenter() {
   const [saving, setSaving] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<StickerThemeId>('menusqr-flagship-standee');
+  const selectedTheme: StickerThemeId = 'menusqr-marble-gold';
   const [qrImage, setQrImage] = useState<string>('');
 
   const stickerRef = useRef<HTMLDivElement>(null);
@@ -191,36 +191,26 @@ export default function QrCenter() {
                 </div>
               </div>
               
-              {/* Luxury Theme Selector Bar */}
-              <div className="p-4 border-b border-[#2a3832] bg-[#121815] flex flex-col gap-2.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#849a90] uppercase tracking-wider">Select Standee & Sticker Finish:</span>
-                  <span className="text-[#e8783c] font-semibold text-[11px]">
-                    ✨ High-Res 300 DPI Vector Artwork
-                  </span>
+              {/* Luxury Flagship Edition Bar */}
+              <div className="p-4 border-b border-[#2a3832] bg-[#121815] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-4 h-4 rounded-full border border-amber-300/40 shrink-0 bg-gradient-to-br from-white via-[#FAF7F0] to-[#EBE0CD] shadow-sm" />
+                  <div>
+                    <span className="font-extrabold text-white text-xs tracking-wide">
+                      Imperial Royal Ivory & 24K Gold
+                    </span>
+                    <span className="text-[#849a90] text-[11px] block">
+                      Calacatta Alabaster Stone, Hand-Pressed Vellum & Antique Brass Plaque
+                    </span>
+                  </div>
                 </div>
-                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                  {STICKER_TEMPLATES.map((tmpl) => {
-                    const isSelected = selectedTheme === tmpl.id;
-                    return (
-                      <button
-                        key={tmpl.id}
-                        type="button"
-                        onClick={() => setSelectedTheme(tmpl.id)}
-                        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer whitespace-nowrap ${
-                          isSelected
-                            ? 'bg-[#1e2723] border-[#e8783c] text-white shadow-md shadow-[#e8783c]/15 ring-1 ring-[#e8783c]/50'
-                            : 'bg-[#151c19] border-[#2a3832] text-[#849a90] hover:text-white hover:border-[#384a42]'
-                        }`}
-                      >
-                        <span
-                          className="w-3.5 h-3.5 rounded-full border border-white/20 shrink-0"
-                          style={{ background: tmpl.previewBg }}
-                        />
-                        <span>{tmpl.name}</span>
-                      </button>
-                    );
-                  })}
+                <div className="flex items-center gap-2">
+                  <span className="text-amber-400 font-bold text-[11px] border border-amber-400/20 px-2.5 py-1 rounded-full bg-amber-400/10 whitespace-nowrap">
+                    ✨ Flagship Light Masterpiece
+                  </span>
+                  <span className="text-[#849a90] text-[11px] font-medium whitespace-nowrap">
+                    300 DPI Vector
+                  </span>
                 </div>
               </div>
 

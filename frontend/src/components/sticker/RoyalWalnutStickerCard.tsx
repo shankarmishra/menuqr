@@ -1,8 +1,281 @@
 import React from 'react';
+import { Camera, QrCode, BookOpen } from 'lucide-react';
 import { MenusQRMark } from '../brand/MenusQRMark';
 import { type StickerThemeId } from './StickerTemplates';
 
 export type { StickerThemeId };
+
+export interface ThemeConfig {
+  id: StickerThemeId;
+  name: string;
+  frameBg: string;
+  frameBorder: string;
+  frameShadow: string;
+  badgeGrad: string;
+  badgeText: string;
+  badgeBorder: string;
+  badgeShadow: string;
+  artboardBg: string;
+  artboardBorder: string;
+  accentGold: string;
+  accentGoldLight: string;
+  accentGoldDark: string;
+  guillocheColor: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  qrBezelBg: string;
+  qrBezelBorder: string;
+  qrBorder: string;
+  rivetBase: string;
+  rivetHighlight: string;
+  isDarkArtboard?: boolean;
+}
+
+// --------------------------------------------------------------------------
+// FLAGSHIP LUXURY LIGHT THEME: IMPERIAL ROYAL IVORY & 24K CALACATTA GOLD
+// Crafted for high-end restaurants, luxury dining tables, and 300+ DPI print.
+// --------------------------------------------------------------------------
+export const STICKER_THEMES: Record<StickerThemeId, ThemeConfig> = {
+  'menusqr-marble-gold': {
+    id: 'menusqr-marble-gold',
+    name: 'Imperial Royal Ivory & Gold',
+    // Physical Plaque Frame: Italian Calacatta Alabaster Stone with warm honey-amber undertones
+    frameBg: 'linear-gradient(150deg, #FFFFFF 0%, #FAF7F0 25%, #F4ECE0 55%, #EBE0CD 85%, #E0D1B6 100%)',
+    frameBorder: 'rgba(212, 168, 72, 0.9)',
+    frameShadow: '0 32px 75px -12px rgba(60, 42, 16, 0.28), 0 12px 28px rgba(0,0,0,0.1), inset 0 0 35px rgba(255,255,255,0.95), inset 0 1px 3px #FFFFFF',
+    // 3D Minted Metallic Cartouche Ribbon
+    badgeGrad: 'linear-gradient(135deg, #FFFDF0 0%, #F5DE98 25%, #D4AF37 55%, #946F15 85%, #E5BE58 100%)',
+    badgeText: '#261604',
+    badgeBorder: '#FFFBE8',
+    badgeShadow: '0 8px 22px rgba(90,60,20,0.35), inset 0 1px 2px rgba(255,255,255,0.98), inset 0 -1px 2px rgba(0,0,0,0.3)',
+    // Inner Artboard: Heavyweight 350gsm Archival Vellum & Fine Ivory Porcelain
+    artboardBg: 'linear-gradient(175deg, #FFFFFF 0%, #FCF9F3 40%, #F8F1E4 85%, #F0E5D2 100%)',
+    artboardBorder: 'rgba(200, 155, 60, 0.85)',
+    accentGold: '#BF8E2C',
+    accentGoldLight: '#FFFDEB',
+    accentGoldDark: '#785208',
+    guillocheColor: 'rgba(184, 138, 48, 0.42)',
+    textPrimary: '#140D05', // High-contrast deep ebony-bronze
+    textSecondary: '#855716', // Rich warm polished brass
+    textMuted: '#6B543D',
+    qrBezelBg: '#FFFFFF',
+    qrBezelBorder: 'linear-gradient(135deg, #FFFDEB, #DFB15B, #785208)',
+    qrBorder: 'rgba(200, 155, 60, 0.9)',
+    rivetBase: '#4E3208',
+    rivetHighlight: '#FFFDEB',
+    isDarkArtboard: false,
+  },
+  // Aliases fall back to the flagship Light Masterpiece
+  'menusqr-obsidian-gold': {
+    id: 'menusqr-obsidian-gold',
+    name: 'Imperial Royal Ivory & Gold',
+    frameBg: 'linear-gradient(150deg, #FFFFFF 0%, #FAF7F0 25%, #F4ECE0 55%, #EBE0CD 85%, #E0D1B6 100%)',
+    frameBorder: 'rgba(212, 168, 72, 0.9)',
+    frameShadow: '0 32px 75px -12px rgba(60, 42, 16, 0.28), 0 12px 28px rgba(0,0,0,0.1), inset 0 0 35px rgba(255,255,255,0.95), inset 0 1px 3px #FFFFFF',
+    badgeGrad: 'linear-gradient(135deg, #FFFDF0 0%, #F5DE98 25%, #D4AF37 55%, #946F15 85%, #E5BE58 100%)',
+    badgeText: '#261604',
+    badgeBorder: '#FFFBE8',
+    badgeShadow: '0 8px 22px rgba(90,60,20,0.35), inset 0 1px 2px rgba(255,255,255,0.98), inset 0 -1px 2px rgba(0,0,0,0.3)',
+    artboardBg: 'linear-gradient(175deg, #FFFFFF 0%, #FCF9F3 40%, #F8F1E4 85%, #F0E5D2 100%)',
+    artboardBorder: 'rgba(200, 155, 60, 0.85)',
+    accentGold: '#BF8E2C',
+    accentGoldLight: '#FFFDEB',
+    accentGoldDark: '#785208',
+    guillocheColor: 'rgba(184, 138, 48, 0.42)',
+    textPrimary: '#140D05',
+    textSecondary: '#855716',
+    textMuted: '#6B543D',
+    qrBezelBg: '#FFFFFF',
+    qrBezelBorder: 'linear-gradient(135deg, #FFFDEB, #DFB15B, #785208)',
+    qrBorder: 'rgba(200, 155, 60, 0.9)',
+    rivetBase: '#4E3208',
+    rivetHighlight: '#FFFDEB',
+    isDarkArtboard: false,
+  },
+  'menusqr-walnut-gold': {
+    id: 'menusqr-walnut-gold',
+    name: 'Imperial Royal Ivory & Gold',
+    frameBg: 'linear-gradient(150deg, #FFFFFF 0%, #FAF7F0 25%, #F4ECE0 55%, #EBE0CD 85%, #E0D1B6 100%)',
+    frameBorder: 'rgba(212, 168, 72, 0.9)',
+    frameShadow: '0 32px 75px -12px rgba(60, 42, 16, 0.28), 0 12px 28px rgba(0,0,0,0.1), inset 0 0 35px rgba(255,255,255,0.95), inset 0 1px 3px #FFFFFF',
+    badgeGrad: 'linear-gradient(135deg, #FFFDF0 0%, #F5DE98 25%, #D4AF37 55%, #946F15 85%, #E5BE58 100%)',
+    badgeText: '#261604',
+    badgeBorder: '#FFFBE8',
+    badgeShadow: '0 8px 22px rgba(90,60,20,0.35), inset 0 1px 2px rgba(255,255,255,0.98), inset 0 -1px 2px rgba(0,0,0,0.3)',
+    artboardBg: 'linear-gradient(175deg, #FFFFFF 0%, #FCF9F3 40%, #F8F1E4 85%, #F0E5D2 100%)',
+    artboardBorder: 'rgba(200, 155, 60, 0.85)',
+    accentGold: '#BF8E2C',
+    accentGoldLight: '#FFFDEB',
+    accentGoldDark: '#785208',
+    guillocheColor: 'rgba(184, 138, 48, 0.42)',
+    textPrimary: '#140D05',
+    textSecondary: '#855716',
+    textMuted: '#6B543D',
+    qrBezelBg: '#FFFFFF',
+    qrBezelBorder: 'linear-gradient(135deg, #FFFDEB, #DFB15B, #785208)',
+    qrBorder: 'rgba(200, 155, 60, 0.9)',
+    rivetBase: '#4E3208',
+    rivetHighlight: '#FFFDEB',
+    isDarkArtboard: false,
+  },
+  'menusqr-emerald-gold': {
+    id: 'menusqr-emerald-gold',
+    name: 'Imperial Royal Ivory & Gold',
+    frameBg: 'linear-gradient(150deg, #FFFFFF 0%, #FAF7F0 25%, #F4ECE0 55%, #EBE0CD 85%, #E0D1B6 100%)',
+    frameBorder: 'rgba(212, 168, 72, 0.9)',
+    frameShadow: '0 32px 75px -12px rgba(60, 42, 16, 0.28), 0 12px 28px rgba(0,0,0,0.1), inset 0 0 35px rgba(255,255,255,0.95), inset 0 1px 3px #FFFFFF',
+    badgeGrad: 'linear-gradient(135deg, #FFFDF0 0%, #F5DE98 25%, #D4AF37 55%, #946F15 85%, #E5BE58 100%)',
+    badgeText: '#261604',
+    badgeBorder: '#FFFBE8',
+    badgeShadow: '0 8px 22px rgba(90,60,20,0.35), inset 0 1px 2px rgba(255,255,255,0.98), inset 0 -1px 2px rgba(0,0,0,0.3)',
+    artboardBg: 'linear-gradient(175deg, #FFFFFF 0%, #FCF9F3 40%, #F8F1E4 85%, #F0E5D2 100%)',
+    artboardBorder: 'rgba(200, 155, 60, 0.85)',
+    accentGold: '#BF8E2C',
+    accentGoldLight: '#FFFDEB',
+    accentGoldDark: '#785208',
+    guillocheColor: 'rgba(184, 138, 48, 0.42)',
+    textPrimary: '#140D05',
+    textSecondary: '#855716',
+    textMuted: '#6B543D',
+    qrBezelBg: '#FFFFFF',
+    qrBezelBorder: 'linear-gradient(135deg, #FFFDEB, #DFB15B, #785208)',
+    qrBorder: 'rgba(200, 155, 60, 0.9)',
+    rivetBase: '#4E3208',
+    rivetHighlight: '#FFFDEB',
+    isDarkArtboard: false,
+  },
+  'menusqr-ruby-gold': {
+    id: 'menusqr-ruby-gold',
+    name: 'Imperial Royal Ivory & Gold',
+    frameBg: 'linear-gradient(150deg, #FFFFFF 0%, #FAF7F0 25%, #F4ECE0 55%, #EBE0CD 85%, #E0D1B6 100%)',
+    frameBorder: 'rgba(212, 168, 72, 0.9)',
+    frameShadow: '0 32px 75px -12px rgba(60, 42, 16, 0.28), 0 12px 28px rgba(0,0,0,0.1), inset 0 0 35px rgba(255,255,255,0.95), inset 0 1px 3px #FFFFFF',
+    badgeGrad: 'linear-gradient(135deg, #FFFDF0 0%, #F5DE98 25%, #D4AF37 55%, #946F15 85%, #E5BE58 100%)',
+    badgeText: '#261604',
+    badgeBorder: '#FFFBE8',
+    badgeShadow: '0 8px 22px rgba(90,60,20,0.35), inset 0 1px 2px rgba(255,255,255,0.98), inset 0 -1px 2px rgba(0,0,0,0.3)',
+    artboardBg: 'linear-gradient(175deg, #FFFFFF 0%, #FCF9F3 40%, #F8F1E4 85%, #F0E5D2 100%)',
+    artboardBorder: 'rgba(200, 155, 60, 0.85)',
+    accentGold: '#BF8E2C',
+    accentGoldLight: '#FFFDEB',
+    accentGoldDark: '#785208',
+    guillocheColor: 'rgba(184, 138, 48, 0.42)',
+    textPrimary: '#140D05',
+    textSecondary: '#855716',
+    textMuted: '#6B543D',
+    qrBezelBg: '#FFFFFF',
+    qrBezelBorder: 'linear-gradient(135deg, #FFFDEB, #DFB15B, #785208)',
+    qrBorder: 'rgba(200, 155, 60, 0.9)',
+    rivetBase: '#4E3208',
+    rivetHighlight: '#FFFDEB',
+    isDarkArtboard: false,
+  },
+  'menusqr-tandoor-fire': {
+    id: 'menusqr-tandoor-fire',
+    name: 'Imperial Royal Ivory & Gold',
+    frameBg: 'linear-gradient(150deg, #FFFFFF 0%, #FAF7F0 25%, #F4ECE0 55%, #EBE0CD 85%, #E0D1B6 100%)',
+    frameBorder: 'rgba(212, 168, 72, 0.9)',
+    frameShadow: '0 32px 75px -12px rgba(60, 42, 16, 0.28), 0 12px 28px rgba(0,0,0,0.1), inset 0 0 35px rgba(255,255,255,0.95), inset 0 1px 3px #FFFFFF',
+    badgeGrad: 'linear-gradient(135deg, #FFFDF0 0%, #F5DE98 25%, #D4AF37 55%, #946F15 85%, #E5BE58 100%)',
+    badgeText: '#261604',
+    badgeBorder: '#FFFBE8',
+    badgeShadow: '0 8px 22px rgba(90,60,20,0.35), inset 0 1px 2px rgba(255,255,255,0.98), inset 0 -1px 2px rgba(0,0,0,0.3)',
+    artboardBg: 'linear-gradient(175deg, #FFFFFF 0%, #FCF9F3 40%, #F8F1E4 85%, #F0E5D2 100%)',
+    artboardBorder: 'rgba(200, 155, 60, 0.85)',
+    accentGold: '#BF8E2C',
+    accentGoldLight: '#FFFDEB',
+    accentGoldDark: '#785208',
+    guillocheColor: 'rgba(184, 138, 48, 0.42)',
+    textPrimary: '#140D05',
+    textSecondary: '#855716',
+    textMuted: '#6B543D',
+    qrBezelBg: '#FFFFFF',
+    qrBezelBorder: 'linear-gradient(135deg, #FFFDEB, #DFB15B, #785208)',
+    qrBorder: 'rgba(200, 155, 60, 0.9)',
+    rivetBase: '#4E3208',
+    rivetHighlight: '#FFFDEB',
+    isDarkArtboard: false,
+  },
+  'menusqr-flagship-standee': {
+    id: 'menusqr-flagship-standee',
+    name: 'Imperial Royal Ivory & Gold',
+    frameBg: 'linear-gradient(150deg, #FFFFFF 0%, #FAF7F0 25%, #F4ECE0 55%, #EBE0CD 85%, #E0D1B6 100%)',
+    frameBorder: 'rgba(212, 168, 72, 0.9)',
+    frameShadow: '0 32px 75px -12px rgba(60, 42, 16, 0.28), 0 12px 28px rgba(0,0,0,0.1), inset 0 0 35px rgba(255,255,255,0.95), inset 0 1px 3px #FFFFFF',
+    badgeGrad: 'linear-gradient(135deg, #FFFDF0 0%, #F5DE98 25%, #D4AF37 55%, #946F15 85%, #E5BE58 100%)',
+    badgeText: '#261604',
+    badgeBorder: '#FFFBE8',
+    badgeShadow: '0 8px 22px rgba(90,60,20,0.35), inset 0 1px 2px rgba(255,255,255,0.98), inset 0 -1px 2px rgba(0,0,0,0.3)',
+    artboardBg: 'linear-gradient(175deg, #FFFFFF 0%, #FCF9F3 40%, #F8F1E4 85%, #F0E5D2 100%)',
+    artboardBorder: 'rgba(200, 155, 60, 0.85)',
+    accentGold: '#BF8E2C',
+    accentGoldLight: '#FFFDEB',
+    accentGoldDark: '#785208',
+    guillocheColor: 'rgba(184, 138, 48, 0.42)',
+    textPrimary: '#140D05',
+    textSecondary: '#855716',
+    textMuted: '#6B543D',
+    qrBezelBg: '#FFFFFF',
+    qrBezelBorder: 'linear-gradient(135deg, #FFFDEB, #DFB15B, #785208)',
+    qrBorder: 'rgba(200, 155, 60, 0.9)',
+    rivetBase: '#4E3208',
+    rivetHighlight: '#FFFDEB',
+    isDarkArtboard: false,
+  },
+  'menusqr-herb-garden': {
+    id: 'menusqr-herb-garden',
+    name: 'Imperial Royal Ivory & Gold',
+    frameBg: 'linear-gradient(150deg, #FFFFFF 0%, #FAF7F0 25%, #F4ECE0 55%, #EBE0CD 85%, #E0D1B6 100%)',
+    frameBorder: 'rgba(212, 168, 72, 0.9)',
+    frameShadow: '0 32px 75px -12px rgba(60, 42, 16, 0.28), 0 12px 28px rgba(0,0,0,0.1), inset 0 0 35px rgba(255,255,255,0.95), inset 0 1px 3px #FFFFFF',
+    badgeGrad: 'linear-gradient(135deg, #FFFDF0 0%, #F5DE98 25%, #D4AF37 55%, #946F15 85%, #E5BE58 100%)',
+    badgeText: '#261604',
+    badgeBorder: '#FFFBE8',
+    badgeShadow: '0 8px 22px rgba(90,60,20,0.35), inset 0 1px 2px rgba(255,255,255,0.98), inset 0 -1px 2px rgba(0,0,0,0.3)',
+    artboardBg: 'linear-gradient(175deg, #FFFFFF 0%, #FCF9F3 40%, #F8F1E4 85%, #F0E5D2 100%)',
+    artboardBorder: 'rgba(200, 155, 60, 0.85)',
+    accentGold: '#BF8E2C',
+    accentGoldLight: '#FFFDEB',
+    accentGoldDark: '#785208',
+    guillocheColor: 'rgba(184, 138, 48, 0.42)',
+    textPrimary: '#140D05',
+    textSecondary: '#855716',
+    textMuted: '#6B543D',
+    qrBezelBg: '#FFFFFF',
+    qrBezelBorder: 'linear-gradient(135deg, #FFFDEB, #DFB15B, #785208)',
+    qrBorder: 'rgba(200, 155, 60, 0.9)',
+    rivetBase: '#4E3208',
+    rivetHighlight: '#FFFDEB',
+    isDarkArtboard: false,
+  },
+  'menusqr-neon-bites': {
+    id: 'menusqr-neon-bites',
+    name: 'Imperial Royal Ivory & Gold',
+    frameBg: 'linear-gradient(150deg, #FFFFFF 0%, #FAF7F0 25%, #F4ECE0 55%, #EBE0CD 85%, #E0D1B6 100%)',
+    frameBorder: 'rgba(212, 168, 72, 0.9)',
+    frameShadow: '0 32px 75px -12px rgba(60, 42, 16, 0.28), 0 12px 28px rgba(0,0,0,0.1), inset 0 0 35px rgba(255,255,255,0.95), inset 0 1px 3px #FFFFFF',
+    badgeGrad: 'linear-gradient(135deg, #FFFDF0 0%, #F5DE98 25%, #D4AF37 55%, #946F15 85%, #E5BE58 100%)',
+    badgeText: '#261604',
+    badgeBorder: '#FFFBE8',
+    badgeShadow: '0 8px 22px rgba(90,60,20,0.35), inset 0 1px 2px rgba(255,255,255,0.98), inset 0 -1px 2px rgba(0,0,0,0.3)',
+    artboardBg: 'linear-gradient(175deg, #FFFFFF 0%, #FCF9F3 40%, #F8F1E4 85%, #F0E5D2 100%)',
+    artboardBorder: 'rgba(200, 155, 60, 0.85)',
+    accentGold: '#BF8E2C',
+    accentGoldLight: '#FFFDEB',
+    accentGoldDark: '#785208',
+    guillocheColor: 'rgba(184, 138, 48, 0.42)',
+    textPrimary: '#140D05',
+    textSecondary: '#855716',
+    textMuted: '#6B543D',
+    qrBezelBg: '#FFFFFF',
+    qrBezelBorder: 'linear-gradient(135deg, #FFFDEB, #DFB15B, #785208)',
+    qrBorder: 'rgba(200, 155, 60, 0.9)',
+    rivetBase: '#4E3208',
+    rivetHighlight: '#FFFDEB',
+    isDarkArtboard: false,
+  },
+};
 
 export interface RoyalWalnutStickerCardProps {
   restaurantName: string;
@@ -23,814 +296,730 @@ export interface RoyalWalnutStickerCardProps {
   tableNumber?: string;
 }
 
-// ============================================================================
-// HIGH-FIDELITY VECTOR GRAPHICS: TANDOOR FIRE (Indian Spices & Haveli Arch)
-// ============================================================================
-
-function HaveliArchSilhouette({ color = '#EA580C' }: { color?: string }) {
+// -------------------------------------------------------------
+// 1. HYPER-DETAILED SLOTTED BRASS SCREW RIVET
+// -------------------------------------------------------------
+function MetallicScrewRivet({
+  cx,
+  cy,
+  radius = 4.5,
+  rivetBase,
+  rivetHighlight,
+  prefix = 'rivet',
+  angle = 35,
+}: {
+  cx: number;
+  cy: number;
+  radius?: number;
+  rivetBase: string;
+  rivetHighlight: string;
+  prefix?: string;
+  angle?: number;
+}) {
+  const gradId = `${prefix}_grad_${cx}_${cy}`;
   return (
-    <svg className="w-full h-7 overflow-visible opacity-80 my-1" viewBox="0 0 300 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M 15 24 L 75 24 Q 105 24 125 17 Q 142 9 150 2 Q 158 9 175 17 Q 195 24 225 24 L 285 24"
-        stroke={color}
-        strokeWidth="1.6"
+    <g transform={`rotate(${angle} ${cx} ${cy})`}>
+      <defs>
+        <radialGradient id={gradId} cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stopColor={rivetHighlight} />
+          <stop offset="38%" stopColor={rivetBase} />
+          <stop offset="85%" stopColor="#241603" />
+          <stop offset="100%" stopColor="#0B0601" />
+        </radialGradient>
+      </defs>
+      {/* Countersunk Drop Shadow Hole */}
+      <circle cx={cx} cy={cy + 0.8} r={radius + 0.9} fill="#000000" opacity="0.35" />
+      {/* Outer Chamfer Rim Ring */}
+      <circle cx={cx} cy={cy} r={radius + 0.5} fill="none" stroke={rivetHighlight} strokeWidth="0.5" opacity="0.85" />
+      {/* Main Beveled Screw Head */}
+      <circle cx={cx} cy={cy} r={radius} fill={`url(#${gradId})`} stroke={rivetHighlight} strokeWidth="0.8" />
+      {/* Slotted Drive Groove with Realistic Depth */}
+      <line
+        x1={cx - radius * 0.72}
+        y1={cy}
+        x2={cx + radius * 0.72}
+        y2={cy}
+        stroke="#0D0701"
+        strokeWidth="1.2"
         strokeLinecap="round"
       />
-      <circle cx="150" cy="2" r="3" fill={color} />
-      <circle cx="105" cy="24" r="1.5" fill={color} />
-      <circle cx="195" cy="24" r="1.5" fill={color} />
+      {/* Specular Highlight Catching on Groove Lower Lip */}
+      <line
+        x1={cx - radius * 0.65}
+        y1={cy + 0.6}
+        x2={cx + radius * 0.65}
+        y2={cy + 0.6}
+        stroke={rivetHighlight}
+        strokeWidth="0.55"
+        opacity="0.95"
+      />
+    </g>
+  );
+}
+
+// -------------------------------------------------------------
+// 2. GRAND BANKNOTE GUILLOCHÉ ROSETTE (Sacred Geometry Watermark)
+// -------------------------------------------------------------
+function BanknoteGuillocheRosette({ color }: { color: string }) {
+  // 16 Petals interlocking spirograph
+  const angles = [0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5];
+  return (
+    <svg
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] pointer-events-none opacity-30 overflow-visible"
+      viewBox="0 0 300 300"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="150" cy="150" r="140" stroke={color} strokeWidth="0.9" strokeDasharray="3 3" />
+      <circle cx="150" cy="150" r="125" stroke={color} strokeWidth="1.1" />
+      <circle cx="150" cy="150" r="110" stroke={color} strokeWidth="0.7" strokeDasharray="4 2" />
+      <circle cx="150" cy="150" r="85" stroke={color} strokeWidth="0.9" />
+      <circle cx="150" cy="150" r="50" stroke={color} strokeWidth="0.7" />
+      {angles.map((ang) => (
+        <g key={ang} transform={`rotate(${ang} 150 150)`}>
+          <ellipse cx="150" cy="150" rx="135" ry="45" stroke={color} strokeWidth="0.85" />
+          <ellipse cx="150" cy="150" rx="110" ry="25" stroke={color} strokeWidth="0.75" opacity="0.8" />
+        </g>
+      ))}
     </svg>
   );
 }
 
-function StarAniseEtching({ className = 'w-7 h-7', color = '#F59E0B' }: { className?: string; color?: string }) {
+// -------------------------------------------------------------
+// 3. BANKNOTE GUILLOCHÉ SECURITY WAVE LACE (Continuous Perimeter)
+// -------------------------------------------------------------
+function BanknoteGuillocheBorder({ color }: { color: string }) {
   return (
-    <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <g fill={color} fillOpacity="0.9">
-        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => (
-          <g key={i} transform={`rotate(${angle} 50 50)`}>
-            <path d="M50 8 C53 22 56 32 63 36 C57 40 53 46 50 50 C47 46 43 40 37 36 C44 32 47 22 50 8 Z" />
-            <ellipse cx="50" cy="24" rx="2.5" ry="5" fill="#1C1917" />
-          </g>
-        ))}
-        <circle cx="50" cy="50" r="7" fill={color} />
-        <circle cx="50" cy="50" r="3" fill="#1C1917" />
+    <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-hidden" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="guilloche-lace-h" width="32" height="12" patternUnits="userSpaceOnUse">
+          <path
+            d="M 0 6 Q 8 -3 16 6 T 32 6 M 0 6 Q 8 15 16 6 T 32 6 M 0 2 Q 8 10 16 2 T 32 2 M 0 10 Q 8 2 16 10 T 32 10"
+            fill="none"
+            stroke={color}
+            strokeWidth="0.8"
+          />
+          <circle cx="16" cy="6" r="1.4" fill={color} opacity="0.95" />
+          <circle cx="32" cy="6" r="1" fill={color} opacity="0.7" />
+        </pattern>
+        <pattern id="guilloche-lace-v" width="12" height="32" patternUnits="userSpaceOnUse">
+          <path
+            d="M 6 0 Q -3 8 6 16 T 6 32 M 6 0 Q 15 8 6 16 T 6 32 M 2 0 Q 10 8 2 16 T 2 32 M 10 0 Q 2 8 10 16 T 10 32"
+            fill="none"
+            stroke={color}
+            strokeWidth="0.8"
+          />
+          <circle cx="6" cy="16" r="1.4" fill={color} opacity="0.95" />
+          <circle cx="6" cy="32" r="1" fill={color} opacity="0.7" />
+        </pattern>
+      </defs>
+
+      {/* Top Guilloché Border Strip */}
+      <rect x="34" y="10" width="calc(100% - 68px)" height="12" fill="url(#guilloche-lace-h)" />
+      {/* Bottom Guilloché Border Strip */}
+      <rect x="34" y="calc(100% - 22px)" width="calc(100% - 68px)" height="12" fill="url(#guilloche-lace-h)" />
+      {/* Left Guilloché Border Strip */}
+      <rect x="10" y="34" width="12" height="calc(100% - 68px)" fill="url(#guilloche-lace-v)" />
+      {/* Right Guilloché Border Strip */}
+      <rect x="calc(100% - 22px)" y="34" width="12" height="calc(100% - 68px)" fill="url(#guilloche-lace-v)" />
+    </svg>
+  );
+}
+
+// -------------------------------------------------------------
+// 4. BAROQUE ACANTHUS CORNER SPANDREL (Deeply Sculpted Filigree)
+// -------------------------------------------------------------
+function BaroqueAcanthusCorner({
+  theme,
+  position,
+}: {
+  theme: ThemeConfig;
+  position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+}) {
+  const transform =
+    position === 'top-right'
+      ? 'scale(-1, 1)'
+      : position === 'bottom-left'
+      ? 'scale(1, -1)'
+      : position === 'bottom-right'
+      ? 'scale(-1, -1)'
+      : undefined;
+
+  const stylePos =
+    position === 'top-left'
+      ? 'top-0 left-0'
+      : position === 'top-right'
+      ? 'top-0 right-0'
+      : position === 'bottom-left'
+      ? 'bottom-0 left-0'
+      : 'bottom-0 right-0';
+
+  const prefix = `acanthus_${position}_${theme.id}`;
+
+  return (
+    <svg
+      className={`absolute ${stylePos} w-24 h-24 pointer-events-none z-20 overflow-visible`}
+      viewBox="0 0 100 100"
+      fill="none"
+      style={{ transform }}
+    >
+      <defs>
+        <linearGradient id={`${prefix}_foil`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFFDEB" />
+          <stop offset="28%" stopColor="#E2BA55" />
+          <stop offset="65%" stopColor="#BF8E2C" />
+          <stop offset="90%" stopColor="#5E3E06" />
+          <stop offset="100%" stopColor="#241703" />
+        </linearGradient>
+        <filter id={`${prefix}_shadow`} x="-20%" y="-20%" width="160%" height="160%">
+          <feDropShadow dx="2" dy="3" stdDeviation="3" floodColor="#402808" floodOpacity="0.45" />
+        </filter>
+      </defs>
+
+      {/* Main Sculpted Bracket Silhouette */}
+      <path
+        d="M 0 0 L 88 0 C 74 0 54 8 42 22 C 32 34 28 50 26 66 C 18 74 8 84 0 94 Z"
+        fill={`url(#${prefix}_foil)`}
+        filter={`url(#${prefix}_shadow)`}
+      />
+
+      {/* Chiseled Dual Bevel Hairline */}
+      <path
+        d="M 4 4 L 80 4 C 68 4 49 11 38 24 C 28 36 24 51 22 65 C 15 72 6 81 4 88 Z"
+        fill="none"
+        stroke="#FFFDEB"
+        strokeWidth="1.2"
+        strokeOpacity="0.9"
+      />
+
+      {/* Detailed Baroque Acanthus Volutes & Intaglio Hatching Lines */}
+      <path
+        d="M 12 12 C 26 14 36 22 42 34 C 36 38 28 34 22 26 C 18 20 14 16 12 12 Z"
+        fill="none"
+        stroke="#FFFDEB"
+        strokeWidth="1.2"
+      />
+      {/* Intaglio Shading Hatch Lines */}
+      <path d="M 18 16 L 24 20 M 22 18 L 28 23 M 26 21 L 32 26 M 30 25 L 36 30" stroke="#3A2504" strokeWidth="0.8" opacity="0.65" />
+      <path d="M 19 15 L 25 19 M 23 17 L 29 22 M 27 20 L 33 25" stroke="#FFFDEB" strokeWidth="0.6" opacity="0.85" />
+
+      {/* Secondary Counter-Curving Acanthus Tendril */}
+      <path
+        d="M 12 12 C 14 26 22 36 34 42 C 38 36 34 28 26 22 C 20 18 16 14 12 12 Z"
+        fill="none"
+        stroke="#FFFDEB"
+        strokeWidth="1.2"
+      />
+      <path d="M 16 18 L 20 24 M 18 22 L 23 28 M 21 26 L 26 32 M 25 30 L 30 36" stroke="#3A2504" strokeWidth="0.8" opacity="0.65" />
+
+      {/* Ornate Fleur Terminal Spirals */}
+      <circle cx="44" cy="36" r="2.2" fill="#FFFDEB" stroke="#3A2504" strokeWidth="0.6" />
+      <circle cx="36" cy="44" r="2.2" fill="#FFFDEB" stroke="#3A2504" strokeWidth="0.6" />
+      <circle cx="28" cy="28" r="1.6" fill="#FFFFFF" opacity="0.9" />
+
+      {/* 3x Heavy Machined Slotted Brass Bolts */}
+      <MetallicScrewRivet cx={14} cy={14} radius={4.5} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix={prefix} angle={40} />
+      <MetallicScrewRivet cx={66} cy={10} radius={3.4} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix={prefix} angle={15} />
+      <MetallicScrewRivet cx={10} cy={66} radius={3.4} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix={prefix} angle={75} />
+    </svg>
+  );
+}
+
+// -------------------------------------------------------------
+// 5. RICH TACTILE PROCEDURAL TEXTURES (Calacatta Gold + Linen Parchment)
+// -------------------------------------------------------------
+function LightLuxuryTextureOverlay() {
+  return (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        {/* Archival Linen / Hand-pressed Vellum Paper Fiber Texture */}
+        <pattern id="archival-vellum-texture" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 0 10 L 40 10 M 0 20 L 40 20 M 0 30 L 40 30" stroke="#8C7355" strokeWidth="0.4" opacity="0.12" />
+          <path d="M 10 0 L 10 40 M 20 0 L 20 40 M 30 0 L 30 40" stroke="#8C7355" strokeWidth="0.4" opacity="0.12" />
+          <circle cx="12" cy="18" r="0.75" fill="#8C7355" opacity="0.15" />
+          <circle cx="28" cy="32" r="0.75" fill="#C59B3F" opacity="0.22" />
+          <circle cx="34" cy="8" r="0.6" fill="#8C7355" opacity="0.12" />
+        </pattern>
+        {/* Liquid 24K Gold Foil Vein Gradient */}
+        <linearGradient id="calacatta-gold-vein" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#DFB15B" stopOpacity="0.8" />
+          <stop offset="50%" stopColor="#F5DE98" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="#BF8E2C" stopOpacity="0.7" />
+        </linearGradient>
+      </defs>
+
+      {/* Linen Parchment Fiber Grid */}
+      <rect width="100%" height="100%" fill="url(#archival-vellum-texture)" />
+
+      {/* Prominent Translucent Smoky Italian Marble Veins */}
+      <g opacity="0.55">
+        {/* Main Calacatta Vein Branching from Top Right to Center Left */}
+        <path
+          d="M 440 40 C 350 70, 290 140, 220 180 S 120 220, -20 280"
+          stroke="#7A6552"
+          strokeWidth="3.2"
+          fill="none"
+          opacity="0.3"
+        />
+        <path
+          d="M 220 180 C 180 230, 160 310, 90 380 S 20 450, -20 500"
+          stroke="#7A6552"
+          strokeWidth="2.4"
+          fill="none"
+          opacity="0.25"
+        />
+        {/* Gold Leaf Vein Running Parallel with Luminous Sparkle */}
+        <path
+          d="M 430 48 C 345 78, 285 145, 218 184 S 118 224, -18 284"
+          stroke="url(#calacatta-gold-vein)"
+          strokeWidth="1.8"
+          fill="none"
+        />
+        <path
+          d="M 218 184 C 178 234, 158 314, 88 384"
+          stroke="url(#calacatta-gold-vein)"
+          strokeWidth="1.4"
+          fill="none"
+        />
+        {/* Lower Right Secondary Marble Fracture */}
+        <path
+          d="M 180 660 C 240 600, 310 570, 370 510 S 420 420, 440 370"
+          stroke="#7A6552"
+          strokeWidth="2.6"
+          fill="none"
+          opacity="0.28"
+        />
+        <path
+          d="M 185 655 C 245 595, 315 565, 375 505"
+          stroke="url(#calacatta-gold-vein)"
+          strokeWidth="1.6"
+          fill="none"
+        />
+        {/* Gold Leaf Flake Micro-Particles */}
+        <circle cx="80" cy="140" r="1.8" fill="#DFB15B" opacity="0.6" />
+        <circle cx="340" cy="220" r="2.2" fill="#F5DE98" opacity="0.75" />
+        <circle cx="160" cy="460" r="1.6" fill="#DFB15B" opacity="0.65" />
+        <circle cx="310" cy="540" r="2" fill="#F5DE98" opacity="0.7" />
       </g>
     </svg>
   );
 }
 
-function CardamomCluster({ className = 'w-5 h-7', color = '#EA580C' }: { className?: string; color?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 70 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M35 5 C52 22 60 50 48 76 C40 88 28 88 20 76 C8 50 16 22 35 5 Z"
-        fill={color}
-        fillOpacity="0.25"
-        stroke={color}
-        strokeWidth="2.2"
-      />
-      <path d="M35 10 Q37 48 35 80" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M26 30 Q30 52 28 72" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeOpacity="0.7" />
-      <path d="M44 30 Q40 52 42 72" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeOpacity="0.7" />
-    </svg>
-  );
-}
-
-// ============================================================================
-// HIGH-FIDELITY VECTOR GRAPHICS: HERB GARDEN (Artisan French Bistro & Olive Leaves)
-// ============================================================================
-
-function ArtisanClocheCrest({ color = '#143823', accent = '#B85032' }: { color?: string; accent?: string }) {
-  return (
-    <svg className="w-20 h-14 overflow-visible" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="20" y="56" width="80" height="5" rx="2.5" fill={color} />
-      <line x1="14" y1="64" x2="106" y2="64" stroke={color} strokeWidth="2" strokeLinecap="round" />
-      
-      <path
-        d="M 26 56 C 26 30 42 22 60 22 C 78 22 94 30 94 56 Z"
-        fill={color}
-        fillOpacity="0.12"
-        stroke={color}
-        strokeWidth="2.5"
-      />
-      <circle cx="60" cy="18" r="4.5" fill={accent} stroke={color} strokeWidth="1.5" />
-      
-      <path d="M 52 12 Q 50 6 54 2" stroke={accent} strokeWidth="1.5" strokeLinecap="round" strokeDasharray="1 2" />
-      <path d="M 60 11 Q 62 5 60 1" stroke={accent} strokeWidth="1.5" strokeLinecap="round" strokeDasharray="1 2" />
-      <path d="M 68 12 Q 70 6 66 2" stroke={accent} strokeWidth="1.5" strokeLinecap="round" strokeDasharray="1 2" />
-
-      <path d="M 28 72 Q 44 76 60 76 Q 76 76 92 72" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <ellipse cx="44" cy="74" rx="4" ry="2" fill={color} transform="rotate(-15 44 74)" />
-      <ellipse cx="76" cy="74" rx="4" ry="2" fill={color} transform="rotate(15 76 74)" />
-      <circle cx="60" cy="76" r="2.5" fill={accent} />
-    </svg>
-  );
-}
-
-function OliveSprigCorner({ className = 'w-11 h-15', color = '#143823' }: { className?: string; color?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M15 110 Q40 60 50 15" stroke={color} strokeWidth="2" strokeLinecap="round" />
-      <ellipse cx="28" cy="90" rx="9" ry="4" fill={color} transform="rotate(-35 28 90)" />
-      <ellipse cx="44" cy="80" rx="9" ry="4" fill={color} transform="rotate(35 44 80)" />
-      <ellipse cx="34" cy="60" rx="8" ry="3.5" fill={color} transform="rotate(-30 34 60)" />
-      <ellipse cx="48" cy="50" rx="8" ry="3.5" fill={color} transform="rotate(30 48 50)" />
-      <ellipse cx="40" cy="32" rx="7" ry="3" fill={color} transform="rotate(-25 40 32)" />
-      <ellipse cx="50" cy="24" rx="6" ry="2.8" fill={color} transform="rotate(25 50 24)" />
-      <circle cx="24" cy="74" r="3.5" fill="#B85032" />
-    </svg>
-  );
-}
-
-// ============================================================================
-// HIGH-FIDELITY VECTOR GRAPHICS: NEON BITES (Urban Gastro-Bar & Street Food)
-// ============================================================================
-
-function GastroBurgerEmblem() {
-  return (
-    <svg className="w-11 h-11 overflow-visible" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M 16 34 C 16 16 64 16 64 34 Z"
-        fill="#FFE600"
-        stroke="#FFFFFF"
-        strokeWidth="2.5"
-      />
-      <circle cx="30" cy="24" r="1.8" fill="#FFFFFF" />
-      <circle cx="42" cy="20" r="1.8" fill="#FFFFFF" />
-      <circle cx="52" cy="24" r="1.8" fill="#FFFFFF" />
-      <path d="M 12 40 Q 20 36 28 42 Q 36 36 44 42 Q 52 36 60 42 Q 68 36 72 40" stroke="#FF3366" strokeWidth="3.5" strokeLinecap="round" />
-      <rect x="15" y="47" width="50" height="9" rx="4.5" fill="#00F0FF" stroke="#FFFFFF" strokeWidth="2" />
-      <path d="M 18 61 C 18 68 62 68 62 61 Z" fill="#FFE600" stroke="#FFFFFF" strokeWidth="2.5" />
-    </svg>
-  );
-}
-
-function CraftDrinkEmblem() {
-  return (
-    <svg className="w-9 h-11 overflow-visible" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M 10 18 Q 12 38 30 38 Q 48 38 50 18 Z" fill="#FF3366" fillOpacity="0.25" stroke="#FF3366" strokeWidth="2.5" />
-      <line x1="30" y1="38" x2="30" y2="58" stroke="#00F0FF" strokeWidth="2.5" />
-      <line x1="18" y1="58" x2="42" y2="58" stroke="#00F0FF" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="22" y1="8" x2="36" y2="28" stroke="#FFE600" strokeWidth="2" />
-      <circle cx="36" cy="28" r="4" fill="#FFE600" />
-    </svg>
-  );
-}
-
-// ============================================================================
-// CONCEPT 0: FLAGSHIP CULINARY STANDEE (Physical Walnut Base, 3D Gold Rim, Sizzling Skillet & Spices)
-// ============================================================================
-
-interface CardProps {
-  restaurantName: string;
-  category: string;
-  tagline?: string;
-  headerText: string;
-  footerText: string;
-  menuUrl: string;
-  qrImage: string;
-  domain: string;
-  tableNumber?: string;
-}
-
-function FlagshipCulinaryStandeeCard({
-  restaurantName,
-  category,
-  tagline,
+// -------------------------------------------------------------
+// 6. GRAND IMPERIAL MEDALLION & CROSSED LAUREL HEADER
+// -------------------------------------------------------------
+function ImperialMedallionHeader({
+  theme,
   headerText,
-  qrImage,
-  tableNumber,
-}: CardProps) {
-  const [standeeImg, setStandeeImg] = React.useState('/assets/standee/flagship_culinary_standee_master.webp');
-
+}: {
+  theme: ThemeConfig;
+  headerText: string;
+}) {
   return (
-    <div className="relative w-full aspect-[792/1130] overflow-hidden rounded-[2rem] select-none font-sans">
-      {/* Photorealistic 3D Print-Ready Table Sticker Plate (100% Orthographic, 4-Sided 3D Gold Rim) */}
-      <img
-        src={standeeImg}
-        alt="MenusQR Print-Ready Table Sticker Plaque"
-        onError={() => setStandeeImg('/assets/standee/flagship_culinary_standee_master.png')}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-      />
+    <div className="relative z-30 mx-auto mt-0.5 mb-2 flex flex-col items-center justify-center">
+      {/* Symmetrical Crossed Laurel Wreath with Center 3D Minted Coin */}
+      <div className="relative flex items-center justify-center">
+        {/* Left Laurel Branch */}
+        <svg className="w-16 h-8 -mr-2 overflow-visible" viewBox="0 0 64 32" fill="none">
+          <path d="M 60 22 C 40 22, 20 18, 5 8" stroke={theme.accentGold} strokeWidth="1.4" strokeLinecap="round" />
+          <ellipse cx="14" cy="9" rx="4" ry="2" transform="rotate(-35 14 9)" fill="#FFFDEB" stroke={theme.accentGoldDark} strokeWidth="0.6" />
+          <ellipse cx="26" cy="13" rx="4.5" ry="2.2" transform="rotate(-25 26 13)" fill={theme.accentGold} stroke={theme.accentGoldDark} strokeWidth="0.6" />
+          <ellipse cx="38" cy="17" rx="4.5" ry="2.2" transform="rotate(-15 38 17)" fill="#FFFDEB" stroke={theme.accentGoldDark} strokeWidth="0.6" />
+          <ellipse cx="50" cy="20" rx="4.5" ry="2.2" transform="rotate(-5 50 20)" fill={theme.accentGold} stroke={theme.accentGoldDark} strokeWidth="0.6" />
+          <circle cx="6" cy="7" r="1.6" fill="#FFFFFF" />
+        </svg>
 
-      {/* --- TOP DYNAMIC BRANDING ZONE --- */}
-      <div
-        className="absolute z-10 flex flex-col items-center text-center"
-        style={{
-          top: '4.2%',
-          left: '18%',
-          right: '18%',
-        }}
-      >
-        {/* Official MenusQR Brand Badge */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-[#D4AF37]/70 shadow-lg">
-          <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
-            <MenusQRMark color="#FFFFFF" orange="#EA580C" />
-          </div>
-          <span className="text-[9.5px] font-black tracking-[0.24em] text-[#FEF3C7] uppercase">
-            MENUSQR
-          </span>
-          <span className="text-[#D4AF37] text-[7px]">✦</span>
-          <span className="text-[7.5px] font-bold tracking-widest text-[#E8C15A] uppercase">
-            {headerText || 'DIGITAL MENU'}
-          </span>
-        </div>
-
-        {/* Dynamic Client Restaurant Name (Embossed 3D Gold Typography) */}
-        <h2
-          className={`font-black tracking-tight leading-tight w-full px-1 text-center uppercase mt-1.5 ${
-            restaurantName.length > 28
-              ? 'text-xs sm:text-sm'
-              : restaurantName.length > 20
-              ? 'text-sm sm:text-base'
-              : restaurantName.length > 12
-              ? 'text-base sm:text-lg'
-              : 'text-lg sm:text-xl'
-          }`}
+        {/* Center 3D Minted Gold Medallion */}
+        <div
+          className="relative z-10 w-9 h-9 rounded-full flex items-center justify-center p-0.5 border shadow-xl"
           style={{
-            fontFamily: "'Playfair Display', 'Cinzel', Georgia, serif",
-            background: 'linear-gradient(135deg, #FFF9D2 0%, #F5D77F 25%, #D4AF37 55%, #9E7412 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.95)) drop-shadow(0 0 12px rgba(212,175,55,0.4))',
+            background: 'linear-gradient(135deg, #FFFDEB 0%, #E6C265 30%, #B8851B 65%, #6B4908 100%)',
+            borderColor: theme.accentGoldLight,
+            boxShadow: '0 6px 16px rgba(90,60,20,0.35), inset 0 1px 2px rgba(255,255,255,0.98), inset 0 -1px 2px rgba(0,0,0,0.3)',
           }}
         >
-          {restaurantName}
-        </h2>
-
-        {/* Dynamic Cuisine Category with Gold Accents */}
-        <div className="flex items-center justify-center gap-1.5 mt-1 max-w-[290px]">
-          <span className="h-[1px] w-4 bg-gradient-to-r from-transparent to-[#D4AF37]" />
-          <p className="text-[7.5px] sm:text-[8px] font-extrabold uppercase tracking-[0.2em] text-[#E8C15A] text-center drop-shadow truncate">
-            {category || 'AUTHENTIC CHARCOAL & CLAY TANDOOR CRAFT'}
-          </p>
-          <span className="h-[1px] w-4 bg-gradient-to-l from-transparent to-[#D4AF37]" />
-        </div>
-
-        {/* Tagline */}
-        {tagline && (
-          <p className="text-[7px] italic text-[#FEF3C7]/80 max-w-[260px] truncate mt-0.5 drop-shadow">
-            "{tagline}"
-          </p>
-        )}
-
-        {/* Scan to Explore Menu Callout */}
-        <div className="flex items-center justify-center gap-2 mt-2">
-          <span className="h-[1px] w-5 bg-gradient-to-r from-transparent to-[#D4AF37]/70" />
-          <span className="text-[8.5px] sm:text-[9px] font-black uppercase tracking-[0.22em] text-[#FFF4D0] drop-shadow">
-            SCAN TO EXPLORE MENU
-          </span>
-          <span className="h-[1px] w-5 bg-gradient-to-l from-transparent to-[#D4AF37]/70" />
-        </div>
-      </div>
-
-      {/* --- CENTER 3D GOLD QR CHAMBER (Exact 294x294 square dock on ivory bed) --- */}
-      <div
-        className="absolute z-10 flex items-center justify-center rounded-[1.1rem] sm:rounded-[1.3rem] overflow-hidden p-1.5 sm:p-2"
-        style={{
-          left: '32.83%',
-          top: '47.79%',
-          width: '37.12%',
-          height: '26.02%',
-        }}
-      >
-        {qrImage ? (
-          <div className="relative w-full h-full flex items-center justify-center">
-            <img
-              src={qrImage}
-              alt={`QR code for ${restaurantName}`}
-              className="w-full h-full object-contain"
-              style={{ imageRendering: 'pixelated' }}
-            />
-            {/* Center MenusQR Seal */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-[#110D0B] border-2 border-[#D4AF37] p-1 flex items-center justify-center shadow-lg">
-                <MenusQRMark color="#FFFFFF" orange="#EA580C" />
-              </div>
+          {/* Inner Coin Bevel with Compass Sunburst */}
+          <div
+            className="w-full h-full rounded-full flex items-center justify-center border p-1"
+            style={{
+              background: 'radial-gradient(circle, #2A1D0D 0%, #120A02 100%)',
+              borderColor: theme.accentGold,
+            }}
+          >
+            <div className="w-5 h-5 flex items-center justify-center">
+              <MenusQRMark color="#FFF3BD" orange="#EA580C" />
             </div>
           </div>
-        ) : (
-          <div className="text-[9px] font-bold text-black/60">Generating QR...</div>
-        )}
+        </div>
+
+        {/* Right Laurel Branch */}
+        <svg className="w-16 h-8 -ml-2 overflow-visible" viewBox="0 0 64 32" fill="none" style={{ transform: 'scaleX(-1)' }}>
+          <path d="M 60 22 C 40 22, 20 18, 5 8" stroke={theme.accentGold} strokeWidth="1.4" strokeLinecap="round" />
+          <ellipse cx="14" cy="9" rx="4" ry="2" transform="rotate(-35 14 9)" fill="#FFFDEB" stroke={theme.accentGoldDark} strokeWidth="0.6" />
+          <ellipse cx="26" cy="13" rx="4.5" ry="2.2" transform="rotate(-25 26 13)" fill={theme.accentGold} stroke={theme.accentGoldDark} strokeWidth="0.6" />
+          <ellipse cx="38" cy="17" rx="4.5" ry="2.2" transform="rotate(-15 38 17)" fill="#FFFDEB" stroke={theme.accentGoldDark} strokeWidth="0.6" />
+          <ellipse cx="50" cy="20" rx="4.5" ry="2.2" transform="rotate(-5 50 20)" fill={theme.accentGold} stroke={theme.accentGoldDark} strokeWidth="0.6" />
+          <circle cx="6" cy="7" r="1.6" fill="#FFFFFF" />
+        </svg>
       </div>
 
-      {/* Dynamic Table Number Plaque (if provided) */}
-      {tableNumber && (
-        <div
-          className="absolute z-20 px-3.5 py-0.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#FFF1B0] to-[#D4AF37] text-[#1A120B] font-black text-[8.5px] sm:text-[9.5px] tracking-widest uppercase shadow-xl border border-black/30"
+      {/* 3D Folded Gold Ribbon Banner */}
+      <div
+        className="inline-flex items-center gap-2 px-5 py-1.5 rounded-full border shadow-2xl backdrop-blur-md whitespace-nowrap -mt-1.5"
+        style={{
+          background: theme.badgeGrad,
+          borderColor: theme.badgeBorder,
+          boxShadow: theme.badgeShadow,
+        }}
+      >
+        <span
+          className="font-black text-[9px] sm:text-[10px] tracking-[0.2em] uppercase"
           style={{
-            top: '75.2%',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+            color: theme.badgeText,
+            textShadow: '0 1px 0 rgba(255,255,255,0.7), 0 -1px 0 rgba(0,0,0,0.35)',
           }}
         >
-          TABLE #{tableNumber}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================================
-// CONCEPT 1: TANDOOR FIRE CARD (Authentic Hearth, Smoked Charcoal & Saffron)
-// ============================================================================
-
-function TandoorFireCard({
-  restaurantName,
-  category,
-  tagline,
-  headerText,
-  footerText,
-  qrImage,
-  domain,
-  tableNumber,
-}: CardProps) {
-  return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-between overflow-hidden rounded-[2.3rem] bg-[#110D0B] p-5 sm:p-6 text-[#FAF4E8] border-2 border-[#EA580C]/50 shadow-2xl">
-      {/* Warm Saffron & Clay Charcoal Hearth Radial Glow */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-50"
-        style={{
-          background: 'radial-gradient(circle at 50% -5%, #C2410C 0%, #431407 35%, #180D07 70%, #0A0807 100%)',
-        }}
-      />
-
-      {/* Subtle Micro Spice Hearth Stipple Pattern */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-10"
-        style={{
-          backgroundImage: 'radial-gradient(#F59E0B 1px, transparent 1px)',
-          backgroundSize: '16px 16px',
-        }}
-      />
-
-      {/* Architectural Inner Haveli Frame */}
-      <div className="absolute inset-3 pointer-events-none rounded-[1.7rem] border border-[#EA580C]/35" />
-      <div className="absolute inset-4 pointer-events-none rounded-[1.5rem] border border-[#F59E0B]/20" />
-
-      {/* Spice Botanical Corner Ornaments */}
-      <div className="absolute top-4 left-4 pointer-events-none opacity-90 rotate-[-12deg]">
-        <StarAniseEtching className="w-8 h-8" color="#F59E0B" />
-      </div>
-      <div className="absolute top-4 right-4 pointer-events-none opacity-90 rotate-[18deg]">
-        <StarAniseEtching className="w-8 h-8" color="#F59E0B" />
-      </div>
-      <div className="absolute bottom-16 left-4 pointer-events-none opacity-80">
-        <CardamomCluster className="w-6 h-8" color="#EA580C" />
-      </div>
-      <div className="absolute bottom-16 right-4 pointer-events-none opacity-80 scale-x-[-1]">
-        <CardamomCluster className="w-6 h-8" color="#EA580C" />
-      </div>
-
-      {/* --- TOP BRAND MASTHEAD & HAVELI ARCH --- */}
-      <div className="relative z-10 flex flex-col items-center text-center w-full pt-1">
-        
-        {/* Heritage Service Eyebrow */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#27120A] border border-[#EA580C]/60 shadow-md mb-1.5">
-          <span className="text-[#F59E0B] text-xs">✦</span>
-          <span className="text-[10px] font-black uppercase tracking-[0.24em] text-[#FEF3C7]">
-            {headerText}
-          </span>
-          <span className="text-[#F59E0B] text-xs">✦</span>
-        </div>
-
-        {/* Traditional Haveli Arch Silhouette */}
-        <HaveliArchSilhouette color="#EA580C" />
-
-        {/* Restaurant Name (Grand Regal Typography) */}
-        <h2
-          className={`font-black tracking-tight leading-tight w-full max-w-[340px] px-2 break-words text-[#FFFBEB] mt-0.5 ${
-            restaurantName.length > 24
-              ? 'text-xl sm:text-2xl'
-              : restaurantName.length > 15
-              ? 'text-2xl sm:text-3xl'
-              : 'text-3xl sm:text-4xl'
-          }`}
+          MENUSQR
+        </span>
+        <span className="text-[7.5px] opacity-75" style={{ color: theme.badgeText }}>✦</span>
+        <span
+          className="font-extrabold text-[8.5px] sm:text-[9.5px] tracking-wider uppercase opacity-90"
           style={{
-            fontFamily: "'Playfair Display', 'Rozha One', Georgia, serif",
-            textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 25px rgba(234,88,12,0.3)',
+            fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+            color: theme.badgeText,
           }}
         >
-          {restaurantName}
-        </h2>
-
-        {/* Cuisine Subtitle Banner */}
-        <div className="flex items-center gap-2 mt-1.5">
-          <span className="h-[1px] w-6 bg-gradient-to-r from-transparent to-[#F59E0B]" />
-          <p className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#F59E0B]">
-            {category || 'AUTHENTIC TANDOOR & CLAY OVEN CRAFT'}
-          </p>
-          <span className="h-[1px] w-6 bg-gradient-to-l from-transparent to-[#F59E0B]" />
-        </div>
-
-        {tagline && (
-          <p className="text-[10px] italic text-[#D6C7B2] max-w-[280px] truncate mt-1">
-            "{tagline}"
-          </p>
-        )}
-      </div>
-
-      {/* --- CENTER CLAY HEARTH QR PORTAL --- */}
-      <div className="relative z-10 my-2 flex flex-col items-center">
-        {/* Clay Oven Portal Bezel */}
-        <div
-          className="relative p-3.5 rounded-[2.2rem] border-2 shadow-2xl transition-all"
-          style={{
-            background: 'linear-gradient(150deg, #2A140B 0%, #150B06 100%)',
-            borderColor: '#EA580C',
-            boxShadow: '0 18px 40px rgba(0,0,0,0.85), 0 0 35px rgba(234,88,12,0.3), inset 0 1px 2px rgba(255,255,255,0.2)',
-          }}
-        >
-          {/* Saffron Corner Notches */}
-          <div className="absolute top-2.5 left-2.5 w-4 h-4 border-t-2 border-l-2 border-[#F59E0B] rounded-tl-lg" />
-          <div className="absolute top-2.5 right-2.5 w-4 h-4 border-t-2 border-r-2 border-[#F59E0B] rounded-tr-lg" />
-          <div className="absolute bottom-2.5 left-2.5 w-4 h-4 border-b-2 border-l-2 border-[#F59E0B] rounded-bl-lg" />
-          <div className="absolute bottom-2.5 right-2.5 w-4 h-4 border-b-2 border-r-2 border-[#F59E0B] rounded-br-lg" />
-
-          {/* High-Contrast Pure White QR Canvas Bed */}
-          <div className="relative flex h-48 w-48 sm:h-52 sm:w-52 items-center justify-center rounded-[1.6rem] bg-white p-2.5 shadow-inner">
-            {qrImage ? (
-              <>
-                <img
-                  src={qrImage}
-                  alt={`QR code for ${restaurantName}`}
-                  className="h-full w-full object-contain"
-                />
-                {/* Central MenusQR Seal */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-8 h-8 rounded-xl bg-[#110D0B] border-2 border-[#EA580C] p-1 flex items-center justify-center shadow-lg">
-                    <MenusQRMark color="#FFFFFF" orange="#EA580C" />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs font-bold text-black/60">
-                Generating QR...
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Table Number Brass Plaque */}
-        {tableNumber && (
-          <div className="mt-2 px-4 py-1 rounded-full bg-gradient-to-r from-[#C2410C] via-[#EA580C] to-[#C2410C] text-[#FFFBEB] font-black text-xs tracking-widest uppercase shadow-lg border border-[#F59E0B]/60">
-            TABLE #{tableNumber}
-          </div>
-        )}
-      </div>
-
-      {/* --- BOTTOM APPETIZING CALLOUT & INSTRUCTIONS --- */}
-      <div className="relative z-10 flex flex-col items-center text-center w-full">
-        <h3
-          className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[#FEF3C7]"
-          style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-        >
-          {footerText}
-        </h3>
-
-        {/* Instant Action Pill Badge */}
-        <div className="mt-1.5 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#241108] border border-[#EA580C]/50 text-[9px] sm:text-[10px] font-bold text-[#F59E0B] tracking-wider uppercase shadow-inner">
-          <span>📷 POINT CAMERA</span>
-          <span>•</span>
-          <span>TAP BANNER</span>
-          <span>•</span>
-          <span>EXPLORE LIVE MENU</span>
-        </div>
-
-        {/* Clean Balanced Footer Strip */}
-        <div className="mt-2.5 flex items-center justify-between w-full pt-2 border-t border-[#EA580C]/25 text-[8px] sm:text-[9px] font-bold tracking-[0.16em] text-[#CBB9A3] uppercase px-1">
-          <span>FRESH TO ORDER</span>
-          <span className="text-[#F59E0B] font-mono lowercase font-extrabold">{domain}</span>
-          <span>100% CONTACTLESS</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// CONCEPT 2: HERB GARDEN CARD (French Bistro, Botanical Sage & Olive Paper)
-// ============================================================================
-
-function HerbGardenCard({
-  restaurantName,
-  category,
-  tagline,
-  headerText,
-  footerText,
-  qrImage,
-  domain,
-  tableNumber,
-}: CardProps) {
-  return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-between overflow-hidden rounded-[2.3rem] bg-[#FCFBF7] p-5 sm:p-6 text-[#143823] border-2 border-[#143823]/30 shadow-2xl">
-      {/* Warm French Linen Paper Tone Texture */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-50"
-        style={{
-          background: 'radial-gradient(ellipse at 50% 0%, #FFFFFF 0%, #F8F5EE 60%, #EFE9DC 100%)',
-        }}
-      />
-
-      {/* Double Fine Heritage Framing Lines */}
-      <div className="absolute inset-3 pointer-events-none rounded-[1.7rem] border-2 border-[#143823]/20" />
-      <div className="absolute inset-4 pointer-events-none rounded-[1.5rem] border border-dashed border-[#4A7C59]/35" />
-
-      {/* Botanical Olive & Herb Sprigs Framing All 4 Corners */}
-      <div className="absolute top-3 left-3 pointer-events-none opacity-85 rotate-[-15deg]">
-        <OliveSprigCorner className="w-11 h-14" color="#143823" />
-      </div>
-      <div className="absolute top-3 right-3 pointer-events-none opacity-85 scale-x-[-1] rotate-[-15deg]">
-        <OliveSprigCorner className="w-11 h-14" color="#143823" />
-      </div>
-      <div className="absolute bottom-14 left-3 pointer-events-none opacity-65 scale-y-[-1] rotate-[10deg]">
-        <OliveSprigCorner className="w-9 h-12" color="#4A7C59" />
-      </div>
-      <div className="absolute bottom-14 right-3 pointer-events-none opacity-65 scale-[-1] rotate-[10deg]">
-        <OliveSprigCorner className="w-9 h-12" color="#4A7C59" />
-      </div>
-
-      {/* --- TOP BRANDING & ARTISAN CLOCHE CREST --- */}
-      <div className="relative z-10 flex flex-col items-center text-center w-full pt-0.5">
-        
-        {/* Artisan Cloche & Laurel Crest */}
-        <div className="mb-0.5 flex items-center justify-center">
-          <ArtisanClocheCrest color="#143823" accent="#B85032" />
-        </div>
-
-        {/* Artisanal Eyebrow */}
-        <span className="text-[10px] font-extrabold tracking-[0.24em] text-[#B85032] uppercase mb-1">
           {headerText}
         </span>
-
-        {/* Restaurant Name (Editorial Paris Bistro Typography) */}
-        <h2
-          className={`font-black tracking-tight leading-tight w-full max-w-[340px] px-2 break-words text-[#143823] ${
-            restaurantName.length > 24
-              ? 'text-xl sm:text-2xl'
-              : restaurantName.length > 15
-              ? 'text-2xl sm:text-3xl'
-              : 'text-3xl sm:text-4xl'
-          }`}
-          style={{
-            fontFamily: "'Cormorant Garamond', 'Playfair Display', Georgia, serif",
-          }}
-        >
-          {restaurantName}
-        </h2>
-
-        {/* Category & Botanical Leaf Divider */}
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs text-[#4A7C59]">❧</span>
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#143823]">
-            {category || 'BISTRO • BAKERY • FARM-TO-TABLE'}
-          </p>
-          <span className="text-xs text-[#4A7C59]">☙</span>
-        </div>
-
-        {tagline && (
-          <p className="text-[10px] italic text-[#526B5C] max-w-[280px] truncate mt-0.5">
-            "{tagline}"
-          </p>
-        )}
-      </div>
-
-      {/* --- CENTER PORCELAIN CERAMIC PLATE QR DOCK --- */}
-      <div className="relative z-10 my-2 flex flex-col items-center">
-        {/* Ceramic Rim Bezel with Soft Shadow */}
-        <div
-          className="relative p-3.5 rounded-[2.2rem] border-2 shadow-xl"
-          style={{
-            background: 'linear-gradient(145deg, #FFFFFF 0%, #F5F1E6 100%)',
-            borderColor: '#143823',
-            boxShadow: '0 16px 36px rgba(20,56,35,0.14), inset 0 1px 2px rgba(255,255,255,0.9)',
-          }}
-        >
-          {/* Running Stitch Border */}
-          <div className="absolute inset-1.5 pointer-events-none rounded-[1.8rem] border border-dashed border-[#4A7C59]/40" />
-
-          {/* High-Contrast Pure White QR Canvas */}
-          <div className="relative flex h-48 w-48 sm:h-52 sm:w-52 items-center justify-center rounded-[1.6rem] bg-white p-2.5 shadow-sm">
-            {qrImage ? (
-              <>
-                <img
-                  src={qrImage}
-                  alt={`QR code for ${restaurantName}`}
-                  className="h-full w-full object-contain"
-                />
-                {/* Central Emblem Badge */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-8 h-8 rounded-xl bg-[#143823] border-2 border-[#FCFBF7] p-1 flex items-center justify-center shadow-md">
-                    <MenusQRMark color="#FFFFFF" orange="#B85032" />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs font-bold text-[#143823]/50">
-                Generating QR...
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Table Number Seal */}
-        {tableNumber && (
-          <div className="mt-2 px-4 py-1 rounded-full bg-[#143823] text-white font-black text-xs tracking-widest uppercase shadow-md border border-[#FCFBF7]">
-            TABLE #{tableNumber}
-          </div>
-        )}
-      </div>
-
-      {/* --- BOTTOM CALLOUT & INSTRUCTIONS --- */}
-      <div className="relative z-10 flex flex-col items-center text-center w-full">
-        <h3
-          className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#143823]"
-          style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-        >
-          {footerText}
-        </h3>
-
-        {/* Instruction Badge */}
-        <div className="mt-1.5 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#EAE4D5]/80 border border-[#143823]/25 text-[9px] sm:text-[10px] font-bold text-[#143823] tracking-wider uppercase">
-          <span>🌿 TOUCHLESS DIGITAL MENU</span>
-          <span>•</span>
-          <span>SEASONAL SELECTION</span>
-        </div>
-
-        {/* Clean Balanced Footer Strip */}
-        <div className="mt-2.5 flex items-center justify-between w-full pt-2 border-t border-[#143823]/20 text-[8px] sm:text-[9px] font-bold tracking-[0.16em] text-[#526B5C] uppercase px-1">
-          <span>ORGANICALLY CRAFTED</span>
-          <span className="text-[#143823] font-mono lowercase font-extrabold">{domain}</span>
-          <span>TOUCHLESS DINING</span>
-        </div>
       </div>
     </div>
   );
 }
 
-// ============================================================================
-// CONCEPT 3: NEON BITES CARD (Trendy Urban Gastro-Bar & Modern Street Eats)
-// ============================================================================
-
-function NeonBitesCard({
-  restaurantName,
-  category,
-  tagline,
-  headerText,
-  footerText,
-  qrImage,
-  domain,
-  tableNumber,
-}: CardProps) {
+// -------------------------------------------------------------
+// 7. SCEPTRE & FLEUR-DE-LIS EMBLEM FLOURISH
+// -------------------------------------------------------------
+function RoyalSceptreFlourish({ color }: { color: string }) {
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-between overflow-hidden rounded-[2.3rem] bg-[#0B0E14] p-5 sm:p-6 text-white border-2 border-[#00F0FF]/60 shadow-2xl">
-      {/* High-Contrast Cyber Sunset Gradient */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-25"
-        style={{
-          background: 'radial-gradient(circle at 80% 0%, #FF3366 0%, #00F0FF 40%, transparent 75%)',
-        }}
+    <svg className="w-48 h-7 my-1 opacity-95 overflow-visible" viewBox="0 0 192 28" fill="none">
+      <defs>
+        <filter id="flourish-glow" x="-10%" y="-10%" width="120%" height="120%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#402808" floodOpacity="0.25" />
+        </filter>
+      </defs>
+      {/* Symmetrical Curving Filigree Wings */}
+      <path
+        d="M 10 14 C 35 14, 55 4, 78 14 C 65 19, 48 19, 36 24 C 54 26, 72 20, 86 15 L 92 14"
+        stroke={color}
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        filter="url(#flourish-glow)"
       />
-
-      {/* Modern Street Stencil Texture */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-10"
-        style={{
-          backgroundImage: 'radial-gradient(#00F0FF 1.5px, transparent 1.5px)',
-          backgroundSize: '20px 20px',
-        }}
+      <path
+        d="M 182 14 C 157 14, 137 4, 114 14 C 127 19, 144 19, 156 24 C 138 26, 120 20, 106 15 L 100 14"
+        stroke={color}
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        filter="url(#flourish-glow)"
       />
+      {/* Center 3D Royal Fleur-de-lis Lozenge */}
+      <polygon points="96,5 103,14 96,23 89,14" fill={color} filter="url(#flourish-glow)" />
+      <polygon points="96,8 100,14 96,20 92,14" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="96" cy="14" r="2.2" fill="#241603" />
+      <circle cx="82" cy="14" r="1.8" fill={color} />
+      <circle cx="110" cy="14" r="1.8" fill={color} />
+      <circle cx="24" cy="14" r="1.5" fill={color} />
+      <circle cx="168" cy="14" r="1.5" fill={color} />
+    </svg>
+  );
+}
 
-      {/* Modern Gastro-Bar Graphic Badges in Top Corners */}
-      <div className="absolute top-4 left-4 pointer-events-none opacity-90">
-        <GastroBurgerEmblem />
-      </div>
-      <div className="absolute top-4 right-4 pointer-events-none opacity-90">
-        <CraftDrinkEmblem />
-      </div>
+// -------------------------------------------------------------
+// 8. GRAND HOROLOGY "VAULT BEZEL" QR CODE DOCK
+// -------------------------------------------------------------
+function VaultQrContainer({
+  theme,
+  qrImage,
+  restaurantName,
+}: {
+  theme: ThemeConfig;
+  qrImage: string;
+  restaurantName: string;
+}) {
+  return (
+    <div className="relative z-10 my-1.5 flex flex-col items-center">
+      {/* Outer 48-Notch Coin-Edge Knurled Watch Bezel */}
+      <div
+        className="relative p-3 sm:p-3.5 rounded-[2.2rem] shadow-2xl border"
+        style={{
+          background: 'linear-gradient(135deg, #FFFFFF 0%, #FAF5EB 50%, #ECE1CF 100%)',
+          borderColor: theme.accentGold,
+          boxShadow: `0 14px 35px rgba(60,40,15,0.18), inset 0 1px 3px rgba(255,255,255,0.98), inset 0 0 0 1px ${theme.accentGoldDark}`,
+        }}
+      >
+        {/* 48-Tooth Dentil Coin-Edge Border via SVG */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none rounded-[2.2rem] overflow-hidden" xmlns="http://www.w3.org/2000/svg">
+          <rect
+            x="2"
+            y="2"
+            width="calc(100% - 4px)"
+            height="calc(100% - 4px)"
+            rx="32"
+            fill="none"
+            stroke={theme.accentGoldLight}
+            strokeWidth="1.2"
+            strokeDasharray="3 3"
+            opacity="0.9"
+          />
+        </svg>
 
-      {/* Industrial Reticle Corner Tabs */}
-      <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-[#00F0FF]" />
-      <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-[#FF3366]" />
-      <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-[#FF3366]" />
-      <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-[#00F0FF]" />
-
-      {/* --- TOP HIGH-ENERGY MASTHEAD --- */}
-      <div className="relative z-10 flex flex-col items-center text-center w-full pt-1">
-        
-        {/* Punchy Neon Header Pill */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#151B27] border border-[#00F0FF] shadow-lg shadow-[#00F0FF]/20 mb-2">
-          <span className="text-[#FFE600] text-xs">⚡</span>
-          <span className="text-[10px] font-black uppercase tracking-[0.24em] text-[#00F0FF]">
-            {headerText}
-          </span>
-          <span className="text-[#FFE600] text-xs">⚡</span>
+        {/* 4x Heavy Brass Corner Clamps / Jewel Prongs with Slotted Screws */}
+        {/* Top-Left Prong */}
+        <div className="absolute top-1.5 left-1.5 w-6 h-6 z-20 pointer-events-none">
+          <svg viewBox="0 0 24 24" className="w-full h-full overflow-visible">
+            <path d="M 0 0 L 18 0 C 12 0 8 4 6 10 C 4 14 0 18 0 24 Z" fill={theme.accentGold} stroke={theme.accentGoldLight} strokeWidth="0.8" />
+            <MetallicScrewRivet cx={6} cy={6} radius={2.6} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix="prong_tl" />
+          </svg>
+        </div>
+        {/* Top-Right Prong */}
+        <div className="absolute top-1.5 right-1.5 w-6 h-6 z-20 pointer-events-none">
+          <svg viewBox="0 0 24 24" className="w-full h-full overflow-visible" style={{ transform: 'scaleX(-1)' }}>
+            <path d="M 0 0 L 18 0 C 12 0 8 4 6 10 C 4 14 0 18 0 24 Z" fill={theme.accentGold} stroke={theme.accentGoldLight} strokeWidth="0.8" />
+            <MetallicScrewRivet cx={6} cy={6} radius={2.6} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix="prong_tr" />
+          </svg>
+        </div>
+        {/* Bottom-Left Prong */}
+        <div className="absolute bottom-1.5 left-1.5 w-6 h-6 z-20 pointer-events-none">
+          <svg viewBox="0 0 24 24" className="w-full h-full overflow-visible" style={{ transform: 'scaleY(-1)' }}>
+            <path d="M 0 0 L 18 0 C 12 0 8 4 6 10 C 4 14 0 18 0 24 Z" fill={theme.accentGold} stroke={theme.accentGoldLight} strokeWidth="0.8" />
+            <MetallicScrewRivet cx={6} cy={6} radius={2.6} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix="prong_bl" />
+          </svg>
+        </div>
+        {/* Bottom-Right Prong */}
+        <div className="absolute bottom-1.5 right-1.5 w-6 h-6 z-20 pointer-events-none">
+          <svg viewBox="0 0 24 24" className="w-full h-full overflow-visible" style={{ transform: 'scale(-1, -1)' }}>
+            <path d="M 0 0 L 18 0 C 12 0 8 4 6 10 C 4 14 0 18 0 24 Z" fill={theme.accentGold} stroke={theme.accentGoldLight} strokeWidth="0.8" />
+            <MetallicScrewRivet cx={6} cy={6} radius={2.6} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix="prong_br" />
+          </svg>
         </div>
 
-        {/* Restaurant Name (Heavy Condensed Street Typography) */}
-        <h2
-          className={`font-black tracking-tight leading-none w-full max-w-[340px] px-2 break-words uppercase text-white mt-1 ${
-            restaurantName.length > 24
-              ? 'text-2xl sm:text-3xl'
-              : restaurantName.length > 15
-              ? 'text-3xl sm:text-4xl'
-              : 'text-4xl sm:text-5xl'
-          }`}
-          style={{
-            fontFamily: "'Anton', 'Oswald', 'Bebas Neue', sans-serif",
-            letterSpacing: '0.04em',
-            textShadow: '0 0 14px rgba(0,240,255,0.45), 0 2px 0 #FF3366',
-          }}
-        >
-          {restaurantName}
-        </h2>
+        {/* 4x Optical Precision Targeting Reticles [ + ] */}
+        <div className="absolute top-3 left-3 w-3 h-3 border-t-2 border-l-2 pointer-events-none" style={{ borderColor: theme.accentGold }} />
+        <div className="absolute top-3 right-3 w-3 h-3 border-t-2 border-r-2 pointer-events-none" style={{ borderColor: theme.accentGold }} />
+        <div className="absolute bottom-3 left-3 w-3 h-3 border-b-2 border-l-2 pointer-events-none" style={{ borderColor: theme.accentGold }} />
+        <div className="absolute bottom-3 right-3 w-3 h-3 border-b-2 border-r-2 pointer-events-none" style={{ borderColor: theme.accentGold }} />
 
-        {/* High-Energy Category Badge */}
-        <div className="mt-2 inline-block px-3 py-0.5 rounded bg-[#FF3366]/20 border border-[#FF3366]">
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#FFE600]">
-            {category || 'STREET FOOD • GASTRO-BAR • CRAFT BITES'}
-          </p>
-        </div>
-
-        {tagline && (
-          <p className="text-[10px] font-mono text-[#94A3B8] max-w-[280px] truncate mt-1">
-            //{tagline}
-          </p>
-        )}
-      </div>
-
-      {/* --- CENTER HIGH-TECH NEON QR DOCK --- */}
-      <div className="relative z-10 my-2 flex flex-col items-center">
-        {/* Neon Dock Bezel */}
+        {/* Recessed Deep Chamfer Pure White Canvas Bed */}
         <div
-          className="relative p-3.5 rounded-2xl border-2 transition-all"
+          className="relative flex h-44 w-44 sm:h-48 sm:w-48 items-center justify-center rounded-[1.5rem] p-2.5 sm:p-3 shadow-inner"
           style={{
-            background: 'linear-gradient(145deg, #141A26 0%, #080A0E 100%)',
-            borderColor: '#00F0FF',
-            boxShadow: '0 0 30px rgba(0,240,255,0.35), inset 0 0 15px rgba(255,51,102,0.2)',
+            backgroundColor: theme.qrBezelBg,
+            border: `2px solid ${theme.accentGold}`,
+            boxShadow: 'inset 0 4px 14px rgba(60,40,15,0.12), 0 2px 4px rgba(255,255,255,0.95)',
           }}
         >
-          {/* Target Alignment Reticles */}
-          <div className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-[#00F0FF]" />
-          <div className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-[#FF3366]" />
-          <div className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-[#FF3366]" />
-          <div className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-[#00F0FF]" />
-
-          {/* High-Contrast Pure White QR Canvas */}
-          <div className="relative flex h-48 w-48 sm:h-52 sm:w-52 items-center justify-center rounded-xl bg-white p-2.5 shadow-2xl">
-            {qrImage ? (
-              <>
-                <img
-                  src={qrImage}
-                  alt={`QR code for ${restaurantName}`}
-                  className="h-full w-full object-contain"
-                />
-                {/* Center Badge */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-8 h-8 rounded-lg bg-black border-2 border-[#00F0FF] p-1 flex items-center justify-center shadow-lg">
-                    <MenusQRMark color="#FFFFFF" orange="#FF3366" />
+          {qrImage ? (
+            <>
+              <img
+                src={qrImage}
+                alt={`Permanent QR code for ${restaurantName}`}
+                className="h-full w-full object-contain"
+                style={{ imageRendering: 'pixelated' }}
+              />
+              {/* Centered 3D Minted Gold MenusQR Medallion */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div
+                  className="p-1.5 rounded-2xl shadow-xl border flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(135deg, #FFFDEB 0%, #DFB15B 35%, #8F6914 70%, #2B1D04 100%)',
+                    borderColor: '#FFFDF0',
+                    boxShadow: '0 6px 18px rgba(60,40,15,0.35), inset 0 1px 2px rgba(255,255,255,0.98)',
+                  }}
+                >
+                  <div
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center p-1.5 border shadow-inner"
+                    style={{
+                      background: 'radial-gradient(circle, #2A1D0D 0%, #120A02 100%)',
+                      borderColor: theme.accentGoldLight,
+                    }}
+                  >
+                    <MenusQRMark color="#FFF8D6" orange="#EA580C" />
                   </div>
                 </div>
-              </>
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs font-mono font-bold text-black/60">
-                INITIALIZING QR...
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Table Number Bar Tab */}
-        {tableNumber && (
-          <div className="mt-2 px-4 py-1 rounded bg-[#FFE600] text-black font-black text-xs tracking-widest uppercase shadow-lg border border-black">
-            TAB // #{tableNumber}
-          </div>
-        )}
-      </div>
-
-      {/* --- BOTTOM CALLOUT & INSTRUCTIONS --- */}
-      <div className="relative z-10 flex flex-col items-center text-center w-full">
-        <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white">
-          {footerText}
-        </h3>
-
-        {/* Action Button Pill */}
-        <div className="mt-1.5 inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#151B27] border border-[#FF3366] text-[9px] sm:text-[10px] font-mono font-bold text-[#FFE600] tracking-wider uppercase">
-          <span>⚡ POINT CAMERA</span>
-          <span>•</span>
-          <span>NO APP DOWNLOAD</span>
-        </div>
-
-        {/* Clean Balanced Footer Strip */}
-        <div className="mt-2.5 flex items-center justify-between w-full pt-2 border-t border-[#00F0FF]/30 text-[8px] sm:text-[9px] font-mono font-bold tracking-[0.16em] text-[#94A3B8] uppercase px-1">
-          <span>ZERO CONTACT</span>
-          <span className="text-[#00F0FF] font-mono lowercase font-extrabold">{domain}</span>
-          <span>HIGH VIBES</span>
+            </>
+          ) : (
+            <div
+              className="flex h-full w-full items-center justify-center border-2 border-dashed rounded-xl bg-black/5"
+              style={{ borderColor: theme.accentGold }}
+            >
+              <span className="text-xs font-bold opacity-70" style={{ color: theme.textPrimary }}>
+                Generating QR...
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-// ============================================================================
-// MAIN COMPONENT EXPORT
-// ============================================================================
+// -------------------------------------------------------------
+// 9. TRIPTYCH 3-STEP INTERACTIVE SCAN GUIDANCE
+// -------------------------------------------------------------
+function TriptychScanGuide({ theme }: { theme: ThemeConfig }) {
+  return (
+    <div
+      className="flex items-center justify-center gap-2 sm:gap-2.5 px-3.5 py-1.5 rounded-full border mb-1.5 shadow-md whitespace-nowrap"
+      style={{
+        background: 'linear-gradient(135deg, #FFFFFF 0%, #FBF7EE 60%, #F5ECDA 100%)',
+        borderColor: theme.accentGold,
+        boxShadow: '0 3px 10px rgba(60,40,15,0.12), inset 0 1px 1px rgba(255,255,255,0.95)',
+      }}
+    >
+      {/* Step 1: Open Camera */}
+      <div className="flex items-center gap-1.5">
+        <div
+          className="w-4 h-4 rounded-full flex items-center justify-center shadow-xs"
+          style={{ background: theme.accentGold, color: '#1A1102' }}
+        >
+          <Camera size={9} strokeWidth={2.6} />
+        </div>
+        <span
+          className="text-[8.5px] font-black uppercase tracking-wider"
+          style={{
+            fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+            color: theme.textPrimary,
+          }}
+        >
+          1. OPEN CAMERA
+        </span>
+      </div>
 
+      {/* Gilded Arrow Divider */}
+      <span className="text-[8px] font-black opacity-80" style={{ color: theme.accentGold }}>➔</span>
+
+      {/* Step 2: Scan QR */}
+      <div className="flex items-center gap-1.5">
+        <div
+          className="w-4 h-4 rounded-full flex items-center justify-center shadow-xs"
+          style={{ background: theme.accentGold, color: '#1A1102' }}
+        >
+          <QrCode size={9} strokeWidth={2.6} />
+        </div>
+        <span
+          className="text-[8.5px] font-black uppercase tracking-wider"
+          style={{
+            fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+            color: theme.textPrimary,
+          }}
+        >
+          2. SCAN CODE
+        </span>
+      </div>
+
+      {/* Gilded Arrow Divider */}
+      <span className="text-[8px] font-black opacity-80" style={{ color: theme.accentGold }}>➔</span>
+
+      {/* Step 3: View Menu */}
+      <div className="flex items-center gap-1.5">
+        <div
+          className="w-4 h-4 rounded-full flex items-center justify-center shadow-xs"
+          style={{ background: theme.accentGold, color: '#1A1102' }}
+        >
+          <BookOpen size={9} strokeWidth={2.6} />
+        </div>
+        <span
+          className="text-[8.5px] font-black uppercase tracking-wider"
+          style={{
+            fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+            color: theme.textPrimary,
+          }}
+        >
+          3. INDULGE MENU
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// -------------------------------------------------------------
+// 10. SCULPTED BRASS TABLE NUMBER PLAQUE
+// -------------------------------------------------------------
+function SculptedTablePlaque({
+  tableNumber,
+  theme,
+}: {
+  tableNumber: string;
+  theme: ThemeConfig;
+}) {
+  return (
+    <div
+      className="relative mb-2 px-5 py-1 rounded-lg border flex items-center gap-3 shadow-lg"
+      style={{
+        background: theme.badgeGrad,
+        borderColor: theme.accentGoldLight,
+        boxShadow: '0 4px 14px rgba(60,40,15,0.25), inset 0 1px 2px rgba(255,255,255,0.95), inset 0 -1px 2px rgba(0,0,0,0.25)',
+      }}
+    >
+      <div className="w-2.5 h-2.5">
+        <svg viewBox="0 0 10 10" className="w-full h-full">
+          <circle cx="5" cy="5" r="4" fill="#241603" />
+          <circle cx="5" cy="5" r="3.2" fill={theme.accentGoldLight} />
+          <line x1="2" y1="5" x2="8" y2="5" stroke="#241603" strokeWidth="0.8" />
+        </svg>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span
+          className="text-[8.5px] font-black tracking-[0.22em] uppercase"
+          style={{
+            fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+            color: theme.badgeText,
+          }}
+        >
+          TABLE
+        </span>
+        <span
+          className="text-[12px] font-black tracking-wider"
+          style={{
+            fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+            color: theme.badgeText,
+          }}
+        >
+          № {tableNumber}
+        </span>
+      </div>
+      <div className="w-2.5 h-2.5">
+        <svg viewBox="0 0 10 10" className="w-full h-full">
+          <circle cx="5" cy="5" r="4" fill="#241603" />
+          <circle cx="5" cy="5" r="3.2" fill={theme.accentGoldLight} />
+          <line x1="5" y1="2" x2="5" y2="8" stroke="#241603" strokeWidth="0.8" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// -------------------------------------------------------------
+// MAIN COMPONENT: ROYAL WALNUT / IMPERIAL TABLE STICKER CARD
+// -------------------------------------------------------------
 export default function RoyalWalnutStickerCard({
   restaurantName,
   category = 'FINE DINING & CULINARY EXCELLENCE',
   tagline,
   menuUrl,
   qrImage,
-  headerText,
-  footerText,
+  headerText = 'SCAN FOR DIGITAL MENU',
+  footerText = 'Point Camera to Scan Menu',
   isModal = false,
-  themeId = 'menusqr-flagship-standee',
+  themeId = 'menusqr-marble-gold',
   stickerRef,
   tableNumber,
 }: RoyalWalnutStickerCardProps) {
-  // Domain extraction
+  const theme = STICKER_THEMES[themeId] || STICKER_THEMES['menusqr-marble-gold'];
+
+  // Clean domain extraction
   let domain = 'menusqr.in';
   try {
     if (menuUrl) {
@@ -841,91 +1030,181 @@ export default function RoyalWalnutStickerCard({
     domain = 'menusqr.in';
   }
 
-  // Normalize legacy themes to flagship culinary concepts
-  let activeTheme: 'flagship' | 'tandoor' | 'herb' | 'neon' = 'flagship';
-  if (
-    themeId === 'menusqr-flagship-standee' ||
-    themeId === 'menusqr-obsidian-gold' ||
-    themeId === 'menusqr-walnut-gold'
-  ) {
-    activeTheme = 'flagship';
-  } else if (themeId === 'menusqr-tandoor-fire') {
-    activeTheme = 'tandoor';
-  } else if (themeId === 'menusqr-herb-garden' || themeId === 'menusqr-emerald-gold') {
-    activeTheme = 'herb';
-  } else if (
-    themeId === 'menusqr-neon-bites' ||
-    themeId === 'menusqr-ruby-gold' ||
-    themeId === 'menusqr-marble-gold'
-  ) {
-    activeTheme = 'neon';
-  } else {
-    activeTheme = 'flagship';
-  }
-
-  // Shared props with tailored defaults per concept
-  const cardProps: CardProps = {
-    restaurantName,
-    category,
-    tagline,
-    headerText:
-      headerText ||
-      (activeTheme === 'flagship'
-        ? 'TABLE DINE-IN SERVICE'
-        : activeTheme === 'tandoor'
-        ? 'TABLE DINE-IN SERVICE'
-        : activeTheme === 'herb'
-        ? 'ARTISANAL KITCHEN & TABLE SERVICE'
-        : 'STREET FOOD & GASTRO-BAR VIBES'),
-    footerText:
-      footerText ||
-      (activeTheme === 'flagship'
-        ? 'Point Phone Camera to Explore Menu'
-        : activeTheme === 'tandoor'
-        ? 'Point Phone Camera to Explore Menu'
-        : activeTheme === 'herb'
-        ? 'Scan with Camera to View Daily Menu'
-        : 'Point Camera to Unlock Live Menu'),
-    menuUrl,
-    qrImage,
-    domain,
-    tableNumber,
-  };
-
   return (
     <div className="flex flex-col items-center select-none font-sans">
-      {/* --- PHYSICAL STAND / STICKER FRAME CONTAINER --- */}
+      {/* --- PHYSICAL TABLE STICKER ARTWORK FRAME (0deg Level, 100% Print-Ready) --- */}
       <div
         ref={stickerRef}
         data-testid="menusqr-standee-card"
-        className={`${isModal ? 'qr-print-sticker ' : ''}relative flex w-[380px] sm:w-[416px] flex-col items-center overflow-hidden ${
-          activeTheme === 'flagship'
-            ? 'p-0 rounded-[2rem]'
-            : 'min-h-[640px] rounded-[2.6rem] p-3'
-        } box-border transition-all`}
+        className={`${isModal ? 'qr-print-sticker ' : ''}relative flex w-[384px] sm:w-[420px] min-h-[660px] flex-col items-center overflow-hidden rounded-[2.8rem] p-4 sm:p-5 box-border border-2 transition-all`}
         style={{
-          background:
-            activeTheme === 'flagship'
-              ? 'transparent'
-              : activeTheme === 'tandoor'
-              ? 'linear-gradient(160deg, #24140D 0%, #0E0A08 50%, #1A0D07 100%)'
-              : activeTheme === 'herb'
-              ? 'linear-gradient(160deg, #EBE6DA 0%, #D8D0C0 50%, #C4B9A3 100%)'
-              : 'linear-gradient(160deg, #151926 0%, #07080C 50%, #120D1A 100%)',
-          boxShadow:
-            activeTheme === 'flagship'
-              ? '0 30px 70px -10px rgba(0,0,0,0.95)'
-              : activeTheme === 'tandoor'
-              ? '0 28px 60px -12px rgba(0,0,0,0.85), inset 0 1px 2px rgba(234,88,12,0.4)'
-              : activeTheme === 'herb'
-              ? '0 28px 60px -12px rgba(20,56,35,0.35), inset 0 1px 2px rgba(255,255,255,0.9)'
-              : '0 28px 60px -12px rgba(0,0,0,0.95), 0 0 30px rgba(0,240,255,0.2), inset 0 1px 2px rgba(0,240,255,0.4)',
+          background: theme.frameBg,
+          borderColor: theme.frameBorder,
+          boxShadow: theme.frameShadow,
         }}
       >
-        {activeTheme === 'flagship' && <FlagshipCulinaryStandeeCard {...cardProps} />}
-        {activeTheme === 'tandoor' && <TandoorFireCard {...cardProps} />}
-        {activeTheme === 'herb' && <HerbGardenCard {...cardProps} />}
-        {activeTheme === 'neon' && <NeonBitesCard {...cardProps} />}
+        {/* Tactile Material Texture Overlay (Italian Calacatta Marble & Archival Linen) */}
+        <LightLuxuryTextureOverlay />
+
+        {/* Ambient Specular Edge Highlight Ring */}
+        <div
+          className="absolute inset-0 pointer-events-none rounded-[2.8rem] border opacity-80"
+          style={{ borderColor: 'rgba(255,255,255,0.7)' }}
+        />
+
+        {/* 4x Masterpiece Baroque Acanthus Corner Spandrels with Slotted Hardware Screws */}
+        <BaroqueAcanthusCorner theme={theme} position="top-left" />
+        <BaroqueAcanthusCorner theme={theme} position="top-right" />
+        <BaroqueAcanthusCorner theme={theme} position="bottom-left" />
+        <BaroqueAcanthusCorner theme={theme} position="bottom-right" />
+
+        {/* Outer Perimeter Slotted Hardware Rivets (Top, Bottom, Left, Right Midpoints) */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-visible">
+          {/* Top Edge Midpoint Rivets */}
+          <MetallicScrewRivet cx={140} cy={14} radius={3.2} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix="peri_top_l" angle={0} />
+          <MetallicScrewRivet cx={276} cy={14} radius={3.2} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix="peri_top_r" angle={90} />
+          {/* Bottom Edge Midpoint Rivets */}
+          <MetallicScrewRivet cx={140} cy={646} radius={3.2} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix="peri_bot_l" angle={45} />
+          <MetallicScrewRivet cx={276} cy={646} radius={3.2} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix="peri_bot_r" angle={135} />
+          {/* Side Midpoint Rivets */}
+          <MetallicScrewRivet cx={14} cy={330} radius={3.2} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix="peri_left" angle={60} />
+          <MetallicScrewRivet cx={402} cy={330} radius={3.2} rivetBase={theme.rivetBase} rivetHighlight={theme.rivetHighlight} prefix="peri_right" angle={120} />
+        </svg>
+
+        {/* --- TOP GRAND IMPERIAL MEDALLION & LAUREL WREATH --- */}
+        <ImperialMedallionHeader theme={theme} headerText={headerText} />
+
+        {/* --- INNER HIGH-DETAIL LUXURY ARTBOARD --- */}
+        <div
+          className="relative z-10 flex w-full flex-1 flex-col items-center overflow-hidden rounded-[2.2rem] p-4 sm:p-5 box-border border-2"
+          style={{
+            background: theme.artboardBg,
+            borderColor: theme.artboardBorder,
+            boxShadow: `0 12px 35px rgba(60,40,15,0.14), inset 0 0 0 1px ${theme.artboardBorder}`,
+          }}
+        >
+          {/* Tactile Artboard Grain Pattern */}
+          <LightLuxuryTextureOverlay />
+
+          {/* Banknote Guilloché Rosette Sacred Geometry Mandala */}
+          <BanknoteGuillocheRosette color={theme.accentGold} />
+
+          {/* Banknote Guilloché Security Wave Lace (Continuous Perimeter) */}
+          <BanknoteGuillocheBorder color={theme.guillocheColor} />
+
+          {/* Milgrain Coin-Edge Beaded Hairline */}
+          <div
+            className="absolute inset-3 pointer-events-none rounded-[1.7rem] border border-dashed opacity-45"
+            style={{ borderColor: theme.accentGold }}
+          />
+
+          {/* Microtext Security Engraving around Inner Frame */}
+          <div className="absolute top-2.5 left-8 right-8 flex justify-between pointer-events-none opacity-45 text-[5.5px] font-mono tracking-[0.28em] uppercase overflow-hidden" style={{ color: theme.accentGold }}>
+            <span>★ OFFICIAL MENUSQR SPECIFICATION</span>
+            <span>24K CRAFTED ARTIFACT ★</span>
+          </div>
+
+          {/* 4x Inner Viewfinder Rosettes */}
+          <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 pointer-events-none opacity-85" style={{ borderColor: theme.accentGold }} />
+          <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 pointer-events-none opacity-85" style={{ borderColor: theme.accentGold }} />
+          <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 pointer-events-none opacity-85" style={{ borderColor: theme.accentGold }} />
+          <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 pointer-events-none opacity-85" style={{ borderColor: theme.accentGold }} />
+
+          {/* --- RESTAURANT BRANDING HEADER --- */}
+          <div className="relative z-10 flex flex-col items-center pt-1 text-center w-full">
+            {/* Restaurant Name in Deep Ebony-Bronze Serif (Ultra High Contrast on Light Background) */}
+            <h2
+              className={`font-black tracking-tight leading-tight w-full max-w-[340px] px-2 break-words mt-0.5 mb-1 text-center uppercase ${
+                restaurantName.length > 28
+                  ? 'text-base sm:text-lg'
+                  : restaurantName.length > 20
+                  ? 'text-lg sm:text-xl'
+                  : restaurantName.length > 12
+                  ? 'text-xl sm:text-2xl'
+                  : 'text-2xl sm:text-3xl'
+              }`}
+              style={{
+                fontFamily: "'Playfair Display', 'Cinzel', Georgia, serif",
+                color: theme.textPrimary,
+                textShadow: '0 1px 0 rgba(255,255,255,0.95), 0 2px 4px rgba(60,35,10,0.18)',
+              }}
+            >
+              {restaurantName}
+            </h2>
+
+            {/* Cuisine / Category Plaque */}
+            <div className="flex items-center justify-center gap-1.5 mt-0.5 max-w-[320px] px-1">
+              <span className="h-[1.5px] w-5 shrink-0" style={{ background: `linear-gradient(to right, transparent, ${theme.accentGold})` }} />
+              <p
+                className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-center drop-shadow-xs"
+                style={{
+                  fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+                  color: theme.textSecondary,
+                }}
+              >
+                {category}
+              </p>
+              <span className="h-[1.5px] w-5 shrink-0" style={{ background: `linear-gradient(to left, transparent, ${theme.accentGold})` }} />
+            </div>
+
+            {/* Sceptre & Fleur-de-lis Royal Flourish */}
+            <RoyalSceptreFlourish color={theme.accentGold} />
+
+            {tagline && (
+              <p
+                className="text-[10px] italic max-w-[280px] truncate opacity-85 block mb-0.5 font-medium"
+                style={{ color: theme.textMuted }}
+              >
+                "{tagline}"
+              </p>
+            )}
+          </div>
+
+          {/* --- GRAND HOROLOGY "VAULT BEZEL" QR CODE DOCK --- */}
+          <VaultQrContainer theme={theme} qrImage={qrImage} restaurantName={restaurantName} />
+
+          {/* --- INSTRUCTION & CUSTOMER GUIDANCE --- */}
+          <div className="relative z-10 flex flex-col items-center text-center mt-0.5 w-full">
+            <h3
+              className="text-xs sm:text-[13px] font-black tracking-widest uppercase px-2 mb-1.5"
+              style={{
+                fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+                color: theme.textPrimary,
+              }}
+            >
+              {footerText}
+            </h3>
+
+            {/* Triptych 3-Step Interactive Scan Guidance */}
+            <TriptychScanGuide theme={theme} />
+
+            {/* Optional Sculpted Brass Table Number Plaque */}
+            {tableNumber && <SculptedTablePlaque tableNumber={tableNumber} theme={theme} />}
+
+            {/* Bottom Authenticity & Concierge Footnote */}
+            <div
+              className="flex items-center justify-between gap-2 w-full pt-1.5 border-t opacity-85 text-[8.5px] font-black tracking-[0.22em] uppercase"
+              style={{
+                fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+                borderColor: theme.accentGold,
+                color: theme.textMuted,
+              }}
+            >
+              <span>100% CONTACTLESS</span>
+              <span
+                className="px-2.5 py-0.5 rounded-full border text-[8px] font-mono tracking-wider font-bold shadow-xs"
+                style={{
+                  background: 'rgba(255,255,255,0.95)',
+                  borderColor: theme.accentGold,
+                  color: theme.textSecondary,
+                }}
+              >
+                {domain}
+              </span>
+              <span>NO APP REQUIRED</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
