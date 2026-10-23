@@ -47,39 +47,73 @@ export default function PremiumIPhoneMockup({
 
   return (
     <div
-      className={`relative ${widthClasses} aspect-[393/852] rounded-[48px] sm:rounded-[52px] bg-gradient-to-b from-[#343B37] via-[#1C221F] to-[#0E1210] p-[3px] shadow-[0_28px_70px_-10px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.14)] select-none box-border ${className}`}
-      style={{ boxSizing: 'border-box', isolation: 'isolate' }}
+      className={`relative ${widthClasses} aspect-[393/852] rounded-[48px] sm:rounded-[52px] bg-gradient-to-b from-[#2E3330] via-[#1B1E1C] to-[#101312] p-[3px] select-none box-border ${className}`}
+      style={{
+        boxSizing: 'border-box',
+        isolation: 'isolate',
+        boxShadow:
+          '0 4px 12px -2px rgba(0, 0, 0, 0.4), 0 20px 48px -10px rgba(0, 0, 0, 0.65), 0 40px 80px -15px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.9)',
+      }}
     >
-      {/* Outer Titanium Edge Subtle Chamfer */}
+      {/* Outer Titanium Edge Micro-Chamfer */}
       <div className="absolute inset-0 rounded-[48px] sm:rounded-[52px] border border-white/10 pointer-events-none z-30" />
 
-      {/* Side Hardware Buttons */}
-      {/* Action Button */}
-      <div className="absolute top-[88px] -left-[3px] w-[3px] h-[24px] bg-[#363E3A] rounded-l-[2px] border-l border-white/20 z-20 pointer-events-none" />
-      {/* Volume Up */}
-      <div className="absolute top-[124px] -left-[3px] w-[3px] h-[44px] bg-[#363E3A] rounded-l-[2px] border-l border-white/20 z-20 pointer-events-none" />
-      {/* Volume Down */}
-      <div className="absolute top-[178px] -left-[3px] w-[3px] h-[44px] bg-[#363E3A] rounded-l-[2px] border-l border-white/20 z-20 pointer-events-none" />
-      {/* Power / Side Button */}
-      <div className="absolute top-[140px] -right-[3px] w-[3px] h-[64px] bg-[#363E3A] rounded-r-[2px] border-r border-white/20 z-20 pointer-events-none" />
+      {/* Discrete Nano-Molded Antenna Bands */}
+      <div className="absolute top-[68px] -left-[3px] w-[3px] h-[3px] bg-[#141715] z-30 pointer-events-none" />
+      <div className="absolute top-[68px] -right-[3px] w-[3px] h-[3px] bg-[#141715] z-30 pointer-events-none" />
+      <div className="absolute bottom-[96px] -left-[3px] w-[3px] h-[3px] bg-[#141715] z-30 pointer-events-none" />
+      <div className="absolute bottom-[96px] -right-[3px] w-[3px] h-[3px] bg-[#141715] z-30 pointer-events-none" />
 
-      {/* Black Outer Bezel Frame Chassis */}
-      <div className="relative w-full h-full bg-[#0A0D0C] rounded-[45px] sm:rounded-[49px] p-[6px] sm:p-[7px] box-border flex flex-col overflow-hidden">
+      {/* Side Hardware Buttons (Precision CNC Titanium Finish) */}
+      {/* Action Button */}
+      <div
+        className="absolute top-[82px] -left-[3.5px] w-[3.5px] h-[22px] bg-[#2A2E2C] rounded-l-[2px] z-20 pointer-events-none"
+        style={{
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), inset -1px 0 0 rgba(0,0,0,0.5)',
+        }}
+      />
+      {/* Volume Up */}
+      <div
+        className="absolute top-[118px] -left-[3.5px] w-[3.5px] h-[40px] bg-[#2A2E2C] rounded-l-[2px] z-20 pointer-events-none"
+        style={{
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), inset -1px 0 0 rgba(0,0,0,0.5)',
+        }}
+      />
+      {/* Volume Down */}
+      <div
+        className="absolute top-[170px] -left-[3.5px] w-[3.5px] h-[40px] bg-[#2A2E2C] rounded-l-[2px] z-20 pointer-events-none"
+        style={{
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), inset -1px 0 0 rgba(0,0,0,0.5)',
+        }}
+      />
+      {/* Power / Side Button */}
+      <div
+        className="absolute top-[134px] -right-[3.5px] w-[3.5px] h-[58px] bg-[#2A2E2C] rounded-r-[2px] z-20 pointer-events-none"
+        style={{
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), inset 1px 0 0 rgba(0,0,0,0.5)',
+        }}
+      />
+
+      {/* Black Outer Bezel Frame Chassis (Ultra-Sleek Uniform Border) */}
+      <div className="relative w-full h-full bg-[#060807] rounded-[45px] sm:rounded-[49px] p-[3.5px] sm:p-[4px] box-border flex flex-col overflow-hidden">
         {/* Inner Phone Screen Display Viewport */}
         <div
-          className={`relative w-full h-full rounded-[39px] sm:rounded-[42px] overflow-hidden isolate flex flex-col box-border ${screenClassName}`}
+          className={`relative w-full h-full rounded-[42px] sm:rounded-[45px] overflow-hidden isolate flex flex-col box-border ${screenClassName}`}
           style={{
             WebkitMaskImage: '-webkit-radial-gradient(white, black)',
             ...screenStyle,
           }}
         >
+          {/* Top Speaker Micro-Slit */}
+          <div className="absolute top-[2px] left-1/2 -translate-x-1/2 w-10 h-[2px] bg-[#0A0D0B] rounded-full z-50 pointer-events-none border-t border-white/10" />
+
           {/* iOS Top Status Bar Area */}
           {showStatusBar ? (
             <div
               className={`w-full ${
                 statusBarMode === 'reserved'
-                  ? 'h-[40px] sm:h-[44px] shrink-0'
-                  : 'absolute top-0 inset-x-0 h-[40px] sm:h-[44px] z-40 pointer-events-none'
+                  ? 'h-[38px] sm:h-[42px] shrink-0'
+                  : 'absolute top-0 inset-x-0 h-[38px] sm:h-[42px] z-40 pointer-events-none'
               } flex items-center justify-between px-6 sm:px-7 select-none ${statusBarBg} ${
                 isLightText ? 'text-white' : 'text-[#151C19]'
               }`}
@@ -92,12 +126,14 @@ export default function PremiumIPhoneMockup({
 
               {/* Center: Dynamic Island Cutout */}
               {showDynamicIsland ? (
-                <div className="w-[90px] sm:w-[98px] h-[23px] sm:h-[25px] bg-[#000000] rounded-full flex items-center justify-between px-2.5 shadow-sm border border-white/10 shrink-0 pointer-events-none select-none">
-                  {/* Active Sensor / Microphone indicator */}
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/90 animate-pulse" />
-                  {/* TrueDepth Camera Lens with sapphire reflection */}
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#070B12] border border-white/15 flex items-center justify-center">
-                    <div className="w-1 h-1 rounded-full bg-[#1A2D48]" />
+                <div className="w-[88px] sm:w-[96px] h-[22px] sm:h-[24px] bg-[#000000] rounded-full flex items-center justify-between px-2.5 shadow-sm border border-white/10 shrink-0 pointer-events-none select-none">
+                  {/* Stealth FaceID / Ambient Sensor */}
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#080B09] border border-white/5 opacity-80" />
+                  {/* TrueDepth Camera Lens with sapphire anti-reflective optics */}
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#080D14] border border-white/15 flex items-center justify-center relative overflow-hidden">
+                    {/* Blue/Cyan anti-reflective coating specular arc */}
+                    <div className="absolute inset-0 rounded-full border-t border-cyan-400/25" />
+                    <div className="w-1 h-1 rounded-full bg-[#16253B]" />
                   </div>
                 </div>
               ) : (
@@ -128,10 +164,11 @@ export default function PremiumIPhoneMockup({
             </div>
           ) : showDynamicIsland ? (
             /* Standalone Dynamic Island when status bar is disabled */
-            <div className="absolute top-[8px] sm:top-[9px] left-1/2 -translate-x-1/2 w-[90px] sm:w-[98px] h-[23px] sm:h-[25px] bg-[#000000] rounded-full z-40 flex items-center justify-between px-2.5 shadow-sm border border-white/10 pointer-events-none select-none">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/90 animate-pulse" />
-              <div className="w-2.5 h-2.5 rounded-full bg-[#070B12] border border-white/15 flex items-center justify-center">
-                <div className="w-1 h-1 rounded-full bg-[#1A2D48]" />
+            <div className="absolute top-[8px] sm:top-[9px] left-1/2 -translate-x-1/2 w-[88px] sm:w-[96px] h-[22px] sm:h-[24px] bg-[#000000] rounded-full z-40 flex items-center justify-between px-2.5 shadow-sm border border-white/10 pointer-events-none select-none">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#080B09] border border-white/5 opacity-80" />
+              <div className="w-2.5 h-2.5 rounded-full bg-[#080D14] border border-white/15 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 rounded-full border-t border-cyan-400/25" />
+                <div className="w-1 h-1 rounded-full bg-[#16253B]" />
               </div>
             </div>
           ) : null}
@@ -157,8 +194,14 @@ export default function PremiumIPhoneMockup({
             </div>
           )}
 
-          {/* Subtle Top Screen Glass Sheen */}
-          <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none z-20" />
+          {/* Photorealistic Oleophobic Glass Sheen (Subtle Diagonal Specular Reflection) */}
+          <div
+            className="absolute inset-0 bg-gradient-to-br from-white/[0.06] via-white/[0.015] to-transparent pointer-events-none z-30"
+            style={{
+              background:
+                'linear-gradient(130deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.015) 32%, transparent 60%)',
+            }}
+          />
         </div>
       </div>
     </div>

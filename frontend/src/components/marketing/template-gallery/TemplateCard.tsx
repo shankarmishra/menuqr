@@ -2,14 +2,14 @@ import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import type { MenuTemplate } from '../../../data/menuTemplates';
-import { DEMO_RESTAURANT, isTemplateDark } from '../../../data/menuTemplates';
+import { isTemplateDark } from '../../../data/menuTemplates';
 import PremiumIPhoneMockup from '../PremiumIPhoneMockup';
-import MenuTemplateRenderer from '../../menu-builder/MenuTemplateRenderer';
 import {
   getTemplateCardTheme,
   getLayoutLabel,
   getItemStyleLabel,
   getTypographyLabel,
+  type TemplateCardTheme,
 } from './templateCardThemes';
 
 interface TemplateCardProps {
@@ -18,6 +18,201 @@ interface TemplateCardProps {
   total: number;
   className?: string;
   style?: React.CSSProperties;
+}
+
+function TemplatePhonePreview({
+  template,
+  theme,
+  isDark,
+}: {
+  template: MenuTemplate;
+  theme: TemplateCardTheme;
+  isDark: boolean;
+}) {
+  const dishes = theme.signatureDishes || [
+    {
+      name: 'Paneer Tikka Royale',
+      category: 'Starters',
+      price: 280,
+      dietType: 'veg' as const,
+      description: 'Charcoal-smoked organic cottage cheese, hung yogurt, roasted cumin.',
+      image: '/uploads/mannat/hero_chaap.png',
+      badge: 'Bestseller',
+    },
+    {
+      name: 'Murgh Makhani Royale',
+      category: 'Curries',
+      price: 380,
+      dietType: 'non-veg' as const,
+      description: 'Velvety slow-simmered tomato reduction with pulled tandoori chicken.',
+      image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80',
+      badge: 'Chef Special',
+    },
+  ];
+
+  return (
+    <div
+      className="h-full w-full flex flex-col font-sans select-none overflow-hidden text-left"
+      style={{
+        backgroundColor: theme.phoneScreenBg,
+        color: isDark ? '#FAF3E0' : '#1F2925',
+      }}
+    >
+      {/* Phone Header / Masthead */}
+      <div
+        className="px-2.5 pt-[38px] pb-2 shrink-0 border-b backdrop-blur-md relative"
+        style={{
+          backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.85)',
+          borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+        }}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1">
+          <div className="min-w-0 flex-1">
+            <h4
+              className="text-[11px] font-black tracking-tight leading-tight truncate"
+              style={{
+                fontFamily: template.typography.heading,
+                color: theme.headingColor,
+              }}
+            >
+              {template.name}
+            </h4>
+            <p
+              className="text-[6.5px] font-bold uppercase tracking-wider truncate mt-0.5"
+              style={{ color: theme.subtitleColor }}
+            >
+              Table 12 • Live Guest Menu
+            </p>
+          </div>
+          <span
+            className="text-[6px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border shrink-0"
+            style={{
+              backgroundColor: theme.badgeBg,
+              color: theme.badgeText,
+              borderColor: theme.badgeBorder,
+            }}
+          >
+            ● Live
+          </span>
+        </div>
+
+        {/* Category Pills */}
+        <div className="flex gap-1 overflow-x-auto scrollbar-none pt-1">
+          {template.categories.slice(0, 3).map((cat, idx) => (
+            <span
+              key={cat}
+              className={`text-[7px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                idx === 0 ? 'shadow-xs' : 'opacity-80'
+              }`}
+              style={{
+                backgroundColor: idx === 0 ? theme.ctaBg : theme.categoryPillBg,
+                color: idx === 0 ? theme.ctaText : theme.categoryPillText,
+                border: `1px solid ${theme.categoryPillBorder}`,
+              }}
+            >
+              {cat}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Dishes List with Authentic Photography */}
+      <div className="flex-1 p-1.5 space-y-1.5 overflow-y-auto scrollbar-none">
+        {dishes.map((dish) => (
+          <div
+            key={dish.name}
+            className="p-1.5 rounded-xl border flex gap-1.5 items-center transition-colors shadow-xs"
+            style={{
+              backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.92)',
+              borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
+            }}
+          >
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1 mb-0.5 flex-wrap">
+                <span
+                  className={`w-2 h-2 border flex items-center justify-center rounded-[2px] shrink-0 ${
+                    dish.dietType === 'veg' ? 'border-emerald-600' : 'border-rose-600'
+                  }`}
+                >
+                  <span
+                    className={`w-1 h-1 rounded-full ${
+                      dish.dietType === 'veg' ? 'bg-emerald-600' : 'bg-rose-600'
+                    }`}
+                  />
+                </span>
+                <span className="font-bold text-[8.5px] leading-tight truncate">
+                  {dish.name}
+                </span>
+                {dish.badge && (
+                  <span
+                    className="text-[5.5px] font-bold uppercase tracking-wider px-1 py-0.2 rounded"
+                    style={{
+                      backgroundColor: theme.badgeBg,
+                      color: theme.badgeText,
+                    }}
+                  >
+                    {dish.badge}
+                  </span>
+                )}
+              </div>
+              <p className="text-[6.5px] opacity-75 line-clamp-1 leading-snug">
+                {dish.description}
+              </p>
+              <div className="flex items-center justify-between mt-1 pt-0.5 border-t border-black/5 dark:border-white/5">
+                <span className="font-extrabold text-[8.5px]">₹{dish.price}</span>
+                <span
+                  className="px-1.5 py-0.5 rounded text-[6.5px] font-bold uppercase tracking-wider shadow-2xs"
+                  style={{
+                    backgroundColor: theme.ctaBg,
+                    color: theme.ctaText,
+                  }}
+                >
+                  + Add
+                </span>
+              </div>
+            </div>
+            <div className="w-[44px] h-[44px] rounded-lg overflow-hidden shrink-0 bg-stone-200 border border-black/5 dark:border-white/10 relative shadow-2xs">
+              <img
+                src={dish.image}
+                alt={dish.name}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=200&auto=format&fit=crop&q=80';
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Floating Bottom Cart Bar */}
+      <div
+        className="p-1.5 px-2.5 flex items-center justify-between shrink-0 border-t shadow-sm"
+        style={{
+          backgroundColor: isDark ? '#080A09' : '#FFFFFF',
+          borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+        }}
+      >
+        <div>
+          <p className="text-[5.5px] font-mono font-bold uppercase tracking-wider opacity-70">
+            ORDER TOTAL
+          </p>
+          <p className="text-[8px] font-extrabold">2 items • ₹660</p>
+        </div>
+        <span
+          className="text-[6.5px] font-bold px-2 py-0.5 rounded-full shadow-xs"
+          style={{
+            backgroundColor: theme.ctaBg,
+            color: theme.ctaText,
+          }}
+        >
+          View Order →
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export function TemplateCard({
@@ -119,18 +314,11 @@ export function TemplateCard({
               screenStyle={{ backgroundColor: theme.phoneScreenBg }}
               screenClassName=""
             >
-              <div
-                className="h-full w-full overflow-y-auto overflow-x-hidden p-0.5 pointer-events-none md:pointer-events-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] antialiased"
-                style={{ backgroundColor: theme.phoneScreenBg }}
-              >
-                <MenuTemplateRenderer
-                  templateId={template.id}
-                  restaurant={DEMO_RESTAURANT}
-                  categories={DEMO_RESTAURANT.categories}
-                  items={DEMO_RESTAURANT.items}
-                  compact={true}
-                />
-              </div>
+              <TemplatePhonePreview
+                template={template}
+                theme={theme}
+                isDark={isDark}
+              />
             </PremiumIPhoneMockup>
           </motion.div>
         </div>
@@ -140,9 +328,17 @@ export function TemplateCard({
           RIGHT / BOTTOM: Editorial Narrative & Specifications
           ═══════════════════════════════════════════════════════════════════ */}
       <div
-        className="template-card-editorial flex flex-col justify-between p-4 sm:p-5 md:p-6 lg:p-7 xl:p-8 h-full"
+        className="template-card-editorial relative flex flex-col justify-between p-4 sm:p-5 md:p-6 lg:p-7 xl:p-8 h-full overflow-hidden"
         style={{ background: 'var(--editorial-bg)' }}
       >
+        {/* Subtle Watermark Craft Motif in background */}
+        <div
+          className="absolute right-4 bottom-14 opacity-[0.04] pointer-events-none text-8xl font-serif select-none"
+          aria-hidden="true"
+        >
+          {template.decorations.motif.slice(0, 2)}
+        </div>
+
         <div>
           {/* Top Index & Badge Header */}
           <div className="flex items-center justify-between mb-1.5 sm:mb-2 md:mb-2.5">
@@ -202,20 +398,72 @@ export function TemplateCard({
           </p>
 
           <p
-            className="mt-1 sm:mt-2 md:mt-2.5 max-w-xl text-[10.5px] sm:text-xs md:text-xs lg:text-sm leading-relaxed font-normal line-clamp-2 md:line-clamp-2 lg:line-clamp-3"
+            className="mt-1 sm:mt-1.5 md:mt-2 max-w-xl text-[10.5px] sm:text-xs md:text-xs lg:text-sm leading-relaxed font-normal line-clamp-2"
             style={{ color: 'var(--desc-color)' }}
           >
             {template.description}
           </p>
 
+          {/* Studio Signature Dishes Showcase Row */}
+          {theme.signatureDishes && (
+            <div
+              className="mt-2 sm:mt-2.5 p-2 rounded-xl border backdrop-blur-xs shadow-2xs"
+              style={{
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                borderColor: 'var(--specs-border)',
+              }}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span
+                  className="text-[7.5px] sm:text-[8.5px] font-mono font-bold uppercase tracking-wider"
+                  style={{ color: 'var(--specs-label)' }}
+                >
+                  Featured Signatures
+                </span>
+                <span
+                  className="text-[7px] sm:text-[8px] font-mono font-bold uppercase tracking-widest opacity-80"
+                  style={{ color: 'var(--index-color)' }}
+                >
+                  Authentic Pricing
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {theme.signatureDishes.map((dish) => (
+                  <div
+                    key={dish.name}
+                    className="flex items-center gap-1.5 min-w-0"
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                        dish.dietType === 'veg' ? 'bg-emerald-500' : 'bg-rose-500'
+                      }`}
+                    />
+                    <span
+                      className="text-[9px] sm:text-[10px] font-semibold truncate"
+                      style={{ color: 'var(--specs-value)' }}
+                    >
+                      {dish.name}
+                    </span>
+                    <span
+                      className="text-[9px] sm:text-[10px] font-extrabold ml-auto shrink-0"
+                      style={{ color: 'var(--index-color)' }}
+                    >
+                      ₹{dish.price}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Design Specs Grid */}
           <dl
-            className="template-card-specs mt-1.5 sm:mt-2.5 md:mt-3 lg:mt-3.5 grid grid-cols-2 gap-x-3 sm:gap-x-4 md:gap-x-4 lg:gap-x-5 gap-y-1 sm:gap-y-1.5 md:gap-y-2 border-t pt-1.5 sm:pt-2 md:pt-2.5 text-[9.5px] sm:text-xs md:text-xs lg:text-sm"
+            className="template-card-specs mt-1.5 sm:mt-2 md:mt-2.5 grid grid-cols-2 gap-x-3 sm:gap-x-4 md:gap-x-4 lg:gap-x-5 gap-y-1 sm:gap-y-1.5 border-t pt-1.5 sm:pt-2 text-[9.5px] sm:text-xs md:text-xs"
             style={{ borderColor: 'var(--specs-border)' }}
           >
             <div>
               <dt
-                className="mb-0.5 text-[8.5px] sm:text-[9.5px] md:text-[10px] font-bold uppercase tracking-wider"
+                className="mb-0.5 text-[8px] sm:text-[9px] md:text-[9.5px] font-bold uppercase tracking-wider"
                 style={{ color: 'var(--specs-label)' }}
               >
                 Menu layout
@@ -226,7 +474,7 @@ export function TemplateCard({
             </div>
             <div>
               <dt
-                className="mb-0.5 text-[8.5px] sm:text-[9.5px] md:text-[10px] font-bold uppercase tracking-wider"
+                className="mb-0.5 text-[8px] sm:text-[9px] md:text-[9.5px] font-bold uppercase tracking-wider"
                 style={{ color: 'var(--specs-label)' }}
               >
                 Item style
@@ -237,7 +485,7 @@ export function TemplateCard({
             </div>
             <div>
               <dt
-                className="mb-0.5 text-[8.5px] sm:text-[9.5px] md:text-[10px] font-bold uppercase tracking-wider"
+                className="mb-0.5 text-[8px] sm:text-[9px] md:text-[9.5px] font-bold uppercase tracking-wider"
                 style={{ color: 'var(--specs-label)' }}
               >
                 Typography
@@ -248,7 +496,7 @@ export function TemplateCard({
             </div>
             <div>
               <dt
-                className="mb-0.5 text-[8.5px] sm:text-[9.5px] md:text-[10px] font-bold uppercase tracking-wider"
+                className="mb-0.5 text-[8px] sm:text-[9px] md:text-[9.5px] font-bold uppercase tracking-wider"
                 style={{ color: 'var(--specs-label)' }}
               >
                 Craft motif
@@ -262,12 +510,12 @@ export function TemplateCard({
 
         {/* Palette & CTA Footer */}
         <div
-          className="template-card-footer mt-1.5 sm:mt-2.5 md:mt-3 flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 md:gap-2 lg:gap-3 pt-1.5 sm:pt-2 md:pt-2 border-t"
+          className="template-card-footer mt-1.5 sm:mt-2 md:mt-2.5 flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 md:gap-2 lg:gap-3 pt-1.5 sm:pt-2 border-t"
           style={{ borderColor: 'var(--specs-border)' }}
         >
           <div className="flex items-center gap-1.5 sm:gap-2" aria-label="Template color palette">
             <span
-              className="text-[8.5px] sm:text-[9.5px] md:text-[10px] font-mono font-bold uppercase mr-0.5 sm:mr-1"
+              className="text-[8px] sm:text-[9px] md:text-[9.5px] font-mono font-bold uppercase mr-0.5 sm:mr-1"
               style={{ color: 'var(--palette-label)' }}
             >
               Palette
@@ -284,7 +532,7 @@ export function TemplateCard({
 
           <Link
             to={`/templates#${template.id}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 md:px-3.5 md:py-2 lg:px-4 lg:py-2 rounded-full text-[9.5px] sm:text-[10.5px] md:text-xs font-bold uppercase tracking-wider transition-all duration-200 hover:scale-105 shadow-md shadow-black/20 font-sans cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 md:px-3.5 md:py-2 lg:px-4 lg:py-2 rounded-full text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all duration-200 hover:scale-105 shadow-md shadow-black/20 font-sans cursor-pointer shrink-0"
             style={{
               backgroundColor: 'var(--cta-bg)',
               color: 'var(--cta-text)',

@@ -1,5 +1,3 @@
-
-
 import PremiumIPhoneMockup from './PremiumIPhoneMockup';
 
 export default function PremiumOrderingSection() {
@@ -16,7 +14,7 @@ export default function PremiumOrderingSection() {
         </div>
 
         <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
-          {/* Left: Phone Mockup (Customer) */}
+          {/* Left: Phone Mockup (Customer View) */}
           <div className="flex justify-center">
             <PremiumIPhoneMockup
               className="!w-[280px] sm:!w-[290px] shadow-2xl"
@@ -24,27 +22,93 @@ export default function PremiumOrderingSection() {
               statusBarTheme="dark"
               statusBarBg="bg-[#FAFAF7]"
             >
-              <div className="p-4 h-full flex flex-col bg-[#FAFAF7] justify-between">
+              <div className="p-4 h-full flex flex-col bg-[#FAFAF7] justify-between font-sans select-none">
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="font-bold text-xl text-[#151C19]">Menu</div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
+                  <div className="flex items-center justify-between mb-3 pb-2 border-b border-stone-200">
+                    <div>
+                      <h4 className="font-extrabold text-base text-[#151C19] tracking-tight">The Artisan Grill</h4>
+                      <p className="text-[10px] text-stone-500 font-medium">Table #12 • Live Guest Order</p>
+                    </div>
+                    <span className="text-[9.5px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       Table #12
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
-                      <div className="font-semibold text-sm text-[#151C19]">Truffle Burger</div>
-                      <div className="text-[#e8783c] text-xs font-bold mt-1">₹450</div>
+
+                  <div className="space-y-2.5">
+                    {/* Item 1: Truffle Smash Burger */}
+                    <div className="bg-white p-2.5 rounded-2xl shadow-sm border border-stone-200 flex gap-2.5 items-center">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="w-2.5 h-2.5 border border-rose-600 rounded-[2px] flex items-center justify-center bg-rose-50 shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
+                          </span>
+                          <span className="font-bold text-xs text-[#151C19] truncate">Truffle Smash Burger</span>
+                        </div>
+                        <p className="text-[9.5px] text-stone-500 line-clamp-1 leading-snug">Double patty, truffle aioli, aged cheddar & brioche.</p>
+                        <div className="flex items-center justify-between mt-1.5">
+                          <span className="text-[#e8783c] text-xs font-black">₹450</span>
+                          <div className="flex items-center gap-2 bg-stone-100 px-2 py-0.5 rounded-full text-[10px] font-bold text-stone-700 border border-stone-200">
+                            <span>-</span>
+                            <span className="font-black text-[#151C19]">1</span>
+                            <span>+</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-stone-100 border border-stone-200 relative">
+                        <img
+                          src="/uploads/mannat/burger.png"
+                          alt="Truffle Smash Burger"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&auto=format&fit=crop&q=80';
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
-                      <div className="font-semibold text-sm text-[#151C19]">Fries</div>
-                      <div className="text-[#e8783c] text-xs font-bold mt-1">₹150</div>
+
+                    {/* Item 2: Parmesan Truffle Fries */}
+                    <div className="bg-white p-2.5 rounded-2xl shadow-sm border border-stone-200 flex gap-2.5 items-center">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="w-2.5 h-2.5 border border-emerald-600 rounded-[2px] flex items-center justify-center bg-emerald-50 shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                          </span>
+                          <span className="font-bold text-xs text-[#151C19] truncate">Parmesan Truffle Fries</span>
+                        </div>
+                        <p className="text-[9.5px] text-stone-500 line-clamp-1 leading-snug">Crisp Idaho fries, white truffle oil & shaved parmesan.</p>
+                        <div className="flex items-center justify-between mt-1.5">
+                          <span className="text-[#e8783c] text-xs font-black">₹150</span>
+                          <div className="flex items-center gap-2 bg-stone-100 px-2 py-0.5 rounded-full text-[10px] font-bold text-stone-700 border border-stone-200">
+                            <span>-</span>
+                            <span className="font-black text-[#151C19]">1</span>
+                            <span>+</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-stone-100 border border-stone-200 relative">
+                        <img
+                          src="/uploads/mannat/fries.png"
+                          alt="Parmesan Truffle Fries"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=200&auto=format&fit=crop&q=80';
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="bg-[#151c19] text-white p-3.5 rounded-xl text-center font-bold shadow-lg mb-2 text-sm tracking-wide">
-                  PLACE ORDER • ₹600
+
+                <div className="bg-[#151C19] text-white p-3 rounded-2xl shadow-lg mb-2 flex items-center justify-between">
+                  <div>
+                    <p className="text-[8px] font-mono font-bold text-[#F1A679] uppercase tracking-wider">YOUR ORDER</p>
+                    <p className="text-xs font-black text-white">2 items • ₹600</p>
+                  </div>
+                  <button className="bg-[#E8783C] hover:bg-[#F1A679] text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-xs transition-colors active:scale-95">
+                    <span>Send to Kitchen</span>
+                    <span>→</span>
+                  </button>
                 </div>
               </div>
             </PremiumIPhoneMockup>

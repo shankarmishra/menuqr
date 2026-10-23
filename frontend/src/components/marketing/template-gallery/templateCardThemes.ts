@@ -1,5 +1,15 @@
 import type { MenuTemplate } from '../../../data/menuTemplates';
 
+export interface SignatureDishInfo {
+  name: string;
+  category: string;
+  price: number;
+  dietType: 'veg' | 'non-veg';
+  description: string;
+  image: string;
+  badge?: string;
+}
+
 export interface TemplateCardTheme {
   // Main container styles
   cardBg: string;
@@ -34,6 +44,9 @@ export interface TemplateCardTheme {
   ctaText: string;
   ctaHoverBg: string;
   ctaBorder?: string;
+
+  // Curated Signature Dishes for Studio Presentation
+  signatureDishes?: [SignatureDishInfo, SignatureDishInfo];
 }
 
 const THEME_MAP: Record<string, Partial<TemplateCardTheme>> = {
@@ -64,6 +77,26 @@ const THEME_MAP: Record<string, Partial<TemplateCardTheme>> = {
     ctaBg: '#D7B66D',
     ctaText: '#064F43',
     ctaHoverBg: '#EBD69A',
+    signatureDishes: [
+      {
+        name: 'Awadhi Galouti Kebab',
+        category: 'Dawat-e-Khas',
+        price: 420,
+        dietType: 'non-veg',
+        description: 'Melt-in-mouth minced lamb infused with 16 royal spices and rose water smoke.',
+        image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&auto=format&fit=crop&q=80',
+        badge: 'Nawabi Khas',
+      },
+      {
+        name: 'Dum Gosht Biryani',
+        category: 'Handi',
+        price: 380,
+        dietType: 'non-veg',
+        description: 'Aromatic basmati slow-steamed in sealed clay pot with saffron & fried onions.',
+        image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80',
+        badge: 'Signature',
+      },
+    ],
   },
 
   // 02. Royal Maharaja (Regal Velvet Palace Wine & Imperial Double Gold)
@@ -93,6 +126,26 @@ const THEME_MAP: Record<string, Partial<TemplateCardTheme>> = {
     ctaBg: '#D4AF37',
     ctaText: '#2A081A',
     ctaHoverBg: '#F3D882',
+    signatureDishes: [
+      {
+        name: 'Murgh Makhani Royale',
+        category: 'Palace Curries',
+        price: 380,
+        dietType: 'non-veg',
+        description: 'Velvety slow-simmered tomato reduction with pulled tandoori chicken & white butter.',
+        image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80',
+        badge: 'Palace Classic',
+      },
+      {
+        name: 'Dal Makhani Signature',
+        category: 'Slow Pot',
+        price: 280,
+        dietType: 'veg',
+        description: '24-hour slow cooked black urad lentils, cultured cream & fenugreek dust.',
+        image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&auto=format&fit=crop&q=80',
+        badge: 'Bestseller',
+      },
+    ],
   },
 
   // 03. Rajasthani Heritage (Warm Antique Botanical Parchment & Deep Teal / Terracotta)
@@ -122,6 +175,26 @@ const THEME_MAP: Record<string, Partial<TemplateCardTheme>> = {
     ctaBg: '#D76C3C',
     ctaText: '#FFFFFF',
     ctaHoverBg: '#C45424',
+    signatureDishes: [
+      {
+        name: 'Paneer Tikka Angara',
+        category: 'Courtyard Tandoor',
+        price: 280,
+        dietType: 'veg',
+        description: 'Charcoal-smoked organic paneer in Mathania chili paste & cold-pressed mustard oil.',
+        image: '/uploads/mannat/hero_chaap.png',
+        badge: 'Masterpiece',
+      },
+      {
+        name: 'Dal Baati Churma Feast',
+        category: 'Heritage Thali',
+        price: 340,
+        dietType: 'veg',
+        description: 'Panchmel dal with whole wheat ghee baati and jaggery almond churma.',
+        image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=300&auto=format&fit=crop&q=80',
+        badge: 'Royal Heritage',
+      },
+    ],
   },
 
   // 04. Banarasi Gold (Varanasi Silk Brocade & Radiant Pure Zari Gold)
@@ -151,6 +224,26 @@ const THEME_MAP: Record<string, Partial<TemplateCardTheme>> = {
     ctaBg: '#FFD700',
     ctaText: '#28081B',
     ctaHoverBg: '#FFE24D',
+    signatureDishes: [
+      {
+        name: 'Banarasi Tamatar Chaat',
+        category: 'Ghat Special',
+        price: 190,
+        dietType: 'veg',
+        description: 'Slow-roasted spicy tomatoes in desi ghee with roasted cumin and crushed cashews.',
+        image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=300&auto=format&fit=crop&q=80',
+        badge: 'Ghat Special',
+      },
+      {
+        name: 'Kashi Malaiyo Dumpling',
+        category: 'Silk Sweets',
+        price: 160,
+        dietType: 'veg',
+        description: 'Winter morning milk dew foam infused with saffron strands and Iranian pistachio.',
+        image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=300&auto=format&fit=crop&q=80',
+        badge: 'Heritage',
+      },
+    ],
   },
 
   // 05. South Indian Heritage (Temple Chettinad Ivory & Crimson / Brass Gold)
@@ -180,6 +273,26 @@ const THEME_MAP: Record<string, Partial<TemplateCardTheme>> = {
     ctaBg: '#7A1A1A',
     ctaText: '#FFFDF7',
     ctaHoverBg: '#611212',
+    signatureDishes: [
+      {
+        name: 'Chettinad Pepper Paneer',
+        category: 'Temple Spices',
+        price: 290,
+        dietType: 'veg',
+        description: 'Stone-ground Tellicherry black pepper, shallots, curry leaves & cold-pressed oil.',
+        image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=300&auto=format&fit=crop&q=80',
+        badge: 'Chettinad',
+      },
+      {
+        name: 'Ghee Roast Dosa Platter',
+        category: 'Tiffin Gold',
+        price: 210,
+        dietType: 'veg',
+        description: 'Crisp gold fermented crepe roasted in A2 cow ghee with fresh trio chutneys & sambar.',
+        image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=300&auto=format&fit=crop&q=80',
+        badge: 'Signature',
+      },
+    ],
   },
 
   // 06. Indian Street Kitchen (High-Impact Warm White & Street Food Orange)
@@ -209,6 +322,26 @@ const THEME_MAP: Record<string, Partial<TemplateCardTheme>> = {
     ctaBg: '#E85A2A',
     ctaText: '#FFFFFF',
     ctaHoverBg: '#D2481A',
+    signatureDishes: [
+      {
+        name: 'Amritsari Chur-Chur Kulcha',
+        category: 'Street Oven',
+        price: 220,
+        dietType: 'veg',
+        description: 'Flaky clay oven layered bread stuffed with spiced potato, pomegranate seed & Amritsari chole.',
+        image: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?w=300&auto=format&fit=crop&q=80',
+        badge: 'Clay Oven',
+      },
+      {
+        name: 'Old Delhi Papdi Chaat',
+        category: 'Chaat Bazaar',
+        price: 150,
+        dietType: 'veg',
+        description: 'Crisp flour wafers, spiced potato cubes, saunth chutney, whipped curd & sev.',
+        image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=300&auto=format&fit=crop&q=80',
+        badge: 'Street Icon',
+      },
+    ],
   },
 
   // 07. Modern India (Contemporary Fashion Editorial Slate Navy & Tangerine)
@@ -238,6 +371,26 @@ const THEME_MAP: Record<string, Partial<TemplateCardTheme>> = {
     ctaBg: '#E8783C',
     ctaText: '#FFFFFF',
     ctaHoverBg: '#FF8C4D',
+    signatureDishes: [
+      {
+        name: 'Truffle Samosa Modernist',
+        category: 'Small Plates',
+        price: 260,
+        dietType: 'veg',
+        description: 'Confit potato & green pea filling, white truffle cream foam, saunth gel spheres.',
+        image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=300&auto=format&fit=crop&q=80',
+        badge: 'Avant-Garde',
+      },
+      {
+        name: 'Smoked Duck Seekh Kebab',
+        category: 'Grill Studio',
+        price: 440,
+        dietType: 'non-veg',
+        description: 'Slow-charred artisanal duck mince, raw mango reduction & mint micro-greens.',
+        image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=300&auto=format&fit=crop&q=80',
+        badge: 'Chef Selection',
+      },
+    ],
   },
 
   // 08. Bombay Street (Mumbai Irani Cafe Cream & Vibrant Chili Red / Turmeric)
@@ -267,6 +420,26 @@ const THEME_MAP: Record<string, Partial<TemplateCardTheme>> = {
     ctaBg: '#C82323',
     ctaText: '#FFFFFF',
     ctaHoverBg: '#AA1515',
+    signatureDishes: [
+      {
+        name: 'Irani Bun Maska & Chai',
+        category: 'Irani Bakery',
+        price: 140,
+        dietType: 'veg',
+        description: 'Freshly baked pav smothered in whipped salted butter, served with simmering cardamom cutting chai.',
+        image: '/uploads/mannat/burger.png',
+        badge: 'Colaba Iconic',
+      },
+      {
+        name: 'Keema Ghotala Pav',
+        category: 'Tawa Grill',
+        price: 290,
+        dietType: 'non-veg',
+        description: 'Spiced minced mutton scrambled with organic egg and coriander, butter toasted ladi pav.',
+        image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&auto=format&fit=crop&q=80',
+        badge: 'Bestseller',
+      },
+    ],
   },
 
   // 09. Coffee House (Artisanal Roasted Espresso Brown & Warm Caramel)
@@ -296,6 +469,26 @@ const THEME_MAP: Record<string, Partial<TemplateCardTheme>> = {
     ctaBg: '#E0A96D',
     ctaText: '#2E1C14',
     ctaHoverBg: '#EFC492',
+    signatureDishes: [
+      {
+        name: 'Single Origin Flat White',
+        category: 'Brew Bar',
+        price: 210,
+        dietType: 'veg',
+        description: 'Chikmagalur washed arabica double ristretto with micro-textured velvety oat milk.',
+        image: '/uploads/mannat/iced_coffee.png',
+        badge: 'Single Origin',
+      },
+      {
+        name: 'Truffle Mushroom Brioche',
+        category: 'Patisserie',
+        price: 290,
+        dietType: 'veg',
+        description: 'Golden French brioche toast topped with wild forest mushrooms, truffle butter & thyme.',
+        image: '/uploads/mannat/garlic_bread.png',
+        badge: 'Bakery Fresh',
+      },
+    ],
   },
 
   // 10. Minimal Editorial (Swiss Modernist Pure Warm White & Razor Charcoal)
@@ -325,6 +518,26 @@ const THEME_MAP: Record<string, Partial<TemplateCardTheme>> = {
     ctaBg: '#18181B',
     ctaText: '#FFFFFF',
     ctaHoverBg: '#333338',
+    signatureDishes: [
+      {
+        name: 'Charred Asparagus & Burrata',
+        category: 'Starters',
+        price: 360,
+        dietType: 'veg',
+        description: 'Flame-kissed asparagus, Pugliese burrata, lemon zest, toasted pine nuts & olive oil.',
+        image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&auto=format&fit=crop&q=80',
+        badge: 'Seasonal',
+      },
+      {
+        name: 'Pan-Seared Sea Bass',
+        category: 'Mains',
+        price: 580,
+        dietType: 'non-veg',
+        description: 'Crisp skin wild sea bass on fennel mousseline with caper berry brown butter emulsion.',
+        image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80',
+        badge: 'Chef Cut',
+      },
+    ],
   },
 };
 

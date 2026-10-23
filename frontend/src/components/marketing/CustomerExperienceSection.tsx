@@ -34,12 +34,12 @@ export default function CustomerExperienceSection() {
   }, [isInView]);
 
   const sampleItems = [
-    { id: 1, name: 'Paneer Tikka Roll', price: '₹240', halfPrice: '₹140', fullPrice: '₹240', isVeg: true, category: 'Starters', cal: '320 kcal', desc: 'Charcoal-grilled paneer wrapped in a roomali roti with mint chutney.' },
-    { id: 2, name: 'Chicken Malai Tikka', price: '₹340', halfPrice: '₹190', fullPrice: '₹340', isVeg: false, category: 'Starters', cal: '410 kcal', desc: 'Creamy, melt-in-mouth chicken chunks marinated in yogurt.' },
-    { id: 3, name: 'Wild Mushroom Soup', price: '₹220', isVeg: true, category: 'Soups', cal: '180 kcal', desc: 'Truffle scented rich mushroom soup served with garlic bread.' },
-    { id: 4, name: 'Classic Cold Coffee', price: '₹180', isVeg: true, category: 'Beverages', cal: '210 kcal', desc: 'Thick blended cold coffee with vanilla ice cream.' },
-    { id: 5, name: 'Tandoori Roti', price: '₹40', isVeg: true, category: 'Breads', cal: '110 kcal', desc: 'Fresh from the clay oven.' },
-    { id: 6, name: 'Dal Makhani', price: '₹320', halfPrice: '₹180', fullPrice: '₹320', isVeg: true, category: 'Mains', cal: '450 kcal', desc: 'Overnight simmered black lentils finished with cream.' },
+    { id: 1, name: 'Paneer Tikka Roll', price: '₹240', halfPrice: '₹140', fullPrice: '₹240', isVeg: true, category: 'Starters', cal: '320 kcal', desc: 'Charcoal-grilled paneer wrapped in a roomali roti with mint chutney.', image: '/uploads/mannat/hero_chaap.png' },
+    { id: 2, name: 'Chicken Malai Tikka', price: '₹340', halfPrice: '₹190', fullPrice: '₹340', isVeg: false, category: 'Starters', cal: '410 kcal', desc: 'Creamy, melt-in-mouth chicken chunks marinated in yogurt.', image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=200&auto=format&fit=crop&q=80' },
+    { id: 3, name: 'Wild Mushroom Soup', price: '₹220', isVeg: true, category: 'Soups', cal: '180 kcal', desc: 'Truffle scented rich mushroom soup served with garlic bread.', image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=200&auto=format&fit=crop&q=80' },
+    { id: 4, name: 'Classic Cold Coffee', price: '₹180', isVeg: true, category: 'Beverages', cal: '210 kcal', desc: 'Thick blended cold coffee with vanilla ice cream.', image: '/uploads/mannat/iced_coffee.png' },
+    { id: 5, name: 'Tandoori Roti', price: '₹40', isVeg: true, category: 'Breads', cal: '110 kcal', desc: 'Fresh from the clay oven.', image: '/uploads/mannat/garlic_bread.png' },
+    { id: 6, name: 'Dal Makhani', price: '₹320', halfPrice: '₹180', fullPrice: '₹320', isVeg: true, category: 'Mains', cal: '450 kcal', desc: 'Overnight simmered black lentils finished with cream.', image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=200&auto=format&fit=crop&q=80' },
   ];
 
   const filteredItems = animationStep >= 4 ? [sampleItems[0]] : sampleItems;
@@ -234,10 +234,20 @@ export default function CustomerExperienceSection() {
                                 <span className="text-xs font-bold text-menusqr-emerald">{item.price}</span>
                               )}
                             </div>
-                            <div className="w-20 h-20 bg-[#F5F3EE] rounded-xl shrink-0 relative overflow-hidden">
-                              {/* Placeholder for image */}
-                              <div className="absolute inset-0 bg-gradient-to-br from-menusqr-neutral-muted/20 to-transparent" />
-                              <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full bg-menusqr-orange/10 blur-xl" />
+                            <div className="w-20 h-20 rounded-xl shrink-0 relative overflow-hidden bg-stone-100 border border-black/5 shadow-2xs">
+                              {item.image ? (
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <div className="absolute inset-0 bg-gradient-to-br from-menusqr-neutral-muted/20 to-transparent" />
+                              )}
                             </div>
                             
                             {/* Tap Ripple Effect Simulation */}

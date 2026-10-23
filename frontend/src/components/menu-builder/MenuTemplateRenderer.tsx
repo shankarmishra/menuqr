@@ -154,24 +154,26 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
     );
 
     return (
-      <Suspense fallback={<TemplateFallback compact={compact} isDark={isDark} />}>
-        <DynamicDesignEngine
-          spec={validatedSpec}
-          template={template}
-          restaurant={restaurant}
-          categories={filteredCategories}
-          rawCategories={rawCategories}
-          compact={compact}
-          onAddToCart={effectiveAddToCart}
-          isPremium={isPremium}
-          activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          searchBar={searchBar}
-          className={className}
-        />
-      </Suspense>
+      <MenuCartContext.Provider value={{ onAddToCart: effectiveAddToCart, onRemoveFromCart, getItemQuantity, isPremium }}>
+        <Suspense fallback={<TemplateFallback compact={compact} isDark={isDark} />}>
+          <DynamicDesignEngine
+            spec={validatedSpec}
+            template={template}
+            restaurant={restaurant}
+            categories={filteredCategories}
+            rawCategories={rawCategories}
+            compact={compact}
+            onAddToCart={effectiveAddToCart}
+            isPremium={isPremium}
+            activeCategory={activeCategory}
+            setActiveCategory={setActiveCategory}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            searchBar={searchBar}
+            className={className}
+          />
+        </Suspense>
+      </MenuCartContext.Provider>
     );
   }
 
