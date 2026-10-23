@@ -153,6 +153,17 @@ const server = createServer(async (request, response) => {
   }
 
   try {
+    if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/') {
+      sendJson(response, 200, {
+        status: 'online',
+        service: 'MenusQR API',
+        version: '2.0.0',
+        healthCheck: '/api/health',
+        timestamp: new Date().toISOString(),
+      });
+      return;
+    }
+
     if (request.method === 'GET' && url.pathname === '/api/health') {
       let dbConnected = false;
       try {

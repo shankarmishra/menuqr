@@ -35,8 +35,9 @@ export function maskEmail(email) {
 }
 
 export function getEmailConfig(environment = process.env) {
-  const apiKey = (environment.RESEND_API_KEY || '').trim();
-  const brevoApiKey = (environment.BREVO_API_KEY || environment.SENDINBLUE_API_KEY || '').trim();
+  const sanitizeKey = (k) => (k || '').trim().replace(/^["']|["']$/g, '').trim();
+  const apiKey = sanitizeKey(environment.RESEND_API_KEY);
+  const brevoApiKey = sanitizeKey(environment.BREVO_API_KEY || environment.SENDINBLUE_API_KEY);
   const smtpHost = (environment.SMTP_HOST || environment.MAIL_HOST || '').trim();
   const smtpPort = Number(environment.SMTP_PORT || environment.MAIL_PORT || 587);
   const smtpUser = (environment.SMTP_USER || environment.SMTP_USERNAME || environment.MAIL_USERNAME || '').trim();
@@ -59,8 +60,20 @@ export function getEmailConfig(environment = process.env) {
   const fromName = (environment.MAIL_FROM_NAME || extractedName || 'MENUSQR').trim();
   const preferredProvider = (environment.EMAIL_PROVIDER || '').trim().toLowerCase();
 
-  // Detect whether running in a cloud container like Render
-  const isRender = Boolean(environment.RENDER || environment.RENDER_SERVICE_ID || environment.ON_RENDER);
+  // Detect whether running in a cloud container like Render or production
+  const isRender = Boolean(
+    environment.RENDER ||
+    environment.RENDER_SERVICE_ID ||
+    environment.RENDER_EXTERNAL_URL ||
+    environment.RENDER_INSTANCE_ID ||
+    environment.ON_RENDER ||
+    process.env.RENDER ||
+    process.env.RENDER_SERVICE_ID ||
+    process.env.RENDER_EXTERNAL_URL ||
+    process.env.RENDER_INSTANCE_ID ||
+    process.env.ON_RENDER
+  );
+  const isProduction = environment.NODE_ENV === 'production' || process.env.NODE_ENV === 'production';
 
   let provider = 'none';
   if (preferredProvider === 'resend' && apiKey) {
@@ -69,9 +82,9 @@ export function getEmailConfig(environment = process.env) {
     provider = 'brevo';
   } else if (preferredProvider === 'smtp' && smtpHost) {
     provider = 'smtp';
-  } else if (isRender) {
+  } else if (isRender || isProduction) {
     // CRITICAL: Render Free Tier permanently blocks outbound SMTP traffic on ports 25, 465, and 587!
-    // Therefore, in Render environment, prioritize HTTPS REST API providers (Resend or Brevo) on Port 443!
+    // Therefore, in Render / cloud production, prioritize HTTPS REST API providers (Resend or Brevo) on Port 443!
     if (apiKey) {
       provider = 'resend';
     } else if (brevoApiKey) {
@@ -108,16 +121,24 @@ export function getEmailConfig(environment = process.env) {
     configured: provider !== 'none',
     provider,
     isRender,
+    isProduction,
   };
 }
 
 async function sendViaSmtp(config, message, label = 'transactional email', retryPort = null) {
-  const isRender = Boolean(process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.ON_RENDER);
+  const isCloudHost = Boolean(
+    config.isRender ||
+    config.isProduction ||
+    process.env.RENDER ||
+    process.env.RENDER_SERVICE_ID ||
+    process.env.ON_RENDER ||
+    process.env.NODE_ENV === 'production'
+  );
   const port = retryPort || config.smtp.port;
   const secure = retryPort ? (retryPort === 465) : config.smtp.secure;
   const timeouts = getSmtpTimeoutOptions();
   // On Render free tier, outbound SMTP is permanently blocked. Use aggressive timeout (2.5s) to avoid 10s-20s UI freezing!
-  const connectionTimeout = isRender ? Math.min(timeouts.connectionTimeout, 2500) : timeouts.connectionTimeout;
+  const connectionTimeout = isCloudHost ? Math.min(timeouts.connectionTimeout, 2500) : timeouts.connectionTimeout;
 
   try {
     const nodemailerModule = await import('nodemailer');
@@ -132,8 +153,8 @@ async function sendViaSmtp(config, message, label = 'transactional email', retry
       } : undefined,
       family: 4, // CRITICAL: Force IPv4 connection to prevent ENETUNREACH on Render/cloud containers
       connectionTimeout,
-      greetingTimeout: isRender ? 2500 : timeouts.greetingTimeout,
-      socketTimeout: isRender ? 5000 : timeouts.socketTimeout,
+      greetingTimeout: isCloudHost ? 2500 : timeouts.greetingTimeout,
+      socketTimeout: isCloudHost ? 5000 : timeouts.socketTimeout,
     });
 
     const info = await transporter.sendMail({
@@ -153,10 +174,10 @@ async function sendViaSmtp(config, message, label = 'transactional email', retry
   } catch (err) {
     console.error(`[email] SMTP send failed for ${label} (port ${port}):`, err.message);
 
-    // If running on Render, ALL standard outbound SMTP ports (25, 465, 587) are blocked at the firewall level.
+    // If running on Render/cloud host, ALL standard outbound SMTP ports (25, 465, 587) are blocked at the firewall level.
     // Retrying on 465 will only cause another 10s hang!
-    const isNetworkBlocked = err.code === 'ENETUNREACH' || err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED' || err.message?.includes('timeout');
-    if (isRender && isNetworkBlocked) {
+    const isNetworkBlocked = err.code === 'ENETUNREACH' || err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED' || err.message?.includes('timeout') || err.message?.includes('ENETUNREACH');
+    if (isCloudHost && isNetworkBlocked) {
       return {
         ok: false,
         provider: 'smtp',
@@ -164,8 +185,8 @@ async function sendViaSmtp(config, message, label = 'transactional email', retry
       };
     }
 
-    // Off Render: if port 587 failed and host is Gmail, retry immediately on port 465 (SSL/TLS direct)
-    if (!isRender && !retryPort && port === 587 && config.smtp.host === 'smtp.gmail.com') {
+    // Off Render / Local: if port 587 failed and host is Gmail, retry immediately on port 465 (SSL/TLS direct)
+    if (!isCloudHost && !retryPort && port === 587 && config.smtp.host === 'smtp.gmail.com') {
       console.warn(`[email] Retrying Gmail SMTP for ${label} on port 465 (SSL/TLS, family 4)...`);
       return sendViaSmtp(config, message, label, 465);
     }
@@ -221,7 +242,12 @@ async function sendViaResend(config, message, label = 'transactional email') {
 
     let errorMsg = `Resend API returned status ${res.status}`;
     if (res.status === 401) {
-      errorMsg = 'Resend API key is invalid (401). Please update RESEND_API_KEY in Render environment settings with an active key from https://resend.com/api-keys.';
+      const looksLikeResendKey = config.apiKey.startsWith('re_');
+      if (!looksLikeResendKey) {
+        errorMsg = `Resend API key is invalid (401). Your RESEND_API_KEY does not start with "re_". Please check Render environment settings and generate a valid key from https://resend.com/api-keys.`;
+      } else {
+        errorMsg = 'Resend API key is invalid (401). Please update RESEND_API_KEY in Render environment settings with an active key from https://resend.com/api-keys.';
+      }
     } else if (res.status === 403 && data.message?.includes('testing emails')) {
       errorMsg = `Resend Free Domain Restriction (403): ${data.message} - To send OTPs to any email address, verify your domain in the Resend dashboard or configure BREVO_API_KEY.`;
     } else if (data.message) {
@@ -357,8 +383,8 @@ export async function sendEmailDirectly(message, label = 'transactional email') 
 
   // Add remaining configured providers as automatic fallbacks
   const allConfigured = [];
-  if (config.isRender) {
-    // On Render, always prefer HTTPS REST APIs (Port 443) over blocked SMTP
+  if (config.isRender || config.isProduction) {
+    // In cloud / production, always prefer HTTPS REST APIs (Port 443) over blocked SMTP
     if (hasResend) allConfigured.push('resend');
     if (hasBrevo) allConfigured.push('brevo');
     if (hasSmtp) allConfigured.push('smtp');
