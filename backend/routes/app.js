@@ -1563,8 +1563,8 @@ export default async function appRoutes(request, response, url) {
     const res = await pool.query(`
       UPDATE customer_orders
       SET 
-        estimated_time_minutes = $1,
-        estimated_delivery_time = (CURRENT_TIMESTAMP + ($1 * INTERVAL '1 minute')),
+        estimated_time_minutes = $1::integer,
+        estimated_delivery_time = (CURRENT_TIMESTAMP + ($1::integer * INTERVAL '1 minute')),
         updated_at = CURRENT_TIMESTAMP
       WHERE id = $2 AND tenant_id = $3
       RETURNING 
