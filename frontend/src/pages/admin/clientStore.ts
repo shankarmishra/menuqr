@@ -265,10 +265,13 @@ export interface LoginResponse {
 }
 
 export async function loginAdmin(password: string, email?: string): Promise<LoginResponse> {
-  return request<LoginResponse>('/auth/login', {
+  const res = await request<LoginResponse & { csrfToken?: string; token?: string }>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ password, email }),
   });
+  if (res.csrfToken) setCsrfToken(res.csrfToken);
+  if (res.token) setAuthToken(res.token);
+  return res;
 }
 
 export async function verifyLoginOtp(tempToken: string, otp: string): Promise<LoginResponse> {
