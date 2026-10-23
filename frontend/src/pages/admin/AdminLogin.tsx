@@ -93,10 +93,10 @@ export default function AdminLogin() {
           handleLoginSuccess(res.role, res.onboardingState);
         }
       }
-    } catch {
-      setError(isAdminPage
+    } catch (err: any) {
+      setError(err?.message || (isAdminPage
         ? 'We could not send a sign-in code. Please try again shortly. If the problem continues, contact support.'
-        : 'Could not sign in. Please check your details and try again.');
+        : 'Could not sign in. Please check your details and try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -118,10 +118,10 @@ export default function AdminLogin() {
       if (res.authenticated) {
         handleLoginSuccess(res.role, res.onboardingState);
       }
-    } catch {
-      setError(isAdminPage
+    } catch (err: any) {
+      setError(err?.message || (isAdminPage
         ? 'Unable to verify sign-in. Check your details or request a new code.'
-        : 'Incorrect code. Please try again.');
+        : 'Incorrect code. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -141,10 +141,10 @@ export default function AdminLogin() {
         setInfoMessage(res.message || 'New OTP sent to your email.');
         setResendTimer(30);
       }
-    } catch {
-      setError(isAdminPage
+    } catch (err: any) {
+      setError(err?.message || (isAdminPage
         ? 'We could not send a new code. Please wait a moment and try again.'
-        : 'Could not resend the code. Please try again.');
+        : 'Could not resend the code. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }

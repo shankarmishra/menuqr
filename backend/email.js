@@ -50,7 +50,18 @@ export function getEmailConfig(environment = process.env) {
   }
 
   const fromName = (environment.MAIL_FROM_NAME || extractedName || 'MENUSQR').trim();
-  const provider = apiKey ? 'resend' : (smtpHost ? 'smtp' : 'none');
+  const preferredProvider = (environment.EMAIL_PROVIDER || '').trim().toLowerCase();
+
+  let provider = 'none';
+  if (preferredProvider === 'smtp' && smtpHost) {
+    provider = 'smtp';
+  } else if (preferredProvider === 'resend' && apiKey) {
+    provider = 'resend';
+  } else if (apiKey) {
+    provider = 'resend';
+  } else if (smtpHost) {
+    provider = 'smtp';
+  }
 
   return {
     apiKey,
@@ -69,57 +80,45 @@ export function getEmailConfig(environment = process.env) {
   };
 }
 
-export async function sendEmailDirectly(message, label = 'transactional email') {
-  const config = getEmailConfig();
+async function sendViaSmtp(config, message, label = 'transactional email') {
+  try {
+    const nodemailerModule = await import('nodemailer');
+    const createTransport = nodemailerModule.default?.createTransport || nodemailerModule.createTransport;
+    const transporter = createTransport({
+      host: config.smtp.host,
+      port: config.smtp.port,
+      secure: config.smtp.secure,
+      auth: config.smtp.user ? {
+        user: config.smtp.user,
+        pass: config.smtp.pass,
+      } : undefined,
+    });
 
-  if (config.provider === 'smtp') {
-    try {
-      const nodemailerModule = await import('nodemailer');
-      const createTransport = nodemailerModule.default?.createTransport || nodemailerModule.createTransport;
-      const transporter = createTransport({
-        host: config.smtp.host,
-        port: config.smtp.port,
-        secure: config.smtp.secure,
-        auth: config.smtp.user ? {
-          user: config.smtp.user,
-          pass: config.smtp.pass,
-        } : undefined,
-      });
+    const info = await transporter.sendMail({
+      from: config.formattedFrom,
+      to: message.to,
+      subject: message.subject,
+      html: message.html,
+      text: message.text,
+    });
 
-      const info = await transporter.sendMail({
-        from: config.formattedFrom,
-        to: message.to,
-        subject: message.subject,
-        html: message.html,
-        text: message.text,
-      });
-
-      console.info(`[email] ${label} sent successfully to ${maskEmail(message.to)} via SMTP (Message ID: ${info.messageId || 'unknown'}).`);
-      return {
-        ok: true,
-        provider: 'smtp',
-        messageId: info.messageId,
-      };
-    } catch (err) {
-      console.error(`[email] SMTP send failed for ${label}:`, err.message);
-      return {
-        ok: false,
-        provider: 'smtp',
-        error: err.message,
-      };
-    }
-  }
-
-  if (config.provider !== 'resend') {
-    const errMsg = 'No email transport configured. Either RESEND_API_KEY or SMTP credentials (SMTP_HOST, SMTP_USER, SMTP_PASS) must be provisioned.';
-    console.error(`[email] Direct send failed for ${label}: ${errMsg}`);
+    console.info(`[email] ${label} sent successfully to ${maskEmail(message.to)} via SMTP (Message ID: ${info.messageId || 'unknown'}).`);
+    return {
+      ok: true,
+      provider: 'smtp',
+      messageId: info.messageId,
+    };
+  } catch (err) {
+    console.error(`[email] SMTP send failed for ${label}:`, err.message);
     return {
       ok: false,
-      provider: 'none',
-      error: errMsg,
+      provider: 'smtp',
+      error: err.message,
     };
   }
+}
 
+async function sendViaResend(config, message, label = 'transactional email') {
   const payload = JSON.stringify({
     from: config.formattedFrom,
     to: [message.to],
@@ -195,15 +194,74 @@ export async function sendEmailDirectly(message, label = 'transactional email') 
   });
 }
 
+export async function sendEmailDirectly(message, label = 'transactional email') {
+  const config = getEmailConfig();
+
+  const hasSmtp = Boolean(config.smtp.host && (config.smtp.user || !config.smtp.secure));
+  const hasResend = Boolean(config.apiKey);
+
+  if (config.provider === 'smtp') {
+    const res = await sendViaSmtp(config, message, label);
+    if (res.ok) return res;
+    if (hasResend) {
+      console.warn(`[email] Primary SMTP failed for ${label} (${res.error}). Attempting automatic fallback to Resend...`);
+      const resendRes = await sendViaResend(config, message, label);
+      if (resendRes.ok) {
+        return {
+          ...resendRes,
+          fallbackFrom: 'smtp',
+        };
+      }
+      return {
+        ok: false,
+        provider: 'resend',
+        error: `SMTP failed (${res.error}), and Resend fallback also failed: ${resendRes.error}`,
+      };
+    }
+    return res;
+  }
+
+  if (config.provider === 'resend') {
+    const res = await sendViaResend(config, message, label);
+    if (res.ok) return res;
+    if (hasSmtp) {
+      console.warn(`[email] Primary Resend failed for ${label} (${res.error}). Attempting automatic fallback to SMTP...`);
+      const smtpRes = await sendViaSmtp(config, message, label);
+      if (smtpRes.ok) {
+        return {
+          ...smtpRes,
+          fallbackFrom: 'resend',
+        };
+      }
+      return {
+        ok: false,
+        provider: 'smtp',
+        error: `Resend failed (${res.error}), and SMTP fallback also failed: ${smtpRes.error}`,
+      };
+    }
+    return res;
+  }
+
+  const errMsg = 'No email transport configured. Either RESEND_API_KEY or SMTP credentials (SMTP_HOST, SMTP_USER, SMTP_PASS) must be provisioned.';
+  console.error(`[email] Direct send failed for ${label}: ${errMsg}`);
+  return {
+    ok: false,
+    provider: 'none',
+    error: errMsg,
+  };
+}
+
 // Durable Outbox Queueing Helper
 export async function queueEmailOutbox({ notificationType, recipient, subject, html, text, idempotencyKey, payload = {} }) {
   const messageId = randomUUID();
   const idKey = idempotencyKey || `email_${notificationType}_${recipient}_${messageId}`;
+  const config = getEmailConfig();
+  const defaultProvider = config.provider === 'smtp' ? 'smtp' : 'resend';
 
   try {
     const res = await pool.query(`
       INSERT INTO email_outbox (id, notification_type, recipient, subject, payload, idempotency_key, status, attempt_count, max_attempts, next_retry_at, provider)
-      VALUES ($1, $2, $3, $4, $5, $6, 'QUEUED', 0, 5, NOW(), 'resend')
+      VALUES ($1, $2, $3, $4, $5, $6, 'QUEUED', 0, 5, NOW(), $7)
       ON CONFLICT (idempotency_key) DO UPDATE SET updated_at = NOW()
       RETURNING id, status, provider_message_id
     `, [
@@ -213,6 +271,7 @@ export async function queueEmailOutbox({ notificationType, recipient, subject, h
       subject,
       JSON.stringify({ html, text, ...payload }),
       idKey,
+      defaultProvider,
     ]);
 
     // Immediately trigger outbox processing in background

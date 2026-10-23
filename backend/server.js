@@ -128,7 +128,8 @@ const server = createServer(async (request, response) => {
   }
 
   // CSRF Token Validation for Cookie-Authenticated State-Changing Requests
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method) && !url.pathname.startsWith('/api/webhooks/')) {
+  const isAuthRoute = url.pathname.startsWith('/api/auth/');
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method) && !url.pathname.startsWith('/api/webhooks/') && !isAuthRoute) {
     const cookies = parse(request.headers.cookie || '');
     const sessionToken = cookies['menusqr_auth'] || cookies['menusqr_admin_session'];
     const csrfCookie = cookies['menusqr_csrf'];

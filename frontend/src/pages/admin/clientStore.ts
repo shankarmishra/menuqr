@@ -106,6 +106,28 @@ import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 const draftStorageKey = 'menusqr.clientDrafts';
 const migrationStorageKey = 'menusqr.apiMigration.v1';
 
+let activeAuthToken: string | null = null;
+export function setAuthToken(token: string | null | undefined): void {
+  if (token) {
+    activeAuthToken = token;
+    try { sessionStorage.setItem('menusqr_auth_token', token); } catch {}
+  } else {
+    activeAuthToken = null;
+    try { sessionStorage.removeItem('menusqr_auth_token'); } catch {}
+  }
+}
+
+export function getAuthToken(): string | null {
+  if (activeAuthToken) return activeAuthToken;
+  try {
+    const saved = sessionStorage.getItem('menusqr_auth_token');
+    if (saved) {
+      activeAuthToken = saved;
+      return saved;
+    }
+  } catch {}
+  return null;
+}
 
 type ClientDraft = Omit<ClientRecord, 'id' | 'createdAt'>;
 let migrationPromise: Promise<void> | undefined;
@@ -114,6 +136,9 @@ const apiBaseUrl = getApiBaseUrl();
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const method = (init?.method || 'GET').toUpperCase();
   const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+
+  const authToken = getAuthToken();
+  const authHeaders: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
   let csrfHeaders: Record<string, string> = {};
   if (isStateChanging) {
@@ -130,6 +155,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
         ...csrfHeaders,
         ...init?.headers,
       },
@@ -234,6 +260,7 @@ export interface LoginResponse {
   tempToken?: string;
   email?: string;
   message?: string;
+  token?: string;
   onboardingState?: string;
 }
 
@@ -245,11 +272,12 @@ export async function loginAdmin(password: string, email?: string): Promise<Logi
 }
 
 export async function verifyLoginOtp(tempToken: string, otp: string): Promise<LoginResponse> {
-  const res = await request<LoginResponse & { csrfToken?: string }>('/auth/verify-login-otp', {
+  const res = await request<LoginResponse & { csrfToken?: string; token?: string }>('/auth/verify-login-otp', {
     method: 'POST',
     body: JSON.stringify({ tempToken, otp }),
   });
   if (res.csrfToken) setCsrfToken(res.csrfToken);
+  if (res.token) setAuthToken(res.token);
   return res;
 }
 
@@ -277,6 +305,7 @@ export async function resetPassword(email: string, otp: string, newPassword: str
 export async function logoutAdmin(): Promise<AdminSession> {
   const res = await request<AdminSession>('/auth/logout', { method: 'POST', body: '{}' });
   setCsrfToken(null);
+  setAuthToken(null);
   return res;
 }
 
@@ -288,17 +317,19 @@ export async function requestSuperAdminOtp(email: string): Promise<{ success: bo
 }
 
 export async function verifySuperAdminOtp(email: string, otp: string): Promise<LoginResponse> {
-  const res = await request<LoginResponse & { csrfToken?: string }>('/auth/admin/verify-otp', {
+  const res = await request<LoginResponse & { csrfToken?: string; token?: string }>('/auth/admin/verify-otp', {
     method: 'POST',
     body: JSON.stringify({ email, otp }),
   });
   if (res.csrfToken) setCsrfToken(res.csrfToken);
+  if (res.token) setAuthToken(res.token);
   return res;
 }
 
 export async function logoutSuperAdmin(): Promise<AdminSession> {
   const res = await request<AdminSession>('/auth/admin/logout', { method: 'POST', body: '{}' });
   setCsrfToken(null);
+  setAuthToken(null);
   return res;
 }
 

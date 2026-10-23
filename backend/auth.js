@@ -174,7 +174,8 @@ export async function enforceAuth(req) {
 
 export async function enforceSuperAdmin(req) {
   const cookies = parse(req.headers.cookie || '');
-  const adminToken = cookies['menusqr_admin_session'];
+  const bearerToken = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null;
+  const adminToken = cookies['menusqr_admin_session'] || bearerToken;
   
   if (adminToken) {
     const adminUser = await verifyAdminSession(adminToken);

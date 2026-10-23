@@ -181,7 +181,7 @@ export default async function authRoutes(request, response, url) {
       'Set-Cookie': [adminCookie, csrfCookie],
       'Cache-Control': 'no-store'
     });
-    response.end(JSON.stringify({ authenticated: true, role: 'SUPER_ADMIN', email: result.email, csrfToken }));
+    response.end(JSON.stringify({ authenticated: true, role: 'SUPER_ADMIN', email: result.email, token: result.token, csrfToken }));
     return true;
   }
 
@@ -189,7 +189,8 @@ export default async function authRoutes(request, response, url) {
     const { stringifySetCookie: serialize, parseCookie: parse } = await import('cookie');
     const { createClearedCsrfCookie } = await import('../csrf.js');
     const cookies = parse(request.headers.cookie || '');
-    const adminToken = cookies['menusqr_admin_session'];
+    const bearerToken = request.headers.authorization?.startsWith('Bearer ') ? request.headers.authorization.split(' ')[1] : null;
+    const adminToken = cookies['menusqr_admin_session'] || bearerToken;
     if (adminToken) {
       const { clearAdminSession } = await import('../adminAuth.js');
       await clearAdminSession(adminToken);
@@ -211,10 +212,11 @@ export default async function authRoutes(request, response, url) {
     let sessionToken = null;
     const { parseCookie: parse } = await import('cookie');
     const cookies = parse(request.headers.cookie || '');
-    sessionToken = cookies['menusqr_auth'] || null;
+    const bearerToken = request.headers.authorization?.startsWith('Bearer ') ? request.headers.authorization.split(' ')[1] : null;
+    sessionToken = cookies['menusqr_auth'] || bearerToken || null;
 
     if (!user) {
-      const adminToken = cookies['menusqr_admin_session'];
+      const adminToken = cookies['menusqr_admin_session'] || bearerToken;
       if (adminToken) {
         const { verifyAdminSession } = await import('../adminAuth.js');
         const adminUser = await verifyAdminSession(adminToken);
@@ -399,6 +401,7 @@ export default async function authRoutes(request, response, url) {
       authenticated: true,
       role: sessionUser.role,
       user: sessionUser,
+      token: sessionToken,
       onboardingState: dbUser.onboarding_state,
       csrfToken,
     }));
