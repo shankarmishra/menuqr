@@ -377,7 +377,8 @@ export default async function publicRoutes(request, response, url) {
           total, 
           status, 
           rejection_reason as "rejectionReason",
-          tracking_token as "trackingToken",
+          tracking_token as "trackingToken", estimated_time_minutes as "estimatedTimeMinutes",
+          estimated_delivery_time as "estimatedDeliveryTime",
           created_at as time
         FROM customer_orders
         WHERE tenant_id = $1 AND idempotency_key = $2
@@ -618,6 +619,8 @@ export default async function publicRoutes(request, response, url) {
          total, 
          status, 
          tracking_token as "trackingToken",
+         estimated_time_minutes as "estimatedTimeMinutes",
+         estimated_delivery_time as "estimatedDeliveryTime",
          created_at as time`,
       [
         orderId, 
@@ -657,7 +660,8 @@ export default async function publicRoutes(request, response, url) {
           total, 
           status, 
           rejection_reason as "rejectionReason",
-          tracking_token as "trackingToken",
+          tracking_token as "trackingToken", estimated_time_minutes as "estimatedTimeMinutes",
+          estimated_delivery_time as "estimatedDeliveryTime",
           created_at as time
         FROM customer_orders
         WHERE tenant_id = $1 AND idempotency_key = $2
