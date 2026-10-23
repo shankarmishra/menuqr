@@ -269,13 +269,13 @@ export default async function authRoutes(request, response, url) {
       throw apiError(401, 'Incorrect credentials.');
     }
 
+    const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
+    const dbUser = dbRes.rows[0];
+
     const { isApprovedAdminEmail } = await import('../adminAuth.js');
     if (isApprovedAdminEmail(normalizedEmail) && (!dbUser || dbUser.role === 'SUPER_ADMIN')) {
       throw apiError(400, 'This is an Admin account. Please log in at https://admin.menusqr.in/login');
     }
-
-    const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
-    const dbUser = dbRes.rows[0];
 
     const compoundKey = `${normalizedEmail}:${address}`;
     const attempt = clientLoginAttempts.get(compoundKey) || ipAttempt;
