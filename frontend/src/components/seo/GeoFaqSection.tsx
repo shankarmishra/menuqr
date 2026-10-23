@@ -26,7 +26,7 @@ export const DEFAULT_GEO_FAQS: GeoFaqItem[] = [
   },
   {
     question: "Which plan supports ordering?",
-    answer: "Direct customer table ordering is included in the Premium plan (₹2,999/year). It enables customers to add items to a cart, submit orders directly from their table, and notify the restaurant reception instantly."
+    answer: "Direct customer table ordering is included in the Premium plan (₹1,399/month or ₹8,499/year). It enables customers to add items to a cart, submit orders directly from their table, and notify the restaurant reception instantly."
   },
   {
     question: "Can customers order from the QR menu?",

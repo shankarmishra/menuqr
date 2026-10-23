@@ -500,20 +500,22 @@ const spaRoutes = [
   '/admin',
 ];
 
+const cleanSpaTemplate = template.replace(/<div id="root">[\s\S]*?<\/div>/, '<div id="root"></div>');
+
 spaRoutes.forEach((routePath) => {
   const cleanPath = routePath.slice(1);
   const targetDir = path.join(DIST_DIR, cleanPath);
   fs.mkdirSync(targetDir, { recursive: true });
-  fs.writeFileSync(path.join(targetDir, 'index.html'), template, 'utf-8');
+  fs.writeFileSync(path.join(targetDir, 'index.html'), cleanSpaTemplate, 'utf-8');
 
   // Also write direct .html file for Vercel cleanUrls compatibility
   const htmlFilePath = path.join(DIST_DIR, `${cleanPath}.html`);
   fs.mkdirSync(path.dirname(htmlFilePath), { recursive: true });
-  fs.writeFileSync(htmlFilePath, template, 'utf-8');
+  fs.writeFileSync(htmlFilePath, cleanSpaTemplate, 'utf-8');
 });
 
 // Also create 404.html with noindex for Vercel
-let html404 = template;
+let html404 = cleanSpaTemplate;
 html404 = html404.replace(/<title>.*?<\/title>/gi, `<title>404 - Page Not Found | MenusQR</title>`);
 html404 = html404.replace(/<meta name="description" content=".*?" \/>/gi, `<meta name="description" content="The page you requested could not be found." />`);
 html404 = html404.replace('</head>', `<meta name="robots" content="noindex, nofollow" />\n</head>`);

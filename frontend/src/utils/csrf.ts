@@ -1,4 +1,5 @@
 import { parseApiResponse } from './api';
+import { getApiBaseUrl } from './apiBaseUrl';
 
 let activeCsrfToken: string | null = null;
 
@@ -26,7 +27,7 @@ export async function ensureCsrfToken(): Promise<string | null> {
   if (existing) return existing;
 
   try {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
+    const apiBaseUrl = getApiBaseUrl();
     const res = await fetch(`${apiBaseUrl}/api/auth/session`, { credentials: 'include' });
     if (res.ok) {
       const data = await parseApiResponse<{ csrfToken?: string }>(res);

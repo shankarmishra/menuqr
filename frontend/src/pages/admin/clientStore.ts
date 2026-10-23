@@ -101,6 +101,7 @@ export interface AdminSession {
 const storageKey = 'menusqr.clients';
 import { ensureCsrfToken, setCsrfToken } from '../../utils/csrf';
 import { parseApiResponse } from '../../utils/api';
+import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 
 const draftStorageKey = 'menusqr.clientDrafts';
 const migrationStorageKey = 'menusqr.apiMigration.v1';
@@ -108,7 +109,7 @@ const migrationStorageKey = 'menusqr.apiMigration.v1';
 
 type ClientDraft = Omit<ClientRecord, 'id' | 'createdAt'>;
 let migrationPromise: Promise<void> | undefined;
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
+const apiBaseUrl = getApiBaseUrl();
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const method = (init?.method || 'GET').toUpperCase();

@@ -18,7 +18,7 @@ export default function QrCenter() {
   const [saving, setSaving] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<StickerThemeId>('menusqr-obsidian-gold');
+  const [selectedTheme, setSelectedTheme] = useState<StickerThemeId>('menusqr-flagship-standee');
   const [qrImage, setQrImage] = useState<string>('');
 
   const stickerRef = useRef<HTMLDivElement>(null);
@@ -230,8 +230,6 @@ export default function QrCenter() {
                 <div className="scale-90 sm:scale-95 transform-gpu transition-all">
                   <RoyalWalnutStickerCard
                     themeId={selectedTheme}
-                    headerText="SCAN FOR DIGITAL MENU"
-                    footerText="Point Camera to Scan Menu"
                     stickerRef={stickerRef}
                     restaurantName={restaurantName}
                     category={profile?.cuisine || 'FINE DINING & CULINARY EXCELLENCE'}
@@ -382,10 +380,9 @@ export default function QrCenter() {
             <div className="scale-95 sm:scale-100">
               <RoyalWalnutStickerCard
                 isModal={true}
-                headerText="Scan Me for Menu"
-                footerText="Scan to view our menu"
+                themeId={selectedTheme}
                 restaurantName={restaurantName}
-                category="DIGITAL MENU"
+                category={profile?.cuisine || 'DIGITAL MENU'}
                 menuUrl={menuUrl}
                 qrImage={qrImage}
                 showStatusBadge={true}

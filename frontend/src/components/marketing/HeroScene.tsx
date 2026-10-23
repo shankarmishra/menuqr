@@ -56,7 +56,7 @@ export default function HeroScene() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[480px] sm:h-[540px] md:h-[580px] lg:h-[620px] xl:h-[640px] flex items-center justify-center overflow-visible select-none"
+      className="relative w-full h-[430px] sm:h-[480px] md:h-[510px] lg:h-[540px] xl:h-[560px] flex items-center justify-center overflow-visible select-none"
     >
       {/* Background Layer: Real Restaurant Table Environment with soft edge blending */}
       <motion.div 
@@ -109,10 +109,10 @@ export default function HeroScene() {
             : { y: '0%', opacity: 1, x: isMobile ? '0%' : '18%', rotate: 0 }
         }
         transition={{ duration: shouldReduceMotion ? 0 : 1.1, type: 'spring', stiffness: 55, damping: 16 }}
-        className="absolute bottom-[2%] sm:bottom-[4%] md:bottom-[5%] lg:bottom-[6%] left-1/2 -translate-x-1/2 z-20 origin-bottom"
+        className="absolute bottom-[2%] sm:bottom-[3%] md:bottom-[3.5%] lg:bottom-[4%] left-1/2 -translate-x-1/2 z-20 origin-bottom"
       >
         <PremiumIPhoneMockup
-          className="w-[210px] sm:w-[230px] md:w-[245px] lg:w-[258px] xl:w-[268px]"
+          className="w-[190px] sm:w-[208px] md:w-[220px] lg:w-[232px] xl:w-[244px]"
           statusBarTheme="light"
           statusBarMode="overlay"
           badgeText="Live Digital Menu"
@@ -271,7 +271,7 @@ export default function HeroScene() {
                           </button>
                         </div>
                       </div>
-                      <div className="w-[58px] h-[58px] rounded-lg overflow-hidden shrink-0 bg-stone-100 border border-stone-200/80 shadow-xs relative">
+                      <div className="w-[48px] h-[48px] sm:w-[52px] sm:h-[52px] rounded-lg overflow-hidden shrink-0 bg-stone-100 border border-stone-200/80 shadow-xs relative">
                         <img
                           src="/uploads/mannat/hero_chaap.png"
                           alt="Tandoori Malai Chaap"
@@ -307,7 +307,7 @@ export default function HeroScene() {
                           </button>
                         </div>
                       </div>
-                      <div className="w-[58px] h-[58px] rounded-lg overflow-hidden shrink-0 bg-stone-100 border border-stone-200/80 shadow-xs relative">
+                      <div className="w-[48px] h-[48px] sm:w-[52px] sm:h-[52px] rounded-lg overflow-hidden shrink-0 bg-stone-100 border border-stone-200/80 shadow-xs relative">
                         <img
                           src="https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=200&auto=format&fit=crop&q=80"
                           alt="Murgh Makhani Royale"
@@ -340,7 +340,7 @@ export default function HeroScene() {
                           </button>
                         </div>
                       </div>
-                      <div className="w-[58px] h-[58px] rounded-lg overflow-hidden shrink-0 bg-stone-100 border border-stone-200/80 shadow-xs relative">
+                      <div className="w-[48px] h-[48px] sm:w-[52px] sm:h-[52px] rounded-lg overflow-hidden shrink-0 bg-stone-100 border border-stone-200/80 shadow-xs relative">
                         <img
                           src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=200&auto=format&fit=crop&q=80"
                           alt="Dal Makhani"

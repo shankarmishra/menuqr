@@ -45,7 +45,7 @@ export default function AboutPage() {
               <li><strong>Zero App Download Requirement:</strong> Diners scan standard phone cameras and view your menu instantly in their web browser.</li>
               <li><strong>Permanent QR Guarantee:</strong> Your table codes never change when you modify prices or dish availability.</li>
               <li><strong>Direct Table QR Ordering:</strong> Upgrade to Premium to receive orders directly from table guests to your kitchen reception screen.</li>
-              <li><strong>Transparent Pricing:</strong> Simple yearly plans starting at ₹999/year with zero hidden fees.</li>
+              <li><strong>Transparent Pricing:</strong> Simple plans starting at ₹699/month (₹2,499/year) with zero hidden fees.</li>
             </ul>
           </section>
 

@@ -68,7 +68,7 @@ export default function PurchaseReviewPage() {
           <div className="flex justify-between items-center pb-6 border-b border-gray-100">
             <div>
               <h2 className="text-xl font-bold text-[#151C19]">{order.planLabel || order.plan_id} Plan</h2>
-              <p className="text-sm text-[#151C19]/60">Annual Subscription</p>
+              <p className="text-sm text-[#151C19]/60">{order.billingCycle === "monthly" ? "Monthly Subscription" : "Annual Subscription"}</p>
             </div>
             <div className="text-right">
               <span className="text-2xl font-black text-[#151C19]">₹{order.amount}</span>

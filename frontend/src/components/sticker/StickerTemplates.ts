@@ -1,8 +1,13 @@
-export type StickerThemeId = 
-  | 'menusqr-obsidian-gold' 
-  | 'menusqr-walnut-gold' 
-  | 'menusqr-emerald-gold' 
-  | 'menusqr-ruby-gold' 
+export type StickerThemeId =
+  | 'menusqr-flagship-standee'
+  | 'menusqr-tandoor-fire'
+  | 'menusqr-herb-garden'
+  | 'menusqr-neon-bites'
+  // Legacy aliases for backward compatibility
+  | 'menusqr-obsidian-gold'
+  | 'menusqr-walnut-gold'
+  | 'menusqr-emerald-gold'
+  | 'menusqr-ruby-gold'
   | 'menusqr-marble-gold';
 
 export interface StickerTemplate {
@@ -11,42 +16,40 @@ export interface StickerTemplate {
   subtitle: string;
   accentColor: string;
   previewBg: string;
+  category: string;
 }
 
 export const STICKER_TEMPLATES: StickerTemplate[] = [
   {
-    id: 'menusqr-obsidian-gold',
-    name: 'Imperial Obsidian',
-    subtitle: 'Satin Titanium & 24K Gold Foil',
+    id: 'menusqr-flagship-standee',
+    name: 'Flagship Culinary Standee',
+    subtitle: 'Physical Walnut & Gold Standee, Sizzling Skillet & Spices',
     accentColor: '#D4AF37',
-    previewBg: 'linear-gradient(135deg, #0A0D0B 0%, #171E1A 100%)',
+    previewBg: 'linear-gradient(135deg, #1C1209 0%, #D4AF37 50%, #825E12 100%)',
+    category: 'Flagship Table Standee',
   },
   {
-    id: 'menusqr-walnut-gold',
-    name: 'Royal Heritage Walnut',
-    subtitle: 'Italian Burl Walnut & Antique Brass',
-    accentColor: '#DFB15B',
-    previewBg: 'linear-gradient(135deg, #2D180C 0%, #4A2B19 100%)',
+    id: 'menusqr-tandoor-fire',
+    name: 'Tandoor Fire',
+    subtitle: 'Smoky Charcoal, Saffron & Spiced Ember Hearth',
+    accentColor: '#E88328',
+    previewBg: 'linear-gradient(135deg, #18120E 0%, #D83A20 60%, #E88328 100%)',
+    category: 'Indian & Flame Grill',
   },
   {
-    id: 'menusqr-emerald-gold',
-    name: 'Emerald Palace',
-    subtitle: 'Royal British Velvet & Gold Leaf',
-    accentColor: '#E5C158',
-    previewBg: 'linear-gradient(135deg, #061A11 0%, #0D3322 100%)',
+    id: 'menusqr-herb-garden',
+    name: 'Herb Garden',
+    subtitle: 'Artisan Linen, Botanical Sage & Forest Flora',
+    accentColor: '#2D5E3C',
+    previewBg: 'linear-gradient(135deg, #FAF7F0 0%, #E2ECE5 50%, #2D5E3C 100%)',
+    category: 'Bistro, Café & Farm-to-Table',
   },
   {
-    id: 'menusqr-ruby-gold',
-    name: 'Ruby Royale',
-    subtitle: 'Vintage Bordeaux & Champagne Gold',
-    accentColor: '#E6BC65',
-    previewBg: 'linear-gradient(135deg, #22060C 0%, #3D0D18 100%)',
-  },
-  {
-    id: 'menusqr-marble-gold',
-    name: 'Carrara Marble',
-    subtitle: 'Italian Porcelain & Brushed Rose Gold',
-    accentColor: '#C49A6C',
-    previewBg: 'linear-gradient(135deg, #ECECEE 0%, #FFFFFF 100%)',
+    id: 'menusqr-neon-bites',
+    name: 'Neon Bites',
+    subtitle: 'Jet Slate, Electric Cyber Citrus & Hot Coral',
+    accentColor: '#00F0FF',
+    previewBg: 'linear-gradient(135deg, #0A0B0E 0%, #1A1F2C 50%, #FF3366 100%)',
+    category: 'Street Food & Gastro-Bar',
   },
 ];

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { setCsrfToken, getCsrfToken } from '../utils/csrf';
 import { parseApiResponse } from '../utils/api';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 type User = {
   id: string;
@@ -23,7 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
+      const apiBaseUrl = getApiBaseUrl();
       const response = await fetch(`${apiBaseUrl}/api/auth/session`, {
         credentials: 'include',
       });
@@ -52,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
+      const apiBaseUrl = getApiBaseUrl();
       const csrfToken = getCsrfToken();
       await fetch(`${apiBaseUrl}/api/auth/logout`, {
         method: 'POST',

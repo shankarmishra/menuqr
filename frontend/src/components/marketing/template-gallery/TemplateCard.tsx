@@ -20,7 +20,7 @@ interface TemplateCardProps {
   style?: React.CSSProperties;
 }
 
-function TemplatePhonePreview({
+export function TemplatePhonePreview({
   template,
   theme,
   isDark,

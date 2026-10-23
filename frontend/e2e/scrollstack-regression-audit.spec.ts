@@ -74,6 +74,10 @@ test.describe('ScrollStack Deep Regression & Correctness Audit', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${baseURL}/`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2500);
+    const loader = page.locator('div[role="status"][aria-label="Loading MenusQR"]');
+    if (await loader.isVisible()) {
+      await loader.waitFor({ state: 'detached', timeout: 6000 }).catch(() => {});
+    }
 
     const templatesSection = page.locator('#templates');
     const galleryHeader = page.getByRole('heading', { name: /Menus with a/i });
@@ -122,6 +126,10 @@ test.describe('ScrollStack Deep Regression & Correctness Audit', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto(`${baseURL}/`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2500);
+    const loader = page.locator('div[role="status"][aria-label="Loading MenusQR"]');
+    if (await loader.isVisible()) {
+      await loader.waitFor({ state: 'detached', timeout: 6000 }).catch(() => {});
+    }
 
     const templatesSection = page.locator('#templates');
     const galleryHeader = page.getByRole('heading', { name: /Menus with a/i });
@@ -166,6 +174,10 @@ test.describe('ScrollStack Deep Regression & Correctness Audit', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto(`${baseURL}/`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2500);
+    const loader = page.locator('div[role="status"][aria-label="Loading MenusQR"]');
+    if (await loader.isVisible()) {
+      await loader.waitFor({ state: 'detached', timeout: 6000 }).catch(() => {});
+    }
 
     const templatesSection = page.locator('#templates');
     await templatesSection.scrollIntoViewIfNeeded();
@@ -201,6 +213,10 @@ test.describe('ScrollStack Deep Regression & Correctness Audit', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${baseURL}/`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2500);
+    const loader = page.locator('div[role="status"][aria-label="Loading MenusQR"]');
+    if (await loader.isVisible()) {
+      await loader.waitFor({ state: 'detached', timeout: 6000 }).catch(() => {});
+    }
 
     const templatesSection = page.locator('#templates');
     await templatesSection.scrollIntoViewIfNeeded();
@@ -237,6 +253,10 @@ test.describe('ScrollStack Deep Regression & Correctness Audit', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${baseURL}/`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2500);
+    const loader = page.locator('div[role="status"][aria-label="Loading MenusQR"]');
+    if (await loader.isVisible()) {
+      await loader.waitFor({ state: 'detached', timeout: 6000 }).catch(() => {});
+    }
 
     const templatesSection = page.locator('#templates');
     await templatesSection.scrollIntoViewIfNeeded();

@@ -18,14 +18,14 @@ export default function PricingSection() {
           {/* Basic */}
           <Link to="/purchase/details?plan=basic" className="block group bg-white border border-gray-200 rounded-3xl p-8 hover:shadow-xl transition-all">
             <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-[#e8783c] transition-colors">Basic</h3>
-            <div className="text-lg font-semibold text-gray-600 mb-6">₹999/YR</div>
+            <div className="text-lg font-semibold text-gray-600 mb-6">₹699/MO <span className="text-sm font-normal text-gray-500">(₹2,499/YR)</span></div>
             <p className="text-sm text-gray-500 font-medium">Digital menu with 1 included edit.</p>
           </Link>
 
           {/* Intermediate */}
           <Link to="/purchase/details?plan=intermediate" className="block group bg-white border border-gray-200 rounded-3xl p-8 hover:shadow-xl transition-all">
             <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-[#e8783c] transition-colors">Intermediate</h3>
-            <div className="text-lg font-semibold text-gray-600 mb-6">₹1,499/YR</div>
+            <div className="text-lg font-semibold text-gray-600 mb-6">₹1,199/MO <span className="text-sm font-normal text-gray-500">(₹3,999/YR)</span></div>
             <p className="text-sm text-gray-500 font-medium">Multiple templates and unlimited edits.</p>
           </Link>
 
@@ -35,7 +35,7 @@ export default function PricingSection() {
               <Sparkles size={12} /> Best Value
             </div>
             <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-[#e8783c] transition-colors">Premium</h3>
-            <div className="text-lg font-semibold text-gray-400 mb-6">₹2,999/YR</div>
+            <div className="text-lg font-semibold text-gray-400 mb-6">₹1,399/MO <span className="text-sm font-normal text-gray-300">(₹8,499/YR)</span></div>
             <p className="text-sm text-gray-300 font-medium">Full interactive menu with table ordering.</p>
           </Link>
         </div>

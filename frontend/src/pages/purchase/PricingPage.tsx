@@ -1,20 +1,25 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SiteHeader from '../../components/marketing/SiteHeader';
 import SiteFooter from '../../components/marketing/SiteFooter';
-import { Check } from 'lucide-react';
+import { Check, Sparkles } from 'lucide-react';
 import { SEO } from '../../seo/SEO';
 import BreadcrumbNav from '../../components/seo/BreadcrumbNav';
 import GeoFaqSection from '../../components/seo/GeoFaqSection';
 import { getBreadcrumbSchema, getOrganizationSchema } from '../../seo/structuredData';
 
 export default function PricingPage() {
+  const [billingCycle, setBillingCycle] = useState<'yearly' | 'monthly'>('yearly');
   const breadcrumbs = [{ name: 'Plans & Pricing', path: '/plans' }];
 
   const plans = [
     {
       id: 'basic',
       name: 'BASIC',
-      price: '₹999',
+      monthlyPrice: '₹699',
+      yearlyPrice: '₹2,499',
+      savings: 'Save 70%',
+      effectiveMonthly: '₹208/mo when billed yearly',
       description: 'Perfect for small cafes and food stalls starting their digital journey.',
       features: [
         'Permanent Table QR Code',
@@ -30,7 +35,10 @@ export default function PricingPage() {
     {
       id: 'intermediate',
       name: 'INTERMEDIATE',
-      price: '₹1499',
+      monthlyPrice: '₹1,199',
+      yearlyPrice: '₹3,999',
+      savings: 'Save 72%',
+      effectiveMonthly: '₹333/mo when billed yearly',
       description: 'Ideal for growing restaurants needing more flexibility and style.',
       features: [
         'Permanent Table QR Code',
@@ -47,7 +55,10 @@ export default function PricingPage() {
     {
       id: 'premium',
       name: 'PREMIUM',
-      price: '₹2999',
+      monthlyPrice: '₹1,399',
+      yearlyPrice: '₹8,499',
+      savings: 'Save 49%',
+      effectiveMonthly: '₹708/mo when billed yearly',
       description: 'Everything you need to run a world-class digital menu for your restaurant.',
       features: [
         'Permanent Table QR Code',
@@ -68,7 +79,7 @@ export default function PricingPage() {
       <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="MenusQR Pricing | Digital Menu Plans for Restaurants"
-        description="View MenusQR pricing plans. Basic ₹999/year, Intermediate ₹1499/year, and Premium ₹2999/year. Create your digital restaurant QR menu today."
+        description="View MenusQR pricing plans. Basic from ₹699/mo (₹2,499/yr), Intermediate from ₹1,199/mo (₹3,999/yr), and Premium from ₹1,399/mo (₹8,499/yr). Create your digital restaurant QR menu today."
         canonicalUrl="/plans"
         schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs)]}
       />
@@ -77,68 +88,118 @@ export default function PricingPage() {
       <main className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
-        <div className="text-center mb-16 max-w-3xl mx-auto">
+        <div className="text-center mb-10 max-w-3xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-extrabold text-[#151C19] tracking-tight mb-4">
             Simple Digital Menu Plans for Restaurants
           </h1>
           <p className="text-lg text-[#53615a] font-medium">
-            One permanent table QR code. Unlimited menu updates. Transparent yearly pricing for every food business.
+            One permanent table QR code. Unlimited menu updates. Transparent pricing for every food business.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
-          {plans.map((plan) => (
-            <div 
-              key={plan.id}
-              className={`bg-white rounded-3xl shadow-xl border overflow-hidden flex flex-col ${
-                plan.highlight ? 'border-[#E8783C] ring-2 ring-[#E8783C]/20 relative transform md:-translate-y-4' : 'border-gray-100'
+        {/* Monthly vs Yearly Toggle */}
+        <div className="flex justify-center items-center mb-14">
+          <div className="bg-gray-200/80 p-1.5 rounded-full inline-flex items-center shadow-inner">
+            <button
+              type="button"
+              onClick={() => setBillingCycle('monthly')}
+              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                billingCycle === 'monthly'
+                  ? 'bg-white text-[#151C19] shadow-sm'
+                  : 'text-[#151C19]/60 hover:text-[#151C19]'
               }`}
             >
-              {plan.highlight && (
-                <div className="bg-[#E8783C] text-white text-center py-2 text-sm font-bold tracking-wider">
-                  MOST POPULAR
-                </div>
-              )}
-              <div className="p-8 md:p-10 flex-grow flex flex-col">
-                <div className={`inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-6 w-max ${
-                  plan.highlight ? 'bg-[#E8783C]/10 text-[#E8783C]' : 'bg-gray-100 text-gray-700'
-                }`}>
-                  YEARLY {plan.name}
-                </div>
-                <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-5xl font-black text-[#151C19]">{plan.price}</span>
-                  <span className="text-[#151C19]/60 font-medium">/ year</span>
-                </div>
-                <p className="text-[#151C19]/70 mb-8 pb-8 border-b border-gray-100 min-h-[80px]">
-                  {plan.description}
-                </p>
-                
-                <ul className="space-y-5 mb-10 flex-grow">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-3 text-[#151C19]/80 font-medium">
-                      <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 ${
-                        plan.highlight ? 'bg-[#E8783C]/10' : 'bg-gray-100'
-                      }`}>
-                        <Check size={14} className={plan.highlight ? 'text-[#E8783C]' : 'text-gray-600'} strokeWidth={3} />
-                      </span>
-                      <span className="leading-tight">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+              Monthly Billing
+            </button>
+            <button
+              type="button"
+              onClick={() => setBillingCycle('yearly')}
+              className={`px-6 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 transition-all ${
+                billingCycle === 'yearly'
+                  ? 'bg-[#E8783C] text-white shadow-sm'
+                  : 'text-[#151C19]/60 hover:text-[#151C19]'
+              }`}
+            >
+              <span>Yearly Billing</span>
+              <span className="bg-white/20 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
+                <Sparkles size={11} /> Save Up to 72%
+              </span>
+            </button>
+          </div>
+        </div>
 
-                <Link
-                  to={`/purchase/details?plan=${plan.id}`}
-                  className={`block w-full text-center py-4 rounded-2xl font-bold text-lg transition-colors mt-auto ${
-                    plan.highlight 
-                      ? 'bg-[#E8783C] hover:bg-[#d66a30] text-white' 
-                      : 'bg-gray-100 hover:bg-gray-200 text-[#151C19]'
-                  }`}
-                >
-                  Get Started Now
-                </Link>
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+          {plans.map((plan) => {
+            const currentPrice = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
+            const periodLabel = billingCycle === 'yearly' ? '/ year' : '/ month';
+
+            return (
+              <div 
+                key={plan.id}
+                className={`bg-white rounded-3xl shadow-xl border overflow-hidden flex flex-col ${
+                  plan.highlight ? 'border-[#E8783C] ring-2 ring-[#E8783C]/20 relative transform md:-translate-y-4' : 'border-gray-100'
+                }`}
+              >
+                {plan.highlight && (
+                  <div className="bg-[#E8783C] text-white text-center py-2 text-sm font-bold tracking-wider">
+                    MOST POPULAR
+                  </div>
+                )}
+                <div className="p-8 md:p-10 flex-grow flex flex-col">
+                  <div className={`inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-6 w-max ${
+                    plan.highlight ? 'bg-[#E8783C]/10 text-[#E8783C]' : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {billingCycle === 'yearly' ? 'YEARLY' : 'MONTHLY'} {plan.name}
+                  </div>
+
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-5xl font-black text-[#151C19]">{currentPrice}</span>
+                    <span className="text-[#151C19]/60 font-medium">{periodLabel}</span>
+                  </div>
+
+                  {billingCycle === 'yearly' ? (
+                    <div className="text-xs font-semibold text-emerald-600 mb-6 flex items-center gap-1.5">
+                      <span className="bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">{plan.savings}</span>
+                      <span className="text-gray-400">•</span>
+                      <span className="text-gray-500 font-medium">{plan.effectiveMonthly}</span>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-500 mb-6">
+                      Billed monthly, cancel anytime
+                    </div>
+                  )}
+
+                  <p className="text-[#151C19]/70 mb-8 pb-8 border-b border-gray-100 min-h-[80px]">
+                    {plan.description}
+                  </p>
+                  
+                  <ul className="space-y-5 mb-10 flex-grow">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-3 text-[#151C19]/80 font-medium">
+                        <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 ${
+                          plan.highlight ? 'bg-[#E8783C]/10' : 'bg-gray-100'
+                        }`}>
+                          <Check size={14} className={plan.highlight ? 'text-[#E8783C]' : 'text-gray-600'} strokeWidth={3} />
+                        </span>
+                        <span className="leading-tight">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    to={`/purchase/details?plan=${plan.id}&billing=${billingCycle}`}
+                    className={`block w-full text-center py-4 rounded-2xl font-bold text-lg transition-colors mt-auto ${
+                      plan.highlight 
+                        ? 'bg-[#E8783C] hover:bg-[#d66a30] text-white' 
+                        : 'bg-gray-100 hover:bg-gray-200 text-[#151C19]'
+                    }`}
+                  >
+                    Get Started Now
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Optional Add-Ons Section */}
@@ -165,7 +226,7 @@ export default function PricingPage() {
                 <span className="text-sm text-[#53615a] font-medium"> / year</span>
               </div>
               <Link
-                to="/purchase/details?plan=intermediate"
+                to={`/purchase/details?plan=intermediate&billing=${billingCycle}`}
                 className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-sm bg-[#151C19] hover:bg-[#25322d] text-white transition-colors shadow-sm"
               >
                 Select at Checkout

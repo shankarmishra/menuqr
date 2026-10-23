@@ -10,9 +10,9 @@ import { invalidatePublicMenuCache } from './public.js';
 // PLAN CONFIG — prices NEVER come from the frontend
 // ---------------------------------------------------------------------------
 export const PLANS = {
-  basic:        { price: 999,  label: 'Basic',        features: ['1 QR Code', 'Unlimited menu views', 'Up to 50 items', 'Basic templates', 'Email support'] },
-  intermediate: { price: 1499, label: 'Intermediate', features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', 'Priority support', 'Analytics dashboard'] },
-  premium:      { price: 2999, label: 'Premium',      features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', '24/7 support', 'Analytics dashboard', 'Table ordering', 'Live orders panel', 'Reception workflow'] },
+  basic:        { price: 2499, monthlyPrice: 699,  yearlyPrice: 2499, label: 'Basic',        features: ['1 QR Code', 'Unlimited menu views', 'Up to 50 items', 'Basic templates', 'Email support'] },
+  intermediate: { price: 3999, monthlyPrice: 1199, yearlyPrice: 3999, label: 'Intermediate', features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', 'Priority support', 'Analytics dashboard'] },
+  premium:      { price: 8499, monthlyPrice: 1399, yearlyPrice: 8499, label: 'Premium',      features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', '24/7 support', 'Analytics dashboard', 'Table ordering', 'Live orders panel', 'Reception workflow'] },
 };
 
 // ---------------------------------------------------------------------------
@@ -434,8 +434,14 @@ export async function processOrderPaymentAndProvision({
       }
 
       // ── 3. Create subscription ──────────────────────────────────────────
+      const orderMeta = order.metadata || {};
+      const isMonthly = orderMeta.billing_cycle === 'monthly';
       const expiresAt = new Date();
-      expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+      if (isMonthly) {
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
+      } else {
+        expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+      }
       const subscriptionId = randomUUID();
       await client.query(
         `INSERT INTO subscriptions
@@ -761,8 +767,10 @@ export default async function purchaseRoutes(request, response, url) {
       throw apiError(400, 'This coupon code has expired.');
     }
 
+    const isMonthly = String(input.billingCycle || '').toLowerCase() === 'monthly';
+    const basePrice = isMonthly ? plan.monthlyPrice : (plan.yearlyPrice || plan.price);
     const { calculateDiscount } = await import('../coupons.js');
-    const discountCalc = calculateDiscount(plan.price, coupon.discount_pct);
+    const discountCalc = calculateDiscount(basePrice, coupon.discount_pct);
 
     sendJson(response, 200, {
       valid: true,
@@ -879,9 +887,12 @@ export default async function purchaseRoutes(request, response, url) {
       orderId = `order_${randomUUID().replace(/-/g, '').substring(0, 16)}`;
     }
 
+    const isMonthly = String(input.billingCycle || '').toLowerCase() === 'monthly';
+    const planBasePrice = isMonthly ? plan.monthlyPrice : (plan.yearlyPrice || plan.price);
+
     // Authoritative total calculations: coupon applies strictly to base plan; add-on added cleanly
-    let finalAmount = plan.price + addonAmount;
-    let originalAmount = plan.price + addonAmount;
+    let finalAmount = planBasePrice + addonAmount;
+    let originalAmount = planBasePrice + addonAmount;
     let discountPct = null;
     let discountAmount = null;
     let validCouponCode = null;
@@ -896,9 +907,9 @@ export default async function purchaseRoutes(request, response, url) {
         planId: planKey.toUpperCase(),
         orderId,
       });
-      const calc = calculateDiscount(plan.price, reservedCoupon.discount_pct);
-      finalAmount = (plan.price - calc.discountAmount) + addonAmount;
-      originalAmount = plan.price + addonAmount;
+      const calc = calculateDiscount(planBasePrice, reservedCoupon.discount_pct);
+      finalAmount = (planBasePrice - calc.discountAmount) + addonAmount;
+      originalAmount = planBasePrice + addonAmount;
       discountPct = calc.discountPct;
       discountAmount = calc.discountAmount;
       validCouponCode = reservedCoupon.code;
@@ -958,12 +969,15 @@ export default async function purchaseRoutes(request, response, url) {
       }
     }
 
-    let metadataJSON = null;
+    const metadataObj = {
+      billing_cycle: isMonthly ? 'monthly' : 'yearly',
+    };
     if (input.password) {
       const { hashPassword } = await import('../auth.js');
       const pwdHash = await hashPassword(input.password);
-      metadataJSON = JSON.stringify({ password_hash: pwdHash });
+      metadataObj.password_hash = pwdHash;
     }
+    const metadataJSON = JSON.stringify(metadataObj);
 
     if (isReuse) {
       await pool.query(
@@ -1035,6 +1049,7 @@ export default async function purchaseRoutes(request, response, url) {
       planFeatures: planMeta.features,
       selectedAddons: order.selected_addons || [],
       addonAmount: Number(order.addon_amount || 0),
+      billingCycle: order.metadata?.billing_cycle || 'yearly',
     });
     return true;
   }

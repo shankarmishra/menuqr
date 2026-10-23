@@ -20,7 +20,7 @@ interface Props {
 }
 
 export default function MenusQRStickerGenerator({ client, menuUrl, qrImage }: Props) {
-  const [templateId, setTemplateId] = useState<StickerThemeId>('menusqr-obsidian-gold');
+  const [templateId, setTemplateId] = useState<StickerThemeId>('menusqr-flagship-standee');
   const [copied, setCopied] = useState(false);
   const stickerRef = useRef<HTMLDivElement>(null);
   

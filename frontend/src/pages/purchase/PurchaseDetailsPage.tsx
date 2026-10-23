@@ -3,19 +3,22 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import SiteHeader from '../../components/marketing/SiteHeader';
 import { AlertCircle, CheckCircle2, ChevronRight, ShieldCheck, MapPin, Star, ExternalLink } from 'lucide-react';
 
-const PLANS: Record<string, { price: number; label: string; features: string[] }> = {
+const PLANS: Record<string, { monthlyPrice: number; yearlyPrice: number; label: string; features: string[] }> = {
   basic: {
-    price: 999,
+    monthlyPrice: 699,
+    yearlyPrice: 2499,
     label: 'Basic',
     features: ['1 QR Code', 'Unlimited menu views', 'Up to 50 items', 'Basic templates', 'Email support']
   },
   intermediate: {
-    price: 1499,
+    monthlyPrice: 1199,
+    yearlyPrice: 3999,
     label: 'Intermediate',
     features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', 'Priority support', 'Analytics dashboard']
   },
   premium: {
-    price: 2999,
+    monthlyPrice: 1399,
+    yearlyPrice: 8499,
     label: 'Premium',
     features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', '24/7 support', 'Analytics dashboard', 'Table ordering']
   }
@@ -60,6 +63,8 @@ export default function PurchaseDetailsPage() {
   const [gettingLocation, setGettingLocation] = useState(false);
   const [error, setError] = useState('');
   const [planId] = useState(initialPlan);
+  const initialBilling = (searchParams.get('billing') || 'yearly').toLowerCase() === 'monthly' ? 'monthly' : 'yearly';
+  const [billingCycle, setBillingCycle] = useState<'yearly' | 'monthly'>(initialBilling);
 
   const [formData, setFormData] = useState({
     customerName: '',
@@ -266,6 +271,7 @@ export default function PurchaseDetailsPage() {
         body: JSON.stringify({
           code: formData.couponCode.trim(),
           planId: planId.toUpperCase(),
+          billingCycle,
         }),
       });
       const data = await res.json();
@@ -329,6 +335,7 @@ export default function PurchaseDetailsPage() {
         body: JSON.stringify({
           ...formData,
           planId: planId.toUpperCase(),
+          billingCycle,
           currency: 'INR',
           couponCode: couponApplied?.code || formData.couponCode || null,
           selectedAddons: isGoogleReviewsSelected ? ['google_reviews'] : [],
@@ -375,7 +382,7 @@ export default function PurchaseDetailsPage() {
 
   const plan = PLANS[planId] || PLANS['premium'];
   const addonPrice = isGoogleReviewsSelected ? addonInfo.price : 0;
-  const basePlanPrice = plan.price;
+  const basePlanPrice = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
   const planDiscountedPrice = couponApplied ? couponApplied.finalAmount : basePlanPrice;
   const finalPayablePrice = planDiscountedPrice + addonPrice;
 
@@ -908,16 +915,50 @@ export default function PurchaseDetailsPage() {
                   <h4 className="text-2xl font-black text-[#151C19]">{plan.label}</h4>
                 </div>
                 <div className="text-right">
-                  <span className="text-xl font-bold text-[#151C19]">₹{plan.price}</span>
-                  <span className="text-[#151C19]/60 font-medium text-xs block">/ year</span>
+                  <span className="text-xl font-bold text-[#151C19]">₹{basePlanPrice}</span>
+                  <span className="text-[#151C19]/60 font-medium text-xs block">
+                    {billingCycle === 'yearly' ? '/ year' : '/ month'}
+                  </span>
                 </div>
+              </div>
+
+              {/* Billing Cycle Toggle in Order Summary */}
+              <div className="bg-gray-100 p-1 rounded-xl flex items-center mb-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBillingCycle('yearly');
+                    setCouponApplied(null);
+                  }}
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                    billingCycle === 'yearly'
+                      ? 'bg-white text-[#151C19] shadow-sm'
+                      : 'text-gray-500 hover:text-gray-900'
+                  }`}
+                >
+                  Yearly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBillingCycle('monthly');
+                    setCouponApplied(null);
+                  }}
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                    billingCycle === 'monthly'
+                      ? 'bg-white text-[#151C19] shadow-sm'
+                      : 'text-gray-500 hover:text-gray-900'
+                  }`}
+                >
+                  Monthly
+                </button>
               </div>
 
               {/* Price Breakdown */}
               <div className="border-t border-gray-100 pt-4 mb-6 space-y-2.5 text-sm">
                 <div className="flex justify-between text-[#151C19]/70">
-                  <span>Base Plan ({plan.label})</span>
-                  <span>₹{plan.price}</span>
+                  <span>Base Plan ({plan.label} - {billingCycle === 'yearly' ? 'Yearly' : 'Monthly'})</span>
+                  <span>₹{basePlanPrice}</span>
                 </div>
                 {couponApplied && (
                   <div className="flex justify-between text-emerald-600 font-medium">
@@ -937,7 +978,7 @@ export default function PurchaseDetailsPage() {
                 <div className="border-t border-gray-100 pt-3 flex justify-between items-baseline">
                   <div>
                     <span className="font-bold text-[#151C19] text-base block">Total Payable</span>
-                    <span className="text-[#151C19]/50 text-[11px]">Billed annually</span>
+                    <span className="text-[#151C19]/50 text-[11px]">{billingCycle === 'yearly' ? 'Billed annually' : 'Billed monthly'}</span>
                   </div>
                   <div className="text-right">
                     <span className="text-3xl font-black text-[#E8783C]">₹{finalPayablePrice}</span>

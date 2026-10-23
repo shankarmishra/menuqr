@@ -658,7 +658,7 @@ export async function sendQrReadyEmail({ email, businessName, tagline, menuSlug,
 }
 
 // 11. MARKETING CAMPAIGN EMAIL (QUEUED IN OUTBOX)
-export async function sendMarketingCampaignEmail({ email, restaurantName, ownerName, offerPrice = '1499' }) {
+export async function sendMarketingCampaignEmail({ email, restaurantName, ownerName, offerPrice = '3999' }) {
   if (!email) return { ok: false, error: 'Recipient email is required.' };
 
   const bodyHtml = `

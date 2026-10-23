@@ -285,21 +285,21 @@ export default function IndianHeritageMenuDisplay({
       </div>
 
       {/* Floating Bottom Live Table Action Bar */}
-      <div className="absolute bottom-5 sm:bottom-6 inset-x-2.5 z-30">
-        <div className="bg-[#180912]/95 backdrop-blur-md border border-[#D4AF37]/40 rounded-xl p-2 px-3 flex items-center justify-between shadow-[0_10px_25px_rgba(0,0,0,0.8)]">
+      <div className="absolute bottom-3.5 sm:bottom-4 inset-x-2 z-30">
+        <div className="bg-[#180912]/95 backdrop-blur-md border border-[#D4AF37]/40 rounded-xl p-1.5 px-2.5 flex items-center justify-between shadow-[0_10px_25px_rgba(0,0,0,0.8)]">
           <div>
-            <div className="flex items-center gap-1.5 text-[8px] font-sans uppercase font-bold text-[#D4AF37] tracking-wider">
+            <div className="flex items-center gap-1.5 text-[7.5px] font-sans uppercase font-bold text-[#D4AF37] tracking-wider">
               <span className="w-1.5 h-1.5 rounded-full bg-[#34B56A] animate-pulse" />
               <span>Table Verified</span>
             </div>
-            <p className="text-[10px] font-sans font-extrabold text-[#FFF5D1]">
+            <p className="text-[9.5px] font-sans font-extrabold text-[#FFF5D1]">
               2 Dishes Selected
             </p>
           </div>
 
           <button
             type="button"
-            className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-[#180912] text-[9.5px] font-sans font-black uppercase tracking-wider px-3 py-1.5 rounded-lg shadow-md border border-[#FFF5D1]/30 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+            className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-[#180912] text-[8.5px] font-sans font-black uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-md border border-[#FFF5D1]/30 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
           >
             Order to Table
           </button>
