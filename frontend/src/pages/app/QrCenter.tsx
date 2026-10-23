@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { toPng } from 'html-to-image';
 import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerCard';
+import { STICKER_TEMPLATES, type StickerThemeId } from '../../components/sticker/StickerTemplates';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { createPermanentQr, createStickerRequest, getProfile, getQr, getStickerRequests, getMenu, type AppProfile, type AppQrData, type StickerRequest } from './appStore';
 
@@ -17,6 +18,7 @@ export default function QrCenter() {
   const [saving, setSaving] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState<StickerThemeId>('menusqr-obsidian-gold');
   const [qrImage, setQrImage] = useState<string>('');
 
   const stickerRef = useRef<HTMLDivElement>(null);
@@ -112,7 +114,7 @@ export default function QrCenter() {
       const dataUrl = await toPng(stickerRef.current, { pixelRatio: 3, cacheBust: true, skipFonts: true });
       const link = document.createElement('a');
       const name = qr?.restaurantName || profile?.businessName || 'restaurant';
-      link.download = `MenusQR_${name.replace(/[^a-z0-9]+/gi, '_')}_Sticker.png`;
+      link.download = `MenusQR_${name.replace(/[^a-z0-9]+/gi, '_')}_${selectedTheme}.png`;
       link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
@@ -189,24 +191,65 @@ export default function QrCenter() {
                 </div>
               </div>
               
+              {/* Luxury Theme Selector Bar */}
+              <div className="p-4 border-b border-[#2a3832] bg-[#121815] flex flex-col gap-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-[#849a90] uppercase tracking-wider">Select Standee & Sticker Finish:</span>
+                  <span className="text-[#e8783c] font-semibold text-[11px]">
+                    ✨ High-Res 300 DPI Vector Artwork
+                  </span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  {STICKER_TEMPLATES.map((tmpl) => {
+                    const isSelected = selectedTheme === tmpl.id;
+                    return (
+                      <button
+                        key={tmpl.id}
+                        type="button"
+                        onClick={() => setSelectedTheme(tmpl.id)}
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer whitespace-nowrap ${
+                          isSelected
+                            ? 'bg-[#1e2723] border-[#e8783c] text-white shadow-md shadow-[#e8783c]/15 ring-1 ring-[#e8783c]/50'
+                            : 'bg-[#151c19] border-[#2a3832] text-[#849a90] hover:text-white hover:border-[#384a42]'
+                        }`}
+                      >
+                        <span
+                          className="w-3.5 h-3.5 rounded-full border border-white/20 shrink-0"
+                          style={{ background: tmpl.previewBg }}
+                        />
+                        <span>{tmpl.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="p-6 sm:p-8 flex flex-col items-center justify-center text-center bg-gradient-to-b from-[#17211d] to-[#0e1311]">
                 
-                {/* --- FULL PHYSICAL ROYAL WALNUT QR STICKER CARD --- */}
+                {/* --- FULL PHYSICAL LUXURY QR STICKER CARD --- */}
                 <div className="scale-90 sm:scale-95 transform-gpu transition-all">
                   <RoyalWalnutStickerCard
-                    headerText="Scan Me for Menu"
-                    footerText="Scan Table QR Code"
+                    themeId={selectedTheme}
+                    headerText="SCAN FOR DIGITAL MENU"
+                    footerText="Point Camera to Scan Menu"
                     stickerRef={stickerRef}
                     restaurantName={restaurantName}
-                    category="DIGITAL MENU"
+                    category={profile?.cuisine || 'FINE DINING & CULINARY EXCELLENCE'}
+                    tagline={profile?.tagline || ''}
                     menuUrl={menuUrl}
                     qrImage={qrImage}
-                    showStatusBadge={true}
+                    showStatusBadge={false}
                     showDownloadButtons={false}
                   />
                 </div>
+
+                {/* Permanent QR Status Banner (In-App UI) */}
+                <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Permanent Table QR Active — Ready for Print & Placement</span>
+                </div>
                 
-                <p className="mt-4 text-xs text-[#849a90] max-w-sm leading-relaxed">
+                <p className="mt-3 text-xs text-[#849a90] max-w-sm leading-relaxed">
                   Changing menu items or prices will <strong>never</strong> regenerate this QR code.
                 </p>
 
