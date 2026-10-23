@@ -28,6 +28,11 @@ export default defineConfig({
       '/api': process.env.MENUSQR_API_PROXY || 'http://127.0.0.1:3001',
     },
   },
+  preview: {
+    proxy: {
+      '/api': process.env.MENUSQR_API_PROXY || 'http://127.0.0.1:3001',
+    },
+  },
   build: {
     chunkSizeWarningLimit: 1200,
     rollupOptions: {

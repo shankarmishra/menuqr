@@ -24,7 +24,7 @@ import {
 interface PdfDishItem {
   id: string;
   name: string;
-  halfPrice: number;
+  halfPrice?: number;
   fullPrice: number;
   isChefSpecial?: boolean;
   isSpicy?: boolean;
@@ -34,35 +34,35 @@ interface PdfDishItem {
 
 const PAGE04_CHAAP_ITEMS: PdfDishItem[] = [
   { id: 'chaap-01', name: 'Malai Chaap', halfPrice: 149, fullPrice: 239, isChefSpecial: true, category: 'Chaap Specialities' },
-  { id: 'chaap-02', name: 'Afghani Chaap', halfPrice: 149, fullPrice: 239, isChefSpecial: true, category: 'Chaap Specialities' },
-  { id: 'chaap-03', name: 'Tandoori Chaap', halfPrice: 139, fullPrice: 229, category: 'Chaap Specialities' },
-  { id: 'chaap-04', name: 'Achari Chaap', halfPrice: 139, fullPrice: 229, category: 'Chaap Specialities' },
-  { id: 'chaap-05', name: 'Pudina Chaap', halfPrice: 139, fullPrice: 229, category: 'Chaap Specialities' },
-  { id: 'chaap-06', name: 'Lemon Chaap', halfPrice: 139, fullPrice: 229, category: 'Chaap Specialities' },
-  { id: 'chaap-07', name: 'Haryali Chaap', halfPrice: 139, fullPrice: 229, category: 'Chaap Specialities' },
-  { id: 'chaap-08', name: 'Garlic Chaap', halfPrice: 139, fullPrice: 229, category: 'Chaap Specialities' },
-  { id: 'chaap-09', name: 'Black Pepper Chaap', halfPrice: 149, fullPrice: 239, category: 'Chaap Specialities' },
-  { id: 'chaap-10', name: 'Punjabi Chaap', halfPrice: 149, fullPrice: 239, isSpicy: true, category: 'Chaap Specialities' },
-  { id: 'chaap-11', name: 'Masala Chaap', halfPrice: 149, fullPrice: 239, isSpicy: true, category: 'Chaap Specialities' },
-  { id: 'chaap-12', name: 'Toofani Chaap', halfPrice: 159, fullPrice: 249, isChefSpecial: true, isSpicy: true, category: 'Chaap Specialities' },
-  { id: 'chaap-13', name: 'Nizami Chaap', halfPrice: 159, fullPrice: 249, isChefSpecial: true, category: 'Chaap Specialities' },
-  { id: 'chaap-14', name: 'Chatpata Chaap', halfPrice: 149, fullPrice: 239, category: 'Chaap Specialities' },
-  { id: 'chaap-15', name: 'Veg Chicken Tikka Chaap (Pure Soya)', halfPrice: 159, fullPrice: 249, isPureSoya: true, category: 'Chaap Specialities' },
-  { id: 'chaap-16', name: 'Veg Mutton Chaap (Pure Soya)', halfPrice: 159, fullPrice: 249, isPureSoya: true, category: 'Chaap Specialities' },
-  { id: 'chaap-17', name: 'Veg Fish Tikka Chaap (Pure Soya)', halfPrice: 169, fullPrice: 259, isPureSoya: true, category: 'Chaap Specialities' },
-  { id: 'chaap-18', name: 'Veg Creamy Butter Leg Piece (Pure Soya)', halfPrice: 179, fullPrice: 279, isPureSoya: true, category: 'Chaap Specialities' },
-  { id: 'chaap-19', name: 'MTJ Special Stuffed Chaap', halfPrice: 169, fullPrice: 269, isChefSpecial: true, category: 'Chaap Specialities' },
+  { id: 'chaap-02', name: 'Tandoori Chaap', halfPrice: 149, fullPrice: 239, category: 'Chaap Specialities' },
+  { id: 'chaap-03', name: 'Punjabi Chaap', halfPrice: 149, fullPrice: 239, isSpicy: true, category: 'Chaap Specialities' },
+  { id: 'chaap-04', name: 'Achari Chaap', halfPrice: 149, fullPrice: 239, category: 'Chaap Specialities' },
+  { id: 'chaap-05', name: 'Masala Chaap', halfPrice: 149, fullPrice: 239, isSpicy: true, category: 'Chaap Specialities' },
+  { id: 'chaap-06', name: 'Chatpati Chaap', halfPrice: 149, fullPrice: 239, category: 'Chaap Specialities' },
+  { id: 'chaap-07', name: 'Haryali Chaap', halfPrice: 159, fullPrice: 249, category: 'Chaap Specialities' },
+  { id: 'chaap-08', name: 'Garlic Chaap', halfPrice: 159, fullPrice: 249, category: 'Chaap Specialities' },
+  { id: 'chaap-09', name: 'Mirch Malai Chaap', halfPrice: 159, fullPrice: 249, isSpicy: true, category: 'Chaap Specialities' },
+  { id: 'chaap-10', name: 'Diet Chaap', halfPrice: 159, fullPrice: 249, category: 'Chaap Specialities' },
+  { id: 'chaap-11', name: 'Afghani Chaap', halfPrice: 159, fullPrice: 249, isChefSpecial: true, category: 'Chaap Specialities' },
+  { id: 'chaap-12', name: 'Nizami Chaap', halfPrice: 169, fullPrice: 259, isChefSpecial: true, category: 'Chaap Specialities' },
+  { id: 'chaap-13', name: 'Toofani Chaap', halfPrice: 169, fullPrice: 259, isChefSpecial: true, isSpicy: true, category: 'Chaap Specialities' },
+  { id: 'chaap-14', name: 'Mastani Chaap', halfPrice: 169, fullPrice: 259, isChefSpecial: true, category: 'Chaap Specialities' },
+  { id: 'chaap-15', name: 'Veg Chicken Tikka Chaap (Pure Soya)', halfPrice: 169, fullPrice: 259, isChefSpecial: true, isPureSoya: true, category: 'Chaap Specialities' },
+  { id: 'chaap-16', name: 'Veg Fish Tikka Chaap (Pure Soya)', halfPrice: 169, fullPrice: 259, isChefSpecial: true, isPureSoya: true, category: 'Chaap Specialities' },
+  { id: 'chaap-17', name: 'Veg Creamy Butter Leg Piece (Pure Soya)', halfPrice: 169, fullPrice: 259, isChefSpecial: true, isPureSoya: true, category: 'Chaap Specialities' },
+  { id: 'chaap-18', name: 'Stuffed Chaap Tandoori', fullPrice: 189, category: 'Chaap Specialities' },
+  { id: 'chaap-19', name: 'Stuffed Chaap Afghani', fullPrice: 189, category: 'Chaap Specialities' },
 ];
 
 const PAGE04_PANEER_ITEMS: PdfDishItem[] = [
-  { id: 'paneer-01', name: 'Paneer Tikka', halfPrice: 169, fullPrice: 259, category: 'Paneer Feast' },
-  { id: 'paneer-02', name: 'Malai Paneer Tikka', halfPrice: 179, fullPrice: 279, isChefSpecial: true, category: 'Paneer Feast' },
-  { id: 'paneer-03', name: 'Achari Paneer Tikka', halfPrice: 169, fullPrice: 259, category: 'Paneer Feast' },
-  { id: 'paneer-04', name: 'Pudina Paneer Tikka', halfPrice: 169, fullPrice: 259, category: 'Paneer Feast' },
-  { id: 'paneer-05', name: 'Haryali Paneer Tikka', halfPrice: 169, fullPrice: 259, category: 'Paneer Feast' },
-  { id: 'paneer-06', name: 'Garlic Paneer Tikka', halfPrice: 169, fullPrice: 259, category: 'Paneer Feast' },
-  { id: 'paneer-07', name: 'Black Pepper Paneer Tikka', halfPrice: 179, fullPrice: 279, category: 'Paneer Feast' },
-  { id: 'paneer-08', name: 'Toofani Paneer Tikka', halfPrice: 179, fullPrice: 279, isSpicy: true, category: 'Paneer Feast' },
+  { id: 'paneer-01', name: 'Paneer Tikka', halfPrice: 189, fullPrice: 289, category: 'Paneer Feast' },
+  { id: 'paneer-02', name: 'Achari Paneer Tikka', halfPrice: 189, fullPrice: 289, category: 'Paneer Feast' },
+  { id: 'paneer-03', name: 'Pudina Paneer Tikka', halfPrice: 189, fullPrice: 289, category: 'Paneer Feast' },
+  { id: 'paneer-04', name: 'Kali Mirch Paneer Tikka', halfPrice: 189, fullPrice: 289, category: 'Paneer Feast' },
+  { id: 'paneer-05', name: 'Afghani Paneer Tikka', halfPrice: 209, fullPrice: 309, category: 'Paneer Feast' },
+  { id: 'paneer-06', name: 'Paneer Malai Tikka', halfPrice: 209, fullPrice: 309, isChefSpecial: true, category: 'Paneer Feast' },
+  { id: 'paneer-07', name: 'Paneer Cheese Corn Tikka', fullPrice: 329, category: 'Paneer Feast' },
+  { id: 'paneer-08', name: 'Silk Roll Paneer Tikka', fullPrice: 339, isChefSpecial: true, category: 'Paneer Feast' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -376,75 +376,65 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
     >
       {/* ═══════════════════════════════════════════════════════════════════════
           MASTHEAD: 100% REAL CODED HTML/CSS ARTBOARD DESIGN (PAGE 1 COVER)
+          Reconstructing Art Board 3.pdf Page 1 with Source-Fidelity
           ═══════════════════════════════════════════════════════════════════════ */}
       <header className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-[#FAB700] artboard-crimson-plate">
-        {/* Corner Flourishes */}
-        <div 
-          className="heritage-corner-flourish heritage-corner-flourish-tl" 
-          style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
-        />
-        <div 
-          className="heritage-corner-flourish heritage-corner-flourish-tr" 
-          style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
-        />
-        <div 
-          className="heritage-corner-flourish heritage-corner-flourish-bl" 
-          style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
-        />
-        <div 
-          className="heritage-corner-flourish heritage-corner-flourish-br" 
-          style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
-        />
+        {/* Subtle Watermark Lettering from PDF Page 1 */}
+        <div className="artboard-watermark-container">
+          <span className="artboard-watermark-word text-[16vw] sm:text-[120px]">PURE</span>
+          <span className="artboard-watermark-word text-[16vw] sm:text-[120px]">CHAAP</span>
+          <span className="artboard-watermark-word text-[16vw] sm:text-[120px]">SOYA</span>
+        </div>
 
         {/* Real HTML/CSS Artboard Visual Composition */}
-        <div className="relative z-10 px-4 py-8 sm:py-12 flex flex-col items-center text-center space-y-6">
-          {/* 1. Brand Wordmark Section */}
-          <div className="space-y-1">
-            <h1 className="artboard-brand-script text-5xl sm:text-7xl tracking-wide select-none">
-              mannat
-            </h1>
-            <div className="artboard-brand-caps text-xl sm:text-3xl tracking-widest text-white uppercase select-none">
-              TANDOORI JUNCTION
+        <div className="relative z-10 px-4 py-8 sm:py-12 flex flex-col items-center text-center space-y-4 sm:space-y-5">
+          {/* 1. Royal Circular Chef Mascot Emblem (Top Center) */}
+          <div className="w-48 sm:w-64 drop-shadow-[0_12px_28px_rgba(0,0,0,0.45)] transition-transform duration-300 hover:scale-105 select-none">
+            <img
+              src="/uploads/mannat/assets/mascot_chef_isolated_p1.webp"
+              alt="Mannat Tandoori Junction Chef Mascot"
+              className="w-full h-auto object-contain"
+              loading="eager"
+            />
+          </div>
+
+          {/* 2. Primary Brand Logo & Name (Directly Below Mascot) */}
+          <div className="max-w-[280px] sm:max-w-md w-full drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)] select-none">
+            <img
+              src="/uploads/mannat/assets/mannat_logo_isolated_p1.webp"
+              alt="Mannat Tandoori Junction"
+              className="w-full h-auto object-contain"
+              loading="eager"
+            />
+            <h1 className="sr-only">Mannat Tandoori Junction</h1>
+          </div>
+
+          {/* 3. Tagline Strip with Two Thin White Horizontal Rules */}
+          <div className="w-full max-w-sm sm:max-w-md space-y-1 select-none">
+            <div className="h-[1px] w-full bg-white/70" />
+            <div className="text-white font-sans font-bold text-xs sm:text-sm tracking-wider uppercase py-1">
+              100% Pure Soya &nbsp;|&nbsp; Authentic Taste Since 2015
             </div>
-            
-            {/* Tagline Strip with Horizontal Rules */}
-            <div className="flex items-center justify-center gap-2 sm:gap-4 pt-2">
-              <span className="h-[1.5px] w-8 sm:w-16 bg-[#FAB700]/70" />
-              <span className="text-white/95 text-[11px] sm:text-xs font-bold tracking-widest uppercase font-sans">
-                100% Pure Soya &nbsp;|&nbsp; Authentic Taste Since 2015
+            <div className="h-[1px] w-full bg-white/70" />
+          </div>
+
+          {/* 4. Rounded Cream Cuisine Capsule Badge */}
+          <div className="pt-0.5 select-none">
+            <div className="bg-[#FAF4EC] px-6 sm:px-8 py-2 rounded-full shadow-lg border border-[#FAB700]/40">
+              <span className="text-[#9E0D24] font-black text-[11px] sm:text-xs tracking-wider uppercase font-sans">
+                NORTH INDIAN | INDO-CHINESE | CONTINENTAL
               </span>
-              <span className="h-[1.5px] w-8 sm:w-16 bg-[#FAB700]/70" />
             </div>
           </div>
 
-          {/* 2. Royal Circular Chef Mascot with Ring Frame */}
-          <div className="my-2">
-            <div className="artboard-mascot-frame">
-              <img
-                src="/uploads/mannat/assets/chef_mascot_clean_transparent.webp"
-                alt="Mannat Tandoori Junction Chef Mascot"
-                className="w-full h-full object-contain transform scale-110 select-none"
-                loading="eager"
-              />
-            </div>
-          </div>
-
-          {/* 3. Rounded Cream Category Capsule Badge */}
-          <div className="pt-1">
-            <div className="artboard-capsule-badge">
-              <span>NORTH INDIAN</span>
-              <span className="mx-2 text-[#FAB700]">•</span>
-              <span>INDO-CHINESE</span>
-              <span className="mx-2 text-[#FAB700]">•</span>
-              <span>CONTINENTAL</span>
-            </div>
-          </div>
-
-          {/* 4. Signature Angled Vintage Slogan */}
-          <div className="pt-2">
-            <div className="artboard-slogan-angled">
-              <span>CHAAP KA ASLI SWAD!</span>
-            </div>
+          {/* 5. Signature Dynamic Angled Slogan */}
+          <div className="w-56 sm:w-72 pt-1 drop-shadow-[0_8px_20px_rgba(0,0,0,0.4)] transition-transform duration-300 hover:scale-105 select-none">
+            <img
+              src="/uploads/mannat/assets/slogan_chaap_ka_asli_swad.webp"
+              alt="Chaap Ka Asli Swad!"
+              className="w-full h-auto object-contain"
+              loading="eager"
+            />
           </div>
         </div>
 
@@ -587,129 +577,127 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
 
               {/* ─────────────────────────────────────────────────────────────
                   CHAPTER 1: REAL CODED HTML/CSS ASYMMETRICAL SPLIT OF PAGE 4
+                  MTJ Tandoori Snacks & Chaap Specialities (Art Board 3.pdf Page 4)
                   ───────────────────────────────────────────────────────────── */}
               {isTandooriChapter ? (
-                <div className="grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden border-2 border-[#FAB700] shadow-xl">
+                <div className="grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden border-2 border-[#FAB700] shadow-xl relative bg-[#CD1B2D]">
                   {/* Left Column: Real Coded Crimson Hero Panel */}
-                  <div className="lg:col-span-5 artboard-left-panel p-5 sm:p-8 flex flex-col justify-between">
-                    <div className="space-y-3">
-                      <div className="font-sans font-black text-white text-3xl sm:text-5xl tracking-tighter leading-none opacity-90 uppercase">
+                  <div className="lg:col-span-5 artboard-left-panel p-5 sm:p-8 flex flex-col justify-between relative overflow-hidden">
+                    <div className="space-y-2 relative z-10">
+                      <div className="font-sans font-black text-white text-4xl sm:text-6xl tracking-tight leading-none uppercase">
                         MTJ
                       </div>
-                      <div className="font-serif font-black text-white text-4xl sm:text-5xl tracking-tight leading-none uppercase">
+                      <div className="font-sans font-black text-white text-4xl sm:text-6xl tracking-tight leading-none uppercase">
                         TANDOORI
                       </div>
-                      <div className="font-serif font-black text-[#FAB700] text-4xl sm:text-5xl tracking-tight leading-none uppercase">
+                      <div className="font-sans font-black text-white text-4xl sm:text-6xl tracking-tight leading-none uppercase">
                         SNACKS
                       </div>
-                      <div className="h-1.5 w-20 bg-[#FAB700] rounded-full mt-2" />
+                      <div className="h-1.5 w-20 bg-white/80 rounded-full mt-2" />
                       
                       <p className="text-white/90 text-xs sm:text-sm font-sans pt-2 leading-relaxed">
                         Charcoal clay tandoor baked multi-grain chaap marinated in fresh yogurt & secret ground spices.
                       </p>
                     </div>
 
-                    {/* Sizzler Platter Cutout */}
-                    <div className="relative mt-6 sm:mt-12 flex justify-center">
+                    {/* Sizzler Skillet Platter Cutout from 300DPI PDF */}
+                    <div className="relative mt-6 sm:mt-10 -ml-5 -mb-5 flex justify-center z-10">
                       <img
-                        src="/uploads/mannat/assets/hero_chaap_sizzler.png"
-                        alt="Tandoori Chaap Sizzler Platter"
-                        className="w-full max-w-xs h-auto object-contain rounded-2xl drop-shadow-2xl select-none"
+                        src="/uploads/mannat/assets/p4_paneer_skillet_left.webp"
+                        alt="Tandoori Paneer Tikka Skewers Skillet"
+                        className="w-full max-w-sm h-auto object-contain drop-shadow-2xl select-none"
                       />
                     </div>
                   </div>
 
                   {/* Right Column: Real Coded Parchment Panel with Tables */}
-                  <div className="lg:col-span-7 artboard-right-panel p-4 sm:p-6 space-y-6">
-                    {/* Floating Malai Chaap Dish Showcase */}
-                    <div className="flex justify-end -mt-2 -mr-1">
-                      <div className="flex items-center gap-2.5 bg-white/95 backdrop-blur-xs p-1.5 rounded-2xl border border-[#FAB700] shadow-md">
-                        <img
-                          src="/uploads/mannat/assets/dish_malai_chaap.png"
-                          alt="Creamy Malai Chaap"
-                          className="w-20 sm:w-28 h-auto object-cover rounded-xl"
-                        />
-                        <div className="pr-2 text-right">
-                          <div className="font-bold text-xs text-[#9E0D24]">Malai Chaap</div>
-                          <div className="text-[10px] text-amber-600 font-black uppercase">Chef Special</div>
-                        </div>
-                      </div>
+                  <div className="lg:col-span-7 artboard-right-panel p-4 sm:p-6 space-y-6 relative overflow-hidden">
+                    {/* Top Right Floating Plate from 300DPI PDF */}
+                    <div className="absolute top-0 right-0 w-36 sm:w-52 pointer-events-none select-none z-10 overflow-hidden">
+                      <img
+                        src="/uploads/mannat/assets/p4_malai_plate_clean.webp"
+                        alt="Creamy Malai Chaap Platter"
+                        className="w-full h-auto object-contain rounded-bl-3xl drop-shadow-md"
+                      />
                     </div>
 
                     {/* Section 1: CHAAP SPECIALITIES */}
-                    <div className="space-y-3">
-                      <div className="border-b-2 border-[#9E0D24] pb-1.5 flex items-center justify-between">
-                        <h3 className="font-serif font-black text-lg sm:text-xl text-[#9E0D24] tracking-wide uppercase">
-                          CHAAP SPECIALITIES
+                    <div className="space-y-3 relative z-20">
+                      <div className="border-b-4 border-[#CE182C] pb-1 max-w-[240px] sm:max-w-xs">
+                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#CE182C] tracking-tight uppercase leading-none">
+                          CHAAP
                         </h3>
-                        <span className="text-[11px] font-bold text-amber-900 bg-amber-100/90 px-2.5 py-0.5 rounded-full border border-amber-300">
-                          Multi Grain Chaap
-                        </span>
+                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#CE182C] tracking-tight uppercase leading-none">
+                          SPECIALITIES
+                        </h3>
                       </div>
 
                       {/* Dual Column Header: ITEM | HALF | FULL */}
                       <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
                         <span className="text-left">ITEM</span>
-                        <span className="text-[#9E0D24]">HALF</span>
-                        <span className="text-[#9E0D24]">FULL</span>
+                        <span className="text-[#CE182C]">HALF</span>
+                        <span className="text-[#CE182C]">FULL</span>
                       </div>
 
                       {/* 19 Chaap Items */}
                       <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
                         {PAGE04_CHAAP_ITEMS.map((dish) => {
-                          const halfQty = getDishQty(dish.id, 'Half');
+                          const halfQty = dish.halfPrice ? getDishQty(dish.id, 'Half') : 0;
                           const fullQty = getDishQty(dish.id, 'Full');
 
                           return (
                             <div key={dish.id} className="heritage-grid-row heritage-dual-grid py-2">
                               {/* Col 1: Name & Badges */}
                               <div className="min-w-0 pr-1">
-                                <div className="flex items-center gap-1.5 font-serif font-bold text-xs sm:text-sm text-[#181E19]">
-                                  <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
-                                  <span className="truncate">{dish.name}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-[10px] mt-0.5 font-sans">
+                                <div className="flex items-center gap-1.5 font-sans font-bold text-xs sm:text-sm text-[#181E19]">
                                   {dish.isChefSpecial && (
-                                    <span className="text-amber-800 font-bold">👨‍🍳 Chef Special</span>
+                                    <span title="Chef Special" className="text-sm">👨‍🍳</span>
                                   )}
+                                  <span className="truncate">{dish.name}</span>
                                   {dish.isSpicy && (
-                                    <span className="text-red-700 font-bold">🌶️ Mild Spicy</span>
-                                  )}
-                                  {dish.isPureSoya && (
-                                    <span className="text-emerald-700 font-bold bg-emerald-50 px-1 rounded">Pure Soya</span>
+                                    <span title="Mild Spicy" className="text-sm">🌶️</span>
                                   )}
                                 </div>
+                                {dish.isPureSoya && (
+                                  <div className="text-[10px] text-emerald-700 font-bold font-sans">
+                                    (Pure Soya)
+                                  </div>
+                                )}
                               </div>
 
                               {/* Col 2: Half Price & Controls */}
                               <div className="flex justify-center">
-                                {halfQty > 0 ? (
-                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleRemoveFromCart(dish.id, 'Half')}
-                                      className="text-red-700 hover:scale-110"
-                                    >
-                                      <Minus size={11} />
-                                    </button>
-                                    <span>{halfQty}</span>
+                                {dish.halfPrice ? (
+                                  halfQty > 0 ? (
+                                    <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveFromCart(dish.id, 'Half')}
+                                        className="text-red-700 hover:scale-110"
+                                      >
+                                        <Minus size={11} />
+                                      </button>
+                                      <span>{halfQty}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
+                                        className="text-emerald-700 hover:scale-110"
+                                      >
+                                        <Plus size={11} />
+                                      </button>
+                                    </div>
+                                  ) : (
                                     <button
                                       type="button"
                                       onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                      className="text-emerald-700 hover:scale-110"
+                                      className="heritage-portion-btn-half cursor-pointer"
                                     >
-                                      <Plus size={11} />
+                                      <span>₹{dish.halfPrice}</span>
+                                      <Plus size={11} className="opacity-70" />
                                     </button>
-                                  </div>
+                                  )
                                 ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                    className="heritage-portion-btn-half cursor-pointer"
-                                  >
-                                    <span>₹{dish.halfPrice}</span>
-                                    <Plus size={11} className="opacity-70" />
-                                  </button>
+                                  <span className="text-gray-400 font-bold">-</span>
                                 )}
                               </div>
 
@@ -748,87 +736,99 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                           );
                         })}
                       </div>
+
+                      {/* Add-on 100% Soya Upgrade Row */}
+                      <div className="bg-red-50 border border-red-200 rounded-xl p-2.5 my-3 flex items-center justify-between text-xs font-bold text-[#CE182C]">
+                        <div>
+                          <div className="tracking-wide">ADD ON : ADD-ON: 100% SOYA UPGRADE</div>
+                          <div className="text-[10px] text-red-600 font-semibold tracking-wider">
+                            NO MAIDA | NO WHEAT | NO GLUTEN | HIGH PROTIEN
+                          </div>
+                        </div>
+                        <div className="flex gap-4 font-mono font-bold text-red-700 text-sm">
+                          <span>₹49</span>
+                          <span>₹79</span>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Real Coded Emerald Green Announcement Banner */}
-                    <div className="bg-[#15803D] text-white p-3.5 rounded-xl border border-emerald-600 shadow-md my-4 flex items-center gap-3">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-ping shrink-0" />
+                    <div className="bg-[#0E8345] text-white p-3 sm:p-3.5 rounded-xl shadow-md my-4 flex items-center gap-2.5 relative z-20">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-200 animate-pulse shrink-0" />
                       <p className="text-xs sm:text-sm font-bold leading-snug">
                         *All Chaap Specialities are prepared using our Multigrain Chaap. Add-on upgrade available for Premium 100% Plant-Based Soya Chaap.
                       </p>
                     </div>
 
                     {/* Section 2: PANEER FEAST */}
-                    <div className="space-y-3">
-                      <div className="border-b-2 border-[#9E0D24] pb-1.5 flex items-center justify-between">
-                        <h3 className="font-serif font-black text-lg sm:text-xl text-[#9E0D24] tracking-wide uppercase">
+                    <div className="space-y-3 relative z-20">
+                      <div className="border-b-4 border-[#CE182C] pb-1 max-w-[200px]">
+                        <h3 className="font-sans font-black text-xl sm:text-2xl text-[#CE182C] tracking-tight uppercase leading-none">
                           PANEER FEAST
                         </h3>
-                        <span className="text-[11px] font-bold text-amber-900 bg-amber-100/90 px-2.5 py-0.5 rounded-full border border-amber-300">
-                          Fresh Cottage Cheese
-                        </span>
                       </div>
 
                       {/* Dual Column Header: ITEM | HALF | FULL */}
                       <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
                         <span className="text-left">ITEM</span>
-                        <span className="text-[#9E0D24]">HALF</span>
-                        <span className="text-[#9E0D24]">FULL</span>
+                        <span className="text-[#CE182C]">HALF</span>
+                        <span className="text-[#CE182C]">FULL</span>
                       </div>
 
                       {/* 8 Paneer Items */}
                       <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
                         {PAGE04_PANEER_ITEMS.map((dish) => {
-                          const halfQty = getDishQty(dish.id, 'Half');
+                          const halfQty = dish.halfPrice ? getDishQty(dish.id, 'Half') : 0;
                           const fullQty = getDishQty(dish.id, 'Full');
 
                           return (
                             <div key={dish.id} className="heritage-grid-row heritage-dual-grid py-2">
                               {/* Col 1: Name */}
                               <div className="min-w-0 pr-1">
-                                <div className="flex items-center gap-1.5 font-serif font-bold text-xs sm:text-sm text-[#181E19]">
-                                  <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
-                                  <span className="truncate">{dish.name}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-[10px] mt-0.5 font-sans">
+                                <div className="flex items-center gap-1.5 font-sans font-bold text-xs sm:text-sm text-[#181E19]">
                                   {dish.isChefSpecial && (
-                                    <span className="text-amber-800 font-bold">👨‍🍳 Chef Special</span>
+                                    <span title="Chef Special" className="text-sm">👨‍🍳</span>
                                   )}
+                                  <span className="truncate">{dish.name}</span>
                                   {dish.isSpicy && (
-                                    <span className="text-red-700 font-bold">🌶️ Mild Spicy</span>
+                                    <span title="Mild Spicy" className="text-sm">🌶️</span>
                                   )}
                                 </div>
                               </div>
 
                               {/* Col 2: Half Price */}
                               <div className="flex justify-center">
-                                {halfQty > 0 ? (
-                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleRemoveFromCart(dish.id, 'Half')}
-                                      className="text-red-700 hover:scale-110"
-                                    >
-                                      <Minus size={11} />
-                                    </button>
-                                    <span>{halfQty}</span>
+                                {dish.halfPrice ? (
+                                  halfQty > 0 ? (
+                                    <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveFromCart(dish.id, 'Half')}
+                                        className="text-red-700 hover:scale-110"
+                                      >
+                                        <Minus size={11} />
+                                      </button>
+                                      <span>{halfQty}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
+                                        className="text-emerald-700 hover:scale-110"
+                                      >
+                                        <Plus size={11} />
+                                      </button>
+                                    </div>
+                                  ) : (
                                     <button
                                       type="button"
                                       onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                      className="text-emerald-700 hover:scale-110"
+                                      className="heritage-portion-btn-half cursor-pointer"
                                     >
-                                      <Plus size={11} />
+                                      <span>₹{dish.halfPrice}</span>
+                                      <Plus size={11} className="opacity-70" />
                                     </button>
-                                  </div>
+                                  )
                                 ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                    className="heritage-portion-btn-half cursor-pointer"
-                                  >
-                                    <span>₹{dish.halfPrice}</span>
-                                    <Plus size={11} className="opacity-70" />
-                                  </button>
+                                  <span className="text-gray-400 font-bold">-</span>
                                 )}
                               </div>
 
@@ -869,19 +869,19 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                       </div>
                     </div>
 
-                    {/* Legend Badges */}
-                    <div className="flex items-center gap-3 pt-2 text-xs font-bold">
-                      <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-950 border border-amber-300 flex items-center gap-1">
+                    {/* Legend Badges Matching PDF */}
+                    <div className="flex items-center gap-3 pt-3 text-xs font-bold relative z-20">
+                      <span className="px-3 py-1 rounded-full bg-white text-[#CE182C] border border-[#CE182C]/30 shadow-xs flex items-center gap-1.5">
                         👨‍🍳 CHEF SPECIAL
                       </span>
-                      <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-950 border border-red-300 flex items-center gap-1">
+                      <span className="px-3 py-1 rounded-full bg-white text-[#CE182C] border border-[#CE182C]/30 shadow-xs flex items-center gap-1.5">
                         🌶️ MILD SPICY
                       </span>
                     </div>
                   </div>
                 </div>
               ) : (
-                /* Default Chapter Layout for other chapters */
+/* Default Chapter Layout for other chapters */
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                   {/* Left Column: Food Photography Showcase */}
                   <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
