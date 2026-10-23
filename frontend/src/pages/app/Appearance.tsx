@@ -20,7 +20,6 @@ import {
   validateDesignSpecification, 
   type DesignSpecification 
 } from '../../components/menu-builder/design-engine/types';
-import { DeterministicDesignEngine } from '../../components/menu-builder/design-engine/designGenerator';
 
 export default function Appearance() {
   const [menu, setMenu] = useState<AppMenuData | null>(null);

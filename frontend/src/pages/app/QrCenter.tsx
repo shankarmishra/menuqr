@@ -111,7 +111,7 @@ export default function QrCenter() {
   const downloadPNG = async () => {
     if (!stickerRef.current) return;
     try {
-      const dataUrl = await toPng(stickerRef.current, { pixelRatio: 3, cacheBust: true, skipFonts: true });
+      const dataUrl = await toPng(stickerRef.current, { pixelRatio: 3, cacheBust: true });
       const link = document.createElement('a');
       const name = qr?.restaurantName || profile?.businessName || 'restaurant';
       link.download = `MenusQR_${name.replace(/[^a-z0-9]+/gi, '_')}_${selectedTheme}.png`;

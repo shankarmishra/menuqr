@@ -218,6 +218,15 @@ export default async function appRoutes(request, response, url) {
       throw apiError(400, 'Restaurant name and cuisine are required.');
     }
 
+    // Enforce 1st-time only rule: Bespoke designs cannot be regenerated once established on the panel
+    const existingAppearance = await pool.query(
+      'SELECT accent_configuration FROM appearance_settings WHERE tenant_id = $1',
+      [user.tenantId]
+    );
+    if (existingAppearance.rows[0]?.accent_configuration != null) {
+      throw apiError(403, 'Design generation is only permitted once during initial setup. Bespoke designs cannot be regenerated once established on your panel.');
+    }
+
     try {
       const result = await generateAiMenuDesign({
         tenantId: user.tenantId,

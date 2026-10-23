@@ -1114,14 +1114,16 @@ export default function RoyalWalnutStickerCard({
           <div className="relative z-10 flex flex-col items-center pt-1 text-center w-full">
             {/* Restaurant Name in Deep Ebony-Bronze Serif (Ultra High Contrast on Light Background) */}
             <h2
-              className={`font-black tracking-tight leading-tight w-full max-w-[340px] px-2 break-words mt-0.5 mb-1 text-center uppercase ${
-                restaurantName.length > 28
+              className={`font-black tracking-tight leading-snug w-full max-w-[340px] px-2 break-words text-center uppercase ${
+                restaurantName.length > 32
+                  ? 'text-[13px] sm:text-sm'
+                  : restaurantName.length > 24
+                  ? 'text-sm sm:text-base'
+                  : restaurantName.length > 18
                   ? 'text-base sm:text-lg'
-                  : restaurantName.length > 20
+                  : restaurantName.length > 11
                   ? 'text-lg sm:text-xl'
-                  : restaurantName.length > 12
-                  ? 'text-xl sm:text-2xl'
-                  : 'text-2xl sm:text-3xl'
+                  : 'text-xl sm:text-2xl'
               }`}
               style={{
                 fontFamily: "'Playfair Display', 'Cinzel', Georgia, serif",
@@ -1133,7 +1135,7 @@ export default function RoyalWalnutStickerCard({
             </h2>
 
             {/* Cuisine / Category Plaque */}
-            <div className="flex items-center justify-center gap-1.5 mt-0.5 max-w-[320px] px-1">
+            <div className="flex items-center justify-center gap-1.5 mt-2 max-w-[320px] px-1">
               <span className="h-[1.5px] w-5 shrink-0" style={{ background: `linear-gradient(to right, transparent, ${theme.accentGold})` }} />
               <p
                 className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-center drop-shadow-xs"
@@ -1148,11 +1150,13 @@ export default function RoyalWalnutStickerCard({
             </div>
 
             {/* Sceptre & Fleur-de-lis Royal Flourish */}
-            <RoyalSceptreFlourish color={theme.accentGold} />
+            <div className="mt-1">
+              <RoyalSceptreFlourish color={theme.accentGold} />
+            </div>
 
             {tagline && (
               <p
-                className="text-[10px] italic max-w-[280px] truncate opacity-85 block mb-0.5 font-medium"
+                className="text-[10px] italic max-w-[280px] truncate opacity-85 block mt-0.5 mb-0.5 font-medium"
                 style={{ color: theme.textMuted }}
               >
                 "{tagline}"
