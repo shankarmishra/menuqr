@@ -22,11 +22,11 @@ export interface StickerTemplate {
 export const STICKER_TEMPLATES: StickerTemplate[] = [
   {
     id: 'menusqr-flagship-standee',
-    name: 'Flagship Culinary Standee',
-    subtitle: 'Physical Walnut & Gold Standee, Sizzling Skillet & Spices',
+    name: 'Culinary Gold Table Sticker',
+    subtitle: 'Print-Ready 3D Gold Plaque Sticker • Sizzling Skillet & Spices',
     accentColor: '#D4AF37',
     previewBg: 'linear-gradient(135deg, #1C1209 0%, #D4AF37 50%, #825E12 100%)',
-    category: 'Flagship Table Standee',
+    category: 'Print-Ready Table Sticker',
   },
   {
     id: 'menusqr-tandoor-fire',

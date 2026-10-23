@@ -185,11 +185,11 @@ function FlagshipCulinaryStandeeCard({
   const [standeeImg, setStandeeImg] = React.useState('/assets/standee/flagship_culinary_standee_master.webp');
 
   return (
-    <div className="relative w-full aspect-[816/1280] overflow-hidden rounded-[2.2rem] select-none font-sans">
-      {/* Photorealistic 3D Table Standee Base Layer (100% Straight, De-skewed Orthographic) */}
+    <div className="relative w-full aspect-[792/1130] overflow-hidden rounded-[2rem] select-none font-sans">
+      {/* Photorealistic 3D Print-Ready Table Sticker Plate (100% Orthographic, 4-Sided 3D Gold Rim) */}
       <img
         src={standeeImg}
-        alt="MenusQR Physical Table Standee"
+        alt="MenusQR Print-Ready Table Sticker Plaque"
         onError={() => setStandeeImg('/assets/standee/flagship_culinary_standee_master.png')}
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
       />
@@ -198,13 +198,13 @@ function FlagshipCulinaryStandeeCard({
       <div
         className="absolute z-10 flex flex-col items-center text-center"
         style={{
-          top: '3.6%',
-          left: '16%',
-          right: '16%',
+          top: '4.2%',
+          left: '18%',
+          right: '18%',
         }}
       >
         {/* Official MenusQR Brand Badge */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-black/75 backdrop-blur-md border border-[#D4AF37]/60 shadow-lg">
+        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-[#D4AF37]/70 shadow-lg">
           <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
             <MenusQRMark color="#FFFFFF" orange="#EA580C" />
           </div>
@@ -221,12 +221,12 @@ function FlagshipCulinaryStandeeCard({
         <h2
           className={`font-black tracking-tight leading-tight w-full px-1 text-center uppercase mt-1.5 ${
             restaurantName.length > 28
-              ? 'text-sm sm:text-base'
+              ? 'text-xs sm:text-sm'
               : restaurantName.length > 20
-              ? 'text-base sm:text-lg'
+              ? 'text-sm sm:text-base'
               : restaurantName.length > 12
-              ? 'text-lg sm:text-xl'
-              : 'text-xl sm:text-2xl'
+              ? 'text-base sm:text-lg'
+              : 'text-lg sm:text-xl'
           }`}
           style={{
             fontFamily: "'Playfair Display', 'Cinzel', Georgia, serif",
@@ -240,30 +240,39 @@ function FlagshipCulinaryStandeeCard({
         </h2>
 
         {/* Dynamic Cuisine Category with Gold Accents */}
-        <div className="flex items-center justify-center gap-1.5 mt-1 max-w-[310px]">
+        <div className="flex items-center justify-center gap-1.5 mt-1 max-w-[290px]">
           <span className="h-[1px] w-4 bg-gradient-to-r from-transparent to-[#D4AF37]" />
-          <p className="text-[8px] sm:text-[8.5px] font-extrabold uppercase tracking-[0.2em] text-[#E8C15A] text-center drop-shadow">
-            {category || 'AUTHENTIC FLAVORS • TABLE SERVICE'}
+          <p className="text-[7.5px] sm:text-[8px] font-extrabold uppercase tracking-[0.2em] text-[#E8C15A] text-center drop-shadow truncate">
+            {category || 'AUTHENTIC CHARCOAL & CLAY TANDOOR CRAFT'}
           </p>
           <span className="h-[1px] w-4 bg-gradient-to-l from-transparent to-[#D4AF37]" />
         </div>
 
         {/* Tagline */}
         {tagline && (
-          <p className="text-[7.5px] italic text-[#FEF3C7]/80 max-w-[280px] truncate mt-0.5 drop-shadow">
+          <p className="text-[7px] italic text-[#FEF3C7]/80 max-w-[260px] truncate mt-0.5 drop-shadow">
             "{tagline}"
           </p>
         )}
+
+        {/* Scan to Explore Menu Callout */}
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <span className="h-[1px] w-5 bg-gradient-to-r from-transparent to-[#D4AF37]/70" />
+          <span className="text-[8.5px] sm:text-[9px] font-black uppercase tracking-[0.22em] text-[#FFF4D0] drop-shadow">
+            SCAN TO EXPLORE MENU
+          </span>
+          <span className="h-[1px] w-5 bg-gradient-to-l from-transparent to-[#D4AF37]/70" />
+        </div>
       </div>
 
-      {/* --- CENTER 3D GOLD QR CHAMBER (Exact 327x327 square dock) --- */}
+      {/* --- CENTER 3D GOLD QR CHAMBER (Exact 294x294 square dock on ivory bed) --- */}
       <div
-        className="absolute z-10 flex items-center justify-center rounded-[1.2rem] sm:rounded-[1.4rem] overflow-hidden p-2 sm:p-2.5"
+        className="absolute z-10 flex items-center justify-center rounded-[1.1rem] sm:rounded-[1.3rem] overflow-hidden p-1.5 sm:p-2"
         style={{
-          left: '33.33%',
-          top: '40.70%',
-          width: '40.07%',
-          height: '25.55%',
+          left: '32.83%',
+          top: '47.79%',
+          width: '37.12%',
+          height: '26.02%',
         }}
       >
         {qrImage ? (
@@ -276,7 +285,7 @@ function FlagshipCulinaryStandeeCard({
             />
             {/* Center MenusQR Seal */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#110D0B] border-2 border-[#D4AF37] p-1 flex items-center justify-center shadow-lg">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-[#110D0B] border-2 border-[#D4AF37] p-1 flex items-center justify-center shadow-lg">
                 <MenusQRMark color="#FFFFFF" orange="#EA580C" />
               </div>
             </div>
@@ -289,9 +298,9 @@ function FlagshipCulinaryStandeeCard({
       {/* Dynamic Table Number Plaque (if provided) */}
       {tableNumber && (
         <div
-          className="absolute z-20 px-3.5 py-0.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#FFF1B0] to-[#D4AF37] text-[#1A120B] font-black text-[9px] sm:text-[10px] tracking-widest uppercase shadow-xl border border-black/30"
+          className="absolute z-20 px-3.5 py-0.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#FFF1B0] to-[#D4AF37] text-[#1A120B] font-black text-[8.5px] sm:text-[9.5px] tracking-widest uppercase shadow-xl border border-black/30"
           style={{
-            top: '67.2%',
+            top: '75.2%',
             left: '50%',
             transform: 'translateX(-50%)',
           }}
@@ -891,7 +900,7 @@ export default function RoyalWalnutStickerCard({
         data-testid="menusqr-standee-card"
         className={`${isModal ? 'qr-print-sticker ' : ''}relative flex w-[380px] sm:w-[416px] flex-col items-center overflow-hidden ${
           activeTheme === 'flagship'
-            ? 'p-0 rounded-[2.2rem]'
+            ? 'p-0 rounded-[2rem]'
             : 'min-h-[640px] rounded-[2.6rem] p-3'
         } box-border transition-all`}
         style={{
