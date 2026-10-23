@@ -5,7 +5,6 @@
 import React, { useMemo, useState } from 'react';
 import clsx from 'clsx';
 import type { CompositionProps } from '../types';
-import type { MenuItem } from '../../templates/types';
 import { DietIndicator, parseItemPricing } from '../../templates/shared/RenderItemPrices';
 import '../HeritageArtboard.css';
 import { 
@@ -98,255 +97,148 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     banner: '/uploads/mannat/textures/banner_paneer_khazana.webp',
     heroImage: '/uploads/mannat/assets/hero_paneer_curries_handi.webp',
     heroTitle: 'Paneer Ka Khazana & Handi Curries',
-    heroSubtitle: 'Paneer Butter Masala, Shahi Paneer & Dal Makhani',
+    heroSubtitle: 'Slow-Cooked Dal Makhani & Royal Paneer Curries',
     themeClass: 'chapter-theme-gravies',
-    subcategories: [
-      'paneer ka khazana', 
-      'paneer khazana',
-      'paneer gravies',
-      'veg specialities', 
-      'dal specialities', 
-      'desi junction', 
-      'rice & biryani', 
-      'biryani',
-      'raita & papad'
-    ],
+    subcategories: ['paneer ka khazana', 'veg specialities', 'dal specialities', 'desi junction', 'rice & biryani', 'raita & papad'],
     announcement: {
-      text: 'Slow-simmered 24-hour Dal Makhani & rich cashew-makhani gravies prepared in pure desi butter',
-      badge: 'Royal Dhaba',
+      text: 'Overnight simmered Dal Makhani & handcrafted rich gravies with authentic spices',
+      badge: 'Signature Curries',
       icon: 'flame',
     },
   },
   {
     id: 'chapter-soya-breads',
-    title: 'MTJ Pure Soya Gravies & Tandoori Breads',
+    title: 'MTJ Pure Soya Gravies & Breads',
     shortTitle: 'Soya & Breads',
     banner: '/uploads/mannat/textures/banner_soya_gravies.webp',
-    heroImage: '/uploads/mannat/assets/hero_biryani_gravies.webp',
-    heroTitle: 'Pure Soya Gravies & Tandoori Breads',
-    heroSubtitle: 'Rich Desi Gravies & Clay-Oven Baked Rotis & Naans',
+    heroImage: '/uploads/mannat/assets/hero_soya_chaap_curry.webp',
+    heroTitle: 'MTJ Pure Soya Gravies & Breads',
+    heroSubtitle: '100% Plant-Based Soya Curries & Tandoori Breads',
     themeClass: 'chapter-theme-gravies',
-    subcategories: ['mtj pure soya gravies', 'pure soya gravies', 'soya gravies', 'tandoori breads', 'breads', 'rotis'],
+    subcategories: ['mtj pure soya gravies', 'pure soya gravies', 'tandoori breads', 'breads'],
     announcement: {
-      text: 'Fresh hand-stretched rotis & naans baked to perfection in traditional charcoal tandoor',
-      badge: 'Clay Oven Fresh',
+      text: '100% Plant-Based Soya Gravies paired with crisp tandoori butter naans',
+      badge: 'Pure Soya',
       icon: 'flame',
     },
   },
   {
-    id: 'chapter-thalis-street',
-    title: 'MTJ Thalis & Street Food Specials',
+    id: 'chapter-thalis-combos',
+    title: 'MTJ Thalis & Street Specials',
     shortTitle: 'Thalis & Combos',
     banner: '/uploads/mannat/textures/banner_thalis_combos.webp',
     heroImage: '/uploads/mannat/assets/hero_royal_thali.webp',
-    heroTitle: 'MTJ Deluxe Thalis & Street Food',
-    heroSubtitle: 'Complete Wholesome Thalis, Pav Bhaji & Chole Kulche',
+    heroTitle: 'Grand Dawat Thalis & Meal Combos',
+    heroSubtitle: 'Complete Royal Meals & Street Food Classics',
     themeClass: 'chapter-theme-thalis',
-    subcategories: ['mtj thalis', 'thalis', 'mtja meal combos', 'meal combos', 'combos', 'mtj street specials', 'street specials'],
+    subcategories: ['mtj thalis', 'thalis', 'mtja meal combos', 'meal combos', 'mtj street specials', 'street specials'],
     announcement: {
-      text: 'Wholesome Deluxe & Special Thalis served with Dal Makhani, Shahi Paneer, Rice, Roti & Sweet',
-      badge: 'Wholesome Thali',
+      text: 'Served with Dal Makhani, Paneer, Rice, Choice of Breads, Salad & Sweet',
+      badge: 'Royal Feast',
       icon: 'sparkles',
     },
   },
   {
-    id: 'chapter-momo-junction',
+    id: 'chapter-momos',
     title: 'MTJ Momo Junction',
     shortTitle: 'Momo Junction',
     banner: '/uploads/mannat/textures/banner_momos.webp',
-    heroImage: '/uploads/mannat/assets/hero_momos_platter.webp',
-    heroTitle: 'Himalayan Momo Junction',
-    heroSubtitle: 'Steamed, Kurkure, Afghani & Tandoori Momos',
+    heroImage: '/uploads/mannat/assets/dish_steamed_momos.webp',
+    heroTitle: 'Authentic Himalayan Momo Junction',
+    heroSubtitle: 'Steamed, Kurkure, Tandoori & Gravy Momos (6 Pcs)',
     themeClass: 'chapter-theme-momos',
-    subcategories: ['mtj momo junction', 'momo junction', 'momos'],
-    announcement: {
-      text: 'Choose your preparation style across Veg (6 Pcs), Paneer (6 Pcs) or Corn N Cheese (6 Pcs)',
-      badge: '3-Tier Matrix',
-      icon: 'sparkles',
-    },
+    subcategories: ['momo junction', 'momos'],
     isMomo: true,
+    announcement: {
+      text: 'Every order served fresh with fiery red chili-garlic dip & spiced mayo',
+      badge: 'Himalayan Style',
+      icon: 'flame',
+    },
   },
   {
     id: 'chapter-chinese-wok',
-    title: 'MTJ Indo-Chinese Wok',
+    title: 'MTJ Chinese Wok',
     shortTitle: 'Chinese Wok',
     banner: '/uploads/mannat/textures/banner_chinese_wok.webp',
-    heroImage: '/uploads/mannat/assets/hero_chinese_wok.webp',
-    heroTitle: 'Indo-Chinese Wok Master Recipes',
-    heroSubtitle: 'Hakka Noodles Bowls, Manchurian & Chilly Paneer Gravy',
+    heroImage: '/uploads/mannat/assets/dish_chili_paneer.webp',
+    heroTitle: 'Indo-Chinese Wok Specialities',
+    heroSubtitle: 'Hakka Noodles, Manchurian & Chili Paneer Bowls',
     themeClass: 'chapter-theme-chinese',
-    subcategories: ['noodles bowls', 'noodle bowls', 'mtj chinese bowls', 'chinese bowls', 'appetizers', 'wok gravies', 'fried rice', 'chinese'],
+    subcategories: ['noodles bowls', 'mtj chinese bowls', 'appetizers (chinese wok)', 'wok gravies', 'fried rice'],
     announcement: {
-      text: 'High-flame wok tossed Hakka noodles, crispy Manchurian & sizzling chilly gravies',
-      badge: 'Indo-Chinese',
+      text: 'Tossed in high-heat wok with garlic, spring onions & oriental sauces',
+      badge: 'Wok Tossed',
       icon: 'flame',
     },
   },
   {
     id: 'chapter-cafe-quick-bites',
-    title: 'MTJ Café, Fries & Mexican Bites',
+    title: 'MTJ Café, Fries & Quick Bites',
     shortTitle: 'Café & Quick Bites',
     banner: '/uploads/mannat/textures/banner_lebanese_fries.webp',
-    heroImage: '/uploads/mannat/assets/hero_lebanese_fries.webp',
-    heroSubImage: '/uploads/mannat/assets/hero_tacos_pasta.webp',
-    heroTitle: 'Café Delights, Fries & Mexican Tacos',
-    heroSubtitle: 'Peri-Peri Fries, Cheesy Nachos, Falafel & Crispy Tacos',
+    heroImage: '/uploads/mannat/assets/dish_falafel_wrap.webp',
+    heroTitle: 'Lebanese Delights & Mexican Bites',
+    heroSubtitle: 'Cheesy Nachos, Loaded Fries & Hummus Platters',
     themeClass: 'chapter-theme-cafe',
-    subcategories: ['cheesy bites', 'fries & nachos', 'lebanese delights', 'mexican fiesta', 'fries', 'nachos', 'lebanese', 'mexican', 'tacos'],
+    subcategories: ['cheesy bites', 'fries & nachos', 'labanese delights', 'mexican fiesta', 'mexicana fiest'],
     announcement: {
-      text: 'Loaded Peri-Peri fries, Cheesy Nachos, Hummus Falafel & Crispy Mexican Tacos',
-      badge: 'Snack Station',
-      icon: 'sparkles',
+      text: 'Artisanal quick bites, cheesy finger foods & authentic zaatar hummus',
+      badge: 'MTJ Café',
+      icon: 'coffee',
     },
   },
   {
     id: 'chapter-pizzas-burgers',
-    title: 'Stone Baked Pizzas, Burgers & Pastas',
+    title: 'Stone Baked Pizzas & Brioche Burgers',
     shortTitle: 'Pizzas & Burgers',
     banner: '/uploads/mannat/textures/banner_pizza_burger.webp',
-    heroImage: '/uploads/mannat/assets/hero_pizza_burger.webp',
-    heroTitle: 'Stone Baked Pizzas & Brioche Burgers',
-    heroSubtitle: '10-Inch Thin Crust Pizzas, Sesame Burgers & Pasta',
+    heroImage: '/uploads/mannat/assets/dish_creamy_pasta.webp',
+    heroSubImage: '/uploads/mannat/assets/dish_brioche_burger.webp',
+    heroTitle: 'Italian Pizzas, Pastas & Brioche Burgers',
+    heroSubtitle: '10-Inch Thin Crust Pizzas & Gourmet Brioche Buns',
     themeClass: 'chapter-theme-pizzas',
-    subcategories: ['pasta selections', 'pasta', 'stone baked pizzas', 'pizzas', 'burgers & sandwiches', 'burgers', 'garlic breads'],
+    subcategories: ['pasta selections', 'stone baked pizzas', 'burgers & sandwiches', 'burgers', 'sandwiches'],
     announcement: {
-      text: '10-inch hand-stretched thin crust stone-baked pizzas topped with 100% mozzarella',
-      badge: 'Stone Oven',
+      text: '100% mozzarella stone-baked pizzas & butter toasted brioche burgers',
+      badge: 'Stone Baked',
       icon: 'sparkles',
     },
   },
   {
-    id: 'chapter-brews-shakes',
-    title: 'Brews, Thick Shakes & Coolers',
+    id: 'chapter-brews-beverages',
+    title: 'Artisan Brews, Shakes & Coolers',
     shortTitle: 'Brews & Shakes',
     banner: '/uploads/mannat/textures/banner_thick_shakes.webp',
-    heroImage: '/uploads/mannat/assets/hero_coffee_shakes.webp',
-    heroTitle: 'Artisan Brews, Boba & Thick Shakes',
-    heroSubtitle: 'Chilled Iced Latte, Oreo Thick Shakes & Fresh Mojito',
+    heroImage: '/uploads/mannat/assets/dish_cappuccino.webp',
+    heroSubImage: '/uploads/mannat/assets/hero_beverages_shakes.webp',
+    heroTitle: 'Hot & Cold Artisan Brews, Boba & Shakes',
+    heroSubtitle: 'Thick Shakes, Cold Brews & Refreshing Mocktails',
     themeClass: 'chapter-theme-brews',
-    subcategories: ['hot coffee', 'cold brew', 'ice tea', 'thick shakes', 'boba shakes & coffee', 'boba', 'coolers', 'beverages', 'shakes'],
+    subcategories: ['garlic breads', 'hot coffee', 'cold brew', 'ice tea', 'thick shakes', 'boba shakes & coffee', 'coolers', 'beverages'],
     announcement: {
-      text: 'Flavour Syrups: Hazelnut • Caramel • Irish • Vanilla • Chocolate (+₹39)',
+      text: '100% Arabica coffee, loaded thick shakes & hand-crafted fruit coolers',
       badge: 'Barista Specials',
       icon: 'coffee',
     },
   },
   {
     id: 'chapter-desserts',
-    title: 'MTJ Desserts & Sweet Indulgence',
+    title: 'Sweet Treats & Desserts',
     shortTitle: 'Desserts',
     banner: '/uploads/mannat/textures/banner_desserts.webp',
-    heroImage: '/uploads/mannat/assets/hero_desserts_brownie.webp',
-    heroTitle: 'Sweet Treats & Sizzling Desserts',
-    heroSubtitle: 'Hot Sizzling Chocolate Brownie & Golden Gulab Jamun',
+    heroImage: '/uploads/mannat/assets/hero_gulab_jamun_kheer.webp',
+    heroTitle: 'Hot Sizzling Brownie & Heritage Sweets',
+    heroSubtitle: 'Warm Gulab Jamuns, Kesari Kheer & Ice Creams',
     themeClass: 'chapter-theme-desserts',
-    subcategories: ['desserts', 'dessert', 'sweets', 'sweet endings', 'sweet'],
+    subcategories: ['desserts', 'sweets'],
     announcement: {
-      text: 'Hot Sizzling Brownie with Vanilla Ice Cream & Golden Gulab Jamun',
-      badge: 'Sweet Finish',
+      text: 'Indulgent classic Indian sweets & sizzling walnut fudge brownies',
+      badge: 'Sweet Ending',
       icon: 'sparkles',
     },
   },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Authentic Dish Photo Matcher (40 Clean Hand-Cropped PDF Food Photos)
-// ─────────────────────────────────────────────────────────────────────────────
-const getDishImage = (item: MenuItem, catName: string): string => {
-  if (item.image && !item.image.includes('placeholder')) {
-    return item.image;
-  }
-  const name = (item.name || '').toLowerCase();
-  const cat = catName.toLowerCase();
-
-  // 1. Tandoori Chaap Specialities
-  if (name.includes('malai chaap')) return '/uploads/mannat/assets/dish_malai_chaap.webp';
-  if (name.includes('afghani chaap')) return '/uploads/mannat/assets/dish_afghani_chaap.webp';
-  if (name.includes('chaap roll')) return '/uploads/mannat/assets/dish_chaap_roll.webp';
-  if (name.includes('paneer roll')) return '/uploads/mannat/assets/dish_paneer_roll.webp';
-  if (name.includes('roll')) return '/uploads/mannat/assets/dish_chaap_roll.webp';
-  if (name.includes('chaap gravy') || name.includes('soya gravy') || (cat.includes('soya grav') && name.includes('chaap'))) {
-    return '/uploads/mannat/assets/dish_chaap_gravy.webp';
-  }
-  if (name.includes('chaap') || cat.includes('chaap')) return '/uploads/mannat/assets/dish_tandoori_chaap.webp';
-
-  // 2. Paneer Feast & Gravies
-  if (name.includes('malai paneer tikka')) return '/uploads/mannat/assets/dish_malai_paneer_tikka.webp';
-  if (name.includes('paneer tikka')) return '/uploads/mannat/assets/dish_paneer_tikka.webp';
-  if (name.includes('paneer butter') || name.includes('paneer makhani')) return '/uploads/mannat/assets/dish_paneer_butter_masala.webp';
-  if (name.includes('shahi paneer') || name.includes('lababdar') || name.includes('kadhai paneer')) return '/uploads/mannat/assets/dish_shahi_paneer.webp';
-  if (name.includes('chilli paneer') || name.includes('chili paneer')) return '/uploads/mannat/assets/dish_chili_paneer.webp';
-
-  // 3. Kebabs, Dahi Ke Sholay & Crunch
-  if (name.includes('sholay') || name.includes('dahi')) return '/uploads/mannat/assets/dish_dahi_ke_sholay.webp';
-  if (name.includes('seekh') || name.includes('kebab') || name.includes('hara bhara')) return '/uploads/mannat/assets/dish_veg_seekh_kebab.webp';
-  if (name.includes('crunch') || name.includes('popcorn') || name.includes('satay') || cat.includes('crunch')) return '/uploads/mannat/assets/dish_crunchy_soya.webp';
-  if (name.includes('salad') || cat.includes('salad')) return '/uploads/mannat/assets/dish_greek_salad.webp';
-
-  // 4. Dal, Rice & Breads
-  if (name.includes('dal') || name.includes('makhani')) return '/uploads/mannat/assets/dish_dal_makhani.webp';
-  if (name.includes('biryani') || name.includes('pulao') || name.includes('rice')) return '/uploads/mannat/assets/dish_veg_biryani.webp';
-  if (name.includes('naan')) return '/uploads/mannat/assets/dish_garlic_naan.webp';
-  if (name.includes('roti') || name.includes('kulcha') || name.includes('paratha') || cat.includes('bread')) {
-    return '/uploads/mannat/assets/dish_butter_roti.webp';
-  }
-
-  // 5. Thalis & Street Food
-  if (name.includes('deluxe thali') || name.includes('dawat thali')) return '/uploads/mannat/assets/dish_deluxe_thali.webp';
-  if (name.includes('special thali') || name.includes('thali') || name.includes('combo')) return '/uploads/mannat/assets/dish_special_thali.webp';
-  if (name.includes('kulche') || name.includes('chole') || name.includes('bhature')) return '/uploads/mannat/assets/dish_chole_kulche.webp';
-  if (name.includes('pav') || name.includes('bhaji')) return '/uploads/mannat/assets/dish_pav_bhaji.webp';
-
-  // 6. Momos
-  if (name.includes('momo') || cat.includes('momo')) {
-    return name.includes('fried') || name.includes('kurkure')
-      ? '/uploads/mannat/assets/dish_fried_momos.webp'
-      : '/uploads/mannat/assets/dish_steamed_momos.webp';
-  }
-
-  // 7. Chinese & Wok
-  if (name.includes('noodle') || name.includes('chowmein')) return '/uploads/mannat/assets/dish_hakka_noodles.webp';
-  if (name.includes('manchurian') || name.includes('fried rice') || cat.includes('chinese') || cat.includes('wok')) {
-    return '/uploads/mannat/assets/dish_veg_manchurian.webp';
-  }
-
-  // 8. Café, Lebanese & Mexican
-  if (name.includes('falafel') || name.includes('shawarma') || cat.includes('lebanese')) return '/uploads/mannat/assets/dish_falafel_wrap.webp';
-  if (name.includes('taco') || name.includes('quesadilla') || cat.includes('mexican')) return '/uploads/mannat/assets/dish_crispy_tacos.webp';
-  if (name.includes('nacho') || cat.includes('nacho')) return '/uploads/mannat/assets/dish_cheese_nachos.webp';
-  if (name.includes('fries') || name.includes('finger') || cat.includes('fries')) return '/uploads/mannat/assets/dish_peri_peri_fries.webp';
-
-  // 9. Pizzas, Burgers, Pastas & Garlic Bread
-  if (name.includes('pizza') || cat.includes('pizza')) return '/uploads/mannat/assets/dish_margherita_pizza.webp';
-  if (name.includes('pasta') || cat.includes('pasta')) return '/uploads/mannat/assets/dish_creamy_pasta.webp';
-  if (name.includes('burger') || name.includes('sandwich') || cat.includes('burger')) return '/uploads/mannat/assets/dish_brioche_burger.webp';
-  if (name.includes('garlic bread') || cat.includes('garlic')) return '/uploads/mannat/assets/dish_garlic_bread.webp';
-
-  // 10. Beverages, Shakes & Coolers
-  if (name.includes('cold brew') || name.includes('iced latte') || name.includes('latte')) return '/uploads/mannat/assets/dish_iced_latte.webp';
-  if (name.includes('cappuccino') || name.includes('coffee') || cat.includes('coffee')) return '/uploads/mannat/assets/dish_cappuccino.webp';
-  if (name.includes('shake') || name.includes('boba') || cat.includes('shake')) return '/uploads/mannat/assets/dish_oreo_shake.webp';
-  if (name.includes('mojito') || name.includes('cooler') || cat.includes('cooler')) return '/uploads/mannat/assets/dish_mint_mojito.webp';
-
-  // 11. Desserts
-  if (name.includes('brownie') || name.includes('dessert') || cat.includes('dessert') || name.includes('jamun') || name.includes('ice cream')) {
-    return '/uploads/mannat/assets/dish_fudge_brownie.webp';
-  }
-
-  // Category based smart fallback
-  if (cat.includes('bread') || cat.includes('roti')) return '/uploads/mannat/assets/dish_butter_roti.webp';
-  if (cat.includes('rice') || cat.includes('biryani')) return '/uploads/mannat/assets/dish_veg_biryani.webp';
-  if (cat.includes('dal')) return '/uploads/mannat/assets/dish_dal_makhani.webp';
-  if (cat.includes('paneer')) return '/uploads/mannat/assets/dish_shahi_paneer.webp';
-  if (cat.includes('shake')) return '/uploads/mannat/assets/dish_oreo_shake.webp';
-  if (cat.includes('coffee')) return '/uploads/mannat/assets/dish_cappuccino.webp';
-
-  return '/uploads/mannat/assets/dish_tandoori_chaap.webp';
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────────────────────────────────────
 export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
   spec,
   restaurant,
@@ -409,7 +301,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
 
   return (
     <div
-      className="heritage-canvas relative z-10 space-y-8 max-w-4xl mx-auto w-full transition-colors duration-300 p-2 sm:p-5"
+      className="heritage-canvas heritage-main-content relative z-10 space-y-8 max-w-4xl mx-auto w-full transition-colors duration-300 p-2 sm:p-5"
       style={{
         color: colors.text,
         fontFamily: typography.bodyFont,
@@ -469,11 +361,11 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          STICKY 12-CHAPTER NAVIGATION PILLS (Eliminates 40 micro-pills clutter!)
+          STICKY 12-CHAPTER NAVIGATION (Adaptive Wrap, Zero Sideways Scroll)
           ═══════════════════════════════════════════════════════════════════════ */}
       <nav
         aria-label="Menu Chapters"
-        className="sticky top-14 z-30 bg-[#FFFDF9]/95 backdrop-blur-md py-2.5 px-3 rounded-2xl shadow-md border-2 border-[#FAB700]/60 overflow-x-auto scrollbar-none flex items-center gap-2"
+        className="sticky top-14 z-30 bg-[#FFFDF9]/95 backdrop-blur-md py-2.5 px-3 rounded-2xl shadow-md border-2 border-[#FAB700]/70 flex flex-wrap items-center gap-1.5 sm:gap-2"
       >
         <button
           type="button"
@@ -482,7 +374,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
             if (setParentActiveCategory) setParentActiveCategory('all');
           }}
           className={clsx(
-            'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer',
+            'px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer',
             selectedChapterId === 'all'
               ? 'bg-[#CE182C] text-white border border-[#FAB700] shadow-sm'
               : 'bg-white text-[#1F2923] hover:bg-[#CE182C]/10 border border-[#CE182C]/20'
@@ -505,7 +397,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                 if (setParentActiveCategory) setParentActiveCategory(ch.id);
               }}
               className={clsx(
-                'shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 shadow-xs active:scale-95 cursor-pointer',
+                'px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 shadow-xs active:scale-95 cursor-pointer',
                 isActive
                   ? 'bg-[#CE182C] text-white border border-[#FAB700] shadow-sm'
                   : 'bg-white text-[#1F2923] hover:bg-[#CE182C]/10 border border-[#CE182C]/20'
@@ -519,7 +411,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
       </nav>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          CHAPTERS & DISHES (1 Header Banner per Chapter!)
+          CHAPTERS & DISHES
           ═══════════════════════════════════════════════════════════════════════ */}
       <div className="space-y-12">
         {visibleChapters.map((chapter) => {
@@ -529,13 +421,29 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
               id={chapter.id}
               data-chapter-id={chapter.id}
               className={clsx(
-                "p-4 sm:p-6 space-y-6 rounded-3xl transition-all duration-300",
+                "p-3 sm:p-6 space-y-6 rounded-3xl transition-all duration-300 relative",
                 chapter.themeClass || 'chapter-theme-tandoori'
               )}
             >
-              {/* ─────────────────────────────────────────────────────────────
-                  SINGLE CHAPTER HEADER BANNER (Authentic PDF Artwork Plate)
-                  ───────────────────────────────────────────────────────────── */}
+              {/* Corner Flourishes */}
+              <div 
+                className="heritage-corner-flourish heritage-corner-flourish-tl" 
+                style={{ backgroundImage: "url('/menuqr/generated/corner-flourish-gold.svg')" }} 
+              />
+              <div 
+                className="heritage-corner-flourish heritage-corner-flourish-tr" 
+                style={{ backgroundImage: "url('/menuqr/generated/corner-flourish-gold.svg')" }} 
+              />
+              <div 
+                className="heritage-corner-flourish heritage-corner-flourish-bl" 
+                style={{ backgroundImage: "url('/menuqr/generated/corner-flourish-gold.svg')" }} 
+              />
+              <div 
+                className="heritage-corner-flourish heritage-corner-flourish-br" 
+                style={{ backgroundImage: "url('/menuqr/generated/corner-flourish-gold.svg')" }} 
+              />
+
+              {/* Chapter Header Banner Plate */}
               <div className="rounded-2xl overflow-hidden shadow-md border-2 border-[#FAB700] bg-[#181E19]">
                 <picture>
                   <source srcSet={chapter.banner} type="image/webp" />
@@ -552,7 +460,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                   ART-DIRECTED SPATIAL LAYOUT: HERO SHOWCASE + TYPOGRAPHIC MENU
                   ───────────────────────────────────────────────────────────── */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* Left Column: Authentic Grand Food Photography Showcase (Pages 4–16) */}
+                {/* Left Column: Authentic Food Photography Showcase */}
                 <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
                   <div className="heritage-hero-showcase">
                     <picture>
@@ -560,11 +468,11 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                       <img
                         src={chapter.heroImage.replace('.webp', '.png')}
                         alt={chapter.heroTitle}
-                        className="w-full h-56 sm:h-64 lg:h-72 object-cover"
+                        className="w-full h-52 sm:h-64 lg:h-72 object-cover"
                         loading="lazy"
                       />
                     </picture>
-                    <div className="bg-[#181E19] text-[#FAB700] p-3.5 border-t-2 border-[#FAB700]/40">
+                    <div className="bg-[#181E19] text-[#FAB700] p-3 sm:p-3.5 border-t-2 border-[#FAB700]/40">
                       <div className="font-serif font-bold text-sm sm:text-base text-white tracking-wide">
                         {chapter.heroTitle}
                       </div>
@@ -574,7 +482,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                     </div>
                   </div>
 
-                  {/* Secondary Hero Photo Plate (when present in source) */}
+                  {/* Secondary Hero Photo Plate (when present) */}
                   {chapter.heroSubImage && (
                     <div className="heritage-hero-showcase hidden sm:block">
                       <picture>
@@ -591,12 +499,12 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
 
                   {/* Chapter Announcement / Specialty Note */}
                   {chapter.announcement && (
-                    <div className="p-3.5 rounded-2xl bg-[#FFFDF9] border border-[#FAB700] text-amber-950 text-xs font-semibold flex flex-col gap-2 shadow-xs">
+                    <div className="p-3 sm:p-3.5 rounded-2xl bg-[#FFFDF9] border border-[#FAB700] text-amber-950 text-xs font-semibold flex flex-col gap-2 shadow-xs">
                       <div className="flex items-center gap-2">
-                        {chapter.announcement.icon === 'coffee' && <Coffee size={16} className="text-amber-800 shrink-0" />}
-                        {chapter.announcement.icon === 'flame' && <Flame size={16} className="text-[#CE182C] shrink-0" />}
-                        {chapter.announcement.icon === 'sparkles' && <Sparkles size={16} className="text-[#FAB700] shrink-0" />}
-                        <span className="leading-snug">{chapter.announcement.text}</span>
+                        {chapter.announcement.icon === 'coffee' && <Coffee size={15} className="text-amber-800 shrink-0" />}
+                        {chapter.announcement.icon === 'flame' && <Flame size={15} className="text-[#CE182C] shrink-0" />}
+                        {chapter.announcement.icon === 'sparkles' && <Sparkles size={15} className="text-[#FAB700] shrink-0" />}
+                        <span className="leading-snug text-[11px] sm:text-xs">{chapter.announcement.text}</span>
                       </div>
                       {chapter.announcement.badge && (
                         <span className="self-start font-mono font-bold bg-[#FAB700] text-[#181E19] px-2.5 py-0.5 rounded text-[10px] uppercase tracking-wider">
@@ -609,13 +517,20 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
 
                 {/* Right Column: Editorial Typographic Parchment Menu */}
                 <div className="lg:col-span-7 space-y-6">
-                  {chapter.categories.map((subcat) => {
+                  {chapter.categories.map((subcat, idx) => {
                     const isMomoSection = chapter.isMomo || subcat.name.toLowerCase().includes('momo');
                     const isRolls = subcat.name.toLowerCase().includes('roll');
                     const hasAnyHalfFull = subcat.items.some((i) => Boolean(i.halfPrice && i.fullPrice));
 
                     return (
                       <div key={subcat.id} className="space-y-3">
+                        {idx > 0 && (
+                          <div 
+                            className="w-full h-4 bg-contain bg-center bg-no-repeat opacity-75 my-2"
+                            style={{ backgroundImage: "url('/menuqr/generated/section-divider-flourish.svg')" }}
+                          />
+                        )}
+
                         {/* Subcategory Ribbon Header */}
                         <div className="heritage-subcat-header">
                           <span className="heritage-subcat-badge">
@@ -626,118 +541,98 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                           <span className="heritage-subcat-line" />
                         </div>
 
-                        {/* Momo Table or Editorial Container */}
+                        {/* Momo Section: Tibetan Wave Header & Compact 3-Tier Grid */}
                         {isMomoSection ? (
                           <div className="space-y-4">
-                            <div className="overflow-x-auto rounded-2xl border-2 border-[#FAB700] shadow-sm bg-white">
-                              <table className="heritage-matrix-table w-full">
-                                <thead>
-                                  <tr 
-                                    className="text-white text-xs font-black uppercase tracking-wider"
-                                    style={{ background: '#1F2923' }}
-                                  >
-                                    <th className="py-2.5 px-2.5 sm:px-4 text-left">Preparation</th>
-                                    <th className="py-2.5 px-2 text-center bg-emerald-950/90 text-emerald-300 border-l border-white/10 w-24 sm:w-28">
-                                      Veg (6 Pcs)
-                                    </th>
-                                    <th className="py-2.5 px-2 text-center bg-amber-950/90 text-amber-300 border-l border-white/10 w-24 sm:w-28">
-                                      Paneer (6 Pcs)
-                                    </th>
-                                    <th className="py-2.5 px-2 text-center bg-orange-950/90 text-orange-300 border-l border-white/10 w-24 sm:w-32">
-                                      Corn N Cheese
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-black/5 text-xs">
-                                  {subcat.items.map((item, idx) => {
-                                    const vegVar = item.variants?.find((v) => v.name.toLowerCase().includes('veg'));
-                                    const panVar = item.variants?.find((v) => v.name.toLowerCase().includes('paneer'));
-                                    const chzVar = item.variants?.find((v) => v.name.toLowerCase().includes('corn') || v.name.toLowerCase().includes('cheese'));
+                            <div className="rounded-2xl overflow-hidden border-2 border-[#1B3B2B] shadow-sm bg-white">
+                              {/* Tibetan Wave Motif Decorative Strip */}
+                              <div 
+                                className="w-full h-10 sm:h-12 bg-[#1B3B2B] bg-cover bg-bottom"
+                                style={{ backgroundImage: "url('/menuqr/generated/tibetan-momo-wave.svg')" }}
+                              />
+                              <div className="p-2 sm:p-3 bg-[#FFFDF9]">
+                                {/* 3-Tier Grid Header */}
+                                <div className="heritage-grid-header heritage-momo-grid text-center font-bold">
+                                  <span className="text-left">PREPARATION</span>
+                                  <span className="text-emerald-700 bg-emerald-50 rounded py-0.5 border border-emerald-200">VEG (6)</span>
+                                  <span className="text-amber-800 bg-amber-50 rounded py-0.5 border border-amber-200">PANEER</span>
+                                  <span className="text-orange-800 bg-orange-50 rounded py-0.5 border border-orange-200">CHZ (6)</span>
+                                </div>
 
-                                    const vegPrice = vegVar ? vegVar.price : (item.halfPrice || item.price || 149);
-                                    const panPrice = panVar ? panVar.price : (typeof vegPrice === 'number' ? vegPrice + 20 : 169);
-                                    const chzPrice = chzVar ? chzVar.price : (typeof vegPrice === 'number' ? vegPrice + 40 : 189);
-
-                                    const thumb = getDishImage(item, subcat.name);
+                                {/* Momo Rows */}
+                                <div className="divide-y divide-black/5">
+                                  {subcat.items.map((item) => {
+                                    const basePrice = typeof item.price === 'number' ? item.price : parseFloat(String(item.price || 129));
+                                    const halfNum = typeof item.halfPrice === 'number' ? item.halfPrice : (item.halfPrice ? parseFloat(String(item.halfPrice)) : null);
+                                    const fullNum = typeof item.fullPrice === 'number' ? item.fullPrice : (item.fullPrice ? parseFloat(String(item.fullPrice)) : null);
+                                    const vegPrice = halfNum ?? basePrice;
+                                    const panPrice = fullNum ?? (basePrice + 20);
+                                    const chzPrice = (fullNum ? fullNum + 20 : basePrice + 40);
 
                                     return (
-                                      <tr 
-                                        key={item.id}
-                                        className={idx % 2 === 0 ? 'bg-white hover:bg-amber-50/40' : 'bg-[#FFFDF9] hover:bg-amber-50/40'}
-                                      >
-                                        <td className="py-2 px-2.5 sm:px-4 font-bold text-[#1F2923]">
-                                          <div className="flex items-center gap-2">
-                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#FAB700] overflow-hidden shrink-0 bg-white shadow-xs">
-                                              <img
-                                                src={thumb}
-                                                alt={item.name}
-                                                className="w-full h-full object-cover scale-110"
-                                                loading="lazy"
-                                              />
-                                            </div>
-                                            <div className="min-w-0">
-                                              <div className="flex items-center gap-1 font-serif text-xs sm:text-sm text-[#181E19]">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
-                                                <span className="truncate">{item.name}</span>
-                                              </div>
-                                            </div>
+                                      <div key={item.id} className="heritage-grid-row heritage-momo-grid">
+                                        {/* Col 1: Prep Name */}
+                                        <div className="min-w-0 pr-1">
+                                          <div className="flex items-center gap-1.5 font-serif font-bold text-xs sm:text-sm text-[#181E19]">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
+                                            <span className="truncate">{item.name}</span>
                                           </div>
-                                        </td>
+                                        </div>
 
-                                        {/* Veg Column */}
-                                        <td className="py-2 px-1.5 sm:px-2 text-center border-l border-black/5">
+                                        {/* Col 2: Veg */}
+                                        <div>
                                           <button
                                             type="button"
                                             onClick={() => onAddToCart && onAddToCart(item, `₹${vegPrice}`, 'Veg (6 Pcs)')}
-                                            className="heritage-matrix-btn heritage-matrix-btn-veg cursor-pointer text-[11px] sm:text-xs py-1 px-2 w-full justify-center"
+                                            className="heritage-matrix-btn heritage-matrix-btn-veg cursor-pointer"
                                             title={`Add Veg ${item.name}`}
                                           >
                                             <span>₹{vegPrice}</span>
-                                            {isPremium && <Plus size={10} />}
+                                            {isPremium && <Plus size={9} />}
                                           </button>
-                                        </td>
+                                        </div>
 
-                                        {/* Paneer Column */}
-                                        <td className="py-2 px-1.5 sm:px-2 text-center border-l border-black/5">
+                                        {/* Col 3: Paneer */}
+                                        <div>
                                           <button
                                             type="button"
                                             onClick={() => onAddToCart && onAddToCart(item, `₹${panPrice}`, 'Paneer (6 Pcs)')}
-                                            className="heritage-matrix-btn heritage-matrix-btn-paneer cursor-pointer text-[11px] sm:text-xs py-1 px-2 w-full justify-center"
+                                            className="heritage-matrix-btn heritage-matrix-btn-paneer cursor-pointer"
                                             title={`Add Paneer ${item.name}`}
                                           >
                                             <span>₹{panPrice}</span>
-                                            {isPremium && <Plus size={10} />}
+                                            {isPremium && <Plus size={9} />}
                                           </button>
-                                        </td>
+                                        </div>
 
-                                        {/* Corn N Cheese Column */}
-                                        <td className="py-2 px-1.5 sm:px-2 text-center border-l border-black/5">
+                                        {/* Col 4: Corn N Cheese */}
+                                        <div>
                                           <button
                                             type="button"
                                             onClick={() => onAddToCart && onAddToCart(item, `₹${chzPrice}`, 'Corn N Cheese (6 Pcs)')}
-                                            className="heritage-matrix-btn heritage-matrix-btn-cheese cursor-pointer text-[11px] sm:text-xs py-1 px-2 w-full justify-center"
+                                            className="heritage-matrix-btn heritage-matrix-btn-cheese cursor-pointer"
                                             title={`Add Corn N Cheese ${item.name}`}
                                           >
                                             <span>₹{chzPrice}</span>
-                                            {isPremium && <Plus size={10} />}
+                                            {isPremium && <Plus size={9} />}
                                           </button>
-                                        </td>
-                                      </tr>
+                                        </div>
+                                      </div>
                                     );
                                   })}
-                                </tbody>
-                              </table>
+                                </div>
+                              </div>
                             </div>
 
-                            {/* Momo Platter Showcase Banner (Mirroring PDF Page 10 Bottom Plate) */}
+                            {/* Momo Platter Showcase Banner */}
                             <div className="rounded-2xl overflow-hidden border-2 border-[#FAB700] shadow-md bg-white">
                               <img
                                 src="/uploads/mannat/assets/dish_steamed_momos.webp"
                                 alt="Freshly Steamed & Pan-Fried Momos with Spicy Dip"
-                                className="w-full h-44 sm:h-56 object-cover"
+                                className="w-full h-40 sm:h-52 object-cover"
                                 loading="lazy"
                               />
-                              <div className="bg-[#181E19] text-[#FAB700] px-4 py-2 text-xs font-serif flex items-center justify-between">
+                              <div className="bg-[#181E19] text-[#FAB700] px-3.5 py-2 text-xs font-serif flex items-center justify-between">
                                 <span className="font-bold tracking-wide">Authentic Himalayan Momos • Served with Fiery Chutney & Dip</span>
                                 <span className="text-[10px] bg-[#CE182C] text-white font-mono px-2 py-0.5 rounded font-bold">FRESHLY STEAMED</span>
                               </div>
@@ -746,16 +641,19 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                         ) : (
                           /* Clean Editorial Typographic Listing */
                           <div className="heritage-menu-container">
-                            {/* Table Header */}
-                            <div className="heritage-table-header">
+                            {/* Table Header with Exact Same Grid Columns */}
+                            <div className={clsx(
+                              "heritage-grid-header",
+                              hasAnyHalfFull ? "heritage-dual-grid" : "heritage-single-grid"
+                            )}>
                               <span>ITEM</span>
                               {hasAnyHalfFull ? (
-                                <div className="flex items-center gap-3 sm:gap-6 pr-1">
-                                  <span className="w-16 sm:w-20 text-center">{isRolls ? '2 PCS' : 'HALF'}</span>
-                                  <span className="w-16 sm:w-20 text-center">{isRolls ? '4 PCS' : 'FULL'}</span>
-                                </div>
+                                <>
+                                  <span className="text-center">{isRolls ? '2 PCS' : 'HALF'}</span>
+                                  <span className="text-center">{isRolls ? '4 PCS' : 'FULL'}</span>
+                                </>
                               ) : (
-                                <span className="pr-3">PRICE</span>
+                                <span className="text-center">PRICE</span>
                               )}
                             </div>
 
@@ -766,9 +664,15 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                                 const hasHalfFull = Boolean(item.halfPrice && item.fullPrice);
 
                                 return (
-                                  <div key={item.id} className="heritage-dish-row">
+                                  <div 
+                                    key={item.id} 
+                                    className={clsx(
+                                      "heritage-grid-row",
+                                      hasAnyHalfFull ? "heritage-dual-grid" : "heritage-single-grid"
+                                    )}
+                                  >
                                     {/* Left: Indicator & Dish Name */}
-                                    <div className="flex items-baseline gap-2 min-w-0 flex-1 mr-2">
+                                    <div className="flex items-baseline gap-1.5 min-w-0 pr-1">
                                       <DietIndicator type={item.dietType} compact className="shrink-0 self-center" />
                                       <div className="min-w-0">
                                         <div className="flex items-center gap-1.5 flex-wrap">
@@ -776,7 +680,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                                             {item.name}
                                           </span>
                                           {item.isBestseller && (
-                                            <span className="shrink-0 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-[#CE182C] text-white">
+                                            <span className="shrink-0 text-[8px] font-bold uppercase px-1.5 py-0.2 rounded bg-[#CE182C] text-white">
                                               Special
                                             </span>
                                           )}
@@ -791,58 +695,56 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
 
                                     {/* Right: Tabular Pricing & Ordering Controls */}
                                     {hasHalfFull ? (
-                                      <div className="flex items-center gap-2 shrink-0">
-                                        <button
-                                          type="button"
-                                          onClick={() => onAddToCart && onAddToCart(item, `₹${item.halfPrice}`, isRolls ? '2 Pcs' : 'Half')}
-                                          className="heritage-portion-btn-half px-2 py-1 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer active:scale-95 w-16 sm:w-20"
-                                          title={`Add ${isRolls ? '2 Pcs' : 'Half'} ${item.name}`}
-                                        >
-                                          <span className="font-mono font-bold">₹{item.halfPrice}</span>
-                                          {isPremium && <Plus size={10} className="shrink-0" />}
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() => onAddToCart && onAddToCart(item, `₹${item.fullPrice}`, isRolls ? '4 Pcs' : 'Full')}
-                                          className="heritage-portion-btn-full px-2 py-1 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer active:scale-95 w-16 sm:w-20"
-                                          title={`Add ${isRolls ? '4 Pcs' : 'Full'} ${item.name}`}
-                                        >
-                                          <span className="font-mono font-bold">₹{item.fullPrice}</span>
-                                          {isPremium && <Plus size={10} />}
-                                        </button>
-                                      </div>
-                                    ) : pricing.hasVariants ? (
-                                      <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
-                                        {pricing.variants.map((v) => (
+                                      <>
+                                        <div>
                                           <button
-                                            key={v.name}
                                             type="button"
-                                            onClick={() => onAddToCart && onAddToCart(item, `₹${v.price}`, v.name)}
-                                            className="heritage-portion-btn-half px-2 py-0.5 rounded-md text-[11px] flex items-center gap-1 cursor-pointer active:scale-95"
-                                            title={`Add ${v.name} ${item.name}`}
+                                            onClick={() => onAddToCart && onAddToCart(item, `₹${item.halfPrice}`, isRolls ? '2 Pcs' : 'Half')}
+                                            className="heritage-portion-btn-half cursor-pointer active:scale-95"
+                                            title={`Add ${isRolls ? '2 Pcs' : 'Half'} ${item.name}`}
                                           >
-                                            <span className="text-[10px] text-[#CE182C] font-semibold">{v.name}:</span>
-                                            <span className="font-mono font-bold">₹{v.price}</span>
-                                            {isPremium && <Plus size={10} />}
+                                            <span className="truncate">₹{item.halfPrice}</span>
+                                            {isPremium && <Plus size={10} className="shrink-0 hidden sm:inline" />}
                                           </button>
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      <div className="flex items-center gap-2 shrink-0">
-                                        <span className="font-mono font-black text-xs sm:text-sm text-[#CE182C]">
-                                          ₹{item.price}
-                                        </span>
-                                        {isPremium && (
+                                        </div>
+                                        <div>
+                                          <button
+                                            type="button"
+                                            onClick={() => onAddToCart && onAddToCart(item, `₹${item.fullPrice}`, isRolls ? '4 Pcs' : 'Full')}
+                                            className="heritage-portion-btn-full cursor-pointer active:scale-95"
+                                            title={`Add ${isRolls ? '4 Pcs' : 'Full'} ${item.name}`}
+                                          >
+                                            <span className="truncate">₹{item.fullPrice}</span>
+                                            {isPremium && <Plus size={10} className="shrink-0 hidden sm:inline" />}
+                                          </button>
+                                        </div>
+                                      </>
+                                    ) : hasAnyHalfFull ? (
+                                      <>
+                                        <div className="text-center text-[10px] text-stone-400 font-mono">—</div>
+                                        <div>
                                           <button
                                             type="button"
                                             onClick={() => onAddToCart && onAddToCart(item, `₹${item.price}`)}
-                                            className="heritage-portion-btn-full px-2.5 py-1 rounded-lg text-xs flex items-center gap-1 cursor-pointer active:scale-95"
+                                            className="heritage-portion-btn-full cursor-pointer active:scale-95"
                                             title={`Add ${item.name}`}
                                           >
-                                            <span>ADD</span>
-                                            <Plus size={10} />
+                                            <span className="truncate">₹{item.price}</span>
+                                            {isPremium && <Plus size={10} className="shrink-0 hidden sm:inline" />}
                                           </button>
-                                        )}
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div>
+                                        <button
+                                          type="button"
+                                          onClick={() => onAddToCart && onAddToCart(item, `₹${item.price}`)}
+                                          className="heritage-portion-btn-full cursor-pointer active:scale-95"
+                                          title={`Add ${item.name}`}
+                                        >
+                                          <span className="truncate">₹{item.price}</span>
+                                          {isPremium && <Plus size={10} className="shrink-0 hidden sm:inline" />}
+                                        </button>
                                       </div>
                                     )}
                                   </div>
@@ -864,7 +766,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
             FALLBACK: UNASSIGNED CATEGORIES (Ensures no items are ever lost!)
             ───────────────────────────────────────────────────────────── */}
         {unassignedCategories.length > 0 && selectedChapterId === 'all' && (
-          <section className="p-4 sm:p-6 space-y-6 rounded-3xl bg-white/95 border-2 border-[#FAB700]/50 shadow-md">
+          <section className="p-3 sm:p-6 space-y-6 rounded-3xl bg-white/95 border-2 border-[#FAB700]/50 shadow-md relative">
             <div className="heritage-subcat-header">
               <span className="heritage-subcat-badge">
                 <Utensils size={13} className="text-[#FAB700]" />
@@ -874,30 +776,27 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
             </div>
 
             <div className="heritage-menu-container">
-              <div className="heritage-table-header">
+              <div className="heritage-grid-header heritage-single-grid">
                 <span>ITEM</span>
-                <span className="pr-3">PRICE</span>
+                <span className="text-center">PRICE</span>
               </div>
               <div className="divide-y divide-black/5">
                 {unassignedCategories.flatMap((c) => c.items).map((item) => (
-                  <div key={item.id} className="heritage-dish-row">
-                    <div className="flex items-baseline gap-2 min-w-0 flex-1 mr-2">
+                  <div key={item.id} className="heritage-grid-row heritage-single-grid">
+                    <div className="flex items-baseline gap-1.5 min-w-0 pr-1">
                       <DietIndicator type={item.dietType} compact className="shrink-0 self-center" />
                       <span className="font-serif font-bold text-xs sm:text-sm text-[#181E19] truncate">{item.name}</span>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="font-mono font-black text-xs sm:text-sm text-[#CE182C]">₹{item.price}</span>
-                      {isPremium && (
-                        <button
-                          type="button"
-                          onClick={() => onAddToCart && onAddToCart(item, `₹${item.price}`)}
-                          className="heritage-portion-btn-full px-2.5 py-1 rounded-lg text-xs flex items-center gap-1 cursor-pointer active:scale-95"
-                          title={`Add ${item.name}`}
-                        >
-                          <span>ADD</span>
-                          <Plus size={10} />
-                        </button>
-                      )}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => onAddToCart && onAddToCart(item, `₹${item.price}`)}
+                        className="heritage-portion-btn-full cursor-pointer active:scale-95"
+                        title={`Add ${item.name}`}
+                      >
+                        <span className="truncate">₹{item.price}</span>
+                        {isPremium && <Plus size={10} className="shrink-0 hidden sm:inline" />}
+                      </button>
                     </div>
                   </div>
                 ))}

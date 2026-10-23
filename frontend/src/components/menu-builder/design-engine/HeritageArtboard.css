@@ -1,13 +1,14 @@
 /* ═════════════════════════════════════════════════════════════════════════════
    MENUQR HERITAGE ARTBOARD CSS — LUXURY INDIAN TANDOOR & ROYAL DHABA AESTHETICS
-   Authentic 1:1 Digital Artboard Styling Matching Professional Menu PDFs
+   Authentic Digital Artboard Styling Matching Professional Menu PDFs
    ═════════════════════════════════════════════════════════════════════════════ */
 
 /* 1. Parchment & Luxury Canvas Atmosphere */
 .heritage-canvas {
   background-color: #FFFDF9;
-  background-image: radial-gradient(rgba(206, 24, 44, 0.04) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-image: url('/menuqr/generated/paper-parchment-pattern.svg');
+  background-repeat: repeat;
+  background-size: 160px 160px;
 }
 
 /* 2. Royal Double Border Frame with Gold Accents */
@@ -30,50 +31,108 @@
   transform: translateY(-1.5px);
 }
 
-/* 3. Authentic Clean Tabular Leader Spacing */
-.heritage-dish-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: 0.55rem 0.5rem;
-  border-bottom: 1px dashed rgba(206, 24, 44, 0.12);
-  transition: background-color 0.15s ease;
-  border-radius: 8px;
-}
-
-.heritage-dish-row:hover {
-  background-color: rgba(206, 24, 44, 0.03);
-}
-
-.heritage-dish-row:last-child {
-  border-bottom: none;
-}
-
+/* 3. Authentic Clean Tabular Leader Spacing & Container */
 .heritage-menu-container {
   background: #FFFDF9;
   border: 1.5px solid rgba(250, 183, 0, 0.6);
   border-radius: 20px;
-  padding: 1.25rem 1.5rem;
+  padding: 0.875rem 1rem;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
 }
 
-.heritage-table-header {
-  display: flex;
+@media (min-width: 640px) {
+  .heritage-menu-container {
+    padding: 1.25rem 1.5rem;
+  }
+}
+
+/* Tabular Grid Row Architecture (Guarantees Alignment & Zero Sideways Scroll) */
+.heritage-grid-header {
+  display: grid;
   align-items: center;
-  justify-content: space-between;
   font-size: 0.6875rem;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #9E0D24;
-  border-bottom: 1.5px solid rgba(250, 183, 0, 0.45);
-  padding-bottom: 0.4rem;
-  margin-bottom: 0.5rem;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
+  border-bottom: 1.5px solid rgba(250, 183, 0, 0.5);
+  padding: 0.4rem 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
-/* 4. Section Chapter Banner with Golden Trim & Notched Corners */
+.heritage-grid-row {
+  display: grid;
+  align-items: center;
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px dashed rgba(206, 24, 44, 0.12);
+  transition: background-color 0.15s ease;
+  border-radius: 6px;
+}
+
+.heritage-grid-row:hover {
+  background-color: rgba(206, 24, 44, 0.03);
+}
+
+.heritage-grid-row:last-child {
+  border-bottom: none;
+}
+
+/* Standard Dual-Price Grid (ITEM | HALF | FULL) or (ITEM | 2 PCS | 4 PCS) */
+.heritage-dual-grid {
+  grid-template-columns: minmax(0, 1fr) 56px 56px;
+  gap: 6px;
+}
+
+@media (min-width: 400px) {
+  .heritage-dual-grid {
+    grid-template-columns: minmax(0, 1fr) 64px 64px;
+    gap: 8px;
+  }
+}
+
+@media (min-width: 640px) {
+  .heritage-dual-grid {
+    grid-template-columns: minmax(0, 1fr) 84px 84px;
+    gap: 12px;
+  }
+}
+
+/* Single Price Grid (ITEM | PRICE) */
+.heritage-single-grid {
+  grid-template-columns: minmax(0, 1fr) 62px;
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .heritage-single-grid {
+    grid-template-columns: minmax(0, 1fr) 84px;
+    gap: 12px;
+  }
+}
+
+/* Momo 3-Tier Matrix Grid (PREPARATION | VEG | PANEER | CORN & CHEESE) */
+.heritage-momo-grid {
+  grid-template-columns: minmax(0, 1fr) 48px 48px 52px;
+  gap: 4px;
+}
+
+@media (min-width: 390px) {
+  .heritage-momo-grid {
+    grid-template-columns: minmax(0, 1fr) 54px 54px 58px;
+    gap: 6px;
+  }
+}
+
+@media (min-width: 640px) {
+  .heritage-momo-grid {
+    grid-template-columns: minmax(0, 1fr) 80px 80px 92px;
+    gap: 10px;
+  }
+}
+
+/* 4. Section Chapter Banner with Golden Trim */
 .heritage-ribbon-banner {
   background: linear-gradient(135deg, #881313 0%, #CE182C 48%, #A81423 85%, #6B0F1A 100%);
   border: 2px solid #FAB700;
@@ -82,24 +141,6 @@
     0 8px 24px -4px rgba(206, 24, 44, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
   position: relative;
-}
-
-.heritage-ribbon-banner::before,
-.heritage-ribbon-banner::after {
-  content: '✦';
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #FAB700;
-  font-size: 11px;
-}
-
-.heritage-ribbon-banner::before {
-  left: 14px;
-}
-
-.heritage-ribbon-banner::after {
-  right: 14px;
 }
 
 /* 5. Gold Foil Embellished Text */
@@ -114,72 +155,41 @@
 .heritage-subcat-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 1.25rem;
-  margin-bottom: 0.75rem;
+  gap: 10px;
+  margin-top: 1rem;
+  margin-bottom: 0.625rem;
 }
 
 .heritage-subcat-badge {
   background: linear-gradient(135deg, #CE182C 0%, #991B1B 100%);
   color: #FFFFFF;
   font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 5px 14px;
+  padding: 4px 12px;
   border-radius: 9999px;
   border: 1.5px solid #FAB700;
   box-shadow: 0 2px 6px rgba(206, 24, 44, 0.25);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .heritage-subcat-badge {
+    font-size: 0.8125rem;
+    padding: 5px 14px;
+    gap: 6px;
+  }
 }
 
 .heritage-subcat-line {
   flex: 1 1 auto;
   height: 1.5px;
   background: linear-gradient(90deg, rgba(206, 24, 44, 0.4) 0%, rgba(250, 183, 0, 0.5) 40%, transparent 100%);
-}
-
-/* 6. Momo 3-Tier Matrix Table Styling */
-.heritage-matrix-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  width: 100%;
-}
-
-.heritage-matrix-table th {
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.heritage-matrix-table td {
-  transition: background-color 0.15s ease;
-}
-
-.heritage-matrix-table tr:hover td {
-  background-color: rgba(206, 24, 44, 0.03);
-}
-
-/* 7. Circular Food Photo Gold Rings */
-.heritage-dish-thumb {
-  width: 58px;
-  height: 58px;
-  border-radius: 14px;
-  border: 1.5px solid rgba(250, 183, 0, 0.75);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  position: relative;
-  flex-shrink: 0;
-  background-color: #FFFFFF;
-  transition: transform 0.2s ease, border-color 0.2s ease;
-}
-
-.heritage-dish-thumb:hover {
-  transform: scale(1.08);
-  border-color: #FAB700;
 }
 
 /* 8. Filigree Divider */
@@ -224,15 +234,32 @@
   transform: scale(1.02);
 }
 
-
 /* 10. Interactive Half / Full and Variant Pricing Buttons */
 .heritage-portion-btn-half {
   background: #FFF9F0;
   color: #991B1B;
   border: 1.5px solid #FAB700;
   font-weight: 700;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .heritage-portion-btn-half {
+    padding: 5px 8px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
 }
 
 .heritage-portion-btn-half:hover {
@@ -242,13 +269,35 @@
   box-shadow: 0 3px 8px rgba(250, 183, 0, 0.35);
 }
 
+.heritage-portion-btn-half:active {
+  transform: scale(0.96);
+}
+
 .heritage-portion-btn-full {
   background: linear-gradient(135deg, #CE182C 0%, #991B1B 100%);
   color: #FFFFFF;
   border: 1.5px solid #FAB700;
   font-weight: 700;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 2px 6px rgba(206, 24, 44, 0.25);
+  width: 100%;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .heritage-portion-btn-full {
+    padding: 5px 8px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
 }
 
 .heritage-portion-btn-full:hover {
@@ -257,18 +306,40 @@
   box-shadow: 0 4px 12px rgba(206, 24, 44, 0.4);
 }
 
+.heritage-portion-btn-full:active {
+  transform: scale(0.96);
+}
+
 /* Momo 3-Tier Matrix Variant Buttons */
 .heritage-matrix-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 8px;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 2px;
+  border-radius: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  text-align: center;
+}
+
+@media (min-width: 400px) {
+  .heritage-matrix-btn {
+    font-size: 11px;
+    padding: 4px 4px;
+  }
+}
+
+@media (min-width: 640px) {
+  .heritage-matrix-btn {
+    font-size: 12px;
+    padding: 5px 8px;
+    border-radius: 8px;
+  }
 }
 
 .heritage-matrix-btn:active {
@@ -278,7 +349,7 @@
 .heritage-matrix-btn-veg {
   background: #ECFDF5;
   color: #065F46;
-  border: 1.5px solid #A7F3D0;
+  border: 1.5px solid #10B981;
 }
 
 .heritage-matrix-btn-veg:hover {
@@ -290,7 +361,7 @@
 .heritage-matrix-btn-paneer {
   background: #FFFBEB;
   color: #92400E;
-  border: 1.5px solid #FDE68A;
+  border: 1.5px solid #F59E0B;
 }
 
 .heritage-matrix-btn-paneer:hover {
@@ -302,7 +373,7 @@
 .heritage-matrix-btn-cheese {
   background: #FFF7ED;
   color: #9A3412;
-  border: 1.5px solid #FED7AA;
+  border: 1.5px solid #F97316;
 }
 
 .heritage-matrix-btn-cheese:hover {
@@ -311,141 +382,122 @@
   border-color: #EA580C;
 }
 
-/* 11. Corner Flourishes */
-.heritage-corner {
+/* 11. Corner Flourishes using Original SVG Assets */
+.heritage-corner-flourish {
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 28px;
+  height: 28px;
   pointer-events: none;
   z-index: 5;
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
-.heritage-corner-tl {
+@media (min-width: 640px) {
+  .heritage-corner-flourish {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+.heritage-corner-flourish-tl {
   top: 6px;
   left: 6px;
-  border-top: 2px solid #FAB700;
-  border-left: 2px solid #FAB700;
-  border-top-left-radius: 6px;
 }
 
-.heritage-corner-tr {
+.heritage-corner-flourish-tr {
   top: 6px;
   right: 6px;
-  border-top: 2px solid #FAB700;
-  border-right: 2px solid #FAB700;
-  border-top-right-radius: 6px;
+  transform: scaleX(-1);
 }
 
-.heritage-corner-bl {
+.heritage-corner-flourish-bl {
   bottom: 6px;
   left: 6px;
-  border-bottom: 2px solid #FAB700;
-  border-left: 2px solid #FAB700;
-  border-bottom-left-radius: 6px;
+  transform: scaleY(-1);
 }
 
-.heritage-corner-br {
+.heritage-corner-flourish-br {
   bottom: 6px;
   right: 6px;
-  border-bottom: 2px solid #FAB700;
-  border-right: 2px solid #FAB700;
-  border-bottom-right-radius: 6px;
+  transform: scale(-1, -1);
 }
 
-/* 12. Royal Crimson & Gold Floating Cart Bar Integration */
-.heritage-canvas ~ .menu-floating-cart-bar,
-.heritage-cart-bar {
-  background: linear-gradient(135deg, #7F1D1D 0%, #991B1B 35%, #CE182C 75%, #B71C1C 100%) !important;
-  border: 2px solid #FAB700 !important;
-  box-shadow: 0 14px 36px rgba(153, 27, 27, 0.45), 0 0 18px rgba(250, 183, 0, 0.35) !important;
-}
-
-.heritage-canvas ~ .menu-floating-cart-bar .cart-bar-count {
-  color: #FAB700 !important;
-}
-
-.heritage-canvas ~ .menu-floating-cart-bar .cart-bar-action {
-  background: #FAB700 !important;
-  color: #1F2923 !important;
-  font-weight: 800 !important;
-  box-shadow: 0 4px 12px rgba(250, 183, 0, 0.35) !important;
-}
-
-.heritage-canvas ~ .menu-floating-cart-bar .cart-bar-action:hover {
-  background: #FFE082 !important;
-  transform: scale(1.02) !important;
+/* 12. Royal Floating Cart Bar Safe Bottom Padding */
+.heritage-main-content {
+  padding-bottom: 7rem;
 }
 
 /* ═════════════════════════════════════════════════════════════════════════════
-   13. AUTHENTIC 12-CHAPTER PAGE-SPECIFIC ATMOSPHERIC THEMES (MATCHING PDF)
+   13. AUTHENTIC 10 SECTION ATMOSPHERIC THEMES (MATCHING PDF ARTWORK SCOPE)
    ═════════════════════════════════════════════════════════════════════════════ */
 
-/* 1. Tandoori Snacks & Kebabs (Pages 4 & 5): Royal Crimson & Imperial Gold */
+/* 1. Tandoori / Starters: Deep Tandoori Crimson with Warm Antique-Gold */
 .chapter-theme-tandoori {
-  background: linear-gradient(180deg, rgba(206, 24, 44, 0.04) 0%, rgba(255, 255, 255, 0.98) 100%);
-  border: 2px solid rgba(206, 24, 44, 0.35);
-  box-shadow: 0 10px 30px -4px rgba(206, 24, 44, 0.08), 0 0 0 1px rgba(250, 183, 0, 0.3);
+  background: linear-gradient(180deg, rgba(206, 24, 44, 0.05) 0%, #FFFFFF 100%);
+  border: 2px solid #CE182C;
+  box-shadow: 0 10px 30px -4px rgba(206, 24, 44, 0.12), 0 0 0 1px #FAB700;
 }
 
-/* 2. Crunch House & Salads (Page 6): Fresh Herbal & Amber Sand */
+/* 2. Crunch / Crispy Items: Warm Golden Tones with Restrained Emerald Accents */
 .chapter-theme-crunch {
-  background: linear-gradient(180deg, rgba(217, 119, 6, 0.04) 0%, rgba(255, 255, 255, 0.98) 100%);
-  border: 2px solid rgba(217, 119, 6, 0.35);
-  box-shadow: 0 10px 30px -4px rgba(217, 119, 6, 0.08), 0 0 0 1px rgba(16, 185, 129, 0.25);
+  background: linear-gradient(180deg, rgba(217, 119, 6, 0.05) 0%, #FFFFFF 100%);
+  border: 2px solid #D97706;
+  box-shadow: 0 10px 30px -4px rgba(217, 119, 6, 0.1), 0 0 0 1px #059669;
 }
 
-/* 3. Signature Gravies & Desi Breads (Pages 7 & 8): Shahi Saffron & Terracotta */
+/* 3. Gravies / Curries: Saffron and Rust with Clear Section Hierarchy */
 .chapter-theme-gravies {
-  background: linear-gradient(180deg, rgba(180, 83, 9, 0.05) 0%, rgba(255, 253, 248, 0.98) 100%);
-  border: 2px solid rgba(180, 83, 9, 0.4);
-  box-shadow: 0 10px 30px -4px rgba(180, 83, 9, 0.09), 0 0 0 1px rgba(250, 183, 0, 0.35);
+  background: linear-gradient(180deg, rgba(194, 65, 12, 0.05) 0%, #FFFDF8 100%);
+  border: 2px solid #C2410C;
+  box-shadow: 0 10px 30px -4px rgba(194, 65, 12, 0.12), 0 0 0 1px #FAB700;
 }
 
-/* 4. MTJ Thalis & Street Food (Page 9): Antique Dhaba Olive & Marigold */
+/* 4. Thalis: Muted Olive, Earthy Neutrals, and Organized Meal Composition */
 .chapter-theme-thalis {
-  background: linear-gradient(180deg, rgba(58, 64, 53, 0.05) 0%, rgba(255, 255, 255, 0.98) 100%);
-  border: 2px solid rgba(58, 64, 53, 0.38);
-  box-shadow: 0 10px 30px -4px rgba(58, 64, 53, 0.08), 0 0 0 1px rgba(245, 158, 11, 0.3);
+  background: linear-gradient(180deg, rgba(63, 78, 56, 0.06) 0%, #FFFFFF 100%);
+  border: 2px solid #3F4E38;
+  box-shadow: 0 10px 30px -4px rgba(63, 78, 56, 0.12), 0 0 0 1px #FAB700;
 }
 
-/* 5. MTJ Momo Junction (Page 10): Himalayan Forest Green & Tibetan Waves */
+/* 5. Momos: Forest Green, Tibetan Wave Header & Compact 3-Tier Matrix */
 .chapter-theme-momos {
-  background: linear-gradient(180deg, rgba(27, 59, 43, 0.05) 0%, rgba(255, 255, 255, 0.98) 100%);
-  border: 2px solid rgba(27, 59, 43, 0.4);
-  box-shadow: 0 10px 30px -4px rgba(27, 59, 43, 0.09), 0 0 0 1px rgba(206, 24, 44, 0.3);
+  background: linear-gradient(180deg, rgba(27, 59, 43, 0.06) 0%, #FFFFFF 100%);
+  border: 2px solid #1B3B2B;
+  box-shadow: 0 10px 30px -4px rgba(27, 59, 43, 0.12), 0 0 0 1px #CE182C;
 }
 
-/* 6. Indo-Chinese Wok (Page 11): Fiery Wok Deep Crimson */
+/* 6. Indo-Chinese: Lacquer Red and Complementary Warm Tones */
 .chapter-theme-chinese {
-  background: linear-gradient(180deg, rgba(136, 19, 55, 0.05) 0%, rgba(255, 255, 255, 0.98) 100%);
-  border: 2px solid rgba(136, 19, 55, 0.4);
-  box-shadow: 0 10px 30px -4px rgba(136, 19, 55, 0.09), 0 0 0 1px rgba(250, 183, 0, 0.3);
+  background: linear-gradient(180deg, rgba(136, 19, 55, 0.06) 0%, #FFFFFF 100%);
+  border: 2px solid #881337;
+  box-shadow: 0 10px 30px -4px rgba(136, 19, 55, 0.12), 0 0 0 1px #FAB700;
 }
 
-/* 7. MTJ Café & Lebanese (Page 12): Artisanal Bistro Cream & Ochre */
+/* 7. Café: Cream and Mustard with Lighter, Quieter Composition */
 .chapter-theme-cafe {
-  background: linear-gradient(180deg, rgba(245, 158, 11, 0.04) 0%, rgba(254, 243, 199, 0.25) 100%);
-  border: 2px solid rgba(217, 119, 6, 0.35);
-  box-shadow: 0 10px 30px -4px rgba(217, 119, 6, 0.08), 0 0 0 1px rgba(250, 183, 0, 0.25);
+  background: linear-gradient(180deg, rgba(254, 243, 199, 0.4) 0%, #FFFFFF 100%);
+  border: 2px solid #D97706;
+  box-shadow: 0 10px 30px -4px rgba(217, 119, 6, 0.1), 0 0 0 1px #FAB700;
 }
 
-/* 8. Stone Baked Pizzas & Burgers (Pages 13 & 14): Italian Stone Oven Terracotta */
+/* 8. Pizzas and Burgers: Brick Red with Clear Item/Price Grouping */
 .chapter-theme-pizzas {
-  background: linear-gradient(180deg, rgba(185, 28, 28, 0.04) 0%, rgba(255, 255, 255, 0.98) 100%);
-  border: 2px solid rgba(185, 28, 28, 0.38);
-  box-shadow: 0 10px 30px -4px rgba(185, 28, 28, 0.08), 0 0 0 1px rgba(250, 183, 0, 0.3);
+  background: linear-gradient(180deg, rgba(185, 28, 28, 0.05) 0%, #FFFFFF 100%);
+  border: 2px solid #B91C1C;
+  box-shadow: 0 10px 30px -4px rgba(185, 28, 28, 0.12), 0 0 0 1px #FAB700;
 }
 
-/* 9. Brews, Shakes & Coolers (Page 15): Roasted Espresso & Frosted Mint */
+/* 9. Brews / Beverages: Roasted Mocha and Mint Accents */
 .chapter-theme-brews {
-  background: linear-gradient(180deg, rgba(69, 26, 3, 0.04) 0%, rgba(240, 253, 250, 0.4) 100%);
-  border: 2px solid rgba(69, 26, 3, 0.35);
-  box-shadow: 0 10px 30px -4px rgba(69, 26, 3, 0.08), 0 0 0 1px rgba(13, 148, 136, 0.3);
+  background: linear-gradient(180deg, rgba(69, 26, 3, 0.05) 0%, #F0FDF4 100%);
+  border: 2px solid #451A03;
+  box-shadow: 0 10px 30px -4px rgba(69, 26, 3, 0.12), 0 0 0 1px #0D9488;
 }
 
-/* 10. Sweet Treats & Desserts (Page 16): Midnight Truffle Slate & Royal Gold */
+/* 10. Desserts: Midnight Slate and Gold with Polished Closing Section */
 .chapter-theme-desserts {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(255, 253, 245, 0.98) 100%);
-  border: 2px solid rgba(15, 23, 42, 0.4);
-  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(250, 183, 0, 0.35);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.06) 0%, #FFFDF8 100%);
+  border: 2px solid #0F172A;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.15), 0 0 0 1px #FAB700;
 }

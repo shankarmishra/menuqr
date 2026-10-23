@@ -1,0 +1,145 @@
+{
+  "viewportsTested": [],
+  "overflowChecks": [
+    {
+      "slug": "shankar-dhaba",
+      "viewport": "mobile_360x800",
+      "pass": true,
+      "hasHorizontalScroll": false,
+      "docWidth": 360,
+      "scrollWidth": 360,
+      "overflowCount": 0,
+      "topOverflowElements": []
+    },
+    {
+      "slug": "shankar-dhaba",
+      "viewport": "mobile_390x844",
+      "pass": true,
+      "hasHorizontalScroll": false,
+      "docWidth": 390,
+      "scrollWidth": 390,
+      "overflowCount": 0,
+      "topOverflowElements": []
+    },
+    {
+      "slug": "shankar-dhaba",
+      "viewport": "mobile_430x932",
+      "pass": true,
+      "hasHorizontalScroll": false,
+      "docWidth": 430,
+      "scrollWidth": 430,
+      "overflowCount": 0,
+      "topOverflowElements": []
+    },
+    {
+      "slug": "shankar-dhaba",
+      "viewport": "desktop_1280x800",
+      "pass": true,
+      "hasHorizontalScroll": false,
+      "docWidth": 1280,
+      "scrollWidth": 1280,
+      "overflowCount": 0,
+      "topOverflowElements": []
+    },
+    {
+      "slug": "shankar-dhaba",
+      "viewport": "desktop_1440x900",
+      "pass": true,
+      "hasHorizontalScroll": false,
+      "docWidth": 1440,
+      "scrollWidth": 1440,
+      "overflowCount": 0,
+      "topOverflowElements": []
+    },
+    {
+      "slug": "mannat-tandoori-junction",
+      "viewport": "mobile_360x800",
+      "pass": true,
+      "hasHorizontalScroll": false,
+      "docWidth": 360,
+      "scrollWidth": 360,
+      "overflowCount": 0,
+      "topOverflowElements": []
+    },
+    {
+      "slug": "mannat-tandoori-junction",
+      "viewport": "mobile_390x844",
+      "pass": true,
+      "hasHorizontalScroll": false,
+      "docWidth": 390,
+      "scrollWidth": 390,
+      "overflowCount": 0,
+      "topOverflowElements": []
+    },
+    {
+      "slug": "mannat-tandoori-junction",
+      "viewport": "mobile_430x932",
+      "pass": true,
+      "hasHorizontalScroll": false,
+      "docWidth": 430,
+      "scrollWidth": 430,
+      "overflowCount": 0,
+      "topOverflowElements": []
+    },
+    {
+      "slug": "mannat-tandoori-junction",
+      "viewport": "desktop_1280x800",
+      "pass": true,
+      "hasHorizontalScroll": false,
+      "docWidth": 1280,
+      "scrollWidth": 1280,
+      "overflowCount": 0,
+      "topOverflowElements": []
+    },
+    {
+      "slug": "mannat-tandoori-junction",
+      "viewport": "desktop_1440x900",
+      "pass": true,
+      "hasHorizontalScroll": false,
+      "docWidth": 1440,
+      "scrollWidth": 1440,
+      "overflowCount": 0,
+      "topOverflowElements": []
+    }
+  ],
+  "functionalOrdering": {
+    "shankar-dhaba": {
+      "cartBar": {
+        "visible": true,
+        "count": "3 items",
+        "price": "₹537"
+      },
+      "modal": {
+        "open": true,
+        "title": "Your Order",
+        "itemCount": 3,
+        "items": [
+          "Malai Chaap",
+          "Malai Chaap",
+          "Steamed Momos"
+        ],
+        "summary": "Items (3)₹537\nGrand Total\n₹537"
+      }
+    },
+    "mannat-tandoori-junction": {
+      "cartBar": {
+        "visible": true,
+        "count": "3 items",
+        "price": "₹537"
+      },
+      "modal": {
+        "open": true,
+        "title": "Your Order",
+        "itemCount": 3,
+        "items": [
+          "Malai Chaap",
+          "Malai Chaap",
+          "Steamed Momos"
+        ],
+        "summary": "Items (3)₹537\nGrand Total\n₹537"
+      }
+    }
+  },
+  "page17Absence": true,
+  "routesTested": []
+}

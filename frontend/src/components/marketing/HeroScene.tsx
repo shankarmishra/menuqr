@@ -40,17 +40,17 @@ export default function HeroScene() {
       {/* Shared Grounding Plane / Table Horizon Glow */}
       <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-[#0E1512]/20 via-[#0E1512]/5 to-transparent pointer-events-none z-0" />
 
-      {/* Layer 2: Physical Tabletop QR Stand */}
+      {/* Layer 2: Physical Tabletop QR Stand (follows phone with short delay, settles beside phone) */}
       <motion.div
-        initial={shouldReduceMotion ? false : { opacity: 0, y: 16, scale: 0.96 }}
+        initial={shouldReduceMotion ? false : { opacity: 0, x: -24, y: 24, scale: 0.95 }}
         animate={
           isInView
-            ? { opacity: 1, y: 0, scale: 1 }
-            : { opacity: 0, y: 16, scale: 0.96 }
+            ? { opacity: 1, x: 0, y: 0, scale: 1 }
+            : { opacity: 0, x: -24, y: 24, scale: 0.95 }
         }
         transition={{
-          duration: shouldReduceMotion ? 0 : 0.8,
-          delay: shouldReduceMotion ? 0 : 0.15,
+          duration: shouldReduceMotion ? 0 : 0.7,
+          delay: shouldReduceMotion ? 0 : 0.52,
           ease: [0.16, 1, 0.3, 1],
         }}
         className={`absolute ${
@@ -62,17 +62,17 @@ export default function HeroScene() {
         <PhysicalQRStand variant={isMobile ? 'compact' : 'standard'} />
       </motion.div>
 
-      {/* Layer 3: Phone Mockup with Live Restaurant Customer Menu */}
+      {/* Layer 3: Phone Mockup with Live Restaurant Customer Menu (visibly enters from right / rises into place) */}
       <motion.div
-        initial={shouldReduceMotion ? false : { opacity: 0, y: 32, scale: 0.97 }}
+        initial={shouldReduceMotion ? false : { opacity: 0, x: 38, y: 38, scale: 0.96 }}
         animate={
           isInView
-            ? { opacity: 1, y: 0, scale: 1 }
-            : { opacity: 0, y: 32, scale: 0.97 }
+            ? { opacity: 1, x: 0, y: 0, scale: 1 }
+            : { opacity: 0, x: 38, y: 38, scale: 0.96 }
         }
         transition={{
-          duration: shouldReduceMotion ? 0 : 0.9,
-          delay: shouldReduceMotion ? 0 : 0.25,
+          duration: shouldReduceMotion ? 0 : 0.75,
+          delay: shouldReduceMotion ? 0 : 0.32,
           ease: [0.16, 1, 0.3, 1],
         }}
         className={`absolute ${

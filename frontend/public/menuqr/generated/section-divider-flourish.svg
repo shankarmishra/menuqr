@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 40" fill="none">
+  <!-- Symmetrical Ornamental Section Divider with Lotus & Stars -->
+  <line x1="20" y1="20" x2="240" y2="20" stroke="url(#goldGradLeft)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="360" y1="20" x2="580" y2="20" stroke="url(#goldGradRight)" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <circle cx="260" cy="20" r="2.5" fill="#FAB700"/>
+  <circle cx="340" cy="20" r="2.5" fill="#FAB700"/>
+  
+  <path d="M280,20 L285,15 L290,20 L285,25 Z" fill="#CE182C"/>
+  <path d="M310,20 L315,15 L320,20 L315,25 Z" fill="#CE182C"/>
+  
+  <!-- Central Lotus Emblem -->
+  <path d="M300,10 C296,15 294,22 300,28 C306,22 304,15 300,10 Z" fill="#FAB700"/>
+  <path d="M292,16 C290,21 292,26 298,27 C296,23 294,19 292,16 Z" fill="#CE182C"/>
+  <path d="M308,16 C310,21 308,26 302,27 C304,23 306,19 308,16 Z" fill="#CE182C"/>
+  <circle cx="300" cy="28" r="2" fill="#FAB700"/>
+
+  <defs>
+    <linearGradient id="goldGradLeft" x1="20" y1="20" x2="240" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FAB700" stop-opacity="0"/>
+      <stop offset="0.7" stop-color="#FAB700" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#CE182C"/>
+    </linearGradient>
+    <linearGradient id="goldGradRight" x1="360" y1="20" x2="580" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#CE182C"/>
+      <stop offset="0.3" stop-color="#FAB700" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#FAB700" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>
