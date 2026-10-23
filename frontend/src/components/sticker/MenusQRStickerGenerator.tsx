@@ -20,7 +20,7 @@ interface Props {
 }
 
 export default function MenusQRStickerGenerator({ client, menuUrl, qrImage }: Props) {
-  const [templateId, setTemplateId] = useState<StickerThemeId>('menusqr-walnut-gold');
+  const [templateId, setTemplateId] = useState<StickerThemeId>('menusqr-obsidian-gold');
   const [copied, setCopied] = useState(false);
   const stickerRef = useRef<HTMLDivElement>(null);
   
@@ -91,7 +91,9 @@ export default function MenusQRStickerGenerator({ client, menuUrl, qrImage }: Pr
           tagline={tagline}
           menuUrl={menuUrl}
           qrImage={qrImage}
-          showStatusBadge={true}
+          headerText="SCAN FOR DIGITAL MENU"
+          footerText="Point Camera to Scan Menu"
+          showStatusBadge={false}
           showDownloadButtons={false}
         />
       </div>
