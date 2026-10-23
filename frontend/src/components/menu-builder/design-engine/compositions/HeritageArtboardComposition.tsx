@@ -44,9 +44,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-tandoori-snacks',
     title: 'MTJ Tandoori Snacks',
     shortTitle: 'Tandoori Snacks',
-    banner: '/uploads/mannat/textures/banner_tandoori_snacks.webp',
-    heroImage: '/uploads/mannat/assets/hero_chaap_sizzler.webp',
-    heroSubImage: '/uploads/mannat/assets/hero_paneer_tikka.webp',
+    banner: '/uploads/mannat/textures/banner_tandoori_snacks.png',
+    heroImage: '/uploads/mannat/assets/hero_chaap_sizzler.png',
+    heroSubImage: '/uploads/mannat/assets/hero_paneer_tikka.png',
     heroTitle: 'Tandoori Snacks & Chaap Feast',
     heroSubtitle: 'Charcoal Tandoor Baked • 100% Pure Soya',
     themeClass: 'chapter-theme-tandoori',
@@ -61,9 +61,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-kebabs-platters',
     title: 'Veg Kebabs & Signature Platters',
     shortTitle: 'Kebabs & Platters',
-    banner: '/uploads/mannat/textures/banner_signature_platters.webp',
-    heroImage: '/uploads/mannat/assets/hero_veg_kebabs_platter.webp',
-    heroSubImage: '/uploads/mannat/assets/hero_chaap_rolls.webp',
+    banner: '/uploads/mannat/textures/banner_signature_platters.png',
+    heroImage: '/uploads/mannat/assets/hero_veg_kebabs_platter.png',
+    heroSubImage: '/uploads/mannat/assets/hero_chaap_rolls.png',
     heroTitle: 'Veg Kebabs & Signature Platters',
     heroSubtitle: 'Dahi Ke Sholay, Seekh Kebabs & Gravy Rolls',
     themeClass: 'chapter-theme-tandoori',
@@ -78,8 +78,8 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-crunch-soups',
     title: 'MTJ Crunch House, Soups & Salads',
     shortTitle: 'Crunch & Soups',
-    banner: '/uploads/mannat/textures/banner_street_specials.webp',
-    heroImage: '/uploads/mannat/assets/hero_street_specials.webp',
+    banner: '/uploads/mannat/textures/banner_street_specials.png',
+    heroImage: '/uploads/mannat/assets/hero_street_specials.png',
     heroTitle: 'MTJ Crunch House & Soups',
     heroSubtitle: 'Crispy Golden Bites, Hot Soups & Fresh Salads',
     themeClass: 'chapter-theme-crunch',
@@ -94,8 +94,8 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-signature-gravies',
     title: 'MTJ Signature Gravies & Curries',
     shortTitle: 'Signature Gravies',
-    banner: '/uploads/mannat/textures/banner_paneer_khazana.webp',
-    heroImage: '/uploads/mannat/assets/hero_paneer_curries_handi.webp',
+    banner: '/uploads/mannat/textures/banner_paneer_khazana.png',
+    heroImage: '/uploads/mannat/assets/hero_paneer_curries_handi.png',
     heroTitle: 'Paneer Ka Khazana & Handi Curries',
     heroSubtitle: 'Slow-Cooked Dal Makhani & Royal Paneer Curries',
     themeClass: 'chapter-theme-gravies',
@@ -110,8 +110,8 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-soya-breads',
     title: 'MTJ Pure Soya Gravies & Breads',
     shortTitle: 'Soya & Breads',
-    banner: '/uploads/mannat/textures/banner_soya_gravies.webp',
-    heroImage: '/uploads/mannat/assets/hero_soya_chaap_curry.webp',
+    banner: '/uploads/mannat/textures/banner_soya_gravies.png',
+    heroImage: '/uploads/mannat/assets/hero_soya_chaap_curry.png',
     heroTitle: 'MTJ Pure Soya Gravies & Breads',
     heroSubtitle: '100% Plant-Based Soya Curries & Tandoori Breads',
     themeClass: 'chapter-theme-gravies',
@@ -126,8 +126,8 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-thalis-combos',
     title: 'MTJ Thalis & Street Specials',
     shortTitle: 'Thalis & Combos',
-    banner: '/uploads/mannat/textures/banner_thalis_combos.webp',
-    heroImage: '/uploads/mannat/assets/hero_royal_thali.webp',
+    banner: '/uploads/mannat/textures/banner_thalis_combos.png',
+    heroImage: '/uploads/mannat/assets/hero_royal_thali.png',
     heroTitle: 'Grand Dawat Thalis & Meal Combos',
     heroSubtitle: 'Complete Royal Meals & Street Food Classics',
     themeClass: 'chapter-theme-thalis',
@@ -142,8 +142,8 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-momos',
     title: 'MTJ Momo Junction',
     shortTitle: 'Momo Junction',
-    banner: '/uploads/mannat/textures/banner_momos.webp',
-    heroImage: '/uploads/mannat/assets/dish_steamed_momos.webp',
+    banner: '/uploads/mannat/textures/banner_momos.png',
+    heroImage: '/uploads/mannat/assets/dish_steamed_momos.png',
     heroTitle: 'Authentic Himalayan Momo Junction',
     heroSubtitle: 'Steamed, Kurkure, Tandoori & Gravy Momos (6 Pcs)',
     themeClass: 'chapter-theme-momos',
@@ -159,8 +159,8 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-chinese-wok',
     title: 'MTJ Chinese Wok',
     shortTitle: 'Chinese Wok',
-    banner: '/uploads/mannat/textures/banner_chinese_wok.webp',
-    heroImage: '/uploads/mannat/assets/dish_chili_paneer.webp',
+    banner: '/uploads/mannat/textures/banner_chinese_wok.png',
+    heroImage: '/uploads/mannat/assets/dish_chili_paneer.png',
     heroTitle: 'Indo-Chinese Wok Specialities',
     heroSubtitle: 'Hakka Noodles, Manchurian & Chili Paneer Bowls',
     themeClass: 'chapter-theme-chinese',
@@ -175,8 +175,8 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-cafe-quick-bites',
     title: 'MTJ Café, Fries & Quick Bites',
     shortTitle: 'Café & Quick Bites',
-    banner: '/uploads/mannat/textures/banner_lebanese_fries.webp',
-    heroImage: '/uploads/mannat/assets/dish_falafel_wrap.webp',
+    banner: '/uploads/mannat/textures/banner_lebanese_fries.png',
+    heroImage: '/uploads/mannat/assets/dish_falafel_wrap.png',
     heroTitle: 'Lebanese Delights & Mexican Bites',
     heroSubtitle: 'Cheesy Nachos, Loaded Fries & Hummus Platters',
     themeClass: 'chapter-theme-cafe',
@@ -191,9 +191,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-pizzas-burgers',
     title: 'Stone Baked Pizzas & Brioche Burgers',
     shortTitle: 'Pizzas & Burgers',
-    banner: '/uploads/mannat/textures/banner_pizza_burger.webp',
-    heroImage: '/uploads/mannat/assets/dish_creamy_pasta.webp',
-    heroSubImage: '/uploads/mannat/assets/dish_brioche_burger.webp',
+    banner: '/uploads/mannat/textures/banner_pizza_burger.png',
+    heroImage: '/uploads/mannat/assets/dish_creamy_pasta.png',
+    heroSubImage: '/uploads/mannat/assets/dish_brioche_burger.png',
     heroTitle: 'Italian Pizzas, Pastas & Brioche Burgers',
     heroSubtitle: '10-Inch Thin Crust Pizzas & Gourmet Brioche Buns',
     themeClass: 'chapter-theme-pizzas',
@@ -208,9 +208,9 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-brews-beverages',
     title: 'Artisan Brews, Shakes & Coolers',
     shortTitle: 'Brews & Shakes',
-    banner: '/uploads/mannat/textures/banner_thick_shakes.webp',
-    heroImage: '/uploads/mannat/assets/dish_cappuccino.webp',
-    heroSubImage: '/uploads/mannat/assets/hero_beverages_shakes.webp',
+    banner: '/uploads/mannat/textures/banner_thick_shakes.png',
+    heroImage: '/uploads/mannat/assets/dish_cappuccino.png',
+    heroSubImage: '/uploads/mannat/assets/hero_beverages_shakes.png',
     heroTitle: 'Hot & Cold Artisan Brews, Boba & Shakes',
     heroSubtitle: 'Thick Shakes, Cold Brews & Refreshing Mocktails',
     themeClass: 'chapter-theme-brews',
@@ -225,8 +225,8 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     id: 'chapter-desserts',
     title: 'Sweet Treats & Desserts',
     shortTitle: 'Desserts',
-    banner: '/uploads/mannat/textures/banner_desserts.webp',
-    heroImage: '/uploads/mannat/assets/hero_gulab_jamun_kheer.webp',
+    banner: '/uploads/mannat/textures/banner_desserts.png',
+    heroImage: '/uploads/mannat/assets/hero_gulab_jamun_kheer.png',
     heroTitle: 'Hot Sizzling Brownie & Heritage Sweets',
     heroSubtitle: 'Warm Gulab Jamuns, Kesari Kheer & Ice Creams',
     themeClass: 'chapter-theme-desserts',
@@ -308,21 +308,42 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
       }}
     >
       {/* ═══════════════════════════════════════════════════════════════════════
-          MASTHEAD: AUTHENTIC PDF STOREFRONT SIGNBOARD
+          MASTHEAD: AUTHENTIC PDF BRAND ARTBOARD & CHEF MASCOT (PAGE 1)
           ═══════════════════════════════════════════════════════════════════════ */}
-      <header className="relative rounded-3xl overflow-hidden shadow-xl border-2 border-[#FAB700] bg-[#181E19]">
-        <picture>
-          <source srcSet="/uploads/mannat/textures/masthead_main.webp" type="image/webp" />
-          <img
-            src="/uploads/mannat/textures/masthead_main.png"
-            alt={restaurant.name}
-            className="w-full h-auto object-cover select-none"
-            loading="eager"
-          />
-        </picture>
+      <header className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-[#FAB700] bg-[#181E19]">
+        {/* Corner Flourishes on Header */}
+        <div 
+          className="heritage-corner-flourish heritage-corner-flourish-tl" 
+          style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
+        />
+        <div 
+          className="heritage-corner-flourish heritage-corner-flourish-tr" 
+          style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
+        />
+        <div 
+          className="heritage-corner-flourish heritage-corner-flourish-bl" 
+          style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
+        />
+        <div 
+          className="heritage-corner-flourish heritage-corner-flourish-br" 
+          style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
+        />
+
+        {/* Top Artistic Plate: High-Res PNG Cover Plate from Page 1 */}
+        <div className="relative">
+          <picture>
+            <source media="(min-width: 640px)" srcSet="/menuqr/generated/mannat_masthead_panoramic.png" type="image/png" />
+            <img
+              src="/menuqr/generated/mannat_top_hero_square.png"
+              alt="Mannat Tandoori Junction — Chaap Ka Asli Swad"
+              className="w-full h-auto object-cover select-none block"
+              loading="eager"
+            />
+          </picture>
+        </div>
 
         {/* Storefront Contact & Badges Strip */}
-        <div className="bg-[#181E19] text-white px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs border-t-2 border-[#FAB700]">
+        <div className="bg-[#121613] text-white px-3 sm:px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 text-xs border-t-2 border-[#FAB700]/80">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10B981]" />
             <span className="font-bold text-[#FAB700] uppercase tracking-wider text-[11px] sm:text-xs font-serif">
@@ -330,7 +351,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-medium">
+          <div className="flex items-center gap-3 sm:gap-4 text-xs font-medium">
             <a
               href={`tel:${restaurant.phone || '8591095483'}`}
               className="flex items-center gap-1.5 text-white/90 hover:text-[#FAB700] transition-colors"
@@ -446,9 +467,9 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
               {/* Chapter Header Banner Plate */}
               <div className="rounded-2xl overflow-hidden shadow-md border-2 border-[#FAB700] bg-[#181E19]">
                 <picture>
-                  <source srcSet={chapter.banner} type="image/webp" />
+                  <source srcSet={chapter.banner.replace('.png', '.webp')} type="image/webp" />
                   <img
-                    src={chapter.banner.replace('.webp', '.png')}
+                    src={chapter.banner}
                     alt={chapter.title}
                     className="w-full h-auto object-cover select-none"
                     loading="lazy"
@@ -464,9 +485,9 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                 <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
                   <div className="heritage-hero-showcase">
                     <picture>
-                      <source srcSet={chapter.heroImage} type="image/webp" />
+                      <source srcSet={chapter.heroImage.replace('.png', '.webp')} type="image/webp" />
                       <img
-                        src={chapter.heroImage.replace('.webp', '.png')}
+                        src={chapter.heroImage}
                         alt={chapter.heroTitle}
                         className="w-full h-52 sm:h-64 lg:h-72 object-cover"
                         loading="lazy"
@@ -486,9 +507,9 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                   {chapter.heroSubImage && (
                     <div className="heritage-hero-showcase hidden sm:block">
                       <picture>
-                        <source srcSet={chapter.heroSubImage} type="image/webp" />
+                        <source srcSet={chapter.heroSubImage.replace('.png', '.webp')} type="image/webp" />
                         <img
-                          src={chapter.heroSubImage.replace('.webp', '.png')}
+                          src={chapter.heroSubImage}
                           alt={chapter.heroTitle}
                           className="w-full h-40 sm:h-48 object-cover"
                           loading="lazy"
@@ -624,7 +645,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                             {/* Momo Platter Showcase Banner */}
                             <div className="rounded-2xl overflow-hidden border-2 border-[#FAB700] shadow-md bg-white">
                               <img
-                                src="/uploads/mannat/assets/dish_steamed_momos.webp"
+                                src="/uploads/mannat/assets/dish_steamed_momos.png"
                                 alt="Freshly Steamed & Pan-Fried Momos with Spicy Dip"
                                 className="w-full h-40 sm:h-52 object-cover"
                                 loading="lazy"

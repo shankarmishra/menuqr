@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { menuTemplates, isTemplateDark, isColorDark } from '../../data/menuTemplates';
 import { getTemplateComponent, getTemplateTextureKey, TEMPLATE_TEXTURES, type CategoryGroup } from './templates';
 import { UniversalMenuSearch } from './templates/shared/UniversalMenuSearch';
+import { MenuCartContext } from './templates/shared/MenuCartContext';
 import { validateDesignSpecification } from './design-engine/types';
 
 const DynamicDesignEngine = React.lazy(() =>
@@ -69,6 +70,8 @@ export interface MenuTemplateRendererProps {
   compact?: boolean;
   className?: string;
   onAddToCart?: (item: any, priceStr?: string, variant?: string) => void;
+  onRemoveFromCart?: (itemId: string, variant?: string) => void;
+  getItemQuantity?: (itemId: string, variant?: string) => number;
   isPremium?: boolean;
   accentConfiguration?: unknown;
 }
@@ -81,6 +84,8 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
   compact = false,
   className,
   onAddToCart,
+  onRemoveFromCart,
+  getItemQuantity,
   isPremium = false,
   accentConfiguration,
 }) => {
@@ -186,6 +191,7 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
   );
 
   return (
+    <MenuCartContext.Provider value={{ onAddToCart, onRemoveFromCart, getItemQuantity }}>
     <div
       className={clsx(
         'w-full transition-all duration-300 relative overflow-hidden',
@@ -254,6 +260,7 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
         )}
       </div>
     </div>
+    </MenuCartContext.Provider>
   );
 };
 

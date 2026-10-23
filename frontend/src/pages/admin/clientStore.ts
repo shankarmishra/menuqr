@@ -57,6 +57,9 @@ export interface PublicMenuRecord {
   city: string;
   state: string;
   website: string;
+  instagram?: string;
+  facebook?: string;
+  cuisine?: string;
   openingHours: string;
   services: string[];
   heroImage?: string;
@@ -372,9 +375,12 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     phone: raw.restaurant.phone ?? '',
     address: raw.restaurant.address ?? '',
     city: raw.restaurant.city ?? '',
-    state: '',
-    website: '',
-    openingHours: '',
+    state: (raw.restaurant as any).state || '',
+    website: (raw.restaurant as any).website || '',
+    openingHours: (raw.restaurant as any).openingHours || '',
+    instagram: (raw.restaurant as any).instagram || undefined,
+    facebook: (raw.restaurant as any).facebook || undefined,
+    cuisine: (raw.restaurant as any).cuisine || undefined,
     services: [],
     heroImage: undefined,
     categories: raw.categories,
@@ -479,6 +485,8 @@ export interface CustomerOrder {
   deliveryCity?: string | null;
   notes?: string | null;
   rejectionReason?: string | null;
+  estimatedTimeMinutes?: number | null;
+  estimatedDeliveryTime?: string | null;
   trackingToken?: string;
   idempotencyKey?: string;
   items: Array<{ id: string; name: string; quantity: number; price: number; variant?: string }>;

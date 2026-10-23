@@ -170,6 +170,33 @@ export default function PurchaseSuccessPage() {
               </div>
             </div>
 
+            {/* Post-Subscription Account Setup Checklist */}
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-3xl p-6 md:p-8 mb-8 text-left">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-lg">
+                  ✓
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-[#151C19]">Next: Restaurant Account Setup</h3>
+                  <p className="text-xs text-[#151C19]/70">Everything is ready for your restaurant. Follow these simple setup steps:</p>
+                </div>
+              </div>
+              <div className="grid sm:grid-cols-3 gap-3 pt-3 border-t border-emerald-500/20 text-xs text-[#151C19]/80 font-medium">
+                <div className="flex items-start gap-2">
+                  <span className="text-[#E8783C] font-black">1.</span>
+                  <span>Set up restaurant address, cuisine & opening hours in Settings.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-[#E8783C] font-black">2.</span>
+                  <span>Optionally connect your Instagram & Facebook links for customers.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-[#E8783C] font-black">3.</span>
+                  <span>Add or edit dishes and download table QR codes.</span>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-[#151C19] p-8 md:p-10 rounded-3xl shadow-xl text-left text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
                 <Mail size={160} />
@@ -188,12 +215,20 @@ export default function PurchaseSuccessPage() {
                   <p className="mt-3 text-xs text-gray-400 font-mono">Order reference: {orderId}</p>
                 )}
               </div>
-              <Link
-                to="/login"
-                className="relative z-10 w-full md:w-auto flex items-center justify-center bg-[#E8783C] hover:bg-[#d66a30] text-white px-8 py-5 rounded-2xl font-bold transition-all hover:scale-105 gap-2 shadow-lg shadow-[#E8783C]/20"
-              >
-                RESTAURANT LOGIN <ArrowRight size={20} />
-              </Link>
+              <div className="relative z-10 flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                <Link
+                  to="/login?redirect=/app/settings"
+                  className="w-full sm:w-auto flex items-center justify-center bg-[#E8783C] hover:bg-[#d66a30] text-white px-7 py-4 rounded-2xl font-bold transition-all hover:scale-105 gap-2 shadow-lg shadow-[#E8783C]/20 whitespace-nowrap text-sm"
+                >
+                  COMPLETE ACCOUNT SETUP <ArrowRight size={18} />
+                </Link>
+                <Link
+                  to="/login"
+                  className="w-full sm:w-auto flex items-center justify-center bg-white/10 hover:bg-white/20 text-white border border-white/20 px-6 py-4 rounded-2xl font-bold transition-all text-sm whitespace-nowrap"
+                >
+                  LOGIN PORTAL
+                </Link>
+              </div>
             </div>
           </div>
         )}

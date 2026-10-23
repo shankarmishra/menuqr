@@ -13,8 +13,29 @@ import {
   Bike,
   Phone,
   ChevronRight,
-  AlertTriangle
+  AlertTriangle,
+  Trash2,
+  Globe,
+  CheckCircle2
 } from 'lucide-react';
+
+function InstagramIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+    </svg>
+  );
+}
+
+function FacebookIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  );
+}
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { 
@@ -203,6 +224,24 @@ export default function MenuPage() {
       }
       return prev.filter(c => c !== existing);
     });
+  };
+
+  const deleteFromCart = (id: string, variant?: string) => {
+    setCart(prev => prev.filter(c => !(c.id === id && c.variant === variant)));
+  };
+
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  const getItemQuantity = (id: string, variant?: string): number => {
+    if (!cart || cart.length === 0) return 0;
+    if (variant) {
+      const match = cart.find(c => c.id === id && c.variant === variant);
+      return match ? match.quantity : 0;
+    }
+    const matches = cart.filter(c => c.id === id);
+    return matches.reduce((sum, c) => sum + c.quantity, 0);
   };
 
   const placeOrder = async () => {
@@ -396,9 +435,48 @@ export default function MenuPage() {
         <Link className="menu-wordmark flex items-center gap-2" to={`/menu/${slug}`} aria-label="MenusQR menu">
           <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
         </Link>
-        {client?.city && (
-          <span className="text-xs font-mono opacity-80 flex items-center gap-1"><MapPin size={12} />{[client.city, client.state].filter(Boolean).join(', ')}</span>
-        )}
+        <div className="flex items-center gap-3">
+          {(client?.instagram || client?.facebook || client?.website) && (
+            <div className="flex items-center gap-1.5 mr-1">
+              {client.instagram && (
+                <a
+                  href={client.instagram.startsWith('http') ? client.instagram : `https://instagram.com/${client.instagram.replace(/^@/, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram profile"
+                  className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform"
+                >
+                  <InstagramIcon size={13} />
+                </a>
+              )}
+              {client.facebook && (
+                <a
+                  href={client.facebook.startsWith('http') ? client.facebook : `https://facebook.com/${client.facebook}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook page"
+                  className="w-7 h-7 rounded-full bg-[#1877F2] flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform"
+                >
+                  <FacebookIcon size={13} />
+                </a>
+              )}
+              {client.website && (
+                <a
+                  href={client.website.startsWith('http') ? client.website : `https://${client.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Official Website"
+                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform"
+                >
+                  <Globe size={13} />
+                </a>
+              )}
+            </div>
+          )}
+          {client?.city && (
+            <span className="text-xs font-mono opacity-80 flex items-center gap-1"><MapPin size={12} />{[client.city, client.state].filter(Boolean).join(', ')}</span>
+          )}
+        </div>
       </header>
 
       <main className="flex-1 pb-28">
@@ -416,6 +494,8 @@ export default function MenuPage() {
           items={itemsForRenderer}
           compact={false}
           onAddToCart={isPremium ? addToCart : undefined}
+          onRemoveFromCart={isPremium ? removeFromCart : undefined}
+          getItemQuantity={isPremium ? getItemQuantity : undefined}
           isPremium={isPremium}
           accentConfiguration={client.accentConfiguration}
         />
@@ -451,8 +531,45 @@ export default function MenuPage() {
         </section>
       )}
 
-      <footer className="py-6 text-center text-xs opacity-60 border-t border-white/10 mt-12 mb-16">
-        Prepared with care at <strong className="opacity-100">{client.businessName}</strong>
+      <footer className="py-8 text-center text-xs opacity-80 border-t border-white/10 mt-12 mb-16 flex flex-col items-center gap-3">
+        {(client.instagram || client.facebook || client.website) && (
+          <div className="flex items-center justify-center gap-3 mb-2">
+            {client.instagram && (
+              <a
+                href={client.instagram.startsWith('http') ? client.instagram : `https://instagram.com/${client.instagram.replace(/^@/, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white transition-all text-xs font-semibold"
+              >
+                <InstagramIcon size={14} className="text-pink-400" />
+                <span>Instagram</span>
+              </a>
+            )}
+            {client.facebook && (
+              <a
+                href={client.facebook.startsWith('http') ? client.facebook : `https://facebook.com/${client.facebook}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white transition-all text-xs font-semibold"
+              >
+                <FacebookIcon size={14} className="text-blue-400" />
+                <span>Facebook</span>
+              </a>
+            )}
+            {client.website && (
+              <a
+                href={client.website.startsWith('http') ? client.website : `https://${client.website}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white transition-all text-xs font-semibold"
+              >
+                <Globe size={14} className="text-emerald-400" />
+                <span>Website</span>
+              </a>
+            )}
+          </div>
+        )}
+        <div>Prepared with care at <strong className="opacity-100">{client.businessName}</strong></div>
       </footer>
 
       {/* Active Order Floating Pill (Allows reopening the live status tracker) */}
@@ -464,8 +581,15 @@ export default function MenuPage() {
           aria-label="View active order status"
         >
           <span className="active-order-pill-dot" />
-          <span>Active Order #{activeOrder.id}</span>
-          <ChevronRight size={14} className="opacity-70" />
+          <div className="flex flex-col text-left">
+            <span>Active Order #{activeOrder.id}</span>
+            {activeOrder.estimatedTimeMinutes && !['DELIVERED', 'COMPLETED', 'CANCELLED'].includes(activeOrder.status) && (
+              <span className="text-[11px] text-emerald-300 font-semibold flex items-center gap-1 mt-0.5">
+                <Clock3 size={11} /> {activeOrder.orderType === 'DELIVERY' ? `Delivery in ~${activeOrder.estimatedTimeMinutes}m` : `Ready in ~${activeOrder.estimatedTimeMinutes}m`}
+              </span>
+            )}
+          </div>
+          <ChevronRight size={14} className="opacity-70 ml-1 shrink-0" />
         </button>
       )}
 
@@ -510,7 +634,18 @@ export default function MenuPage() {
             >
               <div className="menu-cart-header">
                 <div>
-                  <h3>Your Order</h3>
+                  <div className="flex items-center gap-3">
+                    <h3 className="m-0">Your Order</h3>
+                    {cart.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={clearCart}
+                        className="text-xs text-rose-500 hover:text-rose-600 font-semibold underline"
+                      >
+                        Clear Cart
+                      </button>
+                    )}
+                  </div>
                   <span className="text-xs text-[#64748b] font-medium">Ordering from {client.businessName}</span>
                 </div>
                 <button 
@@ -568,6 +703,15 @@ export default function MenuPage() {
                           onClick={() => addToCart(item, `₹${item.price}`, item.variant)}
                         >
                           <Plus size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Remove ${item.name} from cart`}
+                          onClick={() => deleteFromCart(item.id, item.variant)}
+                          className="p-1 text-slate-400 hover:text-rose-500 ml-1.5 transition-colors"
+                          title="Remove item"
+                        >
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     </div>
@@ -684,6 +828,21 @@ export default function MenuPage() {
                   </div>
                 </div>
 
+                {/* Reassuring Payment Notice - No Gateway, Pay on Delivery or Table */}
+                <div className="my-3.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-start gap-2.5">
+                  <div className="p-1 rounded-full bg-emerald-100 text-emerald-600 shrink-0 mt-0.5">
+                    <CheckCircle2 size={15} />
+                  </div>
+                  <div className="text-xs">
+                    <div className="font-bold text-slate-800">
+                      {orderType === 'DELIVERY' ? '💵 Pay on Delivery (Cash / UPI Scanner)' : '🍽️ Pay at Counter / Table'}
+                    </div>
+                    <div className="text-slate-600 text-[11px] mt-0.5 leading-snug">
+                      No online payment gateway needed. Simply place your order and pay directly to the restaurant or delivery partner upon receiving your food.
+                    </div>
+                  </div>
+                </div>
+
                 {/* Action button */}
                 <button 
                   type="button"
@@ -692,10 +851,10 @@ export default function MenuPage() {
                   disabled={isSubmitting || cart.length === 0}
                 >
                   {isSubmitting ? (
-                    <span>Placing Order...</span>
+                    <span>Sending Order to Restaurant...</span>
                   ) : (
                     <>
-                      <span>Confirm & Place Order</span>
+                      <span>{orderType === 'DELIVERY' ? 'Confirm Delivery Order (Pay After Delivery)' : 'Place Order (Pay After Meal)'}</span>
                       <ChevronRight size={18} />
                     </>
                   )}
@@ -747,6 +906,41 @@ export default function MenuPage() {
                   <h4 className="order-tracker-title">{getStatusText(activeOrder.status, activeOrder.orderType)}</h4>
                   <div className="order-tracker-id">Order ID: #{activeOrder.id}</div>
                 </div>
+
+                {/* Estimated Delivery / Prep Time Notice */}
+                {activeOrder.status !== 'CANCELLED' && (
+                  activeOrder.estimatedTimeMinutes ? (
+                    <div className="my-3.5 p-4 rounded-2xl bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-emerald-500/15 border-2 border-emerald-500/30 text-center shadow-sm">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold tracking-wide uppercase">
+                        <Clock3 size={13} />
+                        <span>{activeOrder.orderType === 'DELIVERY' ? 'Order Delivery Time' : 'Kitchen Preparation Time'}</span>
+                      </div>
+                      <div className="text-3xl font-black text-emerald-300 mt-2 tracking-tight">
+                        ~{activeOrder.estimatedTimeMinutes} Minutes
+                      </div>
+                      {activeOrder.estimatedDeliveryTime && (
+                        <div className="text-xs text-emerald-200/90 font-medium mt-1">
+                          Expected by: <strong>{new Date(activeOrder.estimatedDeliveryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong>
+                        </div>
+                      )}
+                      <p className="text-[11px] text-slate-400 mt-1.5">
+                        {activeOrder.orderType === 'DELIVERY'
+                          ? 'Your fresh meal is being prepared and will be delivered within the estimated time.'
+                          : 'Our chef is preparing your dishes hot and fresh for your table.'}
+                      </p>
+                    </div>
+                  ) : activeOrder.status === 'NEW' ? (
+                    <div className="my-3.5 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-center">
+                      <div className="text-xs text-amber-300 font-semibold flex items-center justify-center gap-1.5">
+                        <Clock3 size={14} className="animate-pulse" />
+                        <span>Restaurant is reviewing your order...</span>
+                      </div>
+                      <p className="text-[11px] text-amber-200/70 mt-1">
+                        Preparation & delivery time will be updated here as soon as the restaurant accepts.
+                      </p>
+                    </div>
+                  ) : null
+                )}
 
                 {/* Visual Progress Stepper or Declined Alert */}
                 {activeOrder.status === 'CANCELLED' ? (
@@ -822,6 +1016,13 @@ export default function MenuPage() {
                   <div className="order-detail-row">
                     <span className="order-detail-label">Total Amount:</span>
                     <span className="order-detail-val text-emerald-600 font-extrabold">₹{activeOrder.total}</span>
+                  </div>
+
+                  <div className="order-detail-row">
+                    <span className="order-detail-label">Payment:</span>
+                    <span className="order-detail-val text-emerald-700 font-bold">
+                      {activeOrder.orderType === 'DELIVERY' ? '💵 Pay on Delivery (Cash / UPI to Driver)' : '🍽️ Pay at Table / Counter'}
+                    </span>
                   </div>
 
                   {/* Items summary */}

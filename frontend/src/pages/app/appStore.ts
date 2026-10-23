@@ -47,6 +47,12 @@ export interface AppProfile {
   city?: string;
   address?: string;
   logoUrl?: string;
+  state?: string;
+  cuisine?: string;
+  openingHours?: string;
+  instagram?: string;
+  facebook?: string;
+  website?: string;
 }
 
 export interface AppDashboardData {
@@ -76,6 +82,12 @@ export interface AppQrData {
   city?: string;
   address?: string;
   logoUrl?: string;
+  state?: string;
+  cuisine?: string;
+  openingHours?: string;
+  instagram?: string;
+  facebook?: string;
+  website?: string;
   templateId?: string;
   accentConfiguration?: unknown;
 }
@@ -87,6 +99,12 @@ export interface OnboardingPayload {
   city?: string;
   address?: string;
   logoUrl?: string;
+  state?: string;
+  cuisine?: string;
+  openingHours?: string;
+  instagram?: string;
+  facebook?: string;
+  website?: string;
   menuName?: string;
   templateId?: string;
   categories: Array<{ name: string; description?: string }>;
@@ -443,10 +461,17 @@ export async function getOrders() {
   return request<any[]>('/orders');
 }
 
-export async function updateOrderStatus(id: string, status: string, rejectionReason?: string) {
+export async function updateOrderStatus(id: string, status: string, rejectionReason?: string, estimatedTimeMinutes?: number) {
   return request<any>(`/orders/${encodeURIComponent(id)}/status`, {
     method: 'PATCH',
-    body: JSON.stringify({ status, rejectionReason })
+    body: JSON.stringify({ status, rejectionReason, estimatedTimeMinutes })
+  });
+}
+
+export async function updateOrderEstimatedTime(id: string, estimatedTimeMinutes: number) {
+  return request<any>(`/orders/${encodeURIComponent(id)}/time`, {
+    method: 'PATCH',
+    body: JSON.stringify({ estimatedTimeMinutes })
   });
 }
 export function renewSubscription(planId: string): Promise<any> { return request<any>('/subscription/renew', { method: 'POST', body: JSON.stringify({ planId }) }); }

@@ -6,6 +6,7 @@ import {
   isValidElement,
   useLayoutEffect,
   useRef,
+  useState,
   type ReactNode,
   type CSSProperties,
 } from 'react';
@@ -62,18 +63,6 @@ const resolveOffset = (value: number | string, size: number): number => {
 const toLength = (value: number | string): string =>
   typeof value === 'number' ? `${value}px` : value;
 
-const scrollsInside = (node: EventTarget | null, stop: Element | null, delta: number): boolean => {
-  for (let element = node as HTMLElement | null; element && element !== stop; element = element.parentElement) {
-    if (element.scrollHeight <= element.clientHeight + 1) continue;
-    const overflow = getComputedStyle(element).overflowY;
-    if (overflow !== 'auto' && overflow !== 'scroll') continue;
-    if (delta > 0 ? element.scrollTop + element.clientHeight < element.scrollHeight - 1 : element.scrollTop > 0) {
-      return true;
-    }
-  }
-  return false;
-};
-
 export const ScrollStackItem = ({ children, itemClassName = '', style }: ScrollStackItemProps) => (
   <div className={`scroll-stack-card ${itemClassName}`.trim()} style={style}>
     {children}
@@ -84,16 +73,16 @@ export const ScrollStackItem = ({ children, itemClassName = '', style }: ScrollS
 const ScrollStack = ({
   children,
   className = '',
-  itemDistance = 120,
-  itemStackDistance = 8,
-  stackPosition = '92px',
+  itemDistance = 160,
+  itemStackDistance = 24,
+  stackPosition = '96px',
   itemScale = 0.025,
-  baseScale = 0.88,
-  dimAmount = 0.14,
+  baseScale = 0.94,
+  dimAmount = 0,
   blurAmount = 0,
   tiltAmount = 0,
   rotationAmount = 0,
-  holdDistance = 220,
+  holdDistance = 260,
   smoothScroll = false,
   snap = false,
   useWindowScroll = false,
@@ -106,6 +95,8 @@ const ScrollStack = ({
   const scheduleRef = useRef<(() => void) | null>(null);
   const invalidateRef = useRef<(() => void) | null>(null);
   const items = Children.toArray(children);
+
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
 
   useLayoutEffect(() => {
     settingsRef.current = {
@@ -137,42 +128,22 @@ const ScrollStack = ({
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const cache = new Map<string, string | number>();
     let frame = 0;
-    let glide = 0;
-    let rest = 0;
     let complete = false;
-    let gliding = false;
-    let pressed = false;
-    let current = 0;
-    let goal = 0;
-    let written = 0;
-    let last = 0;
 
     interface LayoutCache {
+      isMobile: boolean;
       viewHeight: number;
       viewTop: number;
       stackTop: number;
-      offset: number;
       heights: number[];
+      pitch: number;
       slotDocTops: number[];
-      padTop: number;
       endHeight: number;
-      points: number[];
-      reach: number;
     }
 
     let layoutCache: LayoutCache | null = null;
 
     const readScroll = () => (windowed ? window.scrollY : root.scrollTop);
-    const maxScroll = () =>
-      windowed ? document.documentElement.scrollHeight - window.innerHeight : root.scrollHeight - root.clientHeight;
-    const writeScroll = (value: number) => {
-      written = value;
-      if (windowed) {
-        window.scrollTo({ top: value, behavior: 'instant' as ScrollBehavior });
-      } else {
-        root.scrollTo({ top: value, behavior: 'instant' as ScrollBehavior });
-      }
-    };
 
     const write = (key: string, value: string | number, apply: (val: any) => void) => {
       if (cache.get(key) === value) return false;
@@ -188,45 +159,41 @@ const ScrollStack = ({
       ) as HTMLElement[];
       if (!settings || !slots.length) return null;
 
+      const isMobile = window.innerWidth < 768;
       const viewHeight = windowed ? window.innerHeight : root.clientHeight;
       const viewTop = windowed ? 0 : root.getBoundingClientRect().top + root.clientTop;
       const stackTop = resolveOffset(settings.stackPosition, viewHeight);
-      const offset = settings.itemStackDistance;
-      const heights = slots.map((slot) => slot.offsetHeight);
-      const padTop = windowed ? 0 : stackTop;
-      const endHeight =
-        settings.holdDistance +
-        (windowed ? 0 : Math.max(0, viewHeight - stackTop - (heights[heights.length - 1] || 0)));
+      const heights = slots.map((slot) => slot.offsetHeight || 500);
 
-      write('padTop', padTop, (value) => {
-        inner.style.paddingTop = `${value}px`;
-      });
+      // Card geometry for horizontal glide
+      const firstCard = slots[0]?.querySelector('.scroll-stack-card') as HTMLElement | null;
+      const cardWidth = firstCard?.offsetWidth || (isMobile ? window.innerWidth - 32 : 880);
+      const gap = isMobile ? 24 : 40;
+      const pitch = cardWidth + gap;
+
+      const endHeight = settings.holdDistance + (windowed ? 0 : 200);
+
       write('endHeight', endHeight, (value) => {
         end.style.height = `${value}px`;
       });
 
-      const innerDocTop = inner.getBoundingClientRect().top - viewTop + readScroll() + padTop;
+      const innerDocTop = inner.getBoundingClientRect().top - viewTop + readScroll();
       let flow = innerDocTop;
       const slotDocTops: number[] = [];
-      const points: number[] = [];
       for (let i = 0; i < slots.length; i++) {
         slotDocTops.push(flow);
-        points.push(flow - stackTop);
-        flow += (heights[i] || 0) + settings.itemDistance;
+        flow += (heights[i] || 480) + settings.itemDistance;
       }
-      const reach = Math.max(40, ((heights[0] || 0) + settings.itemDistance) / 2);
 
       return {
+        isMobile,
         viewHeight,
         viewTop,
         stackTop,
-        offset,
         heights,
+        pitch,
         slotDocTops,
-        padTop,
         endHeight,
-        points,
-        reach,
       };
     };
 
@@ -238,56 +205,72 @@ const ScrollStack = ({
       ) as HTMLElement[];
       if (!settings || !slots.length) return;
 
-      if (!layoutCache || layoutCache.heights.length !== slots.length) {
+      if (!layoutCache || layoutCache.slotDocTops.length !== slots.length) {
         layoutCache = measureLayout();
       }
       if (!layoutCache) return;
 
-      const { viewTop, stackTop, heights, slotDocTops } = layoutCache;
+      const { isMobile, viewTop, stackTop, heights, pitch, slotDocTops } = layoutCache;
       const scrollY = readScroll();
+      const isReducedMotion = motion.matches;
 
-      const depths = slots.map(() => 0);
-      let lastCover = 0;
+      if (isMobile) {
+        // Mobile view: Natural vertical card layout without horizontal translation or depth occlusions
+        slots.forEach((slot, i) => {
+          const card = slot.firstElementChild as HTMLElement | null;
+          if (!card) return;
+          slot.inert = false;
+          write(`transform${i}`, '', (value) => {
+            card.style.transform = value;
+          });
+          write(`opacity${i}`, '1', (value) => {
+            card.style.opacity = value;
+          });
+          write(`filter${i}`, '', (value) => {
+            card.style.filter = value;
+          });
+          write(`dim${i}`, '0', (value) => {
+            card.style.setProperty('--scroll-stack-dim', value);
+          });
+        });
+        return;
+      }
+
+      // Desktop view: Smooth Premium Horizontal Showcase
+      // Compute continuous scroll progress index I across cards
+      let continuousIndex = 0;
       for (let j = 1; j < slots.length; j++) {
         const pinBefore = viewTop + stackTop;
-        const start = pinBefore + (heights[j - 1] || 0);
-        const span = Math.max(1, (heights[j - 1] || 0) * 0.85);
-        
+        const start = pinBefore + (heights[j - 1] || 480);
+        const span = Math.max(1, (heights[j - 1] || 480) * 0.85);
+
         const pinCurrent = viewTop + stackTop;
         const unpinnedTop = (slotDocTops[j] || 0) - scrollY;
         const topJ = Math.max(pinCurrent, unpinnedTop);
 
         const linearCover = Math.min(1, Math.max(0, (start - topJ) / span));
-        // C1 smoothstep easing curve for natural deceleration: 3t^2 - 2t^3
         const cover = linearCover * linearCover * (3 - 2 * linearCover);
-
-        for (let i = 0; i < j; i++) depths[i] += cover;
-        lastCover = cover;
+        continuousIndex += cover;
       }
 
-      const isReducedMotion = motion.matches;
-      const dimStep = Math.min(Math.max(settings.dimAmount, 0), 1);
+      const activeIdx = Math.min(slots.length - 1, Math.max(0, Math.round(continuousIndex)));
+      setActiveCardIndex(activeIdx);
 
       slots.forEach((slot, i) => {
         const card = slot.firstElementChild as HTMLElement | null;
         if (!card) return;
-        const depth = depths[i];
 
-        // Accessibility: ensure fully occluded cards do not trap keyboard focus
-        const isOccluded = depth >= 0.999;
+        const delta = i - continuousIndex;
+        const dist = Math.abs(delta);
+
+        // Accessibility: ensure off-screen cards (scrolled past or far ahead) do not trap keyboard focus
+        const isOccluded = (continuousIndex - i >= 1.2) || (i - continuousIndex >= 2.4);
         if (slot.inert !== isOccluded) {
           slot.inert = isOccluded;
         }
 
-        // Editorial sequential reveal motion calculation:
-        // As an unpinned card approaches stackTop, it enters with modest vertical travel (22px -> 0px) and clean opacity (0.55 -> 1.0)
-        const unpinnedTop = (slotDocTops[i] || 0) - scrollY;
-        const targetTop = viewTop + stackTop;
-        const enterSpan = Math.max(1, (layoutCache?.viewHeight || 800) * 0.45);
-        const linearProgress = Math.min(1, Math.max(0, 1 - (unpinnedTop - targetTop) / enterSpan));
-        const revealProgress = linearProgress * linearProgress * (3 - 2 * linearProgress);
-
         if (isReducedMotion) {
+          // Reduced motion: bypass transforms, tilt, and dimming completely
           write(`transform${i}`, '', (value) => {
             card.style.transform = value;
           });
@@ -303,44 +286,30 @@ const ScrollStack = ({
           return;
         }
 
-        const lean = Math.min(depth, 1);
-        const scale = Math.max(
-          settings.baseScale,
-          1 - Math.min(depth * settings.itemScale, 1 - settings.baseScale)
-        );
-        const upwardShift = -Math.min(depth, 3) * (settings.itemStackDistance > 0 ? Math.min(settings.itemStackDistance, 12) : 0);
-        const tilt = -lean * settings.tiltAmount;
-        const turn = lean * settings.rotationAmount * (i % 2 ? -1 : 1);
-        const blur = depth * settings.blurAmount;
-        const dim = 1 - Math.pow(1 - dimStep, depth);
-        const has3D = Math.abs(tilt) > 0.01 || Math.abs(turn) > 0.01;
+        // Horizontal Showcase Motion:
+        // Active card: scale 1.0, opacity 1.0, centered in focus
+        // Neighboring cards: scale 0.94, opacity 0.72, teasing adjacent designs
+        const tx = delta * pitch;
+        const scale = Math.max(0.94, 1.0 - 0.06 * Math.min(1, dist));
+        const opacity = Math.max(0.72, 1.0 - 0.28 * Math.min(1, dist));
 
-        // Clean sequential entrance travel for unpinned cards
-        const entranceTravel = depth < 0.0005 && revealProgress < 0.999 ? (1 - revealProgress) * 22 : 0;
-        const cardOpacity = depth < 0.0005 && revealProgress < 0.999 ? (0.55 + 0.45 * revealProgress).toFixed(3) : '1';
-
-        const transform =
-          depth < 0.0005
-            ? (entranceTravel > 0.4 ? `translateY(${entranceTravel.toFixed(1)}px)` : '')
-            : has3D
-              ? `perspective(1200px) translateY(${upwardShift.toFixed(1)}px) rotateX(${tilt.toFixed(2)}deg) rotate(${turn.toFixed(2)}deg) scale(${scale.toFixed(4)})`
-              : `translateY(${upwardShift.toFixed(1)}px) scale(${scale.toFixed(4)})`;
+        const transform = `translate3d(${tx.toFixed(1)}px, 0, 0) scale(${scale.toFixed(3)})`;
 
         write(`transform${i}`, transform, (value) => {
           card.style.transform = value;
         });
-        write(`opacity${i}`, cardOpacity, (value) => {
+        write(`opacity${i}`, opacity.toFixed(3), (value) => {
           card.style.opacity = value;
         });
-        write(`filter${i}`, blur > 0.01 ? `blur(${blur.toFixed(2)}px)` : '', (value) => {
+        write(`filter${i}`, '', (value) => {
           card.style.filter = value;
         });
-        write(`dim${i}`, dim.toFixed(3), (value) => {
+        write(`dim${i}`, '0', (value) => {
           card.style.setProperty('--scroll-stack-dim', value);
         });
       });
 
-      const done = slots.length > 1 && lastCover >= 0.999;
+      const done = slots.length > 1 && continuousIndex >= slots.length - 1.01;
       if (done !== complete) {
         complete = done;
         if (done) settings.onStackComplete?.();
@@ -356,108 +325,23 @@ const ScrollStack = ({
       schedule();
     };
 
-    const step = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-      if (Math.abs(readScroll() - written) > 2) {
-        gliding = false;
-        glide = 0;
-        settleSoon();
-        return;
-      }
-      current += (goal - current) * (1 - Math.pow(0.9, dt * 60));
-      if (Math.abs(goal - current) < 0.5) current = goal;
-      writeScroll(current);
-      if (current === goal) {
-        gliding = false;
-        glide = 0;
-        settleSoon();
-        return;
-      }
-      glide = requestAnimationFrame(step);
-    };
-
-    const glideTo = (value: number) => {
-      goal = Math.min(Math.max(value, 0), maxScroll());
-      if (motion.matches) {
-        writeScroll(goal);
-        return;
-      }
-      if (gliding) return;
-      gliding = true;
-      current = readScroll();
-      written = current;
-      last = performance.now();
-      glide = requestAnimationFrame(step);
-    };
-
-    const settle = () => {
-      rest = 0;
-      if (!settingsRef.current?.snap || gliding || pressed || !layoutCache?.points?.length) return;
-      const now = readScroll();
-      const points = layoutCache.points;
-      const nearest = points.reduce((best, point) => (Math.abs(point - now) < Math.abs(best - now) ? point : best));
-      const gap = Math.abs(nearest - now);
-      if (gap > 1 && gap < layoutCache.reach) glideTo(nearest);
-    };
-
-    const settleSoon = () => {
-      window.clearTimeout(rest);
-      rest = window.setTimeout(settle, 140);
-    };
-
     const onScroll = () => {
       schedule();
-      if (!gliding) settleSoon();
-    };
-
-    const onWheel = (event: WheelEvent) => {
-      if (!settingsRef.current?.smoothScroll || motion.matches || event.defaultPrevented || event.ctrlKey) return;
-      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
-      const page = windowed ? window.innerHeight : root.clientHeight;
-      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? page : 1);
-      if (!delta || scrollsInside(event.target, windowed ? document.body : root, delta)) return;
-      const base = gliding ? goal : readScroll();
-      if ((delta < 0 && base <= 0) || (delta > 0 && base >= maxScroll() - 0.5)) return;
-      event.preventDefault();
-      window.clearTimeout(rest);
-      glideTo(base + delta);
-    };
-
-    const onPress = () => {
-      pressed = true;
-      window.clearTimeout(rest);
-    };
-
-    const onRelease = () => {
-      if (!pressed) return;
-      pressed = false;
-      settleSoon();
     };
 
     const observer = new ResizeObserver(invalidateAndSchedule);
     observer.observe(root);
     observer.observe(inner);
     target.addEventListener('scroll', onScroll, { passive: true });
-    target.addEventListener('wheel', onWheel as EventListener, { passive: false });
-    target.addEventListener('pointerdown', onPress as EventListener, { passive: true });
-    window.addEventListener('pointerup', onRelease, { passive: true });
-    window.addEventListener('pointercancel', onRelease, { passive: true });
-    window.addEventListener('resize', invalidateAndSchedule);
+    window.addEventListener('resize', invalidateAndSchedule, { passive: true });
     scheduleRef.current = schedule;
     invalidateRef.current = invalidateAndSchedule;
     invalidateAndSchedule();
 
     return () => {
       cancelAnimationFrame(frame);
-      cancelAnimationFrame(glide);
-      window.clearTimeout(rest);
       observer.disconnect();
       target.removeEventListener('scroll', onScroll);
-      target.removeEventListener('wheel', onWheel as EventListener);
-      target.removeEventListener('pointerdown', onPress as EventListener);
-      window.removeEventListener('pointerup', onRelease);
-      window.removeEventListener('pointercancel', onRelease);
       window.removeEventListener('resize', invalidateAndSchedule);
       scheduleRef.current = null;
       invalidateRef.current = null;
@@ -471,6 +355,27 @@ const ScrollStack = ({
         useWindowScroll ? 'scroll-stack--window' : 'scroll-stack--contained'
       } ${className}`.trim()}
     >
+      {/* Luxury Progress Indicators on Desktop */}
+      <div className="hidden md:flex items-center justify-between px-6 mb-4 max-w-xl mx-auto text-menusqr-emerald/70 font-mono text-xs font-bold uppercase tracking-widest select-none">
+        <span className="flex items-center gap-2">
+          <span>Design {String(activeCardIndex + 1).padStart(2, '0')}</span>
+          <span className="text-menusqr-emerald/30">/</span>
+          <span className="text-menusqr-emerald/40">{String(items.length).padStart(2, '0')}</span>
+        </span>
+        <div className="flex items-center gap-1.5" aria-hidden="true">
+          {items.map((_, dotIdx) => (
+            <span
+              key={`dot-${dotIdx}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                dotIdx === activeCardIndex
+                  ? 'w-6 bg-menusqr-orange shadow-xs'
+                  : 'w-1.5 bg-menusqr-emerald/20'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
       <div ref={innerRef} className="scroll-stack__inner">
         {items.map((child, index) => {
           return (
@@ -483,7 +388,7 @@ const ScrollStack = ({
                 className="scroll-stack__slot"
                 style={{
                   top: toLength(stackPosition),
-                  zIndex: index + 1,
+                  zIndex: 20,
                 }}
               >
                 {child}

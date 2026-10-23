@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   getProfile,
+  updateSettings,
   getGoogleReviewsAddon,
   updateGoogleReviewsAddon,
   deleteGoogleReviewsAddon,
@@ -18,20 +19,65 @@ import {
   Clock,
   Sparkles,
   Link as LinkIcon,
+  Building2,
+  Phone,
+  MapPin,
+  Utensils,
+  Globe,
+  Loader2,
+  Share2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useToast } from '../../components/feedback/ToastProvider';
+
+function InstagramIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+    </svg>
+  );
+}
+
+function FacebookIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  );
+}
 
 export default function Settings() {
+  const showToast = useToast();
   const [profile, setProfile] = useState<AppProfile | null>(null);
   const [addonStatus, setAddonStatus] = useState<GoogleReviewsAddonStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Restaurant Profile & Account Setup Form State
+  const [profileForm, setProfileForm] = useState({
+    businessName: '',
+    tagline: '',
+    cuisine: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    openingHours: '',
+    logoUrl: '',
+    instagram: '',
+    facebook: '',
+    website: '',
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileMessage, setProfileMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   // Review URL form state
   const [reviewUrlInput, setReviewUrlInput] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isEditingReview, setIsEditingReview] = useState(false);
+  const [savingReview, setSavingReview] = useState(false);
+  const [deletingReview, setDeletingReview] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -39,7 +85,23 @@ export default function Settings() {
       getGoogleReviewsAddon().catch(console.error),
     ])
       .then(([prof, addon]) => {
-        if (prof) setProfile(prof);
+        if (prof) {
+          setProfile(prof);
+          setProfileForm({
+            businessName: prof.businessName || '',
+            tagline: prof.tagline || '',
+            cuisine: prof.cuisine || '',
+            phone: prof.phone || '',
+            address: prof.address || '',
+            city: prof.city || '',
+            state: prof.state || '',
+            openingHours: prof.openingHours || '',
+            logoUrl: prof.logoUrl || '',
+            instagram: prof.instagram || '',
+            facebook: prof.facebook || '',
+            website: prof.website || '',
+          });
+        }
         if (addon) {
           setAddonStatus(addon);
           setReviewUrlInput(addon.reviewUrl || '');
@@ -48,14 +110,51 @@ export default function Settings() {
       .finally(() => setLoading(false));
   }, []);
 
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profileForm.businessName.trim()) {
+      setProfileMessage({ type: 'error', text: 'Business / Restaurant Name is required.' });
+      return;
+    }
+
+    setSavingProfile(true);
+    setProfileMessage(null);
+    try {
+      const updated = await updateSettings({
+        businessName: profileForm.businessName.trim(),
+        tagline: profileForm.tagline.trim() || null,
+        cuisine: profileForm.cuisine.trim() || null,
+        phone: profileForm.phone.trim() || null,
+        address: profileForm.address.trim() || null,
+        city: profileForm.city.trim() || null,
+        state: profileForm.state.trim() || null,
+        openingHours: profileForm.openingHours.trim() || null,
+        logoUrl: profileForm.logoUrl.trim() || null,
+        instagram: profileForm.instagram.trim() || null,
+        facebook: profileForm.facebook.trim() || null,
+        website: profileForm.website.trim() || null,
+      });
+
+      setProfile((prev) => (prev ? { ...prev, ...updated } : updated));
+      setProfileMessage({ type: 'success', text: 'Restaurant account details and social links saved successfully! Your digital menu is updated.' });
+      showToast('success', 'Restaurant profile updated successfully!');
+    } catch (err: any) {
+      const msg = err.message || 'Failed to update restaurant profile.';
+      setProfileMessage({ type: 'error', text: msg });
+      showToast('error', msg);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   const handleSaveUrl = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewUrlInput.trim()) {
-      setMessage({ type: 'error', text: 'Please enter a valid Google review link.' });
+      setReviewMessage({ type: 'error', text: 'Please enter a valid Google review link.' });
       return;
     }
-    setSaving(true);
-    setMessage(null);
+    setSavingReview(true);
+    setReviewMessage(null);
     try {
       const res = await updateGoogleReviewsAddon(reviewUrlInput.trim());
       setAddonStatus((prev) =>
@@ -69,19 +168,20 @@ export default function Settings() {
           : null
       );
       setReviewUrlInput(res.reviewUrl);
-      setIsEditing(false);
-      setMessage({ type: 'success', text: 'Google review link saved successfully! Your menu will now display the review button.' });
+      setIsEditingReview(false);
+      setReviewMessage({ type: 'success', text: 'Google review link saved successfully! Your menu will now display the review button.' });
+      showToast('success', 'Google review link saved!');
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Failed to save Google review link.' });
+      setReviewMessage({ type: 'error', text: err.message || 'Failed to save Google review link.' });
     } finally {
-      setSaving(false);
+      setSavingReview(false);
     }
   };
 
   const handleClearUrl = async () => {
     if (!window.confirm('Are you sure you want to remove your Google review link? The review button will be hidden from your menu.')) return;
-    setDeleting(true);
-    setMessage(null);
+    setDeletingReview(true);
+    setReviewMessage(null);
     try {
       const res = await deleteGoogleReviewsAddon();
       setAddonStatus((prev) =>
@@ -94,12 +194,13 @@ export default function Settings() {
           : null
       );
       setReviewUrlInput('');
-      setIsEditing(true);
-      setMessage({ type: 'success', text: 'Google review link removed.' });
+      setIsEditingReview(true);
+      setReviewMessage({ type: 'success', text: 'Google review link removed.' });
+      showToast('info', 'Google review link removed.');
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Failed to remove link.' });
+      setReviewMessage({ type: 'error', text: err.message || 'Failed to remove link.' });
     } finally {
-      setDeleting(false);
+      setDeletingReview(false);
     }
   };
 
@@ -115,13 +216,314 @@ export default function Settings() {
   const canConfigure = addonStatus?.canConfigure ?? false;
 
   return (
-    <div className="space-y-8 max-w-3xl">
-      <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Restaurant Settings</h1>
-        <p className="mt-1 text-sm text-[#849a90]">Manage your profile and digital menu integrations.</p>
+    <div className="space-y-8 max-w-4xl pb-16">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Restaurant Settings & Profile</h1>
+          <p className="mt-1 text-sm text-[#849a90]">
+            Complete your restaurant account setup, contact details, social media links, and integrations.
+          </p>
+        </div>
+        {profile?.menuSlug && (
+          <Link
+            to={`/menu/${profile.menuSlug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#25322d] hover:bg-[#2e3e37] text-white px-4 py-2.5 text-xs font-bold border border-[#36473f] transition-all self-start sm:self-center shadow-sm"
+          >
+            <span>View Live QR Menu</span>
+            <ExternalLink size={14} className="text-[#e8783c]" />
+          </Link>
+        )}
       </div>
 
-      {/* Google Reviews Add-on Management Section */}
+      {/* ── 1. Comprehensive Restaurant Account & Profile Setup ──────────────── */}
+      <form onSubmit={handleSaveProfile} className="rounded-2xl border border-[#2a3832] bg-[#1d2723] p-6 md:p-8 space-y-6">
+        <div className="flex items-center justify-between border-b border-[#2a3832] pb-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#e8783c]/10 text-[#e8783c]">
+              <Building2 className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Restaurant Account Setup</h2>
+              <p className="text-xs text-[#849a90] mt-0.5">
+                Set up your restaurant brand, cuisine, contact info, and social channels.
+              </p>
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={savingProfile}
+            className="hidden sm:inline-flex items-center gap-2 rounded-xl bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-2.5 text-xs font-bold transition-all shadow-md shadow-[#e8783c]/20 disabled:opacity-50 cursor-pointer"
+          >
+            {savingProfile ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            <span>{savingProfile ? 'Saving...' : 'Save Profile'}</span>
+          </button>
+        </div>
+
+        {profileMessage && (
+          <div
+            className={`rounded-xl p-4 flex items-start gap-3 text-xs font-medium border ${
+              profileMessage.type === 'success'
+                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+                : 'bg-rose-500/10 border-rose-500/20 text-rose-300'
+            }`}
+          >
+            {profileMessage.type === 'success' ? (
+              <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" />
+            ) : (
+              <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+            )}
+            <div className="flex-1 leading-relaxed">{profileMessage.text}</div>
+          </div>
+        )}
+
+        {/* Core Restaurant Information */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#849a90] flex items-center gap-1.5">
+            <Utensils size={14} className="text-[#e8783c]" />
+            <span>Basic Restaurant Info</span>
+          </h3>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5">
+                Restaurant / Business Name <span className="text-rose-400">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={profileForm.businessName}
+                onChange={(e) => setProfileForm({ ...profileForm, businessName: e.target.value })}
+                placeholder="e.g. Mannat Restaurant & Dhaba"
+                className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5">
+                Tagline / Slogan
+              </label>
+              <input
+                type="text"
+                value={profileForm.tagline}
+                onChange={(e) => setProfileForm({ ...profileForm, tagline: e.target.value })}
+                placeholder="e.g. Authentic Pure Vegetarian Delicacies"
+                className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5">
+                Cuisine / Category
+              </label>
+              <input
+                type="text"
+                value={profileForm.cuisine}
+                onChange={(e) => setProfileForm({ ...profileForm, cuisine: e.target.value })}
+                placeholder="e.g. North Indian, Fast Food, Cafe"
+                className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5">
+                Opening Hours
+              </label>
+              <input
+                type="text"
+                value={profileForm.openingHours}
+                onChange={(e) => setProfileForm({ ...profileForm, openingHours: e.target.value })}
+                placeholder="e.g. 10:00 AM – 11:30 PM (Daily)"
+                className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Contact & Location */}
+        <div className="space-y-4 pt-3 border-t border-[#2a3832]">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#849a90] flex items-center gap-1.5">
+            <MapPin size={14} className="text-[#e8783c]" />
+            <span>Contact & Location (Visible on Menu)</span>
+          </h3>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5">
+                Contact Phone / WhatsApp
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#62756d]">
+                  <Phone size={14} />
+                </span>
+                <input
+                  type="tel"
+                  value={profileForm.phone}
+                  onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                  placeholder="+91 98765 43210"
+                  className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5">City</label>
+              <input
+                type="text"
+                value={profileForm.city}
+                onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })}
+                placeholder="e.g. Jaipur"
+                className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5">State</label>
+              <input
+                type="text"
+                value={profileForm.state}
+                onChange={(e) => setProfileForm({ ...profileForm, state: e.target.value })}
+                placeholder="e.g. Rajasthan"
+                className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5">
+              Full Restaurant Address
+            </label>
+            <input
+              type="text"
+              value={profileForm.address}
+              onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })}
+              placeholder="e.g. NH-44, GT Road, Murthal, Haryana"
+              className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all"
+            />
+          </div>
+        </div>
+
+        {/* ── Social Media & Online Links (Optional) ─────────────────────────── */}
+        <div className="space-y-4 pt-3 border-t border-[#2a3832]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#849a90] flex items-center gap-1.5">
+              <Share2 size={14} className="text-[#e8783c]" />
+              <span>Social Media & Web Links (Optional)</span>
+            </h3>
+            <span className="text-[11px] text-[#62756d]">
+              Shown directly on your customer digital menu
+            </span>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Instagram */}
+            <div>
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5 flex items-center gap-1.5">
+                <span className="text-pink-400"><InstagramIcon size={14} /></span>
+                <span>Instagram Profile Link / Handle (Optional)</span>
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#62756d]">
+                  <InstagramIcon size={14} />
+                </span>
+                <input
+                  type="text"
+                  value={profileForm.instagram}
+                  onChange={(e) => setProfileForm({ ...profileForm, instagram: e.target.value })}
+                  placeholder="https://instagram.com/yourrestaurant or @yourrestaurant"
+                  className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all font-mono text-xs"
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-[#62756d]">
+                Customers can click to view your Instagram photos & reels.
+              </p>
+            </div>
+
+            {/* Facebook */}
+            <div>
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5 flex items-center gap-1.5">
+                <span className="text-blue-400"><FacebookIcon size={14} /></span>
+                <span>Facebook Page Link (Optional)</span>
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#62756d]">
+                  <FacebookIcon size={14} />
+                </span>
+                <input
+                  type="text"
+                  value={profileForm.facebook}
+                  onChange={(e) => setProfileForm({ ...profileForm, facebook: e.target.value })}
+                  placeholder="https://facebook.com/yourrestaurant"
+                  className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all font-mono text-xs"
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-[#62756d]">
+                Link to your official Facebook page or community.
+              </p>
+            </div>
+
+            {/* Website */}
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5 flex items-center gap-1.5">
+                <Globe size={14} className="text-emerald-400" />
+                <span>Website / Custom Link (Optional)</span>
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#62756d]">
+                  <Globe size={14} />
+                </span>
+                <input
+                  type="url"
+                  value={profileForm.website}
+                  onChange={(e) => setProfileForm({ ...profileForm, website: e.target.value })}
+                  placeholder="https://yourrestaurant.com"
+                  className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all font-mono text-xs"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Logo URL */}
+        <div className="pt-3 border-t border-[#2a3832]">
+          <label className="block text-xs font-semibold text-[#f3f4f6] mb-1.5">
+            Restaurant Logo Image URL
+          </label>
+          <div className="flex gap-4 items-center">
+            {profileForm.logoUrl && (
+              <img
+                src={profileForm.logoUrl}
+                alt="Logo preview"
+                className="w-12 h-12 rounded-xl object-contain bg-white/5 border border-[#2a3832] p-1 shrink-0"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            )}
+            <input
+              type="url"
+              value={profileForm.logoUrl}
+              onChange={(e) => setProfileForm({ ...profileForm, logoUrl: e.target.value })}
+              placeholder="https://example.com/logo.png"
+              className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all font-mono text-xs"
+            />
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="pt-4 border-t border-[#2a3832] flex items-center justify-end">
+          <button
+            type="submit"
+            disabled={savingProfile}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#e8783c] hover:bg-[#d66a30] text-white px-6 py-3 text-xs font-bold transition-all shadow-md shadow-[#e8783c]/20 disabled:opacity-50 cursor-pointer"
+          >
+            {savingProfile ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+            <span>{savingProfile ? 'Saving Changes...' : 'Save Restaurant Setup & Social Links'}</span>
+          </button>
+        </div>
+      </form>
+
+      {/* ── 2. Google Reviews Add-on Section ─────────────────────────────────── */}
       <div className="rounded-2xl border border-[#2a3832] bg-[#1d2723] p-6 md:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2a3832] pb-6">
           <div className="flex items-center gap-3">
@@ -167,16 +569,16 @@ export default function Settings() {
         </div>
 
         {/* Feedback alert */}
-        {message && (
+        {reviewMessage && (
           <div
             className={`rounded-xl p-4 flex items-start gap-3 text-xs font-medium border ${
-              message.type === 'success'
+              reviewMessage.type === 'success'
                 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
                 : 'bg-rose-500/10 border-rose-500/20 text-rose-300'
             }`}
           >
-            {message.type === 'success' ? <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" /> : <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />}
-            <div className="flex-1 leading-relaxed">{message.text}</div>
+            {reviewMessage.type === 'success' ? <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" /> : <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />}
+            <div className="flex-1 leading-relaxed">{reviewMessage.text}</div>
           </div>
         )}
 
@@ -207,7 +609,7 @@ export default function Settings() {
                   </span>
                   <input
                     type="url"
-                    disabled={!isEditing && Boolean(addonStatus?.reviewUrl)}
+                    disabled={!isEditingReview && Boolean(addonStatus?.reviewUrl)}
                     value={reviewUrlInput}
                     onChange={(e) => setReviewUrlInput(e.target.value)}
                     placeholder="https://g.page/r/your-restaurant/review"
@@ -220,11 +622,11 @@ export default function Settings() {
               </div>
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
-                {!isEditing && Boolean(addonStatus?.reviewUrl) ? (
+                {!isEditingReview && Boolean(addonStatus?.reviewUrl) ? (
                   <>
                     <button
                       type="button"
-                      onClick={() => setIsEditing(true)}
+                      onClick={() => setIsEditingReview(true)}
                       className="rounded-xl bg-[#25322d] hover:bg-[#2e3e37] text-white px-4 py-2 text-xs font-semibold border border-[#36473f] transition-colors"
                     >
                       Edit Link
@@ -241,31 +643,31 @@ export default function Settings() {
                     <button
                       type="button"
                       onClick={handleClearUrl}
-                      disabled={deleting}
+                      disabled={deletingReview}
                       className="inline-flex items-center gap-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 px-4 py-2 text-xs font-semibold border border-rose-500/20 transition-colors ml-auto disabled:opacity-50"
                     >
                       <Trash2 size={13} />
-                      {deleting ? 'Removing...' : 'Remove'}
+                      {deletingReview ? 'Removing...' : 'Remove'}
                     </button>
                   </>
                 ) : (
                   <>
                     <button
                       type="submit"
-                      disabled={saving || !reviewUrlInput.trim()}
-                      className="inline-flex items-center gap-2 rounded-xl bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-2.5 text-xs font-bold transition-all shadow-md shadow-[#e8783c]/20 disabled:opacity-50"
+                      disabled={savingReview || !reviewUrlInput.trim()}
+                      className="inline-flex items-center gap-2 rounded-xl bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-2.5 text-xs font-bold transition-all shadow-md shadow-[#e8783c]/20 disabled:opacity-50 cursor-pointer"
                     >
                       <Save size={14} />
-                      {saving ? 'Saving...' : 'Save & Publish on Menu'}
+                      {savingReview ? 'Saving...' : 'Save & Publish on Menu'}
                     </button>
                     {addonStatus?.reviewUrl && (
                       <button
                         type="button"
                         onClick={() => {
                           setReviewUrlInput(addonStatus.reviewUrl || '');
-                          setIsEditing(false);
+                          setIsEditingReview(false);
                         }}
-                        className="rounded-xl bg-transparent hover:bg-white/5 text-[#849a90] px-4 py-2 text-xs font-medium transition-colors"
+                        className="rounded-xl bg-transparent hover:bg-white/5 text-[#849a90] px-4 py-2 text-xs font-medium transition-colors cursor-pointer"
                       >
                         Cancel
                       </button>
@@ -300,7 +702,6 @@ export default function Settings() {
             </div>
           </div>
         ) : (
-          /* Unsubscribed or Expired upsell banner */
           <div className="rounded-xl bg-[#151c19]/50 border border-[#2a3832] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-sm font-semibold text-white">
@@ -325,44 +726,35 @@ export default function Settings() {
         )}
       </div>
 
-      {/* Existing Business Profile Settings */}
+      {/* ── 3. Account Credentials & Live Menu Identity ────────────────────── */}
       <div className="bg-[#1d2723] rounded-2xl p-6 md:p-8 border border-[#2a3832] space-y-4">
-        <h2 className="text-lg font-bold text-white mb-2">Business Profile</h2>
-        <div className="grid md:grid-cols-2 gap-4">
+        <h2 className="text-lg font-bold text-white mb-2">Account Credentials & Menu Identity</h2>
+        <div className="grid md:grid-cols-3 gap-4 text-xs">
           <div>
-            <label className="block text-xs font-medium text-[#849a90] mb-1.5">Business Name</label>
+            <label className="block font-medium text-[#849a90] mb-1.5">Owner / Contact Name</label>
             <input
               type="text"
               disabled
-              value={profile?.businessName || ''}
-              className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2 text-sm text-white opacity-70"
+              value={profile?.ownerName || profile?.businessName || ''}
+              className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-white opacity-70"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#849a90] mb-1.5">Owner Name</label>
-            <input
-              type="text"
-              disabled
-              value={profile?.ownerName || ''}
-              className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2 text-sm text-white opacity-70"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-[#849a90] mb-1.5">Email</label>
+            <label className="block font-medium text-[#849a90] mb-1.5">Registered Email</label>
             <input
               type="email"
               disabled
               value={profile?.email || ''}
-              className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2 text-sm text-white opacity-70"
+              className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-white opacity-70"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#849a90] mb-1.5">Menu Slug</label>
+            <label className="block font-medium text-[#849a90] mb-1.5">Menu URL Slug</label>
             <input
               type="text"
               disabled
               value={profile?.menuSlug || ''}
-              className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2 text-sm text-white opacity-70 font-mono"
+              className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-white opacity-70 font-mono"
             />
           </div>
         </div>

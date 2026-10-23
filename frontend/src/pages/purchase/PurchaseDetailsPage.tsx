@@ -74,6 +74,9 @@ export default function PurchaseDetailsPage() {
     outletCount: 1,
     password: '',
     couponCode: '',
+    instagram: '',
+    facebook: '',
+    website: '',
   });
 
   const [emailVerified, setEmailVerified] = useState(false);
@@ -710,6 +713,44 @@ export default function PurchaseDetailsPage() {
                     placeholder="123 Restaurant Street..."
                   />
                   {validationErrors.address && <p className="text-rose-500 text-[10px] mt-1 font-medium">{validationErrors.address}</p>}
+                </div>
+              </div>
+
+              {/* Optional Online Presence & Social Links */}
+              <div className="mt-6 pt-5 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-[#151C19] uppercase tracking-wider">
+                    Social Media & Links (Optional)
+                  </label>
+                  <span className="text-[10px] text-gray-500 font-medium">Can also set up later</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                      Instagram Profile (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="instagram"
+                      value={formData.instagram}
+                      onChange={handleInputChange}
+                      className="w-full px-3.5 py-2 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-xs font-mono"
+                      placeholder="e.g. @yourrestaurant"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                      Facebook Page (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="facebook"
+                      value={formData.facebook}
+                      onChange={handleInputChange}
+                      className="w-full px-3.5 py-2 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8783C]/20 focus:border-[#E8783C] transition-all text-xs font-mono"
+                      placeholder="e.g. facebook.com/yourrestaurant"
+                    />
+                  </div>
                 </div>
               </div>
 

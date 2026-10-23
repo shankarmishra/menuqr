@@ -20,7 +20,7 @@ import {
   ArrowUpDown
 } from 'lucide-react';
 import { useToast } from '../../components/feedback/ToastProvider';
-import { getOrders, updateOrderStatus } from './appStore';
+import { getOrders, updateOrderStatus, updateOrderEstimatedTime } from './appStore';
 
 export type CustomerOrder = {
   id: string;
@@ -37,6 +37,8 @@ export type CustomerOrder = {
   status: 'NEW' | 'ACCEPTED' | 'PREPARING' | 'IN_PROGRESS' | 'READY' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED';
   rejectionReason?: string | null;
   time: string;
+  estimatedTimeMinutes?: number | null;
+  estimatedDeliveryTime?: string | null;
 };
 
 // Web Audio API chime generator (no external files needed)
@@ -93,6 +95,10 @@ export default function Orders() {
   const [rejectingOrder, setRejectingOrder] = useState<CustomerOrder | null>(null);
   const [rejectReason, setRejectReason] = useState('Kitchen busy / High order volume');
   const [copiedId, setCopiedId] = useState('');
+  const [orderTimes, setOrderTimes] = useState<Record<string, number>>({});
+  const [timeAdjustOrder, setTimeAdjustOrder] = useState<CustomerOrder | null>(null);
+  const [adjustMinutes, setAdjustMinutes] = useState<number>(30);
+  const [isUpdatingTime, setIsUpdatingTime] = useState(false);
   
   const knownOrderIds = useRef<Set<string>>(new Set());
   const initialLoadDone = useRef(false);
@@ -149,10 +155,10 @@ export default function Orders() {
     };
   }, [audioEnabled]);
 
-  const handleStatusUpdate = async (id: string, newStatus: CustomerOrder['status'], reason?: string) => {
+  const handleStatusUpdate = async (id: string, newStatus: CustomerOrder['status'], reason?: string, estimatedMinutes?: number) => {
     setUpdatingId(id);
     try {
-      await updateOrderStatus(id, newStatus, reason);
+      await updateOrderStatus(id, newStatus, reason, estimatedMinutes);
       await fetchOrders(true);
       showToast('success', `Order #${id.substring(0, 6)} updated to ${newStatus.replace('_', ' ').toLowerCase()}.`);
       if (rejectingOrder) setRejectingOrder(null);
@@ -160,6 +166,21 @@ export default function Orders() {
       showToast('error', err?.message || 'Could not update order status. Please try again.');
     } finally {
       setUpdatingId('');
+    }
+  };
+
+  const handleAdjustTime = async () => {
+    if (!timeAdjustOrder) return;
+    setIsUpdatingTime(true);
+    try {
+      await updateOrderEstimatedTime(timeAdjustOrder.id, adjustMinutes);
+      await fetchOrders(true);
+      showToast('success', `Order #${timeAdjustOrder.id.substring(0, 6)} estimated time updated to ~${adjustMinutes} mins.`);
+      setTimeAdjustOrder(null);
+    } catch (err: any) {
+      showToast('error', err?.message || 'Could not update delivery time.');
+    } finally {
+      setIsUpdatingTime(false);
     }
   };
 
@@ -319,6 +340,33 @@ export default function Orders() {
           </div>
         )}
 
+        {/* Active Prep / Delivery Time Badge */}
+        {['ACCEPTED', 'PREPARING', 'IN_PROGRESS', 'READY'].includes(order.status) && (
+          <div className="bg-emerald-500/10 border border-emerald-500/25 px-3 py-2 rounded-xl flex items-center justify-between text-xs text-emerald-300">
+            <div className="flex items-center gap-1.5 font-semibold">
+              <Clock size={13} className="text-emerald-400" />
+              <span>
+                {isDelivery ? 'Delivery in' : 'Ready in'}: <strong className="text-emerald-200">~{order.estimatedTimeMinutes || (isDelivery ? 35 : 20)} mins</strong>
+              </span>
+              {order.estimatedDeliveryTime && (
+                <span className="text-emerald-400/80 font-mono text-[11px] ml-1">
+                  (by {new Date(order.estimatedDeliveryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setTimeAdjustOrder(order);
+                setAdjustMinutes(order.estimatedTimeMinutes || (isDelivery ? 35 : 20));
+              }}
+              className="text-[11px] font-bold text-emerald-400 hover:text-white underline ml-2"
+            >
+              Adjust Time
+            </button>
+          </div>
+        )}
+
         {/* Order Items List */}
         <div className="flex-1 space-y-2 py-1">
           {order.items && order.items.map((item, idx) => (
@@ -343,33 +391,91 @@ export default function Orders() {
         </div>
 
         {/* Total & Action Buttons */}
-        <div className="border-t border-[#2a3832] pt-3.5 flex justify-between items-center gap-2">
-          <div>
-            <div className="text-[10px] text-[#62756d] uppercase font-bold tracking-wider">Total</div>
-            <div className="text-xl font-black text-emerald-400">₹{order.total}</div>
+        <div className={`border-t border-[#2a3832] pt-3.5 flex ${order.status === 'NEW' ? 'flex-col gap-3' : 'justify-between items-center gap-2'}`}>
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <div className="text-[10px] text-[#62756d] uppercase font-bold tracking-wider">Total</div>
+              <div className="text-xl font-black text-emerald-400">₹{order.total}</div>
+            </div>
+            {order.status !== 'NEW' && (
+              <div className="text-xs text-[#849a90]">
+                {order.orderType === 'DELIVERY' ? '🛵 Delivery' : `🍽️ Table ${order.tableNumber || 'N/A'}`}
+              </div>
+            )}
           </div>
           
-          <div className="flex items-center gap-2">
-            {/* NEW Status: Accept or Reject */}
+          <div className={`flex items-center gap-2 ${order.status === 'NEW' ? 'w-full' : ''}`}>
+            {/* NEW Status: Time picker + Accept / Reject */}
             {order.status === 'NEW' && (
-              <>
-                <button
-                  type="button"
-                  disabled={updatingId === order.id}
-                  onClick={() => setRejectingOrder(order)}
-                  className="px-3 py-2 rounded-xl text-xs font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-colors disabled:opacity-50"
-                >
-                  Reject
-                </button>
-                <button
-                  type="button"
-                  disabled={updatingId === order.id}
-                  onClick={() => handleStatusUpdate(order.id, 'ACCEPTED')}
-                  className="bg-[#e8783c] hover:bg-[#f08b55] text-white px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 shadow-md shadow-[#e8783c]/20 disabled:opacity-50"
-                >
-                  <Check size={14} strokeWidth={3} /> ACCEPT
-                </button>
-              </>
+              <div className="flex flex-col gap-2.5 w-full">
+                <div className="bg-[#1a2320] p-2.5 rounded-xl border border-[#2a3832] flex flex-col gap-2">
+                  <div className="flex items-center justify-between text-xs text-[#849a90]">
+                    <span className="font-bold flex items-center gap-1.5 text-slate-300">
+                      <Clock size={13} className="text-[#e8783c]" />
+                      <span>{isDelivery ? 'Est. Delivery Time:' : 'Est. Kitchen Prep Time:'}</span>
+                    </span>
+                    <span className="font-extrabold text-[#e8783c]">
+                      {orderTimes[order.id] || (isDelivery ? 35 : 20)} mins
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {[15, 20, 30, 45, 60].map(mins => {
+                      const currentVal = orderTimes[order.id] || (isDelivery ? 35 : 20);
+                      const isSelected = currentVal === mins;
+                      return (
+                        <button
+                          key={mins}
+                          type="button"
+                          onClick={() => setOrderTimes(prev => ({ ...prev, [order.id]: mins }))}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                            isSelected
+                              ? 'bg-[#e8783c] text-white shadow-sm shadow-[#e8783c]/30'
+                              : 'bg-[#151c19] text-[#849a90] hover:text-white border border-[#2a3832]'
+                          }`}
+                        >
+                          {mins}m
+                        </button>
+                      );
+                    })}
+                    <div className="flex items-center gap-1 ml-auto">
+                      <input
+                        type="number"
+                        min="5"
+                        max="180"
+                        value={orderTimes[order.id] || (isDelivery ? 35 : 20)}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value, 10);
+                          if (!isNaN(val) && val > 0) {
+                            setOrderTimes(prev => ({ ...prev, [order.id]: val }));
+                          }
+                        }}
+                        className="w-14 bg-[#151c19] border border-[#2a3832] rounded-lg px-2 py-0.5 text-xs text-white text-center font-mono focus:border-[#e8783c] outline-none"
+                      />
+                      <span className="text-[11px] text-[#62756d]">mins</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    disabled={updatingId === order.id}
+                    onClick={() => setRejectingOrder(order)}
+                    className="px-3 py-2 rounded-xl text-xs font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-colors disabled:opacity-50"
+                  >
+                    Reject
+                  </button>
+                  <button
+                    type="button"
+                    disabled={updatingId === order.id}
+                    onClick={() => handleStatusUpdate(order.id, 'ACCEPTED', undefined, orderTimes[order.id] || (isDelivery ? 35 : 20))}
+                    className="bg-[#e8783c] hover:bg-[#f08b55] text-white px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 shadow-md shadow-[#e8783c]/20 disabled:opacity-50"
+                  >
+                    <Check size={14} strokeWidth={3} /> ACCEPT & SET TIME
+                  </button>
+                </div>
+              </div>
             )}
             
             {/* ACCEPTED Status: Move to Kitchen Preparing */}
@@ -723,6 +829,97 @@ export default function Orders() {
                 className="px-5 py-2.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-colors disabled:opacity-50 shadow-md shadow-rose-600/30"
               >
                 Confirm Decline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Time Adjustment Modal */}
+      {timeAdjustOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#1d2723] border border-[#2a3832] rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <div className="flex justify-between items-center pb-4 border-b border-[#2a3832] mb-4">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Clock size={18} className="text-[#e8783c]" /> Adjust {timeAdjustOrder.orderType === 'DELIVERY' ? 'Delivery' : 'Preparation'} Time
+              </h3>
+              <button 
+                type="button"
+                onClick={() => setTimeAdjustOrder(null)} 
+                className="text-[#849a90] hover:text-white"
+                aria-label="Close modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#849a90] mb-4">
+              Order #{timeAdjustOrder.id.substring(0, 8)} ({timeAdjustOrder.customerName || 'Customer'})
+              <br />
+              Setting a new time will update the customer's live tracking screen in real time.
+            </p>
+
+            <div className="mb-5 bg-[#151c19] p-4 rounded-xl border border-[#2a3832] text-center">
+              <div className="text-xs text-[#849a90] mb-1 uppercase tracking-wider font-bold">New Estimated Time</div>
+              <div className="text-3xl font-black text-[#e8783c]">~{adjustMinutes} Mins</div>
+            </div>
+
+            {/* Quick preset buttons */}
+            <div className="grid grid-cols-4 gap-2 mb-4">
+              {[15, 20, 30, 45, 60, 75, 90].map((mins) => (
+                <button
+                  key={mins}
+                  type="button"
+                  onClick={() => setAdjustMinutes(mins)}
+                  className={`p-2.5 rounded-xl text-xs font-bold border transition-all ${
+                    adjustMinutes === mins
+                      ? 'bg-[#e8783c] border-[#e8783c] text-white'
+                      : 'bg-[#151c19] border-[#2a3832] text-[#849a90] hover:text-white'
+                  }`}
+                >
+                  {mins}m
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setAdjustMinutes(prev => prev + 5)}
+                className="p-2.5 rounded-xl text-xs font-bold border bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
+              >
+                +5m
+              </button>
+            </div>
+
+            {/* Custom Input */}
+            <div className="flex items-center gap-3 mb-6 bg-[#151c19] p-3 rounded-xl border border-[#2a3832]">
+              <span className="text-xs text-[#849a90] font-medium">Or enter custom minutes:</span>
+              <input
+                type="number"
+                min="5"
+                max="240"
+                value={adjustMinutes}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (!isNaN(val) && val > 0) setAdjustMinutes(val);
+                }}
+                className="w-20 bg-[#1d2723] border border-[#2a3832] rounded-lg px-3 py-1.5 text-sm text-white text-center font-mono focus:border-[#e8783c] outline-none"
+              />
+              <span className="text-xs text-[#849a90]">minutes</span>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setTimeAdjustOrder(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-[#849a90] hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isUpdatingTime}
+                onClick={handleAdjustTime}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#e8783c] hover:bg-[#f08b55] text-white transition-colors disabled:opacity-50 shadow-md shadow-[#e8783c]/30"
+              >
+                {isUpdatingTime ? 'Updating...' : 'Save & Notify Customer'}
               </button>
             </div>
           </div>

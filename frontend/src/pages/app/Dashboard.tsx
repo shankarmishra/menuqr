@@ -124,6 +124,9 @@ export default function Dashboard() {
         </div>
         
         <div className="flex flex-wrap items-center gap-3 relative z-10 w-full md:w-auto">
+          <Link to="/app/settings" className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] px-4 py-2.5 rounded-lg font-semibold transition-colors text-sm">
+            <span>⚙️ Account & Socials</span>
+          </Link>
           <a href={publicUrl} target="_blank" rel="noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] px-5 py-2.5 rounded-lg font-semibold transition-colors">
             <ExternalLink size={18} /> View Live Menu
           </a>

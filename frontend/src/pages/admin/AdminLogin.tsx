@@ -62,7 +62,8 @@ export default function AdminLogin() {
       navigate('/onboarding', { replace: true });
       return;
     }
-    const defaultDest = role === 'SUPER_ADMIN' ? '/admin' : '/app';
+    const redirectQuery = new URLSearchParams(location.search).get('redirect');
+    const defaultDest = role === 'SUPER_ADMIN' ? '/admin' : (redirectQuery || '/app');
     const dest = returnTo ? `${returnTo.pathname ?? defaultDest}${returnTo.search ?? ''}${returnTo.hash ?? ''}` : defaultDest;
     navigate(dest, { replace: true });
   }
