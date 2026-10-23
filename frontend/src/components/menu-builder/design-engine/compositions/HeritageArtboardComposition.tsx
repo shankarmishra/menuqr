@@ -1,6 +1,6 @@
 // MENUQR Design Engine — Authentic Heritage Artboard Composition
-// 100% Source-Accurate Reconstruction of Art Board 3.pdf (Mannat Tandoori Junction)
-// Identical Logo, Name, Textures, Typography, Badges & 1:1 Artboards with Real Ordering
+// 100% Pure HTML/CSS Coded Recreation of Art Board 3.pdf (Mannat Tandoori Junction)
+// Identical Logo, Typography, Textures, Geometry, Badges & Real Interactive Ordering
 
 import React, { useMemo, useState } from 'react';
 import clsx from 'clsx';
@@ -15,9 +15,7 @@ import {
   Minus,
   Flame, 
   Sparkles, 
-  Utensils,
-  BookOpen,
-  Layers
+  Utensils
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -97,8 +95,8 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
     shortTitle: 'Tandoori Snacks',
     pdfPageNumber: 4,
     banner: '/uploads/mannat/textures/banner_tandoori_snacks.png',
-    heroImage: '/uploads/mannat/page04_elements/page04_left_panel_300dpi.webp',
-    heroSubImage: '/uploads/mannat/page04_elements/page04_top_right_bowl_300dpi.webp',
+    heroImage: '/uploads/mannat/assets/hero_chaap_sizzler.png',
+    heroSubImage: '/uploads/mannat/assets/dish_malai_chaap.png',
     heroTitle: 'MTJ Tandoori Snacks & Chaap Feast',
     heroSubtitle: 'Charcoal Tandoor Baked • 100% Pure Soya',
     themeClass: 'chapter-theme-tandoori',
@@ -297,26 +295,6 @@ const CHAPTER_DEFINITIONS: ChapterDef[] = [
   },
 ];
 
-// Available 1:1 Artboard Pages from Art Board 3.pdf (strictly Pages 1–16, Page 17 excluded)
-const PDF_PAGES = [
-  { num: 1, title: 'Page 1: Brand Cover Artboard' },
-  { num: 2, title: 'Page 2: Heritage Story' },
-  { num: 3, title: 'Page 3: Table of Contents' },
-  { num: 4, title: 'Page 4: MTJ Tandoori Snacks (Menu Page 01)' },
-  { num: 5, title: 'Page 5: Veg Kebabs & Signature Platters' },
-  { num: 6, title: 'Page 6: Crunch House, Soups & Salads' },
-  { num: 7, title: 'Page 7: Signature Gravies & Curries' },
-  { num: 8, title: 'Page 8: Pure Soya Gravies & Breads' },
-  { num: 9, title: 'Page 9: Thalis & Street Specials' },
-  { num: 10, title: 'Page 10: Momo Junction' },
-  { num: 11, title: 'Page 11: Chinese Wok' },
-  { num: 12, title: 'Page 12: Lebanese & Mexican' },
-  { num: 13, title: 'Page 13: Pizzas & Burgers' },
-  { num: 14, title: 'Page 14: Garlic Breads & Hot Coffee' },
-  { num: 15, title: 'Page 15: Thick Shakes & Boba' },
-  { num: 16, title: 'Page 16: Heritage Desserts' },
-];
-
 export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
   spec,
   restaurant,
@@ -331,10 +309,6 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
 }) => {
   const { colors, typography } = spec;
   const menuCart = useMenuCart();
-
-  // Active View Mode: 'interactive' (responsive split) or 'artboard' (1:1 PDF plate)
-  const [viewMode, setViewMode] = useState<'interactive' | 'artboard'>('interactive');
-  const [activeArtboardPage, setActiveArtboardPage] = useState<number>(4);
 
   // Active Chapter Navigation State
   const [selectedChapterId, setSelectedChapterId] = useState<string>('all');
@@ -401,10 +375,10 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
       }}
     >
       {/* ═══════════════════════════════════════════════════════════════════════
-          MASTHEAD: 100% IDENTICAL BRAND COVER ARTBOARD (PAGE 1 OF ART BOARD 3.PDF)
+          MASTHEAD: 100% REAL CODED HTML/CSS ARTBOARD DESIGN (PAGE 1 COVER)
           ═══════════════════════════════════════════════════════════════════════ */}
-      <header className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-[#FAB700] bg-[#881313]">
-        {/* Corner Flourishes on Header */}
+      <header className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-[#FAB700] artboard-crimson-plate">
+        {/* Corner Flourishes */}
         <div 
           className="heritage-corner-flourish heritage-corner-flourish-tl" 
           style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
@@ -422,25 +396,64 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
           style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
         />
 
-        {/* 1:1 Complete High-Resolution Page 1 Artboard Plate */}
-        <div className="relative flex justify-center items-center bg-[#881313] p-1 sm:p-3">
-          <picture className="w-full max-w-2xl mx-auto block">
-            <source srcSet="/uploads/mannat/pages/page_01_artboard_300dpi.webp" type="image/webp" />
-            <img
-              src="/uploads/mannat/pages/page_01_artboard_300dpi.png"
-              alt="Mannat Tandoori Junction — Chaap Ka Asli Swad (Art Board 3.pdf Page 1)"
-              className="w-full h-auto object-contain select-none block rounded-2xl shadow-xl"
-              loading="eager"
-            />
-          </picture>
+        {/* Real HTML/CSS Artboard Visual Composition */}
+        <div className="relative z-10 px-4 py-8 sm:py-12 flex flex-col items-center text-center space-y-6">
+          {/* 1. Brand Wordmark Section */}
+          <div className="space-y-1">
+            <h1 className="artboard-brand-script text-5xl sm:text-7xl tracking-wide select-none">
+              mannat
+            </h1>
+            <div className="artboard-brand-caps text-xl sm:text-3xl tracking-widest text-white uppercase select-none">
+              TANDOORI JUNCTION
+            </div>
+            
+            {/* Tagline Strip with Horizontal Rules */}
+            <div className="flex items-center justify-center gap-2 sm:gap-4 pt-2">
+              <span className="h-[1.5px] w-8 sm:w-16 bg-[#FAB700]/70" />
+              <span className="text-white/95 text-[11px] sm:text-xs font-bold tracking-widest uppercase font-sans">
+                100% Pure Soya &nbsp;|&nbsp; Authentic Taste Since 2015
+              </span>
+              <span className="h-[1.5px] w-8 sm:w-16 bg-[#FAB700]/70" />
+            </div>
+          </div>
+
+          {/* 2. Royal Circular Chef Mascot with Ring Frame */}
+          <div className="my-2">
+            <div className="artboard-mascot-frame">
+              <img
+                src="/uploads/mannat/assets/chef_mascot_clean_transparent.webp"
+                alt="Mannat Tandoori Junction Chef Mascot"
+                className="w-full h-full object-contain transform scale-110 select-none"
+                loading="eager"
+              />
+            </div>
+          </div>
+
+          {/* 3. Rounded Cream Category Capsule Badge */}
+          <div className="pt-1">
+            <div className="artboard-capsule-badge">
+              <span>NORTH INDIAN</span>
+              <span className="mx-2 text-[#FAB700]">•</span>
+              <span>INDO-CHINESE</span>
+              <span className="mx-2 text-[#FAB700]">•</span>
+              <span>CONTINENTAL</span>
+            </div>
+          </div>
+
+          {/* 4. Signature Angled Vintage Slogan */}
+          <div className="pt-2">
+            <div className="artboard-slogan-angled">
+              <span>CHAAP KA ASLI SWAD!</span>
+            </div>
+          </div>
         </div>
 
         {/* Storefront Contact & Badges Strip */}
-        <div className="bg-[#121613] text-white px-3 sm:px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 text-xs border-t-2 border-[#FAB700]/80">
+        <div className="bg-[#121613] text-white px-3 sm:px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 text-xs border-t-2 border-[#FAB700]/80 relative z-20">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10B981]" />
             <span className="font-bold text-[#FAB700] uppercase tracking-wider text-[11px] sm:text-xs font-serif">
-              Chaap Ka Asli Swad • 100% Pure Soya | Authentic Taste Since 2015
+              Order Online • Fast Delivery & Dine In
             </span>
           </div>
 
@@ -466,826 +479,591 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
       </header>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          VIEW MODE TOGGLE: 1:1 PDF ARTBOARD vs RESPONSIVE MENU
+          SEARCH BAR
           ═══════════════════════════════════════════════════════════════════════ */}
-      <div className="flex items-center justify-center p-1 bg-[#FFFDF9] rounded-2xl border-2 border-[#FAB700] shadow-sm">
-        <button
-          type="button"
-          onClick={() => setViewMode('artboard')}
-          className={clsx(
-            'flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer',
-            viewMode === 'artboard'
-              ? 'bg-[#CE182C] text-white shadow-md'
-              : 'text-[#1F2923] hover:bg-[#CE182C]/10'
-          )}
-        >
-          <BookOpen size={16} className={viewMode === 'artboard' ? 'text-[#FAB700]' : 'text-[#CE182C]'} />
-          <span>📖 1:1 PDF Artboard (Page 4)</span>
-          <span className="text-[10px] bg-[#FAB700] text-black font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-            Same to Same
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setViewMode('interactive')}
-          className={clsx(
-            'flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer',
-            viewMode === 'interactive'
-              ? 'bg-[#CE182C] text-white shadow-md'
-              : 'text-[#1F2923] hover:bg-[#CE182C]/10'
-          )}
-        >
-          <Utensils size={16} className={viewMode === 'interactive' ? 'text-[#FAB700]' : 'text-[#CE182C]'} />
-          <span>🍽️ Interactive Split Menu</span>
-        </button>
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          MODE 1: PURE 1:1 PDF ARTBOARD WITH REAL INTERACTIVE ORDERING
-          ═══════════════════════════════════════════════════════════════════════ */}
-      {viewMode === 'artboard' && (
-        <div className="space-y-6">
-          {/* Page Carousel Selector */}
-          <div className="bg-[#FFFDF9] p-3 rounded-2xl border-2 border-[#FAB700]/70 shadow-sm flex items-center justify-between gap-2 overflow-x-auto">
-            <span className="text-xs font-bold text-[#9E0D24] uppercase tracking-wider whitespace-nowrap flex items-center gap-1.5">
-              <Layers size={14} className="text-[#FAB700]" />
-              <span>Select Page:</span>
-            </span>
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-              {PDF_PAGES.map((p) => (
-                <button
-                  key={p.num}
-                  type="button"
-                  onClick={() => setActiveArtboardPage(p.num)}
-                  className={clsx(
-                    'px-2.5 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer',
-                    activeArtboardPage === p.num
-                      ? 'bg-[#CE182C] text-white border border-[#FAB700] shadow-xs'
-                      : 'bg-white text-[#181E19] border border-black/10 hover:bg-[#CE182C]/10'
-                  )}
-                >
-                  P.{p.num}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Master 1:1 Artboard Display Container */}
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-[#FAB700] bg-[#181E19]">
-            {/* Corner Ornaments */}
-            <div 
-              className="heritage-corner-flourish heritage-corner-flourish-tl" 
-              style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
-            />
-            <div 
-              className="heritage-corner-flourish heritage-corner-flourish-tr" 
-              style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
-            />
-
-            {/* Header Plate */}
-            <div className="bg-[#121613] text-[#FAB700] p-3 border-b-2 border-[#FAB700]/80 flex items-center justify-between text-xs sm:text-sm font-serif font-bold">
-              <span>{PDF_PAGES.find(p => p.num === activeArtboardPage)?.title}</span>
-              <span className="text-emerald-400 font-sans text-[11px] font-semibold bg-emerald-950 px-2.5 py-0.5 rounded border border-emerald-500/40">
-                ✨ 300 DPI Native Artboard
-              </span>
-            </div>
-
-            {/* The 1:1 Native Artboard Image */}
-            <div className="relative bg-[#FAF4EC] flex justify-center">
-              <picture className="w-full block">
-                <source 
-                  srcSet={activeArtboardPage === 1 
-                    ? '/uploads/mannat/pages/page_01_artboard_300dpi.webp' 
-                    : activeArtboardPage === 4 
-                      ? '/uploads/mannat/pages/page_04_artboard_300dpi.webp' 
-                      : `/uploads/mannat/pages/page_${String(activeArtboardPage).padStart(2, '0')}.webp`} 
-                  type="image/webp" 
-                />
-                <img
-                  src={activeArtboardPage === 1 
-                    ? '/uploads/mannat/pages/page_01_artboard_300dpi.png' 
-                    : activeArtboardPage === 4 
-                      ? '/uploads/mannat/pages/page_04_artboard_300dpi.png' 
-                      : `/uploads/mannat/pages/page_${String(activeArtboardPage).padStart(2, '0')}.png`}
-                  alt={`Art Board 3.pdf Page ${activeArtboardPage}`}
-                  className="w-full h-auto object-contain select-none block"
-                />
-              </picture>
-            </div>
-          </div>
-
-          {/* Quick Order Tap Deck for Page 4 items */}
-          <div className="p-4 sm:p-6 rounded-3xl bg-[#FFFDF9] border-2 border-[#FAB700] shadow-md space-y-4">
-            <div className="flex items-center justify-between border-b border-[#FAB700]/40 pb-2">
-              <div className="font-serif font-bold text-base sm:text-lg text-[#9E0D24] flex items-center gap-2">
-                <Flame size={18} className="text-[#CE182C]" />
-                <span>Tap Any Dish from Page 4 to Order:</span>
-              </div>
-              <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                Live Interactive Cart
-              </span>
-            </div>
-
-            {/* Chaap Specialities Quick-Order Rows */}
-            <div className="space-y-2">
-              <div className="text-xs font-bold text-[#CE182C] uppercase tracking-wider flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#CE182C]" />
-                <span>Chaap Specialities (19 Dishes)</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {PAGE04_CHAAP_ITEMS.map((dish) => {
-                  const halfQty = getDishQty(dish.id, 'Half');
-                  const fullQty = getDishQty(dish.id, 'Full');
-
-                  return (
-                    <div 
-                      key={dish.id}
-                      className="p-2 sm:p-2.5 rounded-xl border border-black/10 bg-white hover:border-[#FAB700] transition-colors flex items-center justify-between gap-2 text-xs"
-                    >
-                      <div className="min-w-0 pr-1">
-                        <div className="font-bold text-[#181E19] truncate">{dish.name}</div>
-                        {dish.isChefSpecial && (
-                          <span className="text-[10px] text-amber-700 font-semibold">👨‍🍳 Chef Special</span>
-                        )}
-                        {dish.isSpicy && (
-                          <span className="text-[10px] text-red-600 font-semibold ml-1">🌶️ Spicy</span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {/* Half Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                          className={clsx(
-                            'px-2 py-1 rounded font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer',
-                            halfQty > 0
-                              ? 'bg-emerald-700 text-white'
-                              : 'bg-amber-50 text-amber-950 border border-amber-300 hover:bg-amber-100'
-                          )}
-                        >
-                          <span>H: ₹{dish.halfPrice}</span>
-                          {halfQty > 0 && <span className="bg-white text-emerald-800 px-1 rounded text-[10px]">{halfQty}</span>}
-                        </button>
-
-                        {/* Full Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
-                          className={clsx(
-                            'px-2 py-1 rounded font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer',
-                            fullQty > 0
-                              ? 'bg-emerald-700 text-white'
-                              : 'bg-red-50 text-red-950 border border-red-300 hover:bg-red-100'
-                          )}
-                        >
-                          <span>F: ₹{dish.fullPrice}</span>
-                          {fullQty > 0 && <span className="bg-white text-red-800 px-1 rounded text-[10px]">{fullQty}</span>}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Paneer Feast Quick-Order Rows */}
-            <div className="space-y-2 pt-2">
-              <div className="text-xs font-bold text-[#CE182C] uppercase tracking-wider flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#CE182C]" />
-                <span>Paneer Feast (8 Dishes)</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {PAGE04_PANEER_ITEMS.map((dish) => {
-                  const halfQty = getDishQty(dish.id, 'Half');
-                  const fullQty = getDishQty(dish.id, 'Full');
-
-                  return (
-                    <div 
-                      key={dish.id}
-                      className="p-2 sm:p-2.5 rounded-xl border border-black/10 bg-white hover:border-[#FAB700] transition-colors flex items-center justify-between gap-2 text-xs"
-                    >
-                      <div className="min-w-0 pr-1">
-                        <div className="font-bold text-[#181E19] truncate">{dish.name}</div>
-                        {dish.isChefSpecial && (
-                          <span className="text-[10px] text-amber-700 font-semibold">👨‍🍳 Chef Special</span>
-                        )}
-                        {dish.isSpicy && (
-                          <span className="text-[10px] text-red-600 font-semibold ml-1">🌶️ Spicy</span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {/* Half Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                          className={clsx(
-                            'px-2 py-1 rounded font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer',
-                            halfQty > 0
-                              ? 'bg-emerald-700 text-white'
-                              : 'bg-amber-50 text-amber-950 border border-amber-300 hover:bg-amber-100'
-                          )}
-                        >
-                          <span>H: ₹{dish.halfPrice}</span>
-                          {halfQty > 0 && <span className="bg-white text-emerald-800 px-1 rounded text-[10px]">{halfQty}</span>}
-                        </button>
-
-                        {/* Full Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
-                          className={clsx(
-                            'px-2 py-1 rounded font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer',
-                            fullQty > 0
-                              ? 'bg-emerald-700 text-white'
-                              : 'bg-red-50 text-red-950 border border-red-300 hover:bg-red-100'
-                          )}
-                        >
-                          <span>F: ₹{dish.fullPrice}</span>
-                          {fullQty > 0 && <span className="bg-white text-red-800 px-1 rounded text-[10px]">{fullQty}</span>}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+      {searchBar && (
+        <div className="rounded-2xl border-2 border-[#FAB700]/70 p-1.5 bg-[#FFFDF9] shadow-sm">
+          {searchBar}
         </div>
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          MODE 2: RESPONSIVE SPLIT MENU (FEATURING PAGE 4 ASYMMETRICAL SPLIT)
+          STICKY 12-CHAPTER NAVIGATION BAR
           ═══════════════════════════════════════════════════════════════════════ */}
-      {viewMode === 'interactive' && (
-        <div className="space-y-8">
-          {/* Search Bar */}
-          {searchBar && (
-            <div className="rounded-2xl border-2 border-[#FAB700]/70 p-1.5 bg-[#FFFDF9] shadow-sm">
-              {searchBar}
-            </div>
+      <nav
+        aria-label="Menu Chapters"
+        className="sticky top-14 z-30 bg-[#FFFDF9]/95 backdrop-blur-md py-2.5 px-3 rounded-2xl shadow-md border-2 border-[#FAB700]/70 flex flex-wrap items-center gap-1.5 sm:gap-2"
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedChapterId('all');
+            if (setParentActiveCategory) setParentActiveCategory('all');
+          }}
+          className={clsx(
+            'px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer',
+            selectedChapterId === 'all'
+              ? 'bg-[#CE182C] text-white border border-[#FAB700] shadow-sm'
+              : 'bg-white text-[#1F2923] hover:bg-[#CE182C]/10 border border-[#CE182C]/20'
           )}
+        >
+          <span>All Items</span>
+          <span className="ml-1 text-[10px] opacity-80 font-mono">
+            ({totalAllItems})
+          </span>
+        </button>
 
-          {/* Sticky 12-Chapter Navigation Bar */}
-          <nav
-            aria-label="Menu Chapters"
-            className="sticky top-14 z-30 bg-[#FFFDF9]/95 backdrop-blur-md py-2.5 px-3 rounded-2xl shadow-md border-2 border-[#FAB700]/70 flex flex-wrap items-center gap-1.5 sm:gap-2"
-          >
+        {chaptersWithCategories.map((ch) => {
+          const isActive = selectedChapterId === ch.id;
+          return (
             <button
+              key={ch.id}
               type="button"
               onClick={() => {
-                setSelectedChapterId('all');
-                if (setParentActiveCategory) setParentActiveCategory('all');
+                setSelectedChapterId(ch.id);
+                if (setParentActiveCategory) setParentActiveCategory(ch.id);
               }}
               className={clsx(
-                'px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer',
-                selectedChapterId === 'all'
+                'px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 shadow-xs active:scale-95 cursor-pointer',
+                isActive
                   ? 'bg-[#CE182C] text-white border border-[#FAB700] shadow-sm'
                   : 'bg-white text-[#1F2923] hover:bg-[#CE182C]/10 border border-[#CE182C]/20'
               )}
             >
-              <span>All Items</span>
-              <span className="ml-1 text-[10px] opacity-80 font-mono">
-                ({totalAllItems})
-              </span>
+              <span>{ch.shortTitle}</span>
+              <span className="text-[10px] opacity-75 font-mono">({ch.totalItems})</span>
             </button>
+          );
+        })}
+      </nav>
 
-            {chaptersWithCategories.map((ch) => {
-              const isActive = selectedChapterId === ch.id;
-              return (
-                <button
-                  key={ch.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedChapterId(ch.id);
-                    if (setParentActiveCategory) setParentActiveCategory(ch.id);
-                  }}
-                  className={clsx(
-                    'px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 shadow-xs active:scale-95 cursor-pointer',
-                    isActive
-                      ? 'bg-[#CE182C] text-white border border-[#FAB700] shadow-sm'
-                      : 'bg-white text-[#1F2923] hover:bg-[#CE182C]/10 border border-[#CE182C]/20'
-                  )}
-                >
-                  <span>{ch.shortTitle}</span>
-                  <span className="text-[10px] opacity-75 font-mono">({ch.totalItems})</span>
-                </button>
-              );
-            })}
-          </nav>
+      {/* ═══════════════════════════════════════════════════════════════════════
+          CHAPTERS & DISHES: REAL CODED HTML/CSS ASYMMETRICAL LAYOUT
+          ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="space-y-12">
+        {visibleChapters.map((chapter) => {
+          const isTandooriChapter = chapter.id === 'chapter-tandoori-snacks';
 
-          {/* Chapters Render */}
-          <div className="space-y-12">
-            {visibleChapters.map((chapter) => {
-              const isTandooriChapter = chapter.id === 'chapter-tandoori-snacks';
+          return (
+            <section
+              key={chapter.id}
+              id={chapter.id}
+              data-chapter-id={chapter.id}
+              className={clsx(
+                "p-3 sm:p-6 space-y-6 rounded-3xl transition-all duration-300 relative",
+                chapter.themeClass || 'chapter-theme-tandoori'
+              )}
+            >
+              {/* Corner Flourishes */}
+              <div 
+                className="heritage-corner-flourish heritage-corner-flourish-tl" 
+                style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
+              />
+              <div 
+                className="heritage-corner-flourish heritage-corner-flourish-tr" 
+                style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
+              />
+              <div 
+                className="heritage-corner-flourish heritage-corner-flourish-bl" 
+                style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
+              />
+              <div 
+                className="heritage-corner-flourish heritage-corner-flourish-br" 
+                style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
+              />
 
-              return (
-                <section
-                  key={chapter.id}
-                  id={chapter.id}
-                  data-chapter-id={chapter.id}
-                  className={clsx(
-                    "p-3 sm:p-6 space-y-6 rounded-3xl transition-all duration-300 relative",
-                    chapter.themeClass || 'chapter-theme-tandoori'
-                  )}
-                >
-                  {/* Corner Flourishes */}
-                  <div 
-                    className="heritage-corner-flourish heritage-corner-flourish-tl" 
-                    style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
+              {/* Chapter Header Banner Plate */}
+              <div className="rounded-2xl overflow-hidden shadow-md border-2 border-[#FAB700] bg-[#181E19]">
+                <picture>
+                  <source srcSet={chapter.banner.replace('.png', '.webp')} type="image/webp" />
+                  <img
+                    src={chapter.banner}
+                    alt={chapter.title}
+                    className="w-full h-auto object-cover select-none"
+                    loading="lazy"
                   />
-                  <div 
-                    className="heritage-corner-flourish heritage-corner-flourish-tr" 
-                    style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
-                  />
-                  <div 
-                    className="heritage-corner-flourish heritage-corner-flourish-bl" 
-                    style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
-                  />
-                  <div 
-                    className="heritage-corner-flourish heritage-corner-flourish-br" 
-                    style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
-                  />
+                </picture>
+              </div>
 
-                  {/* Chapter Header Banner Plate */}
-                  <div className="rounded-2xl overflow-hidden shadow-md border-2 border-[#FAB700] bg-[#181E19]">
-                    <picture>
-                      <source srcSet={chapter.banner.replace('.png', '.webp')} type="image/webp" />
+              {/* ─────────────────────────────────────────────────────────────
+                  CHAPTER 1: REAL CODED HTML/CSS ASYMMETRICAL SPLIT OF PAGE 4
+                  ───────────────────────────────────────────────────────────── */}
+              {isTandooriChapter ? (
+                <div className="grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden border-2 border-[#FAB700] shadow-xl">
+                  {/* Left Column: Real Coded Crimson Hero Panel */}
+                  <div className="lg:col-span-5 artboard-left-panel p-5 sm:p-8 flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="font-sans font-black text-white text-3xl sm:text-5xl tracking-tighter leading-none opacity-90 uppercase">
+                        MTJ
+                      </div>
+                      <div className="font-serif font-black text-white text-4xl sm:text-5xl tracking-tight leading-none uppercase">
+                        TANDOORI
+                      </div>
+                      <div className="font-serif font-black text-[#FAB700] text-4xl sm:text-5xl tracking-tight leading-none uppercase">
+                        SNACKS
+                      </div>
+                      <div className="h-1.5 w-20 bg-[#FAB700] rounded-full mt-2" />
+                      
+                      <p className="text-white/90 text-xs sm:text-sm font-sans pt-2 leading-relaxed">
+                        Charcoal clay tandoor baked multi-grain chaap marinated in fresh yogurt & secret ground spices.
+                      </p>
+                    </div>
+
+                    {/* Sizzler Platter Cutout */}
+                    <div className="relative mt-6 sm:mt-12 flex justify-center">
                       <img
-                        src={chapter.banner}
-                        alt={chapter.title}
-                        className="w-full h-auto object-cover select-none"
-                        loading="lazy"
+                        src="/uploads/mannat/assets/hero_chaap_sizzler.png"
+                        alt="Tandoori Chaap Sizzler Platter"
+                        className="w-full max-w-xs h-auto object-contain rounded-2xl drop-shadow-2xl select-none"
                       />
-                    </picture>
+                    </div>
                   </div>
 
-                  {/* ─────────────────────────────────────────────────────────────
-                      CHAPTER 1: EXACT ASYMMETRICAL SPLIT ARCHITECTURE OF PAGE 4
-                      ───────────────────────────────────────────────────────────── */}
-                  {isTandooriChapter ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                      {/* Left Column: Authentic Page 4 Vertical Crimson Panel */}
-                      <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
-                        <div className="rounded-2xl overflow-hidden border-2 border-[#FAB700] shadow-xl bg-[#881313]">
-                          <picture>
-                            <source srcSet="/uploads/mannat/page04_elements/page04_left_panel_300dpi.webp" type="image/webp" />
-                            <img
-                              src="/uploads/mannat/page04_elements/page04_left_panel_300dpi.png"
-                              alt="MTJ Tandoori Snacks Vertical Panel with Sizzler"
-                              className="w-full h-auto object-cover select-none block"
-                            />
-                          </picture>
-                        </div>
-                      </div>
-
-                      {/* Right Column: Authentic Page 4 Content & Tables */}
-                      <div className="lg:col-span-7 space-y-6 relative">
-                        {/* Top-Right Bowl of Malai Chaap */}
-                        <div className="flex justify-end -mt-3 -mr-2 mb-1">
-                          <img
-                            src="/uploads/mannat/page04_elements/page04_top_right_bowl_300dpi.webp"
-                            alt="Yellow Bowl of Malai Chaap"
-                            className="w-36 sm:w-48 h-auto object-contain drop-shadow-md select-none"
-                          />
-                        </div>
-
-                        {/* Section 1: CHAAP SPECIALITIES */}
-                        <div className="space-y-3">
-                          <div className="border-b-2 border-[#9E0D24] pb-1.5 flex items-center justify-between">
-                            <h3 className="font-serif font-black text-lg sm:text-xl text-[#9E0D24] tracking-wide uppercase">
-                              CHAAP SPECIALITIES
-                            </h3>
-                            <span className="text-[11px] font-bold text-amber-900 bg-amber-100/80 px-2 py-0.5 rounded">
-                              Multi Grain Chaap
-                            </span>
-                          </div>
-
-                          {/* Dual Column Header: ITEM | HALF | FULL */}
-                          <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
-                            <span className="text-left">ITEM</span>
-                            <span className="text-[#9E0D24]">HALF</span>
-                            <span className="text-[#9E0D24]">FULL</span>
-                          </div>
-
-                          {/* 19 Chaap Items */}
-                          <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
-                            {PAGE04_CHAAP_ITEMS.map((dish) => {
-                              const halfQty = getDishQty(dish.id, 'Half');
-                              const fullQty = getDishQty(dish.id, 'Full');
-
-                              return (
-                                <div key={dish.id} className="heritage-grid-row heritage-dual-grid py-2">
-                                  {/* Col 1: Name & Badges */}
-                                  <div className="min-w-0 pr-1">
-                                    <div className="flex items-center gap-1.5 font-serif font-bold text-xs sm:text-sm text-[#181E19]">
-                                      <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
-                                      <span className="truncate">{dish.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-[10px] mt-0.5 font-sans">
-                                      {dish.isChefSpecial && (
-                                        <span className="text-amber-800 font-bold">👨‍🍳 Chef Special</span>
-                                      )}
-                                      {dish.isSpicy && (
-                                        <span className="text-red-700 font-bold">🌶️ Mild Spicy</span>
-                                      )}
-                                      {dish.isPureSoya && (
-                                        <span className="text-emerald-700 font-bold bg-emerald-50 px-1 rounded">Pure Soya</span>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* Col 2: Half Price & Controls */}
-                                  <div className="flex justify-center">
-                                    {halfQty > 0 ? (
-                                      <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                        <button
-                                          type="button"
-                                          onClick={() => handleRemoveFromCart(dish.id, 'Half')}
-                                          className="text-red-700 hover:scale-110"
-                                        >
-                                          <Minus size={11} />
-                                        </button>
-                                        <span>{halfQty}</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                          className="text-emerald-700 hover:scale-110"
-                                        >
-                                          <Plus size={11} />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                        className="heritage-portion-btn-half cursor-pointer"
-                                      >
-                                        <span>₹{dish.halfPrice}</span>
-                                        <Plus size={11} className="opacity-70" />
-                                      </button>
-                                    )}
-                                  </div>
-
-                                  {/* Col 3: Full Price & Controls */}
-                                  <div className="flex justify-center">
-                                    {fullQty > 0 ? (
-                                      <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                        <button
-                                          type="button"
-                                          onClick={() => handleRemoveFromCart(dish.id, 'Full')}
-                                          className="text-red-700 hover:scale-110"
-                                        >
-                                          <Minus size={11} />
-                                        </button>
-                                        <span>{fullQty}</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
-                                          className="text-emerald-700 hover:scale-110"
-                                        >
-                                          <Plus size={11} />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
-                                        className="heritage-portion-btn-full cursor-pointer"
-                                      >
-                                        <span>₹{dish.fullPrice}</span>
-                                        <Plus size={11} className="opacity-70" />
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        {/* Emerald Green Multigrain Announcement Banner */}
-                        <div className="rounded-2xl overflow-hidden border-2 border-emerald-700 shadow-md">
-                          <picture>
-                            <source srcSet="/uploads/mannat/page04_elements/page04_green_banner_300dpi.webp" type="image/webp" />
-                            <img
-                              src="/uploads/mannat/page04_elements/page04_green_banner_300dpi.png"
-                              alt="All Chaap Specialities Multigrain Announcement"
-                              className="w-full h-auto object-cover select-none block"
-                            />
-                          </picture>
-                        </div>
-
-                        {/* Section 2: PANEER FEAST */}
-                        <div className="space-y-3">
-                          <div className="border-b-2 border-[#9E0D24] pb-1.5 flex items-center justify-between">
-                            <h3 className="font-serif font-black text-lg sm:text-xl text-[#9E0D24] tracking-wide uppercase">
-                              PANEER FEAST
-                            </h3>
-                            <span className="text-[11px] font-bold text-amber-900 bg-amber-100/80 px-2 py-0.5 rounded">
-                              Fresh Cottage Cheese
-                            </span>
-                          </div>
-
-                          {/* Dual Column Header: ITEM | HALF | FULL */}
-                          <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
-                            <span className="text-left">ITEM</span>
-                            <span className="text-[#9E0D24]">HALF</span>
-                            <span className="text-[#9E0D24]">FULL</span>
-                          </div>
-
-                          {/* 8 Paneer Items */}
-                          <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
-                            {PAGE04_PANEER_ITEMS.map((dish) => {
-                              const halfQty = getDishQty(dish.id, 'Half');
-                              const fullQty = getDishQty(dish.id, 'Full');
-
-                              return (
-                                <div key={dish.id} className="heritage-grid-row heritage-dual-grid py-2">
-                                  {/* Col 1: Name */}
-                                  <div className="min-w-0 pr-1">
-                                    <div className="flex items-center gap-1.5 font-serif font-bold text-xs sm:text-sm text-[#181E19]">
-                                      <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
-                                      <span className="truncate">{dish.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-[10px] mt-0.5 font-sans">
-                                      {dish.isChefSpecial && (
-                                        <span className="text-amber-800 font-bold">👨‍🍳 Chef Special</span>
-                                      )}
-                                      {dish.isSpicy && (
-                                        <span className="text-red-700 font-bold">🌶️ Mild Spicy</span>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* Col 2: Half Price */}
-                                  <div className="flex justify-center">
-                                    {halfQty > 0 ? (
-                                      <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                        <button
-                                          type="button"
-                                          onClick={() => handleRemoveFromCart(dish.id, 'Half')}
-                                          className="text-red-700 hover:scale-110"
-                                        >
-                                          <Minus size={11} />
-                                        </button>
-                                        <span>{halfQty}</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                          className="text-emerald-700 hover:scale-110"
-                                        >
-                                          <Plus size={11} />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
-                                        className="heritage-portion-btn-half cursor-pointer"
-                                      >
-                                        <span>₹{dish.halfPrice}</span>
-                                        <Plus size={11} className="opacity-70" />
-                                      </button>
-                                    )}
-                                  </div>
-
-                                  {/* Col 3: Full Price */}
-                                  <div className="flex justify-center">
-                                    {fullQty > 0 ? (
-                                      <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                        <button
-                                          type="button"
-                                          onClick={() => handleRemoveFromCart(dish.id, 'Full')}
-                                          className="text-red-700 hover:scale-110"
-                                        >
-                                          <Minus size={11} />
-                                        </button>
-                                        <span>{fullQty}</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
-                                          className="text-emerald-700 hover:scale-110"
-                                        >
-                                          <Plus size={11} />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
-                                        className="heritage-portion-btn-full cursor-pointer"
-                                      >
-                                        <span>₹{dish.fullPrice}</span>
-                                        <Plus size={11} className="opacity-70" />
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        {/* Legend Badges */}
-                        <div className="flex items-center gap-3 pt-2 text-xs font-bold">
-                          <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-950 border border-amber-300 flex items-center gap-1">
-                            👨‍🍳 CHEF SPECIAL
-                          </span>
-                          <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-950 border border-red-300 flex items-center gap-1">
-                            🌶️ MILD SPICY
-                          </span>
+                  {/* Right Column: Real Coded Parchment Panel with Tables */}
+                  <div className="lg:col-span-7 artboard-right-panel p-4 sm:p-6 space-y-6">
+                    {/* Floating Malai Chaap Dish Showcase */}
+                    <div className="flex justify-end -mt-2 -mr-1">
+                      <div className="flex items-center gap-2.5 bg-white/95 backdrop-blur-xs p-1.5 rounded-2xl border border-[#FAB700] shadow-md">
+                        <img
+                          src="/uploads/mannat/assets/dish_malai_chaap.png"
+                          alt="Creamy Malai Chaap"
+                          className="w-20 sm:w-28 h-auto object-cover rounded-xl"
+                        />
+                        <div className="pr-2 text-right">
+                          <div className="font-bold text-xs text-[#9E0D24]">Malai Chaap</div>
+                          <div className="text-[10px] text-amber-600 font-black uppercase">Chef Special</div>
                         </div>
                       </div>
                     </div>
-                  ) : (
-                    /* Default Chapter Layout for other chapters */
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                      {/* Left Column: Food Photography Showcase */}
-                      <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
-                        <div className="heritage-hero-showcase">
-                          <picture>
-                            <source srcSet={chapter.heroImage.replace('.png', '.webp')} type="image/webp" />
-                            <img
-                              src={chapter.heroImage}
-                              alt={chapter.heroTitle}
-                              className="w-full h-52 sm:h-64 lg:h-72 object-cover"
-                              loading="lazy"
-                            />
-                          </picture>
-                          <div className="bg-[#181E19] text-[#FAB700] p-3 sm:p-3.5 border-t-2 border-[#FAB700]/40">
-                            <div className="font-serif font-bold text-sm sm:text-base text-white tracking-wide">
-                              {chapter.heroTitle}
-                            </div>
-                            <div className="text-[11px] sm:text-xs text-[#FAB700]/90 font-sans mt-0.5">
-                              {chapter.heroSubtitle}
-                            </div>
-                          </div>
-                        </div>
 
-                        {/* Announcement Note */}
-                        {chapter.announcement && (
-                          <div className="p-3 sm:p-3.5 rounded-2xl bg-[#FFFDF9] border border-[#FAB700] text-amber-950 text-xs font-semibold flex flex-col gap-2 shadow-xs">
-                            <div className="flex items-center gap-2">
-                              {chapter.announcement.icon === 'coffee' && <Coffee size={15} className="text-amber-800 shrink-0" />}
-                              {chapter.announcement.icon === 'flame' && <Flame size={15} className="text-[#CE182C] shrink-0" />}
-                              {chapter.announcement.icon === 'sparkles' && <Sparkles size={15} className="text-[#FAB700] shrink-0" />}
-                              <span className="leading-snug text-[11px] sm:text-xs">{chapter.announcement.text}</span>
-                            </div>
-                            {chapter.announcement.badge && (
-                              <span className="self-start font-mono font-bold bg-[#FAB700] text-[#181E19] px-2.5 py-0.5 rounded text-[10px] uppercase tracking-wider">
-                                {chapter.announcement.badge}
-                              </span>
-                            )}
-                          </div>
-                        )}
+                    {/* Section 1: CHAAP SPECIALITIES */}
+                    <div className="space-y-3">
+                      <div className="border-b-2 border-[#9E0D24] pb-1.5 flex items-center justify-between">
+                        <h3 className="font-serif font-black text-lg sm:text-xl text-[#9E0D24] tracking-wide uppercase">
+                          CHAAP SPECIALITIES
+                        </h3>
+                        <span className="text-[11px] font-bold text-amber-900 bg-amber-100/90 px-2.5 py-0.5 rounded-full border border-amber-300">
+                          Multi Grain Chaap
+                        </span>
                       </div>
 
-                      {/* Right Column: Categories & Dishes */}
-                      <div className="lg:col-span-7 space-y-6">
-                        {chapter.categories.map((subcat, idx) => {
-                          const isRolls = subcat.name.toLowerCase().includes('roll');
-                          const hasAnyHalfFull = subcat.items.some((i) => Boolean(i.halfPrice && i.fullPrice));
+                      {/* Dual Column Header: ITEM | HALF | FULL */}
+                      <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
+                        <span className="text-left">ITEM</span>
+                        <span className="text-[#9E0D24]">HALF</span>
+                        <span className="text-[#9E0D24]">FULL</span>
+                      </div>
+
+                      {/* 19 Chaap Items */}
+                      <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
+                        {PAGE04_CHAAP_ITEMS.map((dish) => {
+                          const halfQty = getDishQty(dish.id, 'Half');
+                          const fullQty = getDishQty(dish.id, 'Full');
 
                           return (
-                            <div key={subcat.id} className="space-y-3">
-                              {idx > 0 && <div className="heritage-divider-raster" />}
-
-                              {/* Subcategory Ribbon Header */}
-                              <div className="heritage-subcat-header">
-                                <span className="heritage-subcat-badge">
-                                  <Utensils size={13} className="text-[#FAB700]" />
-                                  <span>{subcat.name}</span>
-                                  <span className="text-[11px] opacity-80 font-mono">({subcat.items.length})</span>
-                                </span>
-                                <span className="heritage-subcat-line" />
-                              </div>
-
-                              {/* Dishes Table */}
-                              <div className="space-y-2">
-                                <div className="heritage-menu-container p-2 sm:p-3">
-                                  {hasAnyHalfFull ? (
-                                    <>
-                                      <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
-                                        <span className="text-left">ITEM</span>
-                                        <span className="text-[#9E0D24]">{isRolls ? '2 PCS' : 'HALF'}</span>
-                                        <span className="text-[#9E0D24]">{isRolls ? '4 PCS' : 'FULL'}</span>
-                                      </div>
-                                      <div className="divide-y divide-black/5">
-                                        {subcat.items.map((item) => {
-                                          const halfQty = getDishQty(item.id, isRolls ? '2 Pcs' : 'Half');
-                                          const fullQty = getDishQty(item.id, isRolls ? '4 Pcs' : 'Full');
-
-                                          return (
-                                            <div key={item.id} className="heritage-grid-row heritage-dual-grid">
-                                              <div className="min-w-0 pr-1">
-                                                <div className="flex items-center gap-1.5 font-serif font-bold text-xs sm:text-sm text-[#181E19]">
-                                                  <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
-                                                  <span className="truncate">{item.name}</span>
-                                                </div>
-                                              </div>
-
-                                              <div className="flex justify-center">
-                                                {halfQty > 0 ? (
-                                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                                    <button type="button" onClick={() => handleRemoveFromCart(item.id, isRolls ? '2 Pcs' : 'Half')}><Minus size={11} /></button>
-                                                    <span>{halfQty}</span>
-                                                    <button type="button" onClick={() => handleAddToCart(item, `₹${item.halfPrice}`, isRolls ? '2 Pcs' : 'Half')}><Plus size={11} /></button>
-                                                  </div>
-                                                ) : (
-                                                  <button
-                                                    type="button"
-                                                    onClick={() => handleAddToCart(item, `₹${item.halfPrice}`, isRolls ? '2 Pcs' : 'Half')}
-                                                    className="heritage-portion-btn-half cursor-pointer"
-                                                  >
-                                                    <span>₹{item.halfPrice}</span>
-                                                    <Plus size={11} className="opacity-70" />
-                                                  </button>
-                                                )}
-                                              </div>
-
-                                              <div className="flex justify-center">
-                                                {fullQty > 0 ? (
-                                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                                    <button type="button" onClick={() => handleRemoveFromCart(item.id, isRolls ? '4 Pcs' : 'Full')}><Minus size={11} /></button>
-                                                    <span>{fullQty}</span>
-                                                    <button type="button" onClick={() => handleAddToCart(item, `₹${item.fullPrice}`, isRolls ? '4 Pcs' : 'Full')}><Plus size={11} /></button>
-                                                  </div>
-                                                ) : (
-                                                  <button
-                                                    type="button"
-                                                    onClick={() => handleAddToCart(item, `₹${item.fullPrice}`, isRolls ? '4 Pcs' : 'Full')}
-                                                    className="heritage-portion-btn-full cursor-pointer"
-                                                  >
-                                                    <span>₹{item.fullPrice}</span>
-                                                    <Plus size={11} className="opacity-70" />
-                                                  </button>
-                                                )}
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <div className="heritage-grid-header heritage-single-grid text-center font-bold">
-                                        <span className="text-left">ITEM</span>
-                                        <span className="text-[#9E0D24]">PRICE</span>
-                                      </div>
-                                      <div className="divide-y divide-black/5">
-                                        {subcat.items.map((item) => {
-                                          const singleQty = getDishQty(item.id);
-
-                                          return (
-                                            <div key={item.id} className="heritage-grid-row heritage-single-grid">
-                                              <div className="min-w-0 pr-1">
-                                                <div className="flex items-center gap-1.5 font-serif font-bold text-xs sm:text-sm text-[#181E19]">
-                                                  <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
-                                                  <span className="truncate">{item.name}</span>
-                                                </div>
-                                              </div>
-
-                                              <div className="flex justify-center">
-                                                {singleQty > 0 ? (
-                                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
-                                                    <button type="button" onClick={() => handleRemoveFromCart(item.id)}><Minus size={11} /></button>
-                                                    <span>{singleQty}</span>
-                                                    <button type="button" onClick={() => handleAddToCart(item, `₹${item.price}`)}><Plus size={11} /></button>
-                                                  </div>
-                                                ) : (
-                                                  <button
-                                                    type="button"
-                                                    onClick={() => handleAddToCart(item, `₹${item.price}`)}
-                                                    className="heritage-portion-btn-half cursor-pointer"
-                                                  >
-                                                    <span>₹{item.price}</span>
-                                                    <Plus size={11} className="opacity-70" />
-                                                  </button>
-                                                )}
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </>
+                            <div key={dish.id} className="heritage-grid-row heritage-dual-grid py-2">
+                              {/* Col 1: Name & Badges */}
+                              <div className="min-w-0 pr-1">
+                                <div className="flex items-center gap-1.5 font-serif font-bold text-xs sm:text-sm text-[#181E19]">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
+                                  <span className="truncate">{dish.name}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-[10px] mt-0.5 font-sans">
+                                  {dish.isChefSpecial && (
+                                    <span className="text-amber-800 font-bold">👨‍🍳 Chef Special</span>
+                                  )}
+                                  {dish.isSpicy && (
+                                    <span className="text-red-700 font-bold">🌶️ Mild Spicy</span>
+                                  )}
+                                  {dish.isPureSoya && (
+                                    <span className="text-emerald-700 font-bold bg-emerald-50 px-1 rounded">Pure Soya</span>
                                   )}
                                 </div>
+                              </div>
+
+                              {/* Col 2: Half Price & Controls */}
+                              <div className="flex justify-center">
+                                {halfQty > 0 ? (
+                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveFromCart(dish.id, 'Half')}
+                                      className="text-red-700 hover:scale-110"
+                                    >
+                                      <Minus size={11} />
+                                    </button>
+                                    <span>{halfQty}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
+                                      className="text-emerald-700 hover:scale-110"
+                                    >
+                                      <Plus size={11} />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
+                                    className="heritage-portion-btn-half cursor-pointer"
+                                  >
+                                    <span>₹{dish.halfPrice}</span>
+                                    <Plus size={11} className="opacity-70" />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Col 3: Full Price & Controls */}
+                              <div className="flex justify-center">
+                                {fullQty > 0 ? (
+                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveFromCart(dish.id, 'Full')}
+                                      className="text-red-700 hover:scale-110"
+                                    >
+                                      <Minus size={11} />
+                                    </button>
+                                    <span>{fullQty}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
+                                      className="text-emerald-700 hover:scale-110"
+                                    >
+                                      <Plus size={11} />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
+                                    className="heritage-portion-btn-full cursor-pointer"
+                                  >
+                                    <span>₹{dish.fullPrice}</span>
+                                    <Plus size={11} className="opacity-70" />
+                                  </button>
+                                )}
                               </div>
                             </div>
                           );
                         })}
                       </div>
                     </div>
-                  )}
-                </section>
-              );
-            })}
-          </div>
-        </div>
-      )}
+
+                    {/* Real Coded Emerald Green Announcement Banner */}
+                    <div className="bg-[#15803D] text-white p-3.5 rounded-xl border border-emerald-600 shadow-md my-4 flex items-center gap-3">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-ping shrink-0" />
+                      <p className="text-xs sm:text-sm font-bold leading-snug">
+                        *All Chaap Specialities are prepared using our Multigrain Chaap. Add-on upgrade available for Premium 100% Plant-Based Soya Chaap.
+                      </p>
+                    </div>
+
+                    {/* Section 2: PANEER FEAST */}
+                    <div className="space-y-3">
+                      <div className="border-b-2 border-[#9E0D24] pb-1.5 flex items-center justify-between">
+                        <h3 className="font-serif font-black text-lg sm:text-xl text-[#9E0D24] tracking-wide uppercase">
+                          PANEER FEAST
+                        </h3>
+                        <span className="text-[11px] font-bold text-amber-900 bg-amber-100/90 px-2.5 py-0.5 rounded-full border border-amber-300">
+                          Fresh Cottage Cheese
+                        </span>
+                      </div>
+
+                      {/* Dual Column Header: ITEM | HALF | FULL */}
+                      <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
+                        <span className="text-left">ITEM</span>
+                        <span className="text-[#9E0D24]">HALF</span>
+                        <span className="text-[#9E0D24]">FULL</span>
+                      </div>
+
+                      {/* 8 Paneer Items */}
+                      <div className="divide-y divide-black/5 bg-white rounded-2xl border border-black/10 shadow-xs p-2">
+                        {PAGE04_PANEER_ITEMS.map((dish) => {
+                          const halfQty = getDishQty(dish.id, 'Half');
+                          const fullQty = getDishQty(dish.id, 'Full');
+
+                          return (
+                            <div key={dish.id} className="heritage-grid-row heritage-dual-grid py-2">
+                              {/* Col 1: Name */}
+                              <div className="min-w-0 pr-1">
+                                <div className="flex items-center gap-1.5 font-serif font-bold text-xs sm:text-sm text-[#181E19]">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
+                                  <span className="truncate">{dish.name}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-[10px] mt-0.5 font-sans">
+                                  {dish.isChefSpecial && (
+                                    <span className="text-amber-800 font-bold">👨‍🍳 Chef Special</span>
+                                  )}
+                                  {dish.isSpicy && (
+                                    <span className="text-red-700 font-bold">🌶️ Mild Spicy</span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Col 2: Half Price */}
+                              <div className="flex justify-center">
+                                {halfQty > 0 ? (
+                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveFromCart(dish.id, 'Half')}
+                                      className="text-red-700 hover:scale-110"
+                                    >
+                                      <Minus size={11} />
+                                    </button>
+                                    <span>{halfQty}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
+                                      className="text-emerald-700 hover:scale-110"
+                                    >
+                                      <Plus size={11} />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.halfPrice, category: dish.category }, `₹${dish.halfPrice}`, 'Half')}
+                                    className="heritage-portion-btn-half cursor-pointer"
+                                  >
+                                    <span>₹{dish.halfPrice}</span>
+                                    <Plus size={11} className="opacity-70" />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Col 3: Full Price */}
+                              <div className="flex justify-center">
+                                {fullQty > 0 ? (
+                                  <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveFromCart(dish.id, 'Full')}
+                                      className="text-red-700 hover:scale-110"
+                                    >
+                                      <Minus size={11} />
+                                    </button>
+                                    <span>{fullQty}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
+                                      className="text-emerald-700 hover:scale-110"
+                                    >
+                                      <Plus size={11} />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddToCart({ id: dish.id, name: dish.name, price: dish.fullPrice, category: dish.category }, `₹${dish.fullPrice}`, 'Full')}
+                                    className="heritage-portion-btn-full cursor-pointer"
+                                  >
+                                    <span>₹{dish.fullPrice}</span>
+                                    <Plus size={11} className="opacity-70" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Legend Badges */}
+                    <div className="flex items-center gap-3 pt-2 text-xs font-bold">
+                      <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-950 border border-amber-300 flex items-center gap-1">
+                        👨‍🍳 CHEF SPECIAL
+                      </span>
+                      <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-950 border border-red-300 flex items-center gap-1">
+                        🌶️ MILD SPICY
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Default Chapter Layout for other chapters */
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* Left Column: Food Photography Showcase */}
+                  <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
+                    <div className="heritage-hero-showcase">
+                      <picture>
+                        <source srcSet={chapter.heroImage.replace('.png', '.webp')} type="image/webp" />
+                        <img
+                          src={chapter.heroImage}
+                          alt={chapter.heroTitle}
+                          className="w-full h-52 sm:h-64 lg:h-72 object-cover"
+                          loading="lazy"
+                        />
+                      </picture>
+                      <div className="bg-[#181E19] text-[#FAB700] p-3 sm:p-3.5 border-t-2 border-[#FAB700]/40">
+                        <div className="font-serif font-bold text-sm sm:text-base text-white tracking-wide">
+                          {chapter.heroTitle}
+                        </div>
+                        <div className="text-[11px] sm:text-xs text-[#FAB700]/90 font-sans mt-0.5">
+                          {chapter.heroSubtitle}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Announcement Note */}
+                    {chapter.announcement && (
+                      <div className="p-3 sm:p-3.5 rounded-2xl bg-[#FFFDF9] border border-[#FAB700] text-amber-950 text-xs font-semibold flex flex-col gap-2 shadow-xs">
+                        <div className="flex items-center gap-2">
+                          {chapter.announcement.icon === 'coffee' && <Coffee size={15} className="text-amber-800 shrink-0" />}
+                          {chapter.announcement.icon === 'flame' && <Flame size={15} className="text-[#CE182C] shrink-0" />}
+                          {chapter.announcement.icon === 'sparkles' && <Sparkles size={15} className="text-[#FAB700] shrink-0" />}
+                          <span className="leading-snug text-[11px] sm:text-xs">{chapter.announcement.text}</span>
+                        </div>
+                        {chapter.announcement.badge && (
+                          <span className="self-start font-mono font-bold bg-[#FAB700] text-[#181E19] px-2.5 py-0.5 rounded text-[10px] uppercase tracking-wider">
+                            {chapter.announcement.badge}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column: Categories & Dishes */}
+                  <div className="lg:col-span-7 space-y-6">
+                    {chapter.categories.map((subcat, idx) => {
+                      const isRolls = subcat.name.toLowerCase().includes('roll');
+                      const hasAnyHalfFull = subcat.items.some((i) => Boolean(i.halfPrice && i.fullPrice));
+
+                      return (
+                        <div key={subcat.id} className="space-y-3">
+                          {idx > 0 && <div className="heritage-divider-raster" />}
+
+                          {/* Subcategory Ribbon Header */}
+                          <div className="heritage-subcat-header">
+                            <span className="heritage-subcat-badge">
+                              <Utensils size={13} className="text-[#FAB700]" />
+                              <span>{subcat.name}</span>
+                              <span className="text-[11px] opacity-80 font-mono">({subcat.items.length})</span>
+                            </span>
+                            <span className="heritage-subcat-line" />
+                          </div>
+
+                          {/* Dishes Table */}
+                          <div className="space-y-2">
+                            <div className="heritage-menu-container p-2 sm:p-3">
+                              {hasAnyHalfFull ? (
+                                <>
+                                  <div className="heritage-grid-header heritage-dual-grid text-center font-bold">
+                                    <span className="text-left">ITEM</span>
+                                    <span className="text-[#9E0D24]">{isRolls ? '2 PCS' : 'HALF'}</span>
+                                    <span className="text-[#9E0D24]">{isRolls ? '4 PCS' : 'FULL'}</span>
+                                  </div>
+                                  <div className="divide-y divide-black/5">
+                                    {subcat.items.map((item) => {
+                                      const halfQty = getDishQty(item.id, isRolls ? '2 Pcs' : 'Half');
+                                      const fullQty = getDishQty(item.id, isRolls ? '4 Pcs' : 'Full');
+
+                                      return (
+                                        <div key={item.id} className="heritage-grid-row heritage-dual-grid">
+                                          <div className="min-w-0 pr-1">
+                                            <div className="flex items-center gap-1.5 font-serif font-bold text-xs sm:text-sm text-[#181E19]">
+                                              <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
+                                              <span className="truncate">{item.name}</span>
+                                            </div>
+                                          </div>
+
+                                          <div className="flex justify-center">
+                                            {halfQty > 0 ? (
+                                              <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                                <button type="button" onClick={() => handleRemoveFromCart(item.id, isRolls ? '2 Pcs' : 'Half')}><Minus size={11} /></button>
+                                                <span>{halfQty}</span>
+                                                <button type="button" onClick={() => handleAddToCart(item, `₹${item.halfPrice}`, isRolls ? '2 Pcs' : 'Half')}><Plus size={11} /></button>
+                                              </div>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleAddToCart(item, `₹${item.halfPrice}`, isRolls ? '2 Pcs' : 'Half')}
+                                                className="heritage-portion-btn-half cursor-pointer"
+                                              >
+                                                <span>₹{item.halfPrice}</span>
+                                                <Plus size={11} className="opacity-70" />
+                                              </button>
+                                            )}
+                                          </div>
+
+                                          <div className="flex justify-center">
+                                            {fullQty > 0 ? (
+                                              <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                                <button type="button" onClick={() => handleRemoveFromCart(item.id, isRolls ? '4 Pcs' : 'Full')}><Minus size={11} /></button>
+                                                <span>{fullQty}</span>
+                                                <button type="button" onClick={() => handleAddToCart(item, `₹${item.fullPrice}`, isRolls ? '4 Pcs' : 'Full')}><Plus size={11} /></button>
+                                              </div>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleAddToCart(item, `₹${item.fullPrice}`, isRolls ? '4 Pcs' : 'Full')}
+                                                className="heritage-portion-btn-full cursor-pointer"
+                                              >
+                                                <span>₹{item.fullPrice}</span>
+                                                <Plus size={11} className="opacity-70" />
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="heritage-grid-header heritage-single-grid text-center font-bold">
+                                    <span className="text-left">ITEM</span>
+                                    <span className="text-[#9E0D24]">PRICE</span>
+                                  </div>
+                                  <div className="divide-y divide-black/5">
+                                    {subcat.items.map((item) => {
+                                      const singleQty = getDishQty(item.id);
+
+                                      return (
+                                        <div key={item.id} className="heritage-grid-row heritage-single-grid">
+                                          <div className="min-w-0 pr-1">
+                                            <div className="flex items-center gap-1.5 font-serif font-bold text-xs sm:text-sm text-[#181E19]">
+                                              <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
+                                              <span className="truncate">{item.name}</span>
+                                            </div>
+                                          </div>
+
+                                          <div className="flex justify-center">
+                                            {singleQty > 0 ? (
+                                              <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 text-xs font-bold text-emerald-900">
+                                                <button type="button" onClick={() => handleRemoveFromCart(item.id)}><Minus size={11} /></button>
+                                                <span>{singleQty}</span>
+                                                <button type="button" onClick={() => handleAddToCart(item, `₹${item.price}`)}><Plus size={11} /></button>
+                                              </div>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleAddToCart(item, `₹${item.price}`)}
+                                                className="heritage-portion-btn-half cursor-pointer"
+                                              >
+                                                <span>₹{item.price}</span>
+                                                <Plus size={11} className="opacity-70" />
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 };

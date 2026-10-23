@@ -95,10 +95,10 @@ export default function PremiumIPhoneMockup({
       />
 
       {/* Black Outer Bezel Frame Chassis (Ultra-Sleek Uniform Border) */}
-      <div className="relative w-full h-full bg-[#060807] rounded-[45px] sm:rounded-[49px] p-[3.5px] sm:p-[4px] box-border flex flex-col overflow-hidden">
+      <div className="relative w-full h-full bg-[#0A0D0C] rounded-[45px] sm:rounded-[49px] p-[3.5px] sm:p-[4px] box-border flex flex-col overflow-hidden">
         {/* Inner Phone Screen Display Viewport */}
         <div
-          className={`relative w-full h-full rounded-[42px] sm:rounded-[45px] overflow-hidden isolate flex flex-col box-border ${screenClassName}`}
+          className={`relative w-full h-full rounded-[39px] sm:rounded-[42px] overflow-hidden isolate flex flex-col box-border ${screenClassName}`}
           style={{
             WebkitMaskImage: '-webkit-radial-gradient(white, black)',
             ...screenStyle,

@@ -557,3 +557,125 @@
   border: 2px solid #0F172A;
   box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.24), 0 0 0 1.5px #FAB700;
 }
+
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   11. AUTHENTIC 1:1 CODED ARTBOARD DESIGN (PAGE 1 COVER & PAGE 4 MENU)
+   Pure HTML & CSS Layouts Recreating Art Board 3.pdf
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+.artboard-crimson-plate {
+  background-color: #8C1020;
+  background-image: 
+    radial-gradient(circle at 50% 25%, #B71526 0%, #8C1020 50%, #600812 100%),
+    url('/menuqr/generated/texture_crimson_watermark.png');
+  background-blend-mode: overlay;
+  position: relative;
+  overflow: hidden;
+}
+
+.artboard-brand-script {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 900;
+  color: #FAB700;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 0 25px rgba(250, 183, 0, 0.35);
+  line-height: 1.1;
+}
+
+.artboard-brand-caps {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: #FFFFFF;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  line-height: 1.2;
+}
+
+.artboard-mascot-frame {
+  width: 210px;
+  height: 210px;
+  border-radius: 9999px;
+  border: 4px solid #FAB700;
+  box-shadow: 
+    0 0 0 6px #1A2844,
+    0 16px 40px rgba(0, 0, 0, 0.45);
+  background: radial-gradient(circle, #253A60 0%, #152238 70%, #0D1624 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 640px) {
+  .artboard-mascot-frame {
+    width: 250px;
+    height: 250px;
+    border-width: 5px;
+  }
+}
+
+.artboard-capsule-badge {
+  background-color: #FAF4EC;
+  color: #181E19;
+  border: 2px solid #FAB700;
+  border-radius: 9999px;
+  padding: 6px 22px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 900;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artboard-slogan-angled {
+  display: inline-block;
+  transform: rotate(-2.5deg);
+  background: linear-gradient(135deg, #A81423 0%, #7E0C18 100%);
+  border: 2px solid #FAB700;
+  border-radius: 12px;
+  padding: 8px 24px;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 900;
+  font-size: 1.25rem;
+  letter-spacing: 0.05em;
+  color: #FAB700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  .artboard-slogan-angled {
+    font-size: 1.45rem;
+    padding: 10px 28px;
+  }
+}
+
+.artboard-left-panel {
+  background-color: #8C1020;
+  background-image: 
+    radial-gradient(circle at 30% 20%, #AB182B 0%, #8C1020 60%, #600812 100%),
+    url('/menuqr/generated/texture_crimson_watermark.png');
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.artboard-right-panel {
+  background-color: #FAF4EC;
+  background-image: url('/menuqr/generated/texture_parchment_cream.png');
+  background-repeat: repeat;
+  position: relative;
+}

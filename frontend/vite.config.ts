@@ -3,15 +3,19 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { execSync } from 'child_process'
 import path from 'path'
+import fs from 'fs'
 
 function prerenderVitePlugin() {
   return {
     name: 'vite-plugin-menusqr-prerender',
     closeBundle() {
-      console.log('[vite-plugin-menusqr-prerender] Running prerender script post-bundle...');
       const baseDir = typeof import.meta !== 'undefined' && import.meta.dirname ? import.meta.dirname : __dirname;
-      const scriptPath = path.resolve(baseDir, 'scripts/prerender.cjs');
-      execSync(`node "${scriptPath}"`, { stdio: 'inherit' });
+      const distIndex = path.resolve(baseDir, 'dist/index.html');
+      if (fs.existsSync(distIndex)) {
+        console.log('[vite-plugin-menusqr-prerender] Running prerender script post-bundle...');
+        const scriptPath = path.resolve(baseDir, 'scripts/prerender.cjs');
+        execSync(`node "${scriptPath}"`, { stdio: 'inherit' });
+      }
     }
   }
 }
