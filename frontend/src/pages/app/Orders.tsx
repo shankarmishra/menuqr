@@ -332,6 +332,14 @@ export default function Orders() {
           )}
         </div>
 
+        {/* Payment Collection Tag */}
+        <div className="flex items-center justify-between text-xs px-3 py-1.5 rounded-xl bg-[#1a2320] border border-[#2a3832]">
+          <span className="text-[#849a90]">Payment Collection:</span>
+          <span className="font-bold text-emerald-400">
+            {isDelivery ? '💵 Cash / UPI on Delivery' : '🍽️ Collect at Table / Counter'}
+          </span>
+        </div>
+
         {/* Special Instructions / Notes */}
         {order.notes && (
           <div className="bg-amber-400/10 border border-amber-400/20 text-amber-200 px-3 py-2 rounded-xl text-xs flex items-start gap-2">
