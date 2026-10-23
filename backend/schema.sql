@@ -613,6 +613,14 @@ CREATE INDEX IF NOT EXISTS idx_customer_orders_tracking_token ON customer_orders
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS opening_hours VARCHAR(255);
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS cuisine VARCHAR(255);
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS instagram VARCHAR(255);
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS facebook VARCHAR(255);
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS website VARCHAR(255);
+
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS facebook VARCHAR(255);
+
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS estimated_time_minutes INTEGER;
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS estimated_delivery_time TIMESTAMP;
 
 ALTER TABLE menu_imports ADD COLUMN IF NOT EXISTS import_type VARCHAR(50) DEFAULT 'excel';
 ALTER TABLE menu_imports ADD COLUMN IF NOT EXISTS draft_payload JSONB;

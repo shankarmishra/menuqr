@@ -76,15 +76,11 @@
 /* Short viewport adaptations (e.g. 1366x768 laptops, landscape displays) */
 @media (min-width: 768px) and (max-height: 820px) {
   .template-reveal-card {
-    max-height: 520px !important;
+    max-height: 560px !important;
   }
   .template-reveal-card .template-card-stage {
-    min-height: 400px !important;
-    padding: 0.5rem !important;
-  }
-  .template-reveal-card .template-card-phone-wrap {
-    transform: none !important;
-    margin: 0 !important;
+    min-height: 480px !important;
+    padding: 0.75rem !important;
   }
   .template-reveal-card .template-card-phone {
     width: 215px !important;
@@ -100,6 +96,19 @@
   .template-reveal-card .template-card-footer {
     margin-top: 0.6rem !important;
     padding-top: 0.6rem !important;
+  }
+}
+
+/* Mobile viewport refinement: straightforward readable card flow instead of sticky stack */
+@media (max-width: 767px) {
+  .scroll-stack__slot {
+    position: relative !important;
+    top: auto !important;
+    margin-bottom: 2rem;
+  }
+  .scroll-stack-card {
+    transform: none !important;
+    opacity: 1 !important;
   }
 }
 

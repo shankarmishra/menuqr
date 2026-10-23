@@ -62,7 +62,6 @@ export function isValidGoogleReviewUrl(urlString) {
   return true;
 }
 
-
 export default async function appRoutes(request, response, url) {
   if (!url.pathname.startsWith('/api/app/')) return false;
   
@@ -180,7 +179,7 @@ export default async function appRoutes(request, response, url) {
 
   if (request.method === 'GET' && url.pathname === '/api/app/profile') {
     const res = await pool.query(`
-      SELECT u.email, u.role, c.business_name as "businessName", c.menu_slug as "menuSlug", c.status, c.tagline, c.phone, c.city, c.address, c.logo_url as "logoUrl"
+      SELECT u.email, u.role, c.business_name as "businessName", c.menu_slug as "menuSlug", c.status, c.tagline, c.phone, c.city, c.state, c.address, c.logo_url as "logoUrl", c.cuisine, c.opening_hours as "openingHours", c.instagram, c.facebook, c.website
       FROM users u
       JOIN clients c ON u.tenant_id = c.id
       WHERE u.id = $1 AND c.id = $2
@@ -755,6 +754,12 @@ export default async function appRoutes(request, response, url) {
     if (input.city !== undefined) updates.city = input.city;
     if (input.address !== undefined) updates.address = input.address;
     if (input.logoUrl !== undefined) updates.logo_url = input.logoUrl;
+    if (input.state !== undefined) updates.state = input.state;
+    if (input.cuisine !== undefined) updates.cuisine = input.cuisine;
+    if (input.openingHours !== undefined) updates.opening_hours = input.openingHours;
+    if (input.instagram !== undefined) updates.instagram = input.instagram;
+    if (input.facebook !== undefined) updates.facebook = input.facebook;
+    if (input.website !== undefined) updates.website = input.website;
 
     if (authorization.planId !== 'BASIC') requireEntitlement(authorization, 'initial_menu_setup');
     
@@ -776,7 +781,7 @@ export default async function appRoutes(request, response, url) {
     const updated = await withContentChange(authorization, async (client) => {
       const updateRes = await queryPortable(client, `UPDATE clients SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, values);
       if (updateRes.rowCount === 0) throw apiError(404, 'Restaurant could not be found.');
-      return queryPortable(client, 'SELECT id, business_name as "businessName", menu_slug as "menuSlug", tagline, phone, city, address, logo_url as "logoUrl" FROM clients WHERE id = ?', [user.tenantId]);
+      return queryPortable(client, 'SELECT id, business_name as "businessName", menu_slug as "menuSlug", tagline, phone, city, state, address, logo_url as "logoUrl", cuisine, opening_hours as "openingHours", instagram, facebook, website FROM clients WHERE id = ?', [user.tenantId]);
     });
 
     sendJson(response, 200, updated.rows[0]);
@@ -1441,6 +1446,8 @@ export default async function appRoutes(request, response, url) {
         total, 
         status, 
         rejection_reason as "rejectionReason",
+        estimated_time_minutes as "estimatedTimeMinutes",
+        estimated_delivery_time as "estimatedDeliveryTime",
         created_at as time
       FROM customer_orders
       WHERE tenant_id = $1
@@ -1509,6 +1516,14 @@ export default async function appRoutes(request, response, url) {
       SET 
         status = $1, 
         rejection_reason = COALESCE($2, rejection_reason),
+        estimated_time_minutes = CASE 
+          WHEN $5::integer IS NOT NULL AND $5::integer > 0 THEN $5::integer 
+          ELSE estimated_time_minutes 
+        END,
+        estimated_delivery_time = CASE 
+          WHEN $5::integer IS NOT NULL AND $5::integer > 0 THEN (CURRENT_TIMESTAMP + ($5::integer * INTERVAL '1 minute'))
+          ELSE estimated_delivery_time 
+        END,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = $3 AND tenant_id = $4
       RETURNING 
@@ -1525,9 +1540,53 @@ export default async function appRoutes(request, response, url) {
         total, 
         status, 
         rejection_reason as "rejectionReason",
+        estimated_time_minutes as "estimatedTimeMinutes",
+        estimated_delivery_time as "estimatedDeliveryTime",
         created_at as time
-    `, [targetStatus, rejectionReason, orderId, user.tenantId]);
+    `, [targetStatus, rejectionReason, orderId, user.tenantId, (input.estimatedTimeMinutes && Number.isInteger(Number(input.estimatedTimeMinutes)) && Number(input.estimatedTimeMinutes) > 0) ? Number(input.estimatedTimeMinutes) : null]);
     
+    const updated = res.rows[0];
+    updated.total = parseFloat(updated.total);
+    sendJson(response, 200, updated);
+    return true;
+  }
+
+  const orderTimeUpdateMatch = url.pathname.match(/^\/api\/app\/orders\/([^/]+)\/time$/);
+  if (request.method === 'PATCH' && orderTimeUpdateMatch) {
+    const orderId = decodeURIComponent(orderTimeUpdateMatch[1]);
+    const input = await readJson(request);
+    const estMins = Number(input.estimatedTimeMinutes);
+    if (!Number.isInteger(estMins) || estMins <= 0 || estMins > 360) {
+      throw apiError(400, 'estimatedTimeMinutes must be an integer between 1 and 360.');
+    }
+
+    const res = await pool.query(`
+      UPDATE customer_orders
+      SET 
+        estimated_time_minutes = $1,
+        estimated_delivery_time = (CURRENT_TIMESTAMP + ($1 * INTERVAL '1 minute')),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2 AND tenant_id = $3
+      RETURNING 
+        id, 
+        COALESCE(order_type, 'DINE_IN') as "orderType",
+        table_number as "tableNumber", 
+        customer_name as "customerName",
+        customer_phone as "customerPhone",
+        delivery_address as "deliveryAddress",
+        delivery_landmark as "deliveryLandmark",
+        delivery_city as "deliveryCity",
+        notes,
+        items, 
+        total, 
+        status, 
+        rejection_reason as "rejectionReason",
+        estimated_time_minutes as "estimatedTimeMinutes",
+        estimated_delivery_time as "estimatedDeliveryTime",
+        created_at as time
+    `, [estMins, orderId, user.tenantId]);
+
+    if (!res.rows[0]) throw apiError(404, 'Order not found.');
     const updated = res.rows[0];
     updated.total = parseFloat(updated.total);
     sendJson(response, 200, updated);

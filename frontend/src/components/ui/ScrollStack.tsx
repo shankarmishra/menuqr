@@ -279,9 +279,20 @@ const ScrollStack = ({
           slot.inert = isOccluded;
         }
 
+        // Editorial sequential reveal motion calculation:
+        // As an unpinned card approaches stackTop, it enters with modest vertical travel (22px -> 0px) and clean opacity (0.55 -> 1.0)
+        const unpinnedTop = (slotDocTops[i] || 0) - scrollY;
+        const targetTop = viewTop + stackTop;
+        const enterSpan = Math.max(1, (layoutCache?.viewHeight || 800) * 0.45);
+        const linearProgress = Math.min(1, Math.max(0, 1 - (unpinnedTop - targetTop) / enterSpan));
+        const revealProgress = linearProgress * linearProgress * (3 - 2 * linearProgress);
+
         if (isReducedMotion) {
           write(`transform${i}`, '', (value) => {
             card.style.transform = value;
+          });
+          write(`opacity${i}`, '1', (value) => {
+            card.style.opacity = value;
           });
           write(`filter${i}`, '', (value) => {
             card.style.filter = value;
@@ -297,21 +308,29 @@ const ScrollStack = ({
           settings.baseScale,
           1 - Math.min(depth * settings.itemScale, 1 - settings.baseScale)
         );
-        const upwardShift = -Math.min(depth, 3) * (settings.itemStackDistance > 0 ? Math.min(settings.itemStackDistance, 8) : 0);
+        const upwardShift = -Math.min(depth, 3) * (settings.itemStackDistance > 0 ? Math.min(settings.itemStackDistance, 12) : 0);
         const tilt = -lean * settings.tiltAmount;
         const turn = lean * settings.rotationAmount * (i % 2 ? -1 : 1);
         const blur = depth * settings.blurAmount;
         const dim = 1 - Math.pow(1 - dimStep, depth);
         const has3D = Math.abs(tilt) > 0.01 || Math.abs(turn) > 0.01;
+
+        // Clean sequential entrance travel for unpinned cards
+        const entranceTravel = depth < 0.0005 && revealProgress < 0.999 ? (1 - revealProgress) * 22 : 0;
+        const cardOpacity = depth < 0.0005 && revealProgress < 0.999 ? (0.55 + 0.45 * revealProgress).toFixed(3) : '1';
+
         const transform =
           depth < 0.0005
-            ? ''
+            ? (entranceTravel > 0.4 ? `translateY(${entranceTravel.toFixed(1)}px)` : '')
             : has3D
               ? `perspective(1200px) translateY(${upwardShift.toFixed(1)}px) rotateX(${tilt.toFixed(2)}deg) rotate(${turn.toFixed(2)}deg) scale(${scale.toFixed(4)})`
               : `translateY(${upwardShift.toFixed(1)}px) scale(${scale.toFixed(4)})`;
 
         write(`transform${i}`, transform, (value) => {
           card.style.transform = value;
+        });
+        write(`opacity${i}`, cardOpacity, (value) => {
+          card.style.opacity = value;
         });
         write(`filter${i}`, blur > 0.01 ? `blur(${blur.toFixed(2)}px)` : '', (value) => {
           card.style.filter = value;

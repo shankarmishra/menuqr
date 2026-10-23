@@ -425,22 +425,22 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                 chapter.themeClass || 'chapter-theme-tandoori'
               )}
             >
-              {/* Corner Flourishes */}
+              {/* Corner Flourishes (Authentic High-Res Raster Ornaments) */}
               <div 
                 className="heritage-corner-flourish heritage-corner-flourish-tl" 
-                style={{ backgroundImage: "url('/menuqr/generated/corner-flourish-gold.svg')" }} 
+                style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
               />
               <div 
                 className="heritage-corner-flourish heritage-corner-flourish-tr" 
-                style={{ backgroundImage: "url('/menuqr/generated/corner-flourish-gold.svg')" }} 
+                style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
               />
               <div 
                 className="heritage-corner-flourish heritage-corner-flourish-bl" 
-                style={{ backgroundImage: "url('/menuqr/generated/corner-flourish-gold.svg')" }} 
+                style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
               />
               <div 
                 className="heritage-corner-flourish heritage-corner-flourish-br" 
-                style={{ backgroundImage: "url('/menuqr/generated/corner-flourish-gold.svg')" }} 
+                style={{ backgroundImage: "url('/menuqr/generated/corner_flourish_gold.png')" }} 
               />
 
               {/* Chapter Header Banner Plate */}
@@ -525,10 +525,7 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                     return (
                       <div key={subcat.id} className="space-y-3">
                         {idx > 0 && (
-                          <div 
-                            className="w-full h-4 bg-contain bg-center bg-no-repeat opacity-75 my-2"
-                            style={{ backgroundImage: "url('/menuqr/generated/section-divider-flourish.svg')" }}
-                          />
+                          <div className="heritage-divider-raster" />
                         )}
 
                         {/* Subcategory Ribbon Header */}
@@ -545,10 +542,10 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                         {isMomoSection ? (
                           <div className="space-y-4">
                             <div className="rounded-2xl overflow-hidden border-2 border-[#1B3B2B] shadow-sm bg-white">
-                              {/* Tibetan Wave Motif Decorative Strip */}
+                              {/* Tibetan Wave Motif Decorative Strip (Authentic Raster Scallop) */}
                               <div 
-                                className="w-full h-10 sm:h-12 bg-[#1B3B2B] bg-cover bg-bottom"
-                                style={{ backgroundImage: "url('/menuqr/generated/tibetan-momo-wave.svg')" }}
+                                className="w-full h-10 sm:h-12 bg-[#1B3B2B] bg-cover bg-center"
+                                style={{ backgroundImage: "url('/menuqr/generated/source_momo_wave_header.png')" }}
                               />
                               <div className="p-2 sm:p-3 bg-[#FFFDF9]">
                                 {/* 3-Tier Grid Header */}

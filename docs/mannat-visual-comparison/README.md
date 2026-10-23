@@ -1,6 +1,6 @@
 # Mannat Tandoori Junction — Visual Comparison Engine Results
 
-Generated automatically by `scripts/compare_visuals.py` on 2026-10-23T04:49:06.
+Generated automatically by `scripts/compare_visuals.py` on 2026-10-23T05:19:39.
 
 ## Baseline Metrics Matrix (Pages 4, 5, 6)
 

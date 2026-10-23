@@ -123,20 +123,20 @@ export default function TemplateGallerySection() {
           </div>
         </div>
 
-        {/* TEMPLATE SHOWCASE LIST: STABLE HIGH-PERFORMANCE SCROLLSTACK */}
+        {/* TEMPLATE SHOWCASE LIST: EDITORIAL REVEAL MOTION */}
         <ScrollStack
           className="relative z-10 max-w-[1360px] mx-auto w-full px-4 sm:px-6 md:px-12"
           useWindowScroll={true}
-          itemDistance={isMobile ? 120 : 140}
-          itemStackDistance={isMobile ? 0 : 8}
-          stackPosition={isMobile ? '72px' : '92px'}
-          itemScale={isMobile ? 0.02 : 0.025}
-          baseScale={0.90}
-          dimAmount={0.14}
+          itemDistance={isMobile ? 32 : 180}
+          itemStackDistance={isMobile ? 0 : 12}
+          stackPosition={isMobile ? '72px' : '96px'}
+          itemScale={0.022}
+          baseScale={0.92}
+          dimAmount={0.15}
           blurAmount={0}
           tiltAmount={0}
           rotationAmount={0}
-          holdDistance={240}
+          holdDistance={260}
           smoothScroll={false}
           snap={false}
         >

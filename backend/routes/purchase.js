@@ -397,13 +397,15 @@ export async function processOrderPaymentAndProvision({
       await client.query(
         `INSERT INTO clients
            (id, public_id, business_name, menu_slug, category, business_type, category_other,
-            state, outlet_count, phone, city, address, reference_code, email_verified, phone_verified, status)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
+            state, outlet_count, phone, city, address, reference_code, email_verified, phone_verified, status,
+            instagram, facebook, website)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)`,
         [tenantId, publicId, order.business_name, menuSlug,
          order.cuisine || order.business_type || 'restaurant', order.business_type || 'restaurant',
          order.category_other || null, order.state || null, order.outlet_count || 1,
          order.phone || null, order.city || null, order.address || null,
-         refCode, Boolean(order.email_verified), Boolean(order.phone_verified), 'active']
+         refCode, Boolean(order.email_verified), Boolean(order.phone_verified), 'active',
+         order.instagram || null, order.facebook || null, order.website || null]
       );
 
       await client.query(
@@ -791,7 +793,7 @@ export default async function purchaseRoutes(request, response, url) {
     const {
       customerName, customerEmail, phone,
       businessName, city, address, state, cuisine, businessType, categoryOther, outletCount,
-      website, instagram,
+      website, instagram, facebook,
       planId, currency, couponCode, emailVerified, phoneVerified, emailChallengeId, emailVerificationToken,
       selectedAddons,
     } = input;
@@ -968,14 +970,14 @@ export default async function purchaseRoutes(request, response, url) {
         `UPDATE orders
          SET customer_name = $1, phone = $2, city = $3, address = $4, state = $5,
              cuisine = $6, business_type = $7, category_other = $8, outlet_count = $9,
-             website = $10, instagram = $11, plan_id = $12, amount = $13, original_amount = $14,
-             discount_pct = $15, discount_amount = $16, coupon_code = $17, email_verified = $18,
-             phone_verified = $19, currency = $20, metadata = COALESCE($21, metadata),
-             selected_addons = $22, addon_amount = $23, updated_at = CURRENT_TIMESTAMP
-         WHERE id = $24`,
+             website = $10, instagram = $11, facebook = $12, plan_id = $13, amount = $14, original_amount = $15,
+             discount_pct = $16, discount_amount = $17, coupon_code = $18, email_verified = $19,
+             phone_verified = $20, currency = $21, metadata = COALESCE($22, metadata),
+             selected_addons = $23, addon_amount = $24, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $25`,
         [customerName, phone || null, city || null, address || null, state || null,
          cuisine || businessType || null, businessType || 'restaurant', categoryOther || null,
-         Number(outletCount) || 1, website || null, instagram || null,
+         Number(outletCount) || 1, website || null, instagram || null, facebook || null,
          planKey, finalAmount, originalAmount, discountPct, discountAmount, validCouponCode,
          isServerEmailVerified, false, currency || 'INR', metadataJSON,
          JSON.stringify(validatedAddons), addonAmount, orderId]
@@ -984,15 +986,15 @@ export default async function purchaseRoutes(request, response, url) {
       await pool.query(
         `INSERT INTO orders
            (id, customer_name, customer_email, phone, business_name, city, address, state,
-            cuisine, business_type, category_other, outlet_count, website, instagram,
+            cuisine, business_type, category_other, outlet_count, website, instagram, facebook,
             plan_id, amount, original_amount, discount_pct, discount_amount, coupon_code,
             email_verified, phone_verified, currency, status, provisioning_status, metadata,
             selected_addons, addon_amount)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)`,
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29)`,
         [orderId, customerName, customerEmail.trim().toLowerCase(), phone || null,
          businessName, city || null, address || null, state || null,
          cuisine || businessType || null, businessType || 'restaurant', categoryOther || null,
-         Number(outletCount) || 1, website || null, instagram || null,
+         Number(outletCount) || 1, website || null, instagram || null, facebook || null,
          planKey, finalAmount, originalAmount, discountPct, discountAmount, validCouponCode,
          isServerEmailVerified, false, currency || 'INR',
          'PENDING_PAYMENT', 'PENDING', metadataJSON,

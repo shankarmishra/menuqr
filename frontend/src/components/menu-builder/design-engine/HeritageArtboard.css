@@ -5,10 +5,10 @@
 
 /* 1. Parchment & Luxury Canvas Atmosphere */
 .heritage-canvas {
-  background-color: #FFFDF9;
-  background-image: url('/menuqr/generated/paper-parchment-pattern.svg');
+  background-color: #FAF4EC;
+  background-image: url('/menuqr/generated/texture_parchment_cream.png');
   background-repeat: repeat;
-  background-size: 160px 160px;
+  background-size: 320px 320px;
 }
 
 /* 2. Royal Double Border Frame with Gold Accents */
@@ -33,11 +33,14 @@
 
 /* 3. Authentic Clean Tabular Leader Spacing & Container */
 .heritage-menu-container {
-  background: #FFFDF9;
-  border: 1.5px solid rgba(250, 183, 0, 0.6);
+  background-color: #FFFDF9;
+  background-image: url('/menuqr/generated/texture_parchment_cream.png');
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  border: 1.5px solid rgba(250, 183, 0, 0.65);
   border-radius: 20px;
   padding: 0.875rem 1rem;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
 }
@@ -382,21 +385,22 @@
   border-color: #EA580C;
 }
 
-/* 11. Corner Flourishes using Original SVG Assets */
+/* 11. Corner Flourishes using Authentic High-Res Raster Ornaments */
 .heritage-corner-flourish {
   position: absolute;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   pointer-events: none;
   z-index: 5;
   background-size: contain;
   background-repeat: no-repeat;
+  background-image: url('/menuqr/generated/corner_flourish_gold.png');
 }
 
 @media (min-width: 640px) {
   .heritage-corner-flourish {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
   }
 }
 
@@ -423,81 +427,133 @@
   transform: scale(-1, -1);
 }
 
+/* 11b. Authentic High-Res Raster Section Divider */
+.heritage-divider-raster {
+  width: 100%;
+  height: 22px;
+  background-image: url('/menuqr/generated/section_divider_flourish.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin: 0.75rem 0;
+  opacity: 0.9;
+}
+
 /* 12. Royal Floating Cart Bar Safe Bottom Padding */
 .heritage-main-content {
   padding-bottom: 7rem;
 }
 
 /* ═════════════════════════════════════════════════════════════════════════════
-   13. AUTHENTIC 10 SECTION ATMOSPHERIC THEMES (MATCHING PDF ARTWORK SCOPE)
+   13. AUTHENTIC 10 SECTION ATMOSPHERIC THEMES (WITH REAL RASTER TEXTURES)
    ═════════════════════════════════════════════════════════════════════════════ */
 
 /* 1. Tandoori / Starters: Deep Tandoori Crimson with Warm Antique-Gold */
 .chapter-theme-tandoori {
-  background: linear-gradient(180deg, rgba(206, 24, 44, 0.05) 0%, #FFFFFF 100%);
+  background-color: #FFFDF9;
+  background-image: 
+    linear-gradient(180deg, rgba(206, 24, 44, 0.08) 0%, rgba(255, 255, 255, 0.92) 100%),
+    url('/menuqr/generated/texture_crimson_watermark.png');
+  background-size: auto, 320px 320px;
   border: 2px solid #CE182C;
-  box-shadow: 0 10px 30px -4px rgba(206, 24, 44, 0.12), 0 0 0 1px #FAB700;
+  box-shadow: 0 10px 30px -4px rgba(206, 24, 44, 0.16), 0 0 0 1.5px #FAB700;
 }
 
 /* 2. Crunch / Crispy Items: Warm Golden Tones with Restrained Emerald Accents */
 .chapter-theme-crunch {
-  background: linear-gradient(180deg, rgba(217, 119, 6, 0.05) 0%, #FFFFFF 100%);
+  background-color: #FFFDF9;
+  background-image: 
+    linear-gradient(180deg, rgba(245, 158, 11, 0.10) 0%, rgba(255, 255, 255, 0.92) 100%),
+    url('/menuqr/generated/texture_amber_crunch.png');
+  background-size: auto, 320px 320px;
   border: 2px solid #D97706;
-  box-shadow: 0 10px 30px -4px rgba(217, 119, 6, 0.1), 0 0 0 1px #059669;
+  box-shadow: 0 10px 30px -4px rgba(217, 119, 6, 0.16), 0 0 0 1.5px #FAB700;
 }
 
 /* 3. Gravies / Curries: Saffron and Rust with Clear Section Hierarchy */
 .chapter-theme-gravies {
-  background: linear-gradient(180deg, rgba(194, 65, 12, 0.05) 0%, #FFFDF8 100%);
+  background-color: #FFFDF9;
+  background-image: 
+    linear-gradient(180deg, rgba(194, 65, 12, 0.09) 0%, rgba(255, 255, 255, 0.92) 100%),
+    url('/menuqr/generated/texture_curry_saffron.png');
+  background-size: auto, 320px 320px;
   border: 2px solid #C2410C;
-  box-shadow: 0 10px 30px -4px rgba(194, 65, 12, 0.12), 0 0 0 1px #FAB700;
+  box-shadow: 0 10px 30px -4px rgba(194, 65, 12, 0.16), 0 0 0 1.5px #FAB700;
 }
 
-/* 4. Thalis: Muted Olive, Earthy Neutrals, and Organized Meal Composition */
+/* 4. Thalis: Muted Olive & Midnight Slate with Organized Meal Composition */
 .chapter-theme-thalis {
-  background: linear-gradient(180deg, rgba(63, 78, 56, 0.06) 0%, #FFFFFF 100%);
-  border: 2px solid #3F4E38;
-  box-shadow: 0 10px 30px -4px rgba(63, 78, 56, 0.12), 0 0 0 1px #FAB700;
+  background-color: #FFFDF9;
+  background-image: 
+    linear-gradient(180deg, rgba(24, 34, 45, 0.08) 0%, rgba(255, 255, 255, 0.92) 100%),
+    url('/menuqr/generated/texture_midnight_slate.png');
+  background-size: auto, 320px 320px;
+  border: 2px solid #1C2A39;
+  box-shadow: 0 10px 30px -4px rgba(28, 42, 57, 0.16), 0 0 0 1.5px #FAB700;
 }
 
 /* 5. Momos: Forest Green, Tibetan Wave Header & Compact 3-Tier Matrix */
 .chapter-theme-momos {
-  background: linear-gradient(180deg, rgba(27, 59, 43, 0.06) 0%, #FFFFFF 100%);
+  background-color: #FFFDF9;
+  background-image: 
+    linear-gradient(180deg, rgba(27, 59, 43, 0.09) 0%, rgba(255, 255, 255, 0.92) 100%),
+    url('/menuqr/generated/texture_himalayan_jade.png');
+  background-size: auto, 320px 320px;
   border: 2px solid #1B3B2B;
-  box-shadow: 0 10px 30px -4px rgba(27, 59, 43, 0.12), 0 0 0 1px #CE182C;
+  box-shadow: 0 10px 30px -4px rgba(27, 59, 43, 0.16), 0 0 0 1.5px #CE182C;
 }
 
 /* 6. Indo-Chinese: Lacquer Red and Complementary Warm Tones */
 .chapter-theme-chinese {
-  background: linear-gradient(180deg, rgba(136, 19, 55, 0.06) 0%, #FFFFFF 100%);
+  background-color: #FFFDF9;
+  background-image: 
+    linear-gradient(180deg, rgba(136, 19, 55, 0.09) 0%, rgba(255, 255, 255, 0.92) 100%),
+    url('/menuqr/generated/texture_lacquer_red.png');
+  background-size: auto, 320px 320px;
   border: 2px solid #881337;
-  box-shadow: 0 10px 30px -4px rgba(136, 19, 55, 0.12), 0 0 0 1px #FAB700;
+  box-shadow: 0 10px 30px -4px rgba(136, 19, 55, 0.16), 0 0 0 1.5px #FAB700;
 }
 
 /* 7. Café: Cream and Mustard with Lighter, Quieter Composition */
 .chapter-theme-cafe {
-  background: linear-gradient(180deg, rgba(254, 243, 199, 0.4) 0%, #FFFFFF 100%);
+  background-color: #FFFDF9;
+  background-image: 
+    linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(255, 255, 255, 0.92) 100%),
+    url('/menuqr/generated/texture_amber_crunch.png');
+  background-size: auto, 320px 320px;
   border: 2px solid #D97706;
-  box-shadow: 0 10px 30px -4px rgba(217, 119, 6, 0.1), 0 0 0 1px #FAB700;
+  box-shadow: 0 10px 30px -4px rgba(217, 119, 6, 0.16), 0 0 0 1.5px #FAB700;
 }
 
 /* 8. Pizzas and Burgers: Brick Red with Clear Item/Price Grouping */
 .chapter-theme-pizzas {
-  background: linear-gradient(180deg, rgba(185, 28, 28, 0.05) 0%, #FFFFFF 100%);
+  background-color: #FFFDF9;
+  background-image: 
+    linear-gradient(180deg, rgba(185, 28, 28, 0.08) 0%, rgba(255, 255, 255, 0.92) 100%),
+    url('/menuqr/generated/texture_crimson_watermark.png');
+  background-size: auto, 320px 320px;
   border: 2px solid #B91C1C;
-  box-shadow: 0 10px 30px -4px rgba(185, 28, 28, 0.12), 0 0 0 1px #FAB700;
+  box-shadow: 0 10px 30px -4px rgba(185, 28, 28, 0.16), 0 0 0 1.5px #FAB700;
 }
 
 /* 9. Brews / Beverages: Roasted Mocha and Mint Accents */
 .chapter-theme-brews {
-  background: linear-gradient(180deg, rgba(69, 26, 3, 0.05) 0%, #F0FDF4 100%);
+  background-color: #FFFDF9;
+  background-image: 
+    linear-gradient(180deg, rgba(69, 26, 3, 0.09) 0%, rgba(255, 255, 255, 0.92) 100%),
+    url('/menuqr/generated/texture_espresso_mocha.png');
+  background-size: auto, 320px 320px;
   border: 2px solid #451A03;
-  box-shadow: 0 10px 30px -4px rgba(69, 26, 3, 0.12), 0 0 0 1px #0D9488;
+  box-shadow: 0 10px 30px -4px rgba(69, 26, 3, 0.16), 0 0 0 1.5px #0D9488;
 }
 
 /* 10. Desserts: Midnight Slate and Gold with Polished Closing Section */
 .chapter-theme-desserts {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.06) 0%, #FFFDF8 100%);
+  background-color: #FFFDF9;
+  background-image: 
+    linear-gradient(180deg, rgba(15, 23, 42, 0.09) 0%, rgba(255, 255, 255, 0.92) 100%),
+    url('/menuqr/generated/texture_midnight_slate.png');
+  background-size: auto, 320px 320px;
   border: 2px solid #0F172A;
-  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.15), 0 0 0 1px #FAB700;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.20), 0 0 0 1.5px #FAB700;
 }
