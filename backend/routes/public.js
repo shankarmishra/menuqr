@@ -1,14 +1,21 @@
 import { pool } from '../db.js';
 import { apiError, sendJson, readJson, getClientIp } from '../utils.js';
 import { resolveTenantAuthorization, requireEntitlement } from '../authorization.js';
+import { getCachedMenu, setCachedMenu, invalidateMenuCache } from '../redisClient.js';
+import { broadcastOrderEvent } from '../orderStream.js';
 
 const contactRateLimits = new Map();
 const publicMenuCache = new Map();
 const PUBLIC_MENU_CACHE_TTL_MS = 60 * 1000;
 
-export function invalidatePublicMenuCache(tenantId) {
+export async function invalidatePublicMenuCache(tenantId) {
   if (!tenantId) return;
   publicMenuCache.delete(tenantId);
+  try {
+    await invalidateMenuCache(tenantId);
+  } catch (err) {
+    console.warn('[redis] Failed async invalidation:', err.message);
+  }
 }
 
 export function clearAllPublicMenuCaches() {
@@ -16,9 +23,20 @@ export function clearAllPublicMenuCaches() {
 }
 
 export async function getFullPublicMenuData(tenantId) {
+  // Tier 1: In-process memory cache (0ms)
   const cached = publicMenuCache.get(tenantId);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.data;
+  }
+
+  // Tier 2: Distributed Upstash Redis cache (fast & persistent)
+  const redisCached = await getCachedMenu(tenantId);
+  if (redisCached) {
+    publicMenuCache.set(tenantId, {
+      data: redisCached,
+      expiresAt: Date.now() + PUBLIC_MENU_CACHE_TTL_MS,
+    });
+    return redisCached;
   }
 
   const authorization = await resolveTenantAuthorization({ id: null, tenantId });
@@ -188,6 +206,9 @@ export async function getFullPublicMenuData(tenantId) {
     data: result,
     expiresAt: Date.now() + PUBLIC_MENU_CACHE_TTL_MS,
   });
+
+  // Store in Upstash Redis (TTL: 24 hours)
+  await setCachedMenu(tenantId, result, 86400);
 
   return result;
 }
@@ -359,7 +380,17 @@ export default async function publicRoutes(request, response, url) {
       input.idempotencyKey ||
       ''
     ).trim();
-    const idempotencyKey = rawIdempotencyKey ? rawIdempotencyKey.slice(0, 128) : null;
+    let idempotencyKey = rawIdempotencyKey ? rawIdempotencyKey.slice(0, 128) : null;
+
+    if (!idempotencyKey) {
+      // Deterministic synthetic fingerprint for rapid double-tap deduplication (15-second sliding window)
+      const itemsFingerprint = Array.isArray(input.items) 
+        ? input.items.map(i => `${i.id}:${i.quantity}:${i.variantId || i.variant || ''}`).sort().join('|')
+        : '';
+      const windowId = Math.floor(Date.now() / 15000); // 15-second time bucket
+      const customerIdentifier = String(input.customerPhone || input.tableNumber || input.customerName || 'guest').slice(0, 50);
+      idempotencyKey = `auto-idem-${client.id}-${customerIdentifier}-${Buffer.from(itemsFingerprint).toString('base64url').slice(0, 32)}-${windowId}`;
+    }
 
     if (idempotencyKey) {
       const existingRes = await pool.query(`
@@ -675,6 +706,13 @@ export default async function publicRoutes(request, response, url) {
     }
 
     orderToReturn.total = parseFloat(orderToReturn.total);
+    if (statusCode === 201) {
+      try {
+        broadcastOrderEvent(client.id, 'new_order', orderToReturn);
+      } catch (broadcastErr) {
+        console.warn('[orderStream] Failed to broadcast new_order:', broadcastErr.message);
+      }
+    }
     sendJson(response, statusCode, orderToReturn);
     return true;
   }

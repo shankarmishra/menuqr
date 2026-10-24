@@ -6,11 +6,13 @@ import PhysicalQrSection from '../../components/marketing/PhysicalQrSection';
 import BuiltForTableSection from '../../components/marketing/BuiltForTableSection';
 import TemplateGallerySection from '../../components/marketing/TemplateGallerySection';
 import SameMenuDifferentPersonality from '../../components/marketing/template-gallery/SameMenuDifferentPersonality';
+import RoyalHeritageMenuSection from '../../components/marketing/RoyalHeritageMenuSection';
 import DashboardDemoSection from '../../components/marketing/DashboardDemoSection';
 import PremiumOrderingSection from '../../components/marketing/PremiumOrderingSection';
 import PlanComparisonSection from '../../components/marketing/PlanComparisonSection';
 import HowItWorksSection from '../../components/marketing/HowItWorksSection';
 import CustomerExperienceSection from '../../components/marketing/CustomerExperienceSection';
+import CharacterCarouselSection from '../../components/marketing/CharacterCarouselSection';
 import SpatialStudioMockup from '../../components/marketing/SpatialStudioMockup';
 import FaqSection from '../../components/marketing/FaqSection';
 import FinalCtaSection from '../../components/marketing/FinalCtaSection';
@@ -43,6 +45,8 @@ export default function PublicHomePage() {
         </section>
         <TemplateGallerySection />
         <SameMenuDifferentPersonality />
+        <RoyalHeritageMenuSection />
+        <CharacterCarouselSection />
         <DashboardDemoSection />
         <PremiumOrderingSection />
         <PlanComparisonSection />

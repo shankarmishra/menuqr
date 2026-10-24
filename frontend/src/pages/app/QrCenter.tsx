@@ -2,8 +2,9 @@ import { useEffect, useState, useRef } from 'react';
 import { Download, PackageCheck, QrCode, Printer, Send, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import QRCode from 'qrcode';
-import { toPng } from 'html-to-image';
+import { exportStickerToPng } from '../../utils/stickerExporter';
 import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerCard';
+import ThreeDPlacardStand from '../../components/sticker/ThreeDPlacardStand';
 import { type StickerThemeId } from '../../components/sticker/StickerTemplates';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { createPermanentQr, createStickerRequest, getProfile, getQr, getStickerRequests, getMenu, type AppProfile, type AppQrData, type StickerRequest } from './appStore';
@@ -18,6 +19,7 @@ export default function QrCenter() {
   const [saving, setSaving] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
   const selectedTheme: StickerThemeId = 'menusqr-marble-gold';
   const [qrImage, setQrImage] = useState<string>('');
 
@@ -111,14 +113,14 @@ export default function QrCenter() {
   const downloadPNG = async () => {
     if (!stickerRef.current) return;
     try {
-      const dataUrl = await toPng(stickerRef.current, { pixelRatio: 3, cacheBust: true });
-      const link = document.createElement('a');
       const name = qr?.restaurantName || profile?.businessName || 'restaurant';
-      link.download = `MenusQR_${name.replace(/[^a-z0-9]+/gi, '_')}_${selectedTheme}.png`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      const fileName = `MenusQR_${name.replace(/[^a-z0-9]+/gi, '_')}_${selectedTheme}.png`;
+      await exportStickerToPng(stickerRef.current, {
+        fileName,
+        pixelRatio: 3,
+        cacheBust: true,
+      });
+      showToast('success', 'High-res 300 DPI Standee PNG downloaded.');
     } catch {
       showToast('error', 'Could not download PNG.');
     }
@@ -181,13 +183,42 @@ export default function QrCenter() {
           {/* LEFT COLUMN: Full Physical QR Sticker Artwork Display */}
           <div className="lg:col-span-7 space-y-6">
             <div className="bg-[#1d2723] rounded-2xl border border-[#2a3832] overflow-hidden flex flex-col shadow-2xl">
-              <div className="p-5 border-b border-[#2a3832] flex items-center justify-between bg-[#151c19]">
+              <div className="p-4 sm:p-5 border-b border-[#2a3832] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#151c19]">
                 <div className="flex items-center gap-2 font-bold text-white text-sm">
                   <span className="bg-emerald-500/10 text-emerald-400 p-1.5 rounded-md border border-emerald-500/20"><QrCode size={16} /></span>
                   Active QR Stand Artwork
                 </div>
-                <div className="text-[10px] font-black tracking-widest text-[#D4AF37] uppercase border border-[#D4AF37]/30 px-2.5 py-1 rounded-full bg-[#D4AF37]/10">
-                  PERMANENT • ONE QR FOREVER
+                
+                {/* 2D vs 3D View Switcher */}
+                <div className="flex items-center gap-2">
+                  <div className="inline-flex bg-[#101614] p-1 rounded-xl border border-[#2a3832] text-xs shadow-inner">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('2d')}
+                      className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        viewMode === '2d'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'text-[#849a90] hover:text-white'
+                      }`}
+                    >
+                      <span>📄 2D Print Artwork</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('3d')}
+                      className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        viewMode === '3d'
+                          ? 'bg-gradient-to-r from-[#D4AF37] to-[#F3E5AB] text-[#121815] shadow-sm font-black'
+                          : 'text-[#849a90] hover:text-white'
+                      }`}
+                    >
+                      <span>✨ 3D Table Stand</span>
+                      <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-black/20 rounded font-black">360°</span>
+                    </button>
+                  </div>
+                  <div className="hidden md:block text-[10px] font-black tracking-widest text-[#D4AF37] uppercase border border-[#D4AF37]/30 px-2.5 py-1.5 rounded-full bg-[#D4AF37]/10">
+                    PERMANENT • ONE QR FOREVER
+                  </div>
                 </div>
               </div>
               
@@ -214,10 +245,38 @@ export default function QrCenter() {
                 </div>
               </div>
 
-              <div className="p-6 sm:p-8 flex flex-col items-center justify-center text-center bg-gradient-to-b from-[#17211d] to-[#0e1311]">
+              <div className="p-4 sm:p-6 flex flex-col items-center justify-center text-center bg-gradient-to-b from-[#17211d] to-[#0e1311]">
                 
-                {/* --- FULL PHYSICAL LUXURY QR STICKER CARD --- */}
-                <div className="scale-90 sm:scale-95 transform-gpu transition-all">
+                {viewMode === '3d' ? (
+                  /* --- 3D INTERACTIVE TABLE PLACARD STAND --- */
+                  <div className="w-full">
+                    <ThreeDPlacardStand
+                      restaurantName={restaurantName}
+                      category={profile?.cuisine || 'FINE DINING & CULINARY EXCELLENCE'}
+                      tagline={profile?.tagline || ''}
+                      menuUrl={menuUrl}
+                      qrImage={qrImage}
+                      themeId={selectedTheme}
+                    />
+                  </div>
+                ) : (
+                  /* --- 2D PHYSICAL LUXURY QR STICKER CARD --- */
+                  <div className="scale-90 sm:scale-95 transform-gpu transition-all">
+                    <RoyalWalnutStickerCard
+                      themeId={selectedTheme}
+                      restaurantName={restaurantName}
+                      category={profile?.cuisine || 'FINE DINING & CULINARY EXCELLENCE'}
+                      tagline={profile?.tagline || ''}
+                      menuUrl={menuUrl}
+                      qrImage={qrImage}
+                      showStatusBadge={false}
+                      showDownloadButtons={false}
+                    />
+                  </div>
+                )}
+
+                {/* Always-mounted Hidden 2D Card for 300 DPI Export toPng */}
+                <div className="fixed -left-[9999px] top-0 pointer-events-none opacity-0" aria-hidden="true">
                   <RoyalWalnutStickerCard
                     themeId={selectedTheme}
                     stickerRef={stickerRef}

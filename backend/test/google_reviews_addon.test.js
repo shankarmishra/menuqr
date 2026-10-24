@@ -602,7 +602,7 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
         VALUES ($1, $2, NOW())
       `, [tenantId, testReviewUrl]);
 
-      invalidatePublicMenuCache(tenantId);
+      await invalidatePublicMenuCache(tenantId);
 
       const data = await getFullPublicMenuData(tenantId);
       assert.ok(data.googleReviews);
@@ -618,7 +618,7 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
         WHERE tenant_id = $1 AND addon_id = 'google_reviews'
       `, [tenantId]);
 
-      invalidatePublicMenuCache(tenantId);
+      await invalidatePublicMenuCache(tenantId);
 
       const data = await getFullPublicMenuData(tenantId);
       assert.ok(data.googleReviews);
@@ -823,7 +823,7 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
         'UPDATE tenant_addon_entitlements SET expires_at = NOW() - INTERVAL \'1 hour\' WHERE tenant_id = $1',
         [createdTenantId]
       );
-      invalidatePublicMenuCache(createdTenantId);
+      await invalidatePublicMenuCache(createdTenantId);
 
       let menuData = await getFullPublicMenuData(createdTenantId);
       assert.equal(menuData.googleReviews.enabled, false);
@@ -838,7 +838,7 @@ test('Google Reviews Paid Annual Add-on Full Specification Test Suite', async (s
         'DELETE FROM tenant_google_reviews WHERE tenant_id = $1',
         [createdTenantId]
       );
-      invalidatePublicMenuCache(createdTenantId);
+      await invalidatePublicMenuCache(createdTenantId);
 
       menuData = await getFullPublicMenuData(createdTenantId);
       assert.equal(menuData.googleReviews.enabled, false);

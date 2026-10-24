@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { MapPin, UtensilsCrossed, Coffee, ConciergeBell, ShoppingBag, Sun } from 'lucide-react';
+import { MapPin, UtensilsCrossed, Coffee, ConciergeBell, ShoppingBag } from 'lucide-react';
 
 const ENVIRONMENTS = [
   {
@@ -58,20 +58,6 @@ const ENVIRONMENTS = [
     flexDir: 'md:flex-row-reverse',
     marginTop: 'mt-16 md:-mt-24',
     centerText: false
-  },
-  {
-    id: 'outdoor',
-    title: 'Outdoor Patio',
-    category: 'Al Fresco',
-    description: 'Weather-resistant metallic plaques enduring rain, shine, and spills.',
-    icon: <Sun className="w-5 h-5" />,
-    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1200&auto=format&fit=crop',
-    aspect: 'aspect-[16/9] md:aspect-[21/9]',
-    width: 'w-full',
-    textWidth: 'w-full md:w-[60%] mx-auto',
-    flexDir: 'flex-col',
-    marginTop: 'mt-16 md:mt-24',
-    centerText: true
   }
 ];
 

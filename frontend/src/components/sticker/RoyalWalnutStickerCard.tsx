@@ -1114,16 +1114,16 @@ export default function RoyalWalnutStickerCard({
           <div className="relative z-10 flex flex-col items-center pt-1 text-center w-full">
             {/* Restaurant Name in Deep Ebony-Bronze Serif (Ultra High Contrast on Light Background) */}
             <h2
-              className={`font-black tracking-tight leading-snug w-full max-w-[340px] px-2 break-words text-center uppercase ${
-                restaurantName.length > 32
-                  ? 'text-[13px] sm:text-sm'
+              className={`font-black tracking-tight leading-snug w-full max-w-[350px] px-2 break-words text-center uppercase h-auto min-h-0 ${
+                restaurantName.length > 30
+                  ? 'text-xs sm:text-[13px]'
                   : restaurantName.length > 24
-                  ? 'text-sm sm:text-base'
+                  ? 'text-[13px] sm:text-sm'
                   : restaurantName.length > 18
-                  ? 'text-base sm:text-lg'
+                  ? 'text-sm sm:text-[15.5px]'
                   : restaurantName.length > 11
-                  ? 'text-lg sm:text-xl'
-                  : 'text-xl sm:text-2xl'
+                  ? 'text-base sm:text-lg'
+                  : 'text-lg sm:text-xl'
               }`}
               style={{
                 fontFamily: "'Playfair Display', 'Cinzel', Georgia, serif",

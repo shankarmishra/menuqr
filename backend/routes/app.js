@@ -8,6 +8,8 @@ import { invalidatePublicMenuCache } from './public.js';
 import { generateAiMenuDesign, isGeminiAvailable } from '../aiDesignService.js';
 import { extractMenuFromPdf, refinePdfDesign } from '../pdfMenuService.js';
 import { validateDesignSpecification } from '../designSpecValidator.js';
+import { registerOrderClient, broadcastOrderEvent } from '../orderStream.js';
+import { optimizeAndSaveImage } from '../imageOptimizer.js';
 
 function inputText(value, maxLength = 255) {
   if (value === undefined || value === null) return '';
@@ -67,6 +69,22 @@ export default async function appRoutes(request, response, url) {
   
   const user = await enforceTenant(request);
   const authorization = await resolveTenantAuthorization(user);
+
+  // Image Upload & Sharp WebP Optimization Pipeline
+  if (request.method === 'POST' && url.pathname === '/api/app/upload-image') {
+    const input = await readJson(request);
+    if (!input || !input.image) {
+      throw apiError(400, 'Image data is required (base64 string).');
+    }
+    const result = await optimizeAndSaveImage(
+      input.image, 
+      user.tenantId, 
+      input.category || 'dishes',
+      { maxWidth: input.maxWidth ? Number(input.maxWidth) : 1200, quality: 80 }
+    );
+    sendJson(response, 201, { success: true, ...result });
+    return true;
+  }
 
   if (request.method === 'POST' && url.pathname === '/api/app/onboarding/save') {
     requireEntitlement(authorization, 'initial_menu_setup');
@@ -1437,6 +1455,13 @@ export default async function appRoutes(request, response, url) {
     }
   }
 
+  // Customer Orders Real-Time SSE Stream (Zero Polling)
+  if (request.method === 'GET' && url.pathname === '/api/app/orders/stream') {
+    requireEntitlement(authorization, 'reception_orders', 'Access to customer reception orders requires an active Premium plan.');
+    registerOrderClient(user.tenantId, response, request);
+    return true;
+  }
+
   // Customer Orders (Reception Dashboard)
   if (request.method === 'GET' && url.pathname === '/api/app/orders') {
     requireEntitlement(authorization, 'reception_orders', 'Access to customer reception orders requires an active Premium plan.');
@@ -1556,6 +1581,11 @@ export default async function appRoutes(request, response, url) {
     
     const updated = res.rows[0];
     updated.total = parseFloat(updated.total);
+    try {
+      broadcastOrderEvent(user.tenantId, 'order_status_updated', updated);
+    } catch (broadcastErr) {
+      console.warn('[orderStream] Failed to broadcast status update:', broadcastErr.message);
+    }
     sendJson(response, 200, updated);
     return true;
   }
@@ -1598,6 +1628,11 @@ export default async function appRoutes(request, response, url) {
     if (!res.rows[0]) throw apiError(404, 'Order not found.');
     const updated = res.rows[0];
     updated.total = parseFloat(updated.total);
+    try {
+      broadcastOrderEvent(user.tenantId, 'order_time_updated', updated);
+    } catch (broadcastErr) {
+      console.warn('[orderStream] Failed to broadcast time update:', broadcastErr.message);
+    }
     sendJson(response, 200, updated);
     return true;
   }

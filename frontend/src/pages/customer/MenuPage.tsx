@@ -245,6 +245,7 @@ export default function MenuPage() {
   };
 
   const placeOrder = async () => {
+    if (isSubmitting) return;
     if (cart.length === 0) {
       showToast('info', 'Add at least one item to your order.');
       return;

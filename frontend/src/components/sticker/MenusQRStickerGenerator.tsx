@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Copy, ExternalLink, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
-import { toPng } from 'html-to-image';
+import { exportStickerToPng } from '../../utils/stickerExporter';
 import { STICKER_TEMPLATES } from './StickerTemplates';
 import RoyalWalnutStickerCard, { type StickerThemeId } from './RoyalWalnutStickerCard';
 
@@ -33,11 +33,11 @@ export default function MenusQRStickerGenerator({ client, menuUrl, qrImage }: Pr
   const downloadStickerPNG = async () => {
     if (!stickerRef.current) return;
     try {
-      const dataUrl = await toPng(stickerRef.current, { cacheBust: true, quality: 1, pixelRatio: 3 });
-      const link = document.createElement('a');
-      link.download = `${client?.menuSlug || 'menu'}-sticker.png`;
-      link.href = dataUrl;
-      link.click();
+      await exportStickerToPng(stickerRef.current, {
+        fileName: `${client?.menuSlug || 'menu'}-sticker.png`,
+        cacheBust: true,
+        pixelRatio: 3,
+      });
     } catch (err) {
       console.error('Failed to download sticker PNG:', err);
     }

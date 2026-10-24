@@ -99,10 +99,16 @@ export default function Orders() {
   const [timeAdjustOrder, setTimeAdjustOrder] = useState<CustomerOrder | null>(null);
   const [adjustMinutes, setAdjustMinutes] = useState<number>(30);
   const [isUpdatingTime, setIsUpdatingTime] = useState(false);
+  const [isSseConnected, setIsSseConnected] = useState(false);
   
   const knownOrderIds = useRef<Set<string>>(new Set());
   const initialLoadDone = useRef(false);
+  const audioEnabledRef = useRef(audioEnabled);
   const showToast = useToast();
+
+  useEffect(() => {
+    audioEnabledRef.current = audioEnabled;
+  }, [audioEnabled]);
 
   const toggleAudio = () => {
     const next = !audioEnabled;
@@ -120,7 +126,7 @@ export default function Orders() {
       const data = await getOrders();
       
       // Check for newly arrived orders to ring notification bell
-      if (initialLoadDone.current && audioEnabled) {
+      if (initialLoadDone.current && audioEnabledRef.current) {
         const hasBrandNew = data.some((o: CustomerOrder) => o.status === 'NEW' && !knownOrderIds.current.has(o.id));
         if (hasBrandNew) {
           playNewOrderSound();
@@ -140,20 +146,101 @@ export default function Orders() {
     }
   };
 
+  // Real-Time Server-Sent Events (SSE) order stream (Zero Polling)
   useEffect(() => {
     let isMounted = true;
     fetchOrders();
 
-    // Auto-refresh every 6 seconds for real-time order sync
+    let eventSource: EventSource | null = null;
+    let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const connectSSE = () => {
+      if (!isMounted) return;
+      try {
+        eventSource = new EventSource('/api/app/orders/stream', { withCredentials: true });
+
+        eventSource.onopen = () => {
+          if (isMounted) setIsSseConnected(true);
+        };
+
+        eventSource.addEventListener('connected', () => {
+          if (isMounted) setIsSseConnected(true);
+        });
+
+        eventSource.addEventListener('new_order', (e: MessageEvent) => {
+          if (!isMounted) return;
+          try {
+            const newOrder: CustomerOrder = JSON.parse(e.data);
+            if (!knownOrderIds.current.has(newOrder.id)) {
+              knownOrderIds.current.add(newOrder.id);
+              setOrders(prev => [newOrder, ...prev.filter(o => o.id !== newOrder.id)]);
+              if (audioEnabledRef.current) {
+                playNewOrderSound();
+              }
+              const label = newOrder.tableNumber ? `Table ${newOrder.tableNumber}` : 'Online Delivery';
+              showToast('info', `🔔 New Order #${newOrder.id.substring(0, 6)} (${label})`);
+            }
+          } catch (err) {
+            console.warn('[SSE] Failed to parse new_order payload:', err);
+          }
+        });
+
+        eventSource.addEventListener('order_status_updated', (e: MessageEvent) => {
+          if (!isMounted) return;
+          try {
+            const updated: CustomerOrder = JSON.parse(e.data);
+            setOrders(prev => prev.map(o => o.id === updated.id ? { ...o, ...updated } : o));
+          } catch (err) {
+            console.warn('[SSE] Failed to parse order_status_updated payload:', err);
+          }
+        });
+
+        eventSource.addEventListener('order_time_updated', (e: MessageEvent) => {
+          if (!isMounted) return;
+          try {
+            const updated: CustomerOrder = JSON.parse(e.data);
+            setOrders(prev => prev.map(o => o.id === updated.id ? { ...o, ...updated } : o));
+          } catch (err) {
+            console.warn('[SSE] Failed to parse order_time_updated payload:', err);
+          }
+        });
+
+        eventSource.onerror = () => {
+          if (isMounted) setIsSseConnected(false);
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+          if (isMounted) {
+            reconnectTimeout = setTimeout(connectSSE, 5000);
+          }
+        };
+      } catch (err) {
+        if (isMounted) setIsSseConnected(false);
+        console.warn('[SSE] Connection error:', err);
+      }
+    };
+
+    connectSSE();
+
+    // Relaxed background sync: every 60s as a fallback safety net (instead of aggressive 6s polling)
     const interval = setInterval(() => {
       if (isMounted) fetchOrders(true);
-    }, 6000);
+    }, 60000);
+
+    const onFocus = () => {
+      if (isMounted) fetchOrders(true);
+    };
+    window.addEventListener('focus', onFocus);
 
     return () => {
       isMounted = false;
+      if (eventSource) eventSource.close();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
       clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
     };
-  }, [audioEnabled]);
+  }, []);
 
   const handleStatusUpdate = async (id: string, newStatus: CustomerOrder['status'], reason?: string, estimatedMinutes?: number) => {
     setUpdatingId(id);
@@ -580,13 +667,21 @@ export default function Orders() {
             <span>Sound Alert: {audioEnabled ? 'ON' : 'OFF'}</span>
           </button>
 
-          {/* Live Sync Badge */}
-          <div className="flex items-center gap-2 text-xs font-bold text-[#e8783c] bg-[#e8783c]/10 px-3.5 py-2 rounded-xl border border-[#e8783c]/20 shadow-inner">
+          {/* Live Sync / Realtime Badge */}
+          <div className={`flex items-center gap-2 text-xs font-bold px-3.5 py-2 rounded-xl border shadow-inner transition-colors ${
+            isSseConnected 
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+              : 'bg-[#e8783c]/10 border-[#e8783c]/20 text-[#e8783c]'
+          }`}>
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#e8783c] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#e8783c]"></span>
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                isSseConnected ? 'bg-emerald-400' : 'bg-[#e8783c]'
+              }`}></span>
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                isSseConnected ? 'bg-emerald-400' : 'bg-[#e8783c]'
+              }`}></span>
             </span>
-            LIVE SYNC
+            {isSseConnected ? 'LIVE REALTIME' : 'POLLING SYNC'}
           </div>
         </div>
       </div>

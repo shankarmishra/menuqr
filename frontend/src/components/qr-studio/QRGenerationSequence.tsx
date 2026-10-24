@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
-import { toPng } from 'html-to-image';
+import { exportStickerToPng } from '../../utils/stickerExporter';
 import RoyalWalnutStickerCard from '../sticker/RoyalWalnutStickerCard';
 import './QRGenerationSequence.css';
 
@@ -105,11 +105,11 @@ export default function QRGenerationSequence({
   const downloadPNG = async () => {
     if (!stickerRef.current) return;
     try {
-      const dataUrl = await toPng(stickerRef.current, { pixelRatio: 3, cacheBust: true });
-      const link = document.createElement('a');
-      link.download = `MenusQR_${restaurantName.replace(/[^a-z0-9]+/gi, '_')}_Sticker.png`;
-      link.href = dataUrl;
-      link.click();
+      await exportStickerToPng(stickerRef.current, {
+        fileName: `MenusQR_${restaurantName.replace(/[^a-z0-9]+/gi, '_')}_Sticker.png`,
+        pixelRatio: 3,
+        cacheBust: true,
+      });
     } catch {
       onError?.();
     }
