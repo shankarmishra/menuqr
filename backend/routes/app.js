@@ -1517,6 +1517,7 @@ export default async function appRoutes(request, response, url) {
 
       if (r.sessionId && sessionMap.has(r.sessionId)) {
         const sessionOrders = sessionMap.get(r.sessionId);
+        const allSessionTotal = sessionOrders.reduce((sum, so) => sum + parseFloat(so.total || 0), 0);
         const previousOrders = sessionOrders.filter(
           so => so.id !== r.id && new Date(so.time).getTime() < new Date(r.time).getTime()
         );
@@ -1524,8 +1525,8 @@ export default async function appRoutes(request, response, url) {
           if (Array.isArray(po.items)) {
             previousRoundItems.push(...po.items.map(it => ({ ...it, roundNumber: po.roundNumber, orderId: po.id })));
           }
-          sessionTotal += parseFloat(po.total || 0);
         }
+        sessionTotal = allSessionTotal;
       }
 
       return {

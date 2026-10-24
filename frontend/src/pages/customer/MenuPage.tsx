@@ -260,6 +260,16 @@ export default function MenuPage() {
         setActiveOrder(latest);
         if (slug) {
           sessionStorage.setItem(`active_order_${slug}`, JSON.stringify(latest));
+          // Sync live status with table dining session
+          setDiningSession(prev => {
+            if (!prev) return null;
+            const updated = prev.orders.map(o => o.id === latest.id ? { ...o, status: latest.status } : o);
+            const nextSession = { ...prev, orders: updated };
+            try {
+              localStorage.setItem(`menuqr_dining_session_${slug}`, JSON.stringify(nextSession));
+            } catch {}
+            return nextSession;
+          });
         }
       } catch {
         // Silently retry
@@ -518,6 +528,20 @@ export default function MenuPage() {
   const cartTotalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartTotalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  const getFriendlyStatus = (status: string) => {
+    switch (status) {
+      case 'NEW': return { label: 'Received • Waiting for Kitchen', color: 'bg-amber-100 text-amber-900 border-amber-200' };
+      case 'ACCEPTED': return { label: 'Accepted by Kitchen', color: 'bg-blue-100 text-blue-900 border-blue-200' };
+      case 'PREPARING':
+      case 'IN_PROGRESS': return { label: 'Cooking on Flame 🔥', color: 'bg-orange-100 text-orange-900 border-orange-200' };
+      case 'READY': return { label: 'Plated & Ready to Serve', color: 'bg-purple-100 text-purple-900 border-purple-200' };
+      case 'DELIVERED':
+      case 'COMPLETED': return { label: 'Served at Table ✅', color: 'bg-emerald-100 text-emerald-900 border-emerald-200' };
+      case 'CANCELLED': return { label: 'Declined', color: 'bg-rose-100 text-rose-900 border-rose-200' };
+      default: return { label: status, color: 'bg-slate-100 text-slate-800 border-slate-200' };
+    }
+  };
+
   // Stepper helper for active order tracking
   const getStatusStep = (status: CustomerOrder['status']) => {
     switch (status) {
@@ -704,7 +728,7 @@ export default function MenuPage() {
         <button
           type="button"
           onClick={() => setIsSessionModalOpen(true)}
-          className="table-session-pill"
+          className={`table-session-pill ${cart.length > 0 ? 'with-cart-open' : ''}`}
           aria-label="View active table dining session"
         >
           <span className="table-session-dot" />
@@ -1134,7 +1158,14 @@ export default function MenuPage() {
                         </div>
                         <div className="text-right">
                           <span className="font-extrabold text-slate-800 text-sm">₹{ord.total}</span>
-                          <span className="text-[10px] text-emerald-600 font-bold block uppercase">{ord.status}</span>
+                          {(() => {
+                            const statusInfo = getFriendlyStatus(ord.status);
+                            return (
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusInfo.color}`}>
+                                {statusInfo.label}
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
 

@@ -722,6 +722,33 @@ export default async function publicRoutes(request, response, url) {
     }
 
     orderToReturn.total = parseFloat(orderToReturn.total);
+
+    // Enrich order with previous round items and running session total for instant real-time kitchen clarity
+    let previousRoundItems = [];
+    let sessionTotal = orderToReturn.total;
+    if (orderToReturn.sessionId) {
+      try {
+        const prevRes = await pool.query(`
+          SELECT id, items, total, COALESCE(round_number, 1) as "roundNumber"
+          FROM customer_orders
+          WHERE tenant_id = $1 AND session_id = $2 AND id != $3
+          ORDER BY created_at ASC
+        `, [client.id, orderToReturn.sessionId, orderToReturn.id]);
+
+        for (const po of prevRes.rows) {
+          const parsedItems = typeof po.items === 'string' ? JSON.parse(po.items) : (po.items || []);
+          if (Array.isArray(parsedItems)) {
+            previousRoundItems.push(...parsedItems.map(it => ({ ...it, roundNumber: po.roundNumber, orderId: po.id })));
+          }
+          sessionTotal += parseFloat(po.total || 0);
+        }
+      } catch (prevErr) {
+        console.warn('[public.js] Failed to query previous session orders:', prevErr.message);
+      }
+    }
+    orderToReturn.previousRoundItems = previousRoundItems;
+    orderToReturn.sessionTotal = Math.round(sessionTotal * 100) / 100;
+
     if (statusCode === 201) {
       try {
         broadcastOrderEvent(client.id, 'new_order', orderToReturn);
