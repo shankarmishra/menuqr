@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { exportStickerToPng } from '../../utils/stickerExporter';
 import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerCard';
-import ThreeDPlacardStand from '../../components/sticker/ThreeDPlacardStand';
 import { type StickerThemeId } from '../../components/sticker/StickerTemplates';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { createPermanentQr, createStickerRequest, getProfile, getQr, getStickerRequests, getMenu, type AppProfile, type AppQrData, type StickerRequest } from './appStore';
@@ -19,7 +18,6 @@ export default function QrCenter() {
   const [saving, setSaving] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
-  const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
   const selectedTheme: StickerThemeId = 'menusqr-marble-gold';
   const [qrImage, setQrImage] = useState<string>('');
 
@@ -189,34 +187,8 @@ export default function QrCenter() {
                   Active QR Stand Artwork
                 </div>
                 
-                {/* 2D vs 3D View Switcher */}
                 <div className="flex items-center gap-2">
-                  <div className="inline-flex bg-[#101614] p-1 rounded-xl border border-[#2a3832] text-xs shadow-inner">
-                    <button
-                      type="button"
-                      onClick={() => setViewMode('2d')}
-                      className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                        viewMode === '2d'
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : 'text-[#849a90] hover:text-white'
-                      }`}
-                    >
-                      <span>📄 2D Print Artwork</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setViewMode('3d')}
-                      className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                        viewMode === '3d'
-                          ? 'bg-gradient-to-r from-[#D4AF37] to-[#F3E5AB] text-[#121815] shadow-sm font-black'
-                          : 'text-[#849a90] hover:text-white'
-                      }`}
-                    >
-                      <span>✨ 3D Table Stand</span>
-                      <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-black/20 rounded font-black">360°</span>
-                    </button>
-                  </div>
-                  <div className="hidden md:block text-[10px] font-black tracking-widest text-[#D4AF37] uppercase border border-[#D4AF37]/30 px-2.5 py-1.5 rounded-full bg-[#D4AF37]/10">
+                  <div className="text-[10px] font-black tracking-widest text-[#D4AF37] uppercase border border-[#D4AF37]/30 px-2.5 py-1.5 rounded-full bg-[#D4AF37]/10">
                     PERMANENT • ONE QR FOREVER
                   </div>
                 </div>
@@ -246,37 +218,8 @@ export default function QrCenter() {
               </div>
 
               <div className="p-4 sm:p-6 flex flex-col items-center justify-center text-center bg-gradient-to-b from-[#17211d] to-[#0e1311]">
-                
-                {viewMode === '3d' ? (
-                  /* --- 3D INTERACTIVE TABLE PLACARD STAND --- */
-                  <div className="w-full">
-                    <ThreeDPlacardStand
-                      restaurantName={restaurantName}
-                      category={profile?.cuisine || 'FINE DINING & CULINARY EXCELLENCE'}
-                      tagline={profile?.tagline || ''}
-                      menuUrl={menuUrl}
-                      qrImage={qrImage}
-                      themeId={selectedTheme}
-                    />
-                  </div>
-                ) : (
-                  /* --- 2D PHYSICAL LUXURY QR STICKER CARD --- */
-                  <div className="scale-90 sm:scale-95 transform-gpu transition-all">
-                    <RoyalWalnutStickerCard
-                      themeId={selectedTheme}
-                      restaurantName={restaurantName}
-                      category={profile?.cuisine || 'FINE DINING & CULINARY EXCELLENCE'}
-                      tagline={profile?.tagline || ''}
-                      menuUrl={menuUrl}
-                      qrImage={qrImage}
-                      showStatusBadge={false}
-                      showDownloadButtons={false}
-                    />
-                  </div>
-                )}
-
-                {/* Always-mounted Hidden 2D Card for 300 DPI Export toPng */}
-                <div className="fixed -left-[9999px] top-0 pointer-events-none opacity-0" aria-hidden="true">
+                {/* Physical Luxury QR Sticker Artwork Display */}
+                <div className="scale-90 sm:scale-95 transform-gpu transition-all">
                   <RoyalWalnutStickerCard
                     themeId={selectedTheme}
                     stickerRef={stickerRef}
