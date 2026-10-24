@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { 
   Clock, 
   Check, 
@@ -18,7 +18,10 @@ import {
   AlertTriangle,
   Search,
   ArrowUpDown,
-  Printer
+  Printer,
+  LayoutGrid,
+  Kanban,
+  BellRing
 } from 'lucide-react';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { getOrders, updateOrderStatus, updateOrderEstimatedTime } from './appStore';
@@ -107,6 +110,9 @@ export default function Orders() {
   const [isUpdatingTime, setIsUpdatingTime] = useState(false);
   const [isSseConnected, setIsSseConnected] = useState(false);
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [viewMode, setViewMode] = useState<'KANBAN' | 'TABLE_MATRIX'>('KANBAN');
+  const [buzzerSnoozed, setBuzzerSnoozed] = useState(false);
+  const [selectedTableModal, setSelectedTableModal] = useState<string | null>(null);
 
   const toggleItemCheck = (orderId: string, itemIdx: number) => {
     const key = `${orderId}-${itemIdx}`;
@@ -192,6 +198,80 @@ export default function Orders() {
     printWindow.document.write(html);
     printWindow.document.close();
   };
+
+  const printTableSummary = (tableNumber: string, tableOrders: CustomerOrder[], totalBill: number) => {
+    const printWindow = window.open('', '_blank', 'width=380,height=650');
+    if (!printWindow) return;
+
+    const dateFormatted = new Date().toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeFormatted = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>TABLE #${tableNumber} - Running Bill / KOT</title>
+          <style>
+            @page { size: 80mm auto; margin: 3mm; }
+            body { font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.35; color: #000; margin: 0; padding: 10px; }
+            .center { text-align: center; }
+            .bold { font-weight: 900; }
+            .dashed { border-bottom: 1.5px dashed #000; padding-bottom: 6px; margin-bottom: 8px; }
+            .dashed-top { border-top: 1.5px dashed #000; padding-top: 6px; margin-top: 8px; }
+            .table-hero { font-size: 26px; font-weight: 900; letter-spacing: 1px; }
+            .item-row { display: flex; justify-content: space-between; font-size: 13px; margin: 4px 0; }
+            .qty { font-size: 14px; font-weight: 900; width: 32px; }
+            .item-name { flex: 1; font-weight: bold; }
+            .item-price { font-weight: bold; text-align: right; width: 60px; }
+            .total-row { display: flex; justify-content: space-between; font-size: 18px; font-weight: 900; margin-top: 8px; }
+          </style>
+        </head>
+        <body>
+          <div class="center dashed">
+            <div class="table-hero">TABLE ${tableNumber}</div>
+            <div class="bold">CONSOLIDATED TABLE BILL</div>
+            <div style="font-size:11px; margin-top: 4px;">${dateFormatted} • ${timeFormatted}</div>
+          </div>
+          <div style="margin-bottom: 6px; font-size: 11px; font-weight: bold;">
+            TOTAL ROUNDS ORDERED: ${tableOrders.length}
+          </div>
+          ${tableOrders.map((ord, oIdx) => `
+            <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dotted #888;">
+              <div style="font-size: 11px; font-weight: bold; color: #333;">
+                ROUND ${ord.roundNumber || (oIdx + 1)} (#${ord.id.substring(0, 6)}) - ${new Date(ord.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
+              ${ord.items.map(it => `
+                <div class="item-row">
+                  <span class="qty">${it.quantity}x</span>
+                  <span class="item-name">${it.name} ${it.variant ? `(${it.variant})` : ''}</span>
+                  <span class="item-price">₹${((it.price || 0) + (it.addons ? it.addons.reduce((s, a) => s + (a.price || 0), 0) : 0)) * it.quantity}</span>
+                </div>
+              `).join('')}
+            </div>
+          `).join('')}
+          <div class="dashed-top">
+            <div class="total-row">
+              <span>TABLE TOTAL:</span>
+              <span>₹${totalBill}</span>
+            </div>
+          </div>
+          <div class="center dashed-top" style="font-size: 10px; margin-top: 12px;">
+            MenusQR Dining System • Thank you!
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
   
   const knownOrderIds = useRef<Set<string>>(new Set());
   const initialLoadDone = useRef(false);
@@ -212,6 +292,28 @@ export default function Orders() {
     }
     if (next) playNewOrderSound();
   };
+
+  // Repeating Audio Buzzer for Unaccepted NEW orders in Kitchen
+  useEffect(() => {
+    const unacceptedCount = orders.filter(o => o.status === 'NEW').length;
+    if (unacceptedCount === 0 || buzzerSnoozed || !audioEnabled) return;
+
+    const interval = setInterval(() => {
+      if (audioEnabledRef.current && !buzzerSnoozed) {
+        playNewOrderSound();
+      }
+    }, 25000);
+
+    return () => clearInterval(interval);
+  }, [orders, buzzerSnoozed, audioEnabled]);
+
+  // Reset snooze when all new orders are accepted
+  useEffect(() => {
+    const unacceptedCount = orders.filter(o => o.status === 'NEW').length;
+    if (unacceptedCount === 0 && buzzerSnoozed) {
+      setBuzzerSnoozed(false);
+    }
+  }, [orders, buzzerSnoozed]);
 
   const fetchOrders = async (silent = false) => {
     try {
@@ -409,6 +511,181 @@ export default function Orders() {
 
   const dineInCount = orders.filter(o => o.orderType === 'DINE_IN').length;
   const deliveryCount = orders.filter(o => o.orderType === 'DELIVERY').length;
+  const unacceptedOrders = orders.filter(o => o.status === 'NEW');
+
+  // Aggregated Table Groups for Dine-In Table Matrix View
+  const tableGroups = useMemo(() => {
+    const map: Record<string, CustomerOrder[]> = {};
+    const dineInOrders = orders.filter(o => o.orderType === 'DINE_IN' && o.tableNumber && o.status !== 'CANCELLED');
+    
+    dineInOrders.forEach(ord => {
+      const tableKey = String(ord.tableNumber).trim();
+      if (!map[tableKey]) map[tableKey] = [];
+      map[tableKey].push(ord);
+    });
+
+    return Object.keys(map).map(tableKey => {
+      const tblOrders = map[tableKey].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+      
+      const latestOrderWithSession = [...tblOrders].reverse().find(o => o.sessionTotal && o.sessionTotal > 0);
+      const totalBill = latestOrderWithSession?.sessionTotal ?? tblOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+      
+      const hasNewOrder = tblOrders.some(o => o.status === 'NEW');
+      const hasCookingOrder = tblOrders.some(o => ['ACCEPTED', 'PREPARING', 'IN_PROGRESS'].includes(o.status));
+      const allReady = tblOrders.every(o => o.status === 'READY');
+      const allDone = tblOrders.every(o => ['COMPLETED', 'DELIVERED'].includes(o.status));
+
+      const latestStatus = tblOrders[tblOrders.length - 1].status;
+      const seatedTime = tblOrders[0].time;
+      const itemCount = tblOrders.reduce((sum, o) => sum + (o.items ? o.items.reduce((s, it) => s + it.quantity, 0) : 0), 0);
+
+      return {
+        tableNumber: tableKey,
+        orders: tblOrders,
+        totalBill,
+        latestStatus,
+        hasNewOrder,
+        hasCookingOrder,
+        allReady,
+        allDone,
+        seatedTime,
+        itemCount
+      };
+    }).sort((a, b) => {
+      if (a.hasNewOrder && !b.hasNewOrder) return -1;
+      if (!a.hasNewOrder && b.hasNewOrder) return 1;
+      const numA = parseInt(a.tableNumber, 10);
+      const numB = parseInt(b.tableNumber, 10);
+      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+      return a.tableNumber.localeCompare(b.tableNumber);
+    });
+  }, [orders]);
+
+  const currentModalGroup = selectedTableModal ? tableGroups.find(g => g.tableNumber === selectedTableModal) : null;
+
+  const TableMatrixView = () => {
+    if (tableGroups.length === 0) {
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-[#2a3832] rounded-3xl p-12 text-center bg-[#151c19]/50 min-h-[400px]">
+          <div className="w-16 h-16 rounded-2xl bg-[#1d2723] flex items-center justify-center text-[#849a90] mb-4 border border-[#2a3832]">
+            <UtensilsCrossed size={32} />
+          </div>
+          <h3 className="text-lg font-bold text-white mb-1">No Active Dine-In Tables</h3>
+          <p className="text-xs text-[#849a90] max-w-sm">
+            When guests sit at a table and scan their table QR stand, their table will light up here with live status, round-by-round orders, and cumulative billing.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto custom-scrollbar pb-6 flex-1">
+        {tableGroups.map(group => {
+          const seatedMins = Math.max(1, Math.round((Date.now() - new Date(group.seatedTime).getTime()) / 60000));
+          return (
+            <div 
+              key={group.tableNumber}
+              className={`rounded-2xl p-5 border flex flex-col justify-between gap-4 transition-all ${
+                group.hasNewOrder 
+                  ? 'bg-gradient-to-b from-amber-950/30 to-[#151c19] border-[#e8783c] ring-2 ring-[#e8783c]/30 shadow-xl shadow-[#e8783c]/10' 
+                  : group.hasCookingOrder
+                  ? 'bg-[#151c19] border-blue-500/40 hover:border-blue-400'
+                  : group.allReady
+                  ? 'bg-[#151c19] border-purple-500/40 hover:border-purple-400'
+                  : 'bg-[#151c19] border-[#2a3832] hover:border-[#3a4d44]'
+              }`}
+            >
+              {/* Table Card Header */}
+              <div>
+                <div className="flex items-center justify-between border-b border-[#2a3832] pb-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-black text-white font-serif tracking-tight">
+                      TABLE {group.tableNumber}
+                    </span>
+                    <span className="text-[10px] font-mono text-[#849a90] bg-[#1d2723] px-2 py-0.5 rounded border border-[#2a3832]">
+                      ⏱️ {seatedMins}m
+                    </span>
+                  </div>
+
+                  {group.hasNewOrder ? (
+                    <span className="px-2.5 py-1 rounded-full bg-[#e8783c] text-white text-[10px] font-black uppercase tracking-wider animate-bounce">
+                      NEW ORDER
+                    </span>
+                  ) : group.hasCookingOrder ? (
+                    <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold">
+                      COOKING
+                    </span>
+                  ) : group.allReady ? (
+                    <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-bold">
+                      READY TO SERVE
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">
+                      SERVED
+                    </span>
+                  )}
+                </div>
+
+                {/* Table Rounds & Items Breakdown */}
+                <div className="space-y-1.5 text-xs text-slate-300">
+                  <div className="flex justify-between items-center text-[11px] text-[#849a90]">
+                    <span>Rounds Ordered:</span>
+                    <span className="font-bold text-white">{group.orders.length} {group.orders.length === 1 ? 'Round' : 'Rounds'} ({group.itemCount} items)</span>
+                  </div>
+
+                  {/* Summary of items in latest round */}
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-[#24332d] space-y-1">
+                    <div className="text-[10px] font-mono uppercase text-amber-300 font-bold">
+                      Latest: Round {group.orders.length} (#{group.orders[group.orders.length - 1].id.substring(0, 6)})
+                    </div>
+                    {group.orders[group.orders.length - 1].items.slice(0, 3).map((it, idx) => (
+                      <div key={idx} className="flex justify-between text-xs text-slate-200">
+                        <span>{it.quantity}x {it.name}</span>
+                        <span className="text-[#849a90] font-mono text-[11px]">₹{(it.price || 0) * it.quantity}</span>
+                      </div>
+                    ))}
+                    {group.orders[group.orders.length - 1].items.length > 3 && (
+                      <div className="text-[10px] text-slate-400 italic">
+                        +{group.orders[group.orders.length - 1].items.length - 3} more items...
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Table Bill & Action Buttons */}
+              <div className="pt-3 border-t border-[#2a3832] space-y-2.5">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xs text-[#849a90] uppercase font-bold tracking-wider">Total Running Bill:</span>
+                  <span className="text-xl font-black text-emerald-400 font-mono">₹{group.totalBill}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => printTableSummary(group.tableNumber, group.orders, group.totalBill)}
+                    className="p-2 rounded-xl bg-[#1d2723] hover:bg-[#273530] text-slate-200 border border-[#2a3832] text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    title="Print 80mm thermal bill slip for this table"
+                  >
+                    <Printer size={13} className="text-amber-400" />
+                    <span>Print Bill</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTableModal(group.tableNumber)}
+                    className="p-2 rounded-xl bg-[#e8783c]/15 hover:bg-[#e8783c]/25 text-[#e8783c] border border-[#e8783c]/40 text-xs font-black transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>View All ({group.orders.length})</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   const OrderCard = ({ order }: { order: CustomerOrder }) => {
     const timeFormatted = new Date(order.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -945,6 +1222,49 @@ export default function Orders() {
         </div>
       )}
 
+      {/* Unaccepted Orders Persistent Alert Banner */}
+      {unacceptedOrders.length > 0 && (
+        <div className="mb-4 bg-gradient-to-r from-amber-500/20 via-[#e8783c]/20 to-amber-500/20 border-2 border-[#e8783c] rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg shadow-[#e8783c]/15">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-[#e8783c] text-white shadow-md shadow-[#e8783c]/30 animate-bounce">
+              <BellRing size={20} />
+            </div>
+            <div>
+              <div className="text-sm font-black text-white flex items-center gap-2">
+                <span>{unacceptedOrders.length} New Customer Order{unacceptedOrders.length > 1 ? 's' : ''} Awaiting Kitchen Confirmation!</span>
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-rose-500/30 text-rose-200 border border-rose-500/40 animate-pulse">
+                  Action Required
+                </span>
+              </div>
+              <div className="text-xs text-amber-200/90 mt-0.5">
+                Set preparation time to start cooking and activate customer live tracking timer.
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileStage('NEW');
+                setViewMode('KANBAN');
+              }}
+              className="px-4 py-2 rounded-xl bg-[#e8783c] hover:bg-[#f08b55] text-white font-extrabold text-xs transition-all shadow-md shadow-[#e8783c]/30 cursor-pointer"
+            >
+              Review {unacceptedOrders.length} New Order{unacceptedOrders.length > 1 ? 's' : ''}
+            </button>
+            <button
+              type="button"
+              onClick={() => setBuzzerSnoozed(prev => !prev)}
+              className="px-3 py-2 rounded-xl bg-black/40 hover:bg-black/60 border border-white/10 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+              title="Snooze audio alert for 5 minutes"
+            >
+              {buzzerSnoozed ? '🔕 Buzzer Muted' : '🔔 Mute Buzzer'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Search & Sort Bar */}
       <div className="mb-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Search Input */}
@@ -973,7 +1293,7 @@ export default function Orders() {
           <button
             type="button"
             onClick={() => setSortOrder(sortOrder === 'NEWEST' ? 'OLDEST_PENDING' : 'NEWEST')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1a2320] border border-[#2a3832] text-xs font-semibold text-[#849a90] hover:text-white transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1a2320] border border-[#2a3832] text-xs font-semibold text-[#849a90] hover:text-white transition-colors cursor-pointer"
           >
             <ArrowUpDown size={13} />
             <span>Sort: {sortOrder === 'NEWEST' ? 'Newest First' : 'Oldest Pending'}</span>
@@ -981,48 +1301,79 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Service Type Tabs: All, Dine-In, Delivery */}
-      <div className="flex items-center gap-2 mb-4 border-b border-[#2a3832] pb-3 overflow-x-auto">
-        <button
-          type="button"
-          onClick={() => setFilterType('ALL')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-            filterType === 'ALL'
-              ? 'bg-white text-[#151c19] shadow-sm'
-              : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
-          }`}
-        >
-          <span>All Orders</span>
-          <span className="px-1.5 py-0.5 rounded-md bg-black/10 text-[11px]">{orders.length}</span>
-        </button>
+      {/* Service Type Tabs & View Switcher */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-[#2a3832] pb-3">
+        <div className="flex items-center gap-2 overflow-x-auto">
+          <button
+            type="button"
+            onClick={() => setFilterType('ALL')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              filterType === 'ALL'
+                ? 'bg-white text-[#151c19] shadow-sm'
+                : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
+            }`}
+          >
+            <span>All Orders</span>
+            <span className="px-1.5 py-0.5 rounded-md bg-black/10 text-[11px]">{orders.length}</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setFilterType('DINE_IN')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-            filterType === 'DINE_IN'
-              ? 'bg-[#e8783c] text-white shadow-sm'
-              : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
-          }`}
-        >
-          <UtensilsCrossed size={14} />
-          <span>Dine-In (Table)</span>
-          <span className="px-1.5 py-0.5 rounded-md bg-black/20 text-[11px]">{dineInCount}</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setFilterType('DINE_IN')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              filterType === 'DINE_IN'
+                ? 'bg-[#e8783c] text-white shadow-sm'
+                : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
+            }`}
+          >
+            <UtensilsCrossed size={14} />
+            <span>Dine-In (Table)</span>
+            <span className="px-1.5 py-0.5 rounded-md bg-black/20 text-[11px]">{dineInCount}</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setFilterType('DELIVERY')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-            filterType === 'DELIVERY'
-              ? 'bg-sky-500 text-white shadow-sm'
-              : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
-          }`}
-        >
-          <Bike size={14} />
-          <span>Delivery / Takeaway</span>
-          <span className="px-1.5 py-0.5 rounded-md bg-black/20 text-[11px]">{deliveryCount}</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setFilterType('DELIVERY')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              filterType === 'DELIVERY'
+                ? 'bg-sky-500 text-white shadow-sm'
+                : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
+            }`}
+          >
+            <Bike size={14} />
+            <span>Delivery / Takeaway</span>
+            <span className="px-1.5 py-0.5 rounded-md bg-black/20 text-[11px]">{deliveryCount}</span>
+          </button>
+        </div>
+
+        {/* View Switcher: Kitchen Kanban vs Table Matrix */}
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#1a2320] border border-[#2a3832] shrink-0 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setViewMode('KANBAN')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              viewMode === 'KANBAN'
+                ? 'bg-[#e8783c] text-white shadow-sm'
+                : 'text-[#849a90] hover:text-white'
+            }`}
+          >
+            <Kanban size={13} />
+            <span>Kitchen Kanban</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewMode('TABLE_MATRIX')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              viewMode === 'TABLE_MATRIX'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'text-[#849a90] hover:text-white'
+            }`}
+          >
+            <LayoutGrid size={13} />
+            <span>Table Matrix ({tableGroups.length})</span>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Stage Selector (Visible on small screens only) */}
@@ -1078,41 +1429,45 @@ export default function Orders() {
         </button>
       </div>
 
-      {/* Kanban Board Columns (Responsive on desktop, filtered on mobile) */}
-      <div className="flex gap-5 overflow-x-auto pb-4 flex-1 custom-scrollbar">
-        {(mobileStage === 'ALL' || mobileStage === 'NEW') && (
-          <Column 
-            title="New Orders" 
-            columnOrders={newOrders} 
-            icon={Clock} 
-            colorClass="border-[#e8783c] text-[#e8783c]" 
-          />
-        )}
-        {(mobileStage === 'ALL' || mobileStage === 'COOKING') && (
-          <Column 
-            title="Cooking / Preparing" 
-            columnOrders={inProgressOrders} 
-            icon={ChefHat} 
-            colorClass="border-blue-400 text-blue-400" 
-          />
-        )}
-        {(mobileStage === 'ALL' || mobileStage === 'READY') && (
-          <Column 
-            title="Ready / Out" 
-            columnOrders={readyOrders} 
-            icon={CheckCircle2} 
-            colorClass="border-purple-400 text-purple-400" 
-          />
-        )}
-        {(mobileStage === 'ALL' || mobileStage === 'DONE') && (
-          <Column 
-            title="Completed / Delivered" 
-            columnOrders={completedOrders} 
-            icon={Check} 
-            colorClass="border-emerald-400 text-emerald-400" 
-          />
-        )}
-      </div>
+      {/* View Switcher Output: Table Matrix View vs Kanban Board Columns */}
+      {viewMode === 'TABLE_MATRIX' ? (
+        <TableMatrixView />
+      ) : (
+        <div className="flex gap-5 overflow-x-auto pb-4 flex-1 custom-scrollbar">
+          {(mobileStage === 'ALL' || mobileStage === 'NEW') && (
+            <Column 
+              title="New Orders" 
+              columnOrders={newOrders} 
+              icon={Clock} 
+              colorClass="border-[#e8783c] text-[#e8783c]" 
+            />
+          )}
+          {(mobileStage === 'ALL' || mobileStage === 'COOKING') && (
+            <Column 
+              title="Cooking / Preparing" 
+              columnOrders={inProgressOrders} 
+              icon={ChefHat} 
+              colorClass="border-blue-400 text-blue-400" 
+            />
+          )}
+          {(mobileStage === 'ALL' || mobileStage === 'READY') && (
+            <Column 
+              title="Ready / Out" 
+              columnOrders={readyOrders} 
+              icon={CheckCircle2} 
+              colorClass="border-purple-400 text-purple-400" 
+            />
+          )}
+          {(mobileStage === 'ALL' || mobileStage === 'DONE') && (
+            <Column 
+              title="Completed / Delivered" 
+              columnOrders={completedOrders} 
+              icon={Check} 
+              colorClass="border-emerald-400 text-emerald-400" 
+            />
+          )}
+        </div>
+      )}
 
       {/* Order Rejection Modal */}
       {rejectingOrder && (
@@ -1265,6 +1620,114 @@ export default function Orders() {
                 className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#e8783c] hover:bg-[#f08b55] text-white transition-colors disabled:opacity-50 shadow-md shadow-[#e8783c]/30"
               >
                 {isUpdatingTime ? 'Updating...' : 'Save & Notify Customer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Table Detail Modal (From Table Matrix View) */}
+      {selectedTableModal && currentModalGroup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#1a2320] border border-[#2a3832] rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="flex justify-between items-center p-5 border-b border-[#2a3832] bg-[#151c19]">
+              <div>
+                <div className="text-xl font-black text-white font-serif flex items-center gap-2">
+                  <span>TABLE {currentModalGroup.tableNumber}</span>
+                  <span className="text-xs font-mono text-emerald-400 font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+                    Running Total: ₹{currentModalGroup.totalBill}
+                  </span>
+                </div>
+                <div className="text-xs text-[#849a90] mt-0.5 font-mono">
+                  {currentModalGroup.orders.length} order rounds • Seated at {new Date(currentModalGroup.seatedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setSelectedTableModal(null)} 
+                className="text-[#849a90] hover:text-white p-1 cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-5 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
+              {currentModalGroup.orders.map((ord, oIdx) => (
+                <div key={ord.id} className="p-4 rounded-xl bg-[#141b18] border border-[#24332d] space-y-3">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                    <span className="text-xs font-black text-amber-300 font-mono uppercase">
+                      Round {ord.roundNumber || (oIdx + 1)} • Order #{ord.id.substring(0, 6)}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-white">
+                      ₹{ord.total}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs">
+                    {ord.items.map((it, idx) => (
+                      <div key={idx} className="flex justify-between text-slate-200">
+                        <span className="font-medium">{it.quantity}x {it.name} {it.variant ? `(${it.variant})` : ''}</span>
+                        <span className="font-mono text-[#849a90]">₹{((it.price || 0) + (it.addons ? it.addons.reduce((s, a) => s + (a.price || 0), 0) : 0)) * it.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {ord.notes && (
+                    <div className="text-[11px] text-amber-300/80 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+                      Note: {ord.notes}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px]">
+                    <span className="text-[#849a90]">Status: <strong className="text-white">{ord.status}</strong></span>
+                    {ord.status === 'NEW' && (
+                      <button
+                        type="button"
+                        onClick={() => handleStatusUpdate(ord.id, 'ACCEPTED', undefined, 20)}
+                        className="px-3 py-1 rounded-lg bg-[#e8783c] text-white font-extrabold text-xs cursor-pointer"
+                      >
+                        Accept (20m)
+                      </button>
+                    )}
+                    {(ord.status === 'ACCEPTED' || ord.status === 'PREPARING') && (
+                      <button
+                        type="button"
+                        onClick={() => handleStatusUpdate(ord.id, 'READY')}
+                        className="px-3 py-1 rounded-lg bg-purple-600 text-white font-bold text-xs cursor-pointer"
+                      >
+                        Mark Ready
+                      </button>
+                    )}
+                    {ord.status === 'READY' && (
+                      <button
+                        type="button"
+                        onClick={() => handleStatusUpdate(ord.id, 'COMPLETED')}
+                        className="px-3 py-1 rounded-lg bg-emerald-600 text-white font-bold text-xs cursor-pointer"
+                      >
+                        Served to Table
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 border-t border-[#2a3832] bg-[#151c19] flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => printTableSummary(currentModalGroup.tableNumber, currentModalGroup.orders, currentModalGroup.totalBill)}
+                className="px-4 py-2 rounded-xl bg-[#24332d] hover:bg-[#2d4038] text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <Printer size={14} className="text-amber-400" />
+                <span>Print Table KOT / Bill</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedTableModal(null)}
+                className="px-5 py-2 rounded-xl bg-[#e8783c] hover:bg-[#f08b55] text-white text-xs font-black transition-colors cursor-pointer"
+              >
+                Done
               </button>
             </div>
           </div>

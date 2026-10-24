@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   UtensilsCrossed, 
@@ -8,7 +8,15 @@ import {
   Sparkles, 
   XCircle, 
   QrCode,
-  ArrowRight
+  ArrowRight,
+  Clock,
+  Flame,
+  Receipt,
+  Smartphone,
+  Play,
+  RotateCcw,
+  Star,
+  Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -183,6 +191,603 @@ const restaurantChapters: StoryChapter[] = [
   }
 ];
 
+// Rich Visual Graphic Illustration for each Chapter (Before vs After)
+function ChapterVisualGraphic({ chapterId, isBefore }: { chapterId: string; isBefore: boolean }) {
+  if (isBefore) {
+    // Broken Reality Illustrations
+    switch (chapterId) {
+      case 'c1':
+        return (
+          <div className="relative p-4 rounded-2xl bg-amber-950/20 border border-amber-900/40 text-left font-serif overflow-hidden select-none">
+            {/* Grease Stain & Torn Paper Simulation */}
+            <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-amber-600/15 blur-lg pointer-events-none" />
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-rose-900/50 text-rose-300 border border-rose-700/60 text-[10px] font-mono font-bold uppercase rotate-6">
+              SOLD OUT
+            </div>
+            
+            <div className="text-[11px] uppercase tracking-wider text-amber-500 font-bold mb-2 flex items-center gap-1.5">
+              <span>📄 Torn Paper Menu</span>
+              <span className="text-[10px] text-rose-400 font-mono">(Stained & Outdated)</span>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="p-2 rounded bg-black/40 border border-amber-900/30 flex justify-between items-center">
+                <div>
+                  <div className="font-bold text-amber-200">Paneer Tikka Angara</div>
+                  <div className="text-[10px] text-slate-400">Old price scratched out with red pen</div>
+                </div>
+                <div className="text-right font-mono">
+                  <span className="line-through text-rose-400 mr-1.5">₹260</span>
+                  <span className="text-amber-300 font-bold">₹310</span>
+                </div>
+              </div>
+
+              <div className="p-2 rounded bg-black/40 border border-rose-900/30 flex justify-between items-center opacity-60">
+                <div>
+                  <div className="font-bold text-slate-300 line-through">Mutton Galouti Kebab</div>
+                  <div className="text-[10px] text-rose-400">Out of Stock (Torn sticker applied)</div>
+                </div>
+                <div className="text-rose-400 font-mono text-xs font-bold">UNAVAILABLE</div>
+              </div>
+            </div>
+
+            <div className="mt-3 pt-2 border-t border-rose-900/30 flex items-center justify-between text-[11px] text-rose-400 font-mono">
+              <span>⏳ Waving hand for waiter...</span>
+              <span className="font-bold">9 mins waiting</span>
+            </div>
+          </div>
+        );
+
+      case 'c2':
+        return (
+          <div className="relative p-4 rounded-2xl bg-rose-950/20 border border-rose-900/40 text-left font-mono overflow-hidden select-none">
+            <div className="flex items-center justify-between border-b border-rose-900/30 pb-2 mb-3">
+              <span className="text-xs text-rose-300 font-bold flex items-center gap-1.5">
+                <Clock size={13} className="text-rose-400" />
+                <span>Waiting Without Any Update</span>
+              </span>
+              <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px] font-black">
+                BLACK BOX
+              </span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-black/40 border border-rose-500/20 text-center">
+              <div className="text-3xl font-black text-rose-400 font-mono tracking-tight animate-pulse">
+                24:15
+              </div>
+              <div className="text-[11px] text-rose-300/80 mt-1">
+                Minutes elapsed since order taken on paper
+              </div>
+            </div>
+
+            <div className="mt-3 space-y-1.5 text-xs text-slate-300">
+              <div className="flex items-center gap-2 text-rose-300/80">
+                <span>❓ Has the kitchen even fired the order?</span>
+              </div>
+              <div className="flex items-center gap-2 text-rose-300/80">
+                <span>❓ Waitstaff: "Bhaiya 2 minute me aa raha hai" (3 times)</span>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'c3':
+        return (
+          <div className="relative p-4 rounded-2xl bg-sky-950/20 border border-sky-900/40 text-left font-mono overflow-hidden select-none">
+            <div className="flex items-center justify-between border-b border-sky-900/30 pb-2 mb-2">
+              <span className="text-xs text-sky-300 font-bold">Cold Curry & Lost Waiter</span>
+              <span className="text-[10px] text-rose-400 px-2 py-0.5 rounded bg-rose-950/40 border border-rose-800">
+                DINING FLOW BROKEN
+              </span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-black/40 border border-sky-800/30 text-xs space-y-2">
+              <div className="flex justify-between items-center text-slate-300">
+                <span>🍛 Dal Makhani on table</span>
+                <span className="text-sky-300 text-[11px]">Getting ice cold ❄️</span>
+              </div>
+              <div className="flex justify-between items-center text-slate-300">
+                <span>🫓 Need 2 more Butter Naans</span>
+                <span className="text-rose-400 text-[11px]">Waiter occupied across room</span>
+              </div>
+            </div>
+
+            <div className="mt-3 text-[11px] text-slate-400 italic">
+              "By the time the extra roti arrives 15 minutes later, everyone has lost their appetite."
+            </div>
+          </div>
+        );
+
+      case 'c4':
+        return (
+          <div className="relative p-4 rounded-2xl bg-stone-950/40 border border-rose-900/40 text-left font-mono select-none">
+            <div className="text-[11px] text-rose-300 font-bold mb-2 flex items-center justify-between">
+              <span>🧾 Messy Handwritten Parchi</span>
+              <span className="text-rose-400 text-[10px]">Error Prone</span>
+            </div>
+
+            <div className="p-2.5 rounded bg-black/60 border border-stone-800 text-[11px] space-y-1.5 text-slate-300">
+              <div className="flex justify-between">
+                <span>1x Paneer Tikka</span>
+                <span>₹310</span>
+              </div>
+              <div className="flex justify-between">
+                <span>2x Butter Naan</span>
+                <span>₹120</span>
+              </div>
+              <div className="flex justify-between text-rose-400 font-bold bg-rose-500/10 px-1 rounded">
+                <span>⚠️ 1x Fresh Lime (Table 3 accident)</span>
+                <span>₹90</span>
+              </div>
+              <div className="border-t border-stone-700 pt-1 flex justify-between font-bold text-white">
+                <span>Total scribbled</span>
+                <span>₹520 (Disputed!)</span>
+              </div>
+            </div>
+
+            <div className="mt-2 text-[10px] text-rose-300">
+              Awkward arguments at cashier • Card machine out of signal • Bad final memory
+            </div>
+          </div>
+        );
+
+      // Restaurant POV chapters
+      case 'r1':
+        return (
+          <div className="p-4 rounded-2xl bg-rose-950/20 border border-rose-900/40 text-left font-mono select-none">
+            <div className="text-xs text-rose-300 font-bold mb-2 flex items-center justify-between">
+              <span>📌 The Chaos Kitchen Board</span>
+              <span className="text-[10px] text-rose-400 bg-rose-900/40 px-2 py-0.5 rounded">RUSH COLLAPSE</span>
+            </div>
+            <div className="p-3 rounded-xl bg-black/50 border border-rose-800/30 text-xs space-y-1.5 text-slate-300">
+              <div>• 14 scribbled paper slips skewered on rusty nails</div>
+              <div>• Gravy oil spilled over table numbers</div>
+              <div>• Chef screams: "Ye Table 5 ka kacha slip kahan gaya?!"</div>
+            </div>
+          </div>
+        );
+
+      case 'r2':
+        return (
+          <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-900/40 text-left font-mono select-none">
+            <div className="text-xs text-amber-300 font-bold mb-2 flex items-center justify-between">
+              <span>🗑️ Duplicate Cooking Wastage</span>
+              <span className="text-[10px] text-amber-400 bg-amber-900/40 px-2 py-0.5 rounded">PROFIT EATEN</span>
+            </div>
+            <div className="p-3 rounded-xl bg-black/50 border border-amber-800/30 text-xs space-y-1.5 text-slate-300">
+              <div>• Waiter A entered Dal Makhani for Table 7</div>
+              <div>• Waiter B re-entered it because customer complained</div>
+              <div className="text-rose-400 font-bold">• 2 bowls cooked, 1 tossed into trash bin</div>
+            </div>
+          </div>
+        );
+
+      case 'r3':
+        return (
+          <div className="p-4 rounded-2xl bg-stone-900/60 border border-rose-900/40 text-left font-mono select-none">
+            <div className="text-xs text-rose-300 font-bold mb-2 flex items-center justify-between">
+              <span>💸 The Paper Printing Tax</span>
+              <span className="text-[10px] text-rose-400 bg-rose-900/40 px-2 py-0.5 rounded">HIGH EXPENSE</span>
+            </div>
+            <div className="p-3 rounded-xl bg-black/50 border border-stone-800 text-xs space-y-1 text-slate-300">
+              <div className="flex justify-between">
+                <span>Print Shop Invoice:</span>
+                <span className="text-rose-400 font-bold">₹28,500</span>
+              </div>
+              <div className="text-[11px] text-slate-400">50 Leatherette Folders + Laminated Paper Inserts</div>
+              <div className="text-[11px] text-amber-300 pt-1">Takes 7 days to deliver, prices frozen in meantime.</div>
+            </div>
+          </div>
+        );
+
+      case 'r4':
+        return (
+          <div className="p-4 rounded-2xl bg-rose-950/20 border border-rose-900/40 text-left font-mono select-none">
+            <div className="text-xs text-rose-300 font-bold mb-2 flex items-center justify-between">
+              <span>🚶 Bottle-Necked Dining Room</span>
+              <span className="text-[10px] text-rose-400 bg-rose-900/40 px-2 py-0.5 rounded">LOST SEATS</span>
+            </div>
+            <div className="p-3 rounded-xl bg-black/50 border border-rose-800/30 text-xs space-y-1 text-slate-300">
+              <div>• Tables sit idle 18 extra minutes just waiting for paper menus & bills</div>
+              <div>• Walk-in diners leave seeing the queue outside</div>
+              <div className="text-rose-300 font-bold">• 2 fewer seatings per table each evening</div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  }
+
+  // The Royal Renaissance (With MenusQR) Visual Illustrations
+  switch (chapterId) {
+    case 'c1':
+      return (
+        <div className="relative p-4 rounded-2xl bg-gradient-to-b from-[#1b2520] to-[#121915] border border-amber-500/40 text-left shadow-lg select-none">
+          <div className="flex items-center justify-between border-b border-amber-500/20 pb-2 mb-2.5">
+            <span className="text-xs text-amber-300 font-bold flex items-center gap-1.5">
+              <Sparkles size={13} className="text-amber-400" />
+              <span>Royal Heritage Digital Folio</span>
+            </span>
+            <span className="text-[10px] font-mono text-emerald-300 font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40">
+              ⚡ 280ms Instant Open
+            </span>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-black/40 border border-amber-500/30 flex items-center gap-3">
+            <div className="w-12 h-12 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
+              <UtensilsCrossed size={20} className="text-amber-300" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-bold text-white flex items-center gap-1">
+                <span>Galouti Kebab Folio</span>
+                <span className="text-[10px] text-amber-400 font-mono">🌶️ Chef Special</span>
+              </div>
+              <div className="text-[10px] text-slate-300 truncate">Melt-in-mouth smoked lamb patties with saffron</div>
+              <div className="text-xs font-black text-amber-300 font-mono mt-0.5">₹380</div>
+            </div>
+            <span className="px-2 py-1 rounded bg-[#e8783c] text-white text-[10px] font-black shrink-0">
+              + ADD
+            </span>
+          </div>
+
+          <div className="mt-2.5 flex items-center justify-between text-[10px] font-mono text-slate-400">
+            <span className="text-emerald-300 flex items-center gap-1">
+              <Check size={11} className="text-emerald-400" /> 60 FPS Fluid Swipes
+            </span>
+            <span>Zero app download required</span>
+          </div>
+        </div>
+      );
+
+    case 'c2':
+      return (
+        <div className="relative p-4 rounded-2xl bg-gradient-to-b from-[#18231e] to-[#111714] border-2 border-[#e8783c] text-left shadow-xl select-none">
+          <div className="flex items-center justify-between border-b border-[#e8783c]/30 pb-2 mb-2.5">
+            <span className="text-xs text-amber-300 font-extrabold flex items-center gap-1.5">
+              <Flame size={14} className="text-[#e8783c] animate-pulse" />
+              <span>LIVE KITCHEN COUNTDOWN TIMER</span>
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-mono font-black animate-pulse">
+              COOKING ON FLAME
+            </span>
+          </div>
+
+          {/* Big Live Digital Clock Simulation */}
+          <div className="p-3 rounded-xl bg-black/50 border border-amber-500/30 text-center relative overflow-hidden">
+            <div className="text-3xl font-black text-white font-mono tracking-tight flex items-center justify-center gap-2">
+              <Clock size={20} className="text-[#e8783c] animate-spin" style={{ animationDuration: '6s' }} />
+              <span>14:28</span>
+            </div>
+            <div className="text-[11px] text-amber-200 font-bold mt-1">
+              Estimated Table Delivery • Table 4
+            </div>
+            
+            {/* Dynamic Progress Bar */}
+            <div className="w-full bg-[#1e2a24] h-2 rounded-full mt-2.5 overflow-hidden p-0.5 border border-white/10">
+              <div 
+                className="h-full rounded-full bg-gradient-to-r from-amber-400 via-[#e8783c] to-emerald-400"
+                style={{ width: '68%' }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-2.5 flex items-center justify-between text-[10px] font-mono text-emerald-300">
+            <span>✓ Kitchen Confirmed</span>
+            <span>🔥 Tandoor Fired</span>
+            <span className="text-slate-400">⚪ Heading to Table</span>
+          </div>
+        </div>
+      );
+
+    case 'c3':
+      return (
+        <div className="relative p-4 rounded-2xl bg-gradient-to-b from-[#1b2520] to-[#121915] border border-emerald-500/40 text-left shadow-lg select-none">
+          <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2 mb-2.5">
+            <span className="text-xs text-emerald-300 font-bold flex items-center gap-1.5">
+              <Sparkles size={13} className="text-emerald-400" />
+              <span>Table 4 Active Session (3.5h Window)</span>
+            </span>
+            <span className="text-[10px] font-mono text-amber-300 font-bold px-2 py-0.5 rounded bg-amber-500/20">
+              Round 2 Hot Add-On
+            </span>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-black/40 border border-emerald-500/30 flex justify-between items-center text-xs">
+            <div>
+              <div className="font-bold text-white">2x Garlic Butter Naan</div>
+              <div className="text-[10px] text-emerald-400">Added to ongoing table tab in 1 click</div>
+            </div>
+            <div className="text-right">
+              <div className="font-mono font-bold text-white">₹160</div>
+              <span className="text-[10px] text-emerald-300 font-bold">⚡ Sent to Tandoor</span>
+            </div>
+          </div>
+
+          <div className="mt-2.5 flex items-center justify-between text-[11px] font-mono text-slate-300 border-t border-white/10 pt-2">
+            <span>Cumulative Table Total:</span>
+            <span className="font-black text-emerald-300 text-sm">₹1,140</span>
+          </div>
+        </div>
+      );
+
+    case 'c4':
+      return (
+        <div className="relative p-4 rounded-2xl bg-gradient-to-b from-[#1b2520] to-[#121915] border border-amber-500/40 text-left shadow-lg select-none">
+          <div className="flex items-center justify-between border-b border-amber-500/20 pb-2 mb-2.5">
+            <span className="text-xs text-amber-300 font-bold flex items-center gap-1.5">
+              <Receipt size={13} className="text-amber-400" />
+              <span>Crystal Clear Digital Bill</span>
+            </span>
+            <span className="text-[10px] font-mono text-emerald-400 font-black">
+              100% ACCURACY
+            </span>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-black/40 border border-amber-500/20 text-xs space-y-1.5">
+            <div className="flex justify-between text-slate-300">
+              <span>All Dishes (Rounds 1 & 2)</span>
+              <span className="font-mono font-bold text-white">₹1,140</span>
+            </div>
+            <div className="flex justify-between items-center pt-1 border-t border-white/10">
+              <span className="font-bold text-emerald-400">Instant UPI QR / Cash</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold">PAID</span>
+            </div>
+          </div>
+
+          {/* 5-Star Review Prompt Hook */}
+          <div className="mt-2.5 p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
+            <div className="flex items-center gap-1 text-amber-300 text-xs font-bold">
+              <Star size={13} fill="currentColor" />
+              <Star size={13} fill="currentColor" />
+              <Star size={13} fill="currentColor" />
+              <Star size={13} fill="currentColor" />
+              <Star size={13} fill="currentColor" />
+              <span className="text-[10px] text-white ml-1">5-Star Google Review</span>
+            </div>
+            <span className="text-[10px] font-bold text-amber-400 underline">Tap to Post</span>
+          </div>
+        </div>
+      );
+
+    // Restaurant POV chapters
+    case 'r1':
+      return (
+        <div className="p-4 rounded-2xl bg-gradient-to-b from-[#18231e] to-[#121815] border border-emerald-500/40 text-left shadow-lg select-none">
+          <div className="text-xs text-emerald-300 font-bold mb-2 flex items-center justify-between">
+            <span>🖥️ Digital KDS Tablet + 80mm Thermal KOT</span>
+            <span className="text-[10px] text-emerald-400 bg-emerald-950/40 border border-emerald-800 px-2 py-0.5 rounded font-mono">
+              CALM KITCHEN
+            </span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-black/40 border border-emerald-500/30 text-xs space-y-1.5 text-slate-200">
+            <div className="flex justify-between font-bold text-white">
+              <span>TABLE 4 • DINE-IN</span>
+              <span className="text-amber-400 font-mono">1-Click Thermal Print</span>
+            </div>
+            <div className="text-[11px] text-emerald-300">• 1x Galouti Kebab (Medium Spicy)</div>
+            <div className="text-[11px] text-emerald-300">• 2x Butter Naan</div>
+            <div className="text-[10px] text-slate-400 pt-1 border-t border-white/10">Line cook ticks items off as finished. Zero missed tickets.</div>
+          </div>
+        </div>
+      );
+
+    case 'r2':
+      return (
+        <div className="p-4 rounded-2xl bg-gradient-to-b from-[#18231e] to-[#121815] border border-amber-500/40 text-left shadow-lg select-none">
+          <div className="text-xs text-amber-300 font-bold mb-2 flex items-center justify-between">
+            <span>🔥 Multi-Round Item Separation</span>
+            <span className="text-[10px] text-emerald-400 bg-emerald-950/40 border border-emerald-800 px-2 py-0.5 rounded font-mono">
+              ZERO WASTE
+            </span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-black/40 border border-amber-500/30 text-xs space-y-1.5">
+            <div className="p-1.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-200 font-bold text-[11px]">
+              🔥 NEW TO COOK NOW (Round 2): 2x Garlic Naan
+            </div>
+            <div className="p-1.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-300/80 text-[11px] line-through">
+              ✅ ALREADY DELIVERED (Round 1): 1x Dal Makhani
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'r3':
+      return (
+        <div className="p-4 rounded-2xl bg-gradient-to-b from-[#18231e] to-[#121815] border border-amber-500/40 text-left shadow-lg select-none">
+          <div className="text-xs text-amber-300 font-bold mb-2 flex items-center justify-between">
+            <span>📱 3-Second Instant Price Update</span>
+            <span className="text-[10px] text-emerald-400 bg-emerald-950/40 border border-emerald-800 px-2 py-0.5 rounded font-mono">
+              ₹0 REPRINT COST
+            </span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-black/40 border border-amber-500/30 text-xs space-y-1.5 text-slate-200">
+            <div className="flex justify-between items-center">
+              <span>Paneer Tikka:</span>
+              <span className="font-mono text-emerald-400 font-bold">₹280 ➔ ₹320 (Instant)</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Mango Kulfi Special:</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">ACTIVE NOW</span>
+            </div>
+            <div className="text-[10px] text-slate-400 pt-1 border-t border-white/10">All 30 table QR stands instantly display the new pricing in 1 second.</div>
+          </div>
+        </div>
+      );
+
+    case 'r4':
+      return (
+        <div className="p-4 rounded-2xl bg-gradient-to-b from-[#18231e] to-[#121815] border border-emerald-500/40 text-left shadow-lg select-none">
+          <div className="text-xs text-emerald-300 font-bold mb-2 flex items-center justify-between">
+            <span>🚀 35% Faster Table Turnover</span>
+            <span className="text-[10px] text-emerald-400 bg-emerald-950/40 border border-emerald-800 px-2 py-0.5 rounded font-mono">
+              +24% REVENUE
+            </span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-black/40 border border-emerald-500/30 text-xs space-y-1.5 text-slate-200">
+            <div className="flex justify-between">
+              <span>Average Seating Time:</span>
+              <span className="font-mono font-bold text-emerald-300">54m (vs 76m on paper)</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Extra Table Turns:</span>
+              <span className="font-mono font-bold text-amber-300">+2 seatings / table</span>
+            </div>
+            <div className="text-[10px] text-slate-400 pt-1 border-t border-white/10">Zero bottleneck • Happy smiling diners • Higher tip volume</div>
+          </div>
+        </div>
+      );
+
+    default:
+      return null;
+  }
+}
+
+// Interactive Live Timer Simulator Widget for Website Visitors
+function InteractiveLiveTimerSimulator() {
+  const [simulatedSeconds, setSimulatedSeconds] = useState<number>(868); // 14:28
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const [activeStage, setActiveStage] = useState<'cooking' | 'ready'>('cooking');
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setSimulatedSeconds(prev => {
+        if (prev <= 1) {
+          setActiveStage('ready');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const formatTime = (secs: number) => {
+    if (secs <= 0) return '00:00';
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const handleFastForward = () => {
+    setSimulatedSeconds(5);
+    setActiveStage('cooking');
+    setIsPlaying(true);
+  };
+
+  const handleReset = () => {
+    setSimulatedSeconds(868);
+    setActiveStage('cooking');
+    setIsPlaying(true);
+  };
+
+  return (
+    <div className="mt-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#17221d] via-[#121a16] to-[#0c120f] border-2 border-[#e8783c]/50 shadow-2xl relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-80 h-80 bg-[#e8783c]/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+        {/* Left Information Column */}
+        <div className="max-w-xl text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#e8783c]/15 border border-[#e8783c]/30 text-amber-300 text-xs font-mono font-bold uppercase mb-3">
+            <Smartphone size={14} className="text-[#e8783c]" />
+            <span>Interactive Live Demo</span>
+          </div>
+
+          <h3 className="text-2xl sm:text-3xl font-black text-white font-serif leading-tight">
+            Test-Drive the Live Customer Cooking Timer
+          </h3>
+
+          <p className="mt-2 text-sm text-slate-300 leading-relaxed">
+            This is the exact screen your diners see on their mobile phones when they place an order at Table 4. No more anxious waiting or repeatedly calling waiters — real-time second-by-second transparency.
+          </p>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/15 cursor-pointer"
+            >
+              <Play size={13} className={isPlaying ? 'text-amber-400' : 'text-slate-400'} />
+              <span>{isPlaying ? 'Pause Simulator' : 'Resume Clock'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleFastForward}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs transition-colors border border-amber-500/40 cursor-pointer"
+            >
+              <Flame size={13} className="text-[#e8783c]" />
+              <span>Fast-Forward to 00:05</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleReset}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white font-medium text-xs transition-colors cursor-pointer"
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Right Phone Mockup with Live Animated Clock */}
+        <div className="w-full max-w-[340px] rounded-3xl bg-[#090d0b] border-4 border-[#2b3a33] p-4 shadow-2xl shadow-black/80 relative">
+          {/* Phone Top Notch / Speaker */}
+          <div className="w-28 h-4 bg-[#151c19] rounded-full mx-auto mb-3 flex items-center justify-center">
+            <div className="w-8 h-1 bg-white/20 rounded-full" />
+          </div>
+
+          <div className="rounded-2xl bg-gradient-to-b from-[#18231e] to-[#101714] border border-amber-500/30 p-4 text-center">
+            <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 border-b border-white/10 pb-2 mb-3">
+              <span className="text-amber-300 font-bold">The Royal Awadh</span>
+              <span className="text-white font-bold">Table 4</span>
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-[11px] font-mono font-bold text-amber-300 mb-2">
+              <Flame size={12} className="text-[#e8783c] animate-bounce" />
+              <span>{activeStage === 'cooking' ? 'COOKING ON FLAME' : 'PLATED & READY TO SERVE'}</span>
+            </div>
+
+            {/* Big Countdown Number */}
+            <div className="text-4xl font-black text-white font-mono tracking-tight my-2 drop-shadow-md">
+              {formatTime(simulatedSeconds)}
+            </div>
+
+            <div className="text-[11px] text-slate-300">
+              {activeStage === 'cooking' 
+                ? 'Your dishes are in the tandoor. Arriving hot!'
+                : '🎉 Dish is plated! Heading to Table 4 right now!'}
+            </div>
+
+            {/* Dynamic Progress Indicator */}
+            <div className="w-full bg-black/50 h-2 rounded-full mt-3 overflow-hidden p-0.5 border border-white/10">
+              <div 
+                className="h-full rounded-full bg-gradient-to-r from-amber-400 via-[#e8783c] to-emerald-400 transition-all duration-500"
+                style={{ width: `${Math.min(100, Math.max(10, ((900 - simulatedSeconds) / 900) * 100))}%` }}
+              />
+            </div>
+
+            {/* Order Items Summary */}
+            <div className="mt-3 pt-3 border-t border-white/10 text-left text-xs space-y-1">
+              <div className="flex justify-between text-slate-300 text-[11px]">
+                <span>1x Mutton Galouti Kebab</span>
+                <span className="text-emerald-400 font-mono">Cooking</span>
+              </div>
+              <div className="flex justify-between text-slate-300 text-[11px]">
+                <span>2x Garlic Butter Naan</span>
+                <span className="text-emerald-400 font-mono">In Tandoor</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DiningStorytellingSection() {
   const [perspective, setPerspective] = useState<StoryPerspective>('customer');
   const [selectedChapterIndex, setSelectedChapterIndex] = useState<number>(0);
@@ -319,9 +924,12 @@ export default function DiningStorytellingSection() {
                   {currentChapter.before.title}
                 </h3>
 
-                <p className="text-sm text-slate-300 leading-relaxed">
+                <p className="text-sm text-slate-300 leading-relaxed mb-6">
                   {currentChapter.before.description}
                 </p>
+
+                {/* Embedded Visual Graphic Simulation */}
+                <ChapterVisualGraphic chapterId={currentChapter.id} isBefore={true} />
               </div>
 
               <div className="mt-8 pt-5 border-t border-rose-500/20 space-y-3">
@@ -364,9 +972,12 @@ export default function DiningStorytellingSection() {
                   {currentChapter.after.title}
                 </h3>
 
-                <p className="text-sm text-slate-200 leading-relaxed">
+                <p className="text-sm text-slate-200 leading-relaxed mb-6">
                   {currentChapter.after.description}
                 </p>
+
+                {/* Embedded Visual Graphic Simulation */}
+                <ChapterVisualGraphic chapterId={currentChapter.id} isBefore={false} />
               </div>
 
               <div className="mt-8 pt-5 border-t border-[#e8783c]/30 space-y-3">
@@ -382,6 +993,11 @@ export default function DiningStorytellingSection() {
             </div>
           </motion.div>
         </AnimatePresence>
+
+        {/* Interactive Live Timer Simulator Widget (Visible on Customer Perspective) */}
+        {perspective === 'customer' && (
+          <InteractiveLiveTimerSimulator />
+        )}
 
         {/* Bottom Industry Proof & Metrics Bar */}
         <div className="mt-14 p-6 sm:p-8 rounded-3xl bg-[#141c19] border border-[#2a3832] shadow-2xl">
