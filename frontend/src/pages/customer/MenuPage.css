@@ -1457,3 +1457,41 @@
 .btn-secondary:hover {
   background: #e2e8f0;
 }
+
+
+/* Multi-Round Table Dining Session Pill */
+.table-session-pill {
+  position: fixed;
+  bottom: 86px;
+  right: 20px;
+  background: linear-gradient(135deg, #18221e 0%, #111714 100%);
+  border: 1.5px solid #e8783c;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(232, 120, 60, 0.25), 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 99;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.table-session-pill:hover {
+  transform: translateY(-3px) scale(1.02);
+  border-color: #f08b55;
+  box-shadow: 0 12px 28px rgba(232, 120, 60, 0.35);
+}
+
+.table-session-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulse-dot 1.5s infinite;
+  shrink: 0;
+}

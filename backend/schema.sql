@@ -288,6 +288,11 @@ CREATE TABLE IF NOT EXISTS customer_orders (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS session_id VARCHAR(100);
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS round_number INT DEFAULT 1;
+ALTER TABLE customer_orders ADD COLUMN IF NOT EXISTS parent_order_id VARCHAR(255);
+CREATE INDEX IF NOT EXISTS idx_customer_orders_session ON customer_orders (tenant_id, session_id);
+
 CREATE TABLE IF NOT EXISTS admin_users (
   id VARCHAR(255) PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,

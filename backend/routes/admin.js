@@ -79,6 +79,13 @@ export function validateClient(input, id, createdAt) {
   };
 }
 
+export function normalizeClientCategory(cat, businessType, businessName) {
+  const combined = `${cat || ''} ${businessType || ''} ${businessName || ''}`.toLowerCase();
+  if (combined.includes('dhaba')) return 'dhabas';
+  if (combined.includes('cafe') || combined.includes('coffee') || combined.includes('bakery')) return 'cafes';
+  return 'restaurants';
+}
+
 export default async function adminRoutes(request, response, url) {
   if (!url.pathname.startsWith('/api/admin/')) return false;
   
@@ -87,6 +94,8 @@ export default async function adminRoutes(request, response, url) {
   if (request.method === 'GET' && url.pathname === '/api/admin/clients') {
     const res = await pool.query(`
       SELECT c.*, 
+             u.email as "ownerEmail",
+             COALESCE(s.plan_id, 'essential') as "activePlan",
              COALESCE(
                json_agg(
                  json_build_object(
@@ -100,9 +109,11 @@ export default async function adminRoutes(request, response, url) {
                ) FILTER (WHERE m.id IS NOT NULL), '[]'
              ) as "menuItems"
       FROM clients c
+      LEFT JOIN users u ON u.tenant_id = c.id
+      LEFT JOIN subscriptions s ON s.tenant_id = c.id AND s.status = 'active'
       LEFT JOIN menu_items m ON m.tenant_id = c.id
       LEFT JOIN menu_categories mc ON m.category_id = mc.id
-      GROUP BY c.id
+      GROUP BY c.id, u.id, s.id
       ORDER BY c.created_at DESC
     `);
     const records = res.rows.map(row => ({
@@ -111,8 +122,12 @@ export default async function adminRoutes(request, response, url) {
       businessName: row.business_name,
       menuSlug: row.menu_slug,
       referenceCode: row.reference_code,
+      category: normalizeClientCategory(row.category, row.business_type, row.business_name),
+      rawCategory: row.category,
       businessType: row.business_type || row.category || 'restaurant',
       categoryOther: row.category_other,
+      ownerEmail: row.ownerEmail || null,
+      plan: row.activePlan || row.plan || 'essential',
       state: row.state,
       outletCount: row.outlet_count || 1,
       emailVerified: Boolean(row.email_verified),

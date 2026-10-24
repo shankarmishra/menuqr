@@ -39,6 +39,11 @@ export type CustomerOrder = {
   time: string;
   estimatedTimeMinutes?: number | null;
   estimatedDeliveryTime?: string | null;
+  sessionId?: string | null;
+  roundNumber?: number;
+  parentOrderId?: string | null;
+  previousRoundItems?: Array<{ id?: string; name: string; quantity: number; price: number; variant?: string; roundNumber?: number }>;
+  sessionTotal?: number;
 };
 
 // Web Audio API chime generator (no external files needed)
@@ -339,16 +344,30 @@ export default function Orders() {
       }`}>
         {/* Header: Service Type & Order ID */}
         <div className="flex justify-between items-start border-b border-[#2a3832] pb-3.5">
-          <div>
-            {isDelivery ? (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/15 border border-sky-500/30 text-sky-400 font-extrabold text-xs uppercase tracking-wider">
-                <Bike size={14} />
-                <span>Delivery Order</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#e8783c]/15 border border-[#e8783c]/30 text-[#e8783c] font-black text-xs uppercase tracking-wider">
-                <UtensilsCrossed size={14} />
-                <span>Table: {order.tableNumber || 'N/A'}</span>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              {isDelivery ? (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/15 border border-sky-500/30 text-sky-400 font-extrabold text-xs uppercase tracking-wider">
+                  <Bike size={14} />
+                  <span>Delivery Order</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#e8783c]/15 border border-[#e8783c]/30 text-[#e8783c] font-black text-xs uppercase tracking-wider">
+                  <UtensilsCrossed size={14} />
+                  <span>Table: {order.tableNumber || 'N/A'}</span>
+                </div>
+              )}
+
+              {/* Multi-Round Table Add-On Badge */}
+              {order.roundNumber && order.roundNumber > 1 && (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/25 border border-amber-500/60 text-amber-300 font-black text-xs uppercase tracking-wider shadow-sm animate-pulse">
+                  <span>🔔 ROUND {order.roundNumber} ADD-ON</span>
+                </div>
+              )}
+            </div>
+            {order.roundNumber && order.roundNumber > 1 && (
+              <div className="text-[11px] text-amber-200/90 font-medium">
+                Customer at Table {order.tableNumber} added more dishes to their active table!
               </div>
             )}
           </div>
@@ -463,34 +482,107 @@ export default function Orders() {
         )}
 
         {/* Order Items List */}
-        <div className="flex-1 space-y-2 py-1">
-          {order.items && order.items.map((item, idx) => (
-            <div key={idx} className="flex justify-between items-center text-sm">
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-[#e8783c] bg-[#e8783c]/15 px-2 py-0.5 rounded text-xs">
-                  {item.quantity}x
-                </span>
-                <div>
-                  <span className="text-white font-semibold">{item.name}</span>
-                  {item.variant && <span className="ml-1.5 text-xs text-[#849a90] font-normal">({item.variant})</span>}
-                  {Array.isArray(item.addons) && item.addons.length > 0 && (
-                    <div className="text-xs text-emerald-400 font-medium mt-0.5">
-                      + {item.addons.map(a => `${a.name} (₹${a.price})`).join(', ')}
-                    </div>
-                  )}
+        <div className="flex-1 space-y-3 py-1">
+          {/* If this is an add-on order (Round 2+) and has previous round items */}
+          {order.roundNumber && order.roundNumber > 1 && order.previousRoundItems && order.previousRoundItems.length > 0 ? (
+            <>
+              {/* Section 1: NEW DISHES TO PREPARE NOW */}
+              <div className="p-3 rounded-xl bg-amber-500/10 border-2 border-amber-500/40 space-y-2">
+                <div className="flex items-center justify-between border-b border-amber-500/30 pb-1.5">
+                  <span className="text-xs font-black text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
+                    <span>🔥 NEW DISHES TO PREPARE (Round {order.roundNumber})</span>
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/30 text-amber-200">
+                    {order.items?.reduce((s, it) => s + it.quantity, 0)} {order.items?.reduce((s, it) => s + it.quantity, 0) === 1 ? 'item' : 'items'}
+                  </span>
                 </div>
+                {order.items && order.items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-extrabold text-[#e8783c] bg-[#e8783c]/20 border border-[#e8783c]/40 px-2 py-0.5 rounded text-xs">
+                        {item.quantity}x
+                      </span>
+                      <div>
+                        <span className="text-white font-bold">{item.name}</span>
+                        {item.variant && <span className="ml-1.5 text-xs text-amber-200/80 font-normal">({item.variant})</span>}
+                        {Array.isArray(item.addons) && item.addons.length > 0 && (
+                          <div className="text-xs text-emerald-400 font-medium mt-0.5">
+                            + {item.addons.map(a => `${a.name} (₹${a.price})`).join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-white font-mono text-xs font-bold">₹{((item.price || 0) + (Array.isArray(item.addons) ? item.addons.reduce((sum, a) => sum + (a.price || 0), 0) : 0)) * item.quantity}</div>
+                  </div>
+                ))}
               </div>
-              <div className="text-[#aab7b2] font-mono text-xs">₹{((item.price || 0) + (Array.isArray(item.addons) ? item.addons.reduce((sum, a) => sum + (a.price || 0), 0) : 0)) * item.quantity}</div>
-            </div>
-          ))}
+
+              {/* Section 2: PREVIOUSLY DELIVERED IN EARLIER ROUNDS */}
+              <div className="p-3 rounded-xl bg-[#1a2320]/80 border border-[#2a3832] space-y-1.5 opacity-80">
+                <div className="flex items-center justify-between border-b border-[#2a3832] pb-1">
+                  <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1">
+                    <CheckCircle2 size={13} className="text-emerald-400" />
+                    <span>ALREADY DELIVERED / EARLIER ROUNDS</span>
+                  </span>
+                  <span className="text-[10px] text-emerald-400 font-semibold">Do not recook</span>
+                </div>
+                {order.previousRoundItems.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center text-xs text-slate-400">
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-500 font-mono text-[11px]">{item.quantity}x</span>
+                      <span className="line-through text-slate-400">{item.name} {item.variant ? `(${item.variant})` : ''}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">(Round {item.roundNumber || 1})</span>
+                    </div>
+                    <div className="font-mono text-[11px] text-slate-500">₹{(item.price || 0) * item.quantity}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            /* Standard Order Display */
+            order.items && order.items.map((item, idx) => (
+              <div key={idx} className="flex justify-between items-center text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-[#e8783c] bg-[#e8783c]/15 px-2 py-0.5 rounded text-xs">
+                    {item.quantity}x
+                  </span>
+                  <div>
+                    <span className="text-white font-semibold">{item.name}</span>
+                    {item.variant && <span className="ml-1.5 text-xs text-[#849a90] font-normal">({item.variant})</span>}
+                    {Array.isArray(item.addons) && item.addons.length > 0 && (
+                      <div className="text-xs text-emerald-400 font-medium mt-0.5">
+                        + {item.addons.map(a => `${a.name} (₹${a.price})`).join(', ')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="text-[#aab7b2] font-mono text-xs">₹{((item.price || 0) + (Array.isArray(item.addons) ? item.addons.reduce((sum, a) => sum + (a.price || 0), 0) : 0)) * item.quantity}</div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Total & Action Buttons */}
         <div className={`border-t border-[#2a3832] pt-3.5 flex ${order.status === 'NEW' ? 'flex-col gap-3' : 'justify-between items-center gap-2'}`}>
           <div className="flex justify-between items-center w-full">
             <div>
-              <div className="text-[10px] text-[#62756d] uppercase font-bold tracking-wider">Total</div>
-              <div className="text-xl font-black text-emerald-400">₹{order.total}</div>
+              {order.roundNumber && order.roundNumber > 1 && order.sessionTotal ? (
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[10px] text-[#849a90] uppercase font-bold tracking-wider">This Round:</span>
+                    <span className="text-sm font-bold text-amber-400">₹{order.total}</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mt-0.5">
+                    <span className="text-[11px] text-emerald-400 uppercase font-black tracking-wider">Table Total Bill:</span>
+                    <span className="text-xl font-black text-emerald-400">₹{order.sessionTotal}</span>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div className="text-[10px] text-[#62756d] uppercase font-bold tracking-wider">Total</div>
+                  <div className="text-xl font-black text-emerald-400">₹{order.total}</div>
+                </div>
+              )}
             </div>
             {order.status !== 'NEW' && (
               <div className="text-xs text-[#849a90]">

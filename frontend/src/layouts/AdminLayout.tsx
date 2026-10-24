@@ -31,9 +31,7 @@ export default function AdminLayout() {
   const [notificationError, setNotificationError] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
-  const pageTitle = location.pathname.startsWith('/admin/clients')
-    ? 'Onboard'
-    : navItems.find((item) => item.path === location.pathname)?.label ?? 'Admin Console';
+  const pageTitle = location.pathname.startsWith('/admin/clients/new') ? 'Onboard' : location.pathname === '/admin/clients' ? 'All Businesses' : navItems.find((item) => item.path === location.pathname)?.label ?? 'Admin Console';
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 

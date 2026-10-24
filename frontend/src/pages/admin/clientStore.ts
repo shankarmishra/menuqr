@@ -536,6 +536,11 @@ export interface CustomerOrder {
   time: string;
   restaurantName?: string;
   restaurantPhone?: string;
+  sessionId?: string | null;
+  roundNumber?: number;
+  parentOrderId?: string | null;
+  previousRoundItems?: Array<{ id: string; name: string; quantity: number; price: number; variant?: string; roundNumber?: number }>;
+  sessionTotal?: number;
 }
 
 export type CreateCustomerOrderPayload = {
@@ -550,6 +555,9 @@ export type CreateCustomerOrderPayload = {
   idempotencyKey?: string;
   items: Array<{ id: string; name?: string; quantity: number; price?: number; variant?: string; variantId?: string }>;
   total?: number;
+  sessionId?: string | null;
+  roundNumber?: number;
+  parentOrderId?: string | null;
 };
 
 export async function submitCustomerOrder(slug: string, order: CreateCustomerOrderPayload): Promise<CustomerOrder> {

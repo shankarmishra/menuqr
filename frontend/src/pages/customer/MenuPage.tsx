@@ -53,6 +53,28 @@ import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRend
 import { SEO } from '../../seo/SEO';
 import './MenuPage.css';
 
+export interface DiningSessionOrder {
+  id: string;
+  roundNumber: number;
+  total: number;
+  items: Array<{ id: string; name: string; quantity: number; price: number; variant?: string }>;
+  status: string;
+  createdAt: string;
+}
+
+export interface DiningSession {
+  sessionId: string;
+  slug: string;
+  tableNumber: string;
+  customerName: string;
+  customerPhone: string;
+  createdAt: number;
+  expiresAt: number;
+  orders: DiningSessionOrder[];
+}
+
+const DINING_SESSION_TTL_MS = 3.5 * 60 * 60 * 1000; // 3.5 hours auto-refresh window
+
 export default function MenuPage() {
   const { slug } = useParams();
   const location = useLocation();
@@ -86,6 +108,10 @@ export default function MenuPage() {
   // Active Order Live Tracking
   const [activeOrder, setActiveOrder] = useState<CustomerOrder | null>(null);
   const [isTrackerOpen, setIsTrackerOpen] = useState(false);
+
+  // Multi-Round Table Dining Session (3.5 hours TTL)
+  const [diningSession, setDiningSession] = useState<DiningSession | null>(null);
+  const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
   
 
   const currentMenuResult = menuResult?.slug === slug ? menuResult : undefined;
@@ -119,10 +145,55 @@ export default function MenuPage() {
         if (parsed.deliveryCity && !deliveryCity) setDeliveryCity(parsed.deliveryCity);
         if (parsed.orderType && !tableParam) setOrderType(parsed.orderType);
       }
+
+      // Check 3.5h Dining Session
+      const sessionKey = `menuqr_dining_session_${slug}`;
+      const rawSession = localStorage.getItem(sessionKey);
+      if (rawSession) {
+        const parsedSession: DiningSession = JSON.parse(rawSession);
+        if (parsedSession && typeof parsedSession.expiresAt === 'number') {
+          if (Date.now() > parsedSession.expiresAt) {
+            // Auto-refresh: 3.5 hours passed, start completely fresh
+            localStorage.removeItem(sessionKey);
+            setDiningSession(null);
+          } else {
+            setDiningSession(parsedSession);
+            if (!tableParam && parsedSession.tableNumber) {
+              setTableNumber(parsedSession.tableNumber);
+              setOrderType('DINE_IN');
+            }
+            if (parsedSession.customerName && !customerName) setCustomerName(parsedSession.customerName);
+            if (parsedSession.customerPhone && !customerPhone) setCustomerPhone(parsedSession.customerPhone);
+          }
+        }
+      }
     } catch {
       // Ignore storage errors
     }
   }, [slug, tableParam]);
+
+  // Background check for 3.5 hour session expiration
+  useEffect(() => {
+    if (!slug || !diningSession) return;
+    const checkExpiry = setInterval(() => {
+      if (Date.now() > diningSession.expiresAt) {
+        localStorage.removeItem(`menuqr_dining_session_${slug}`);
+        setDiningSession(null);
+        showToast('info', 'Your dining session has concluded (3.5h window completed).');
+      }
+    }, 60000);
+    return () => clearInterval(checkExpiry);
+  }, [slug, diningSession]);
+
+  const finishDiningSession = () => {
+    if (!slug) return;
+    localStorage.removeItem(`menuqr_dining_session_${slug}`);
+    sessionStorage.removeItem(`active_order_${slug}`);
+    setDiningSession(null);
+    setActiveOrder(null);
+    setIsSessionModalOpen(false);
+    showToast('info', 'Dining session completed. Thank you for dining with us!');
+  };
 
   // Persist cart to localStorage
   useEffect(() => {
@@ -277,6 +348,26 @@ export default function MenuPage() {
 
     setIsSubmitting(true);
     try {
+      // Determine multi-round table session
+      let sessionIdToUse: string | null = null;
+      let roundNumberToUse = 1;
+      let parentOrderIdToUse: string | null = null;
+
+      if (orderType === 'DINE_IN') {
+        const isSameTable = diningSession && diningSession.tableNumber.trim().toLowerCase() === tableNumber.trim().toLowerCase();
+        const isSessionValid = diningSession && Date.now() < diningSession.expiresAt && diningSession.orders.length > 0;
+
+        if (isSameTable && isSessionValid) {
+          sessionIdToUse = diningSession.sessionId;
+          roundNumberToUse = diningSession.orders.length + 1;
+          parentOrderIdToUse = diningSession.orders[0].id;
+        } else {
+          sessionIdToUse = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+          roundNumberToUse = 1;
+          parentOrderIdToUse = null;
+        }
+      }
+
       const payload: CreateCustomerOrderPayload = {
         orderType,
         customerName: trimmedName,
@@ -288,7 +379,10 @@ export default function MenuPage() {
         notes: notes.trim() || null,
         idempotencyKey: idempotencyKeyRef.current,
         items: cart,
-        total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+        total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        sessionId: sessionIdToUse,
+        roundNumber: roundNumberToUse,
+        parentOrderId: parentOrderIdToUse
       };
 
       const placed = qrId 
@@ -299,12 +393,44 @@ export default function MenuPage() {
       if (slug) {
         sessionStorage.setItem(`active_order_${slug}`, JSON.stringify(placed));
         localStorage.removeItem(`menuqr_cart_${slug}`);
+
+        // Update or create 3.5-hour dining session
+        if (orderType === 'DINE_IN' && sessionIdToUse) {
+          const newOrderRecord: DiningSessionOrder = {
+            id: placed.id,
+            roundNumber: roundNumberToUse,
+            total: placed.total,
+            items: placed.items || cart,
+            status: placed.status,
+            createdAt: placed.time || new Date().toISOString()
+          };
+
+          const updatedOrders = (diningSession && diningSession.sessionId === sessionIdToUse)
+            ? [...diningSession.orders, newOrderRecord]
+            : [newOrderRecord];
+
+          const newSession: DiningSession = {
+            sessionId: sessionIdToUse,
+            slug,
+            tableNumber: tableNumber.trim(),
+            customerName: trimmedName,
+            customerPhone: cleanPhone.slice(-10),
+            createdAt: diningSession?.createdAt || Date.now(),
+            expiresAt: (diningSession?.createdAt || Date.now()) + DINING_SESSION_TTL_MS,
+            orders: updatedOrders
+          };
+
+          localStorage.setItem(`menuqr_dining_session_${slug}`, JSON.stringify(newSession));
+          setDiningSession(newSession);
+        }
       }
       setCart([]);
       setIsCartOpen(false);
       setIsTrackerOpen(true);
       idempotencyKeyRef.current = `idem-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-      showToast('success', 'Order placed successfully! The restaurant has been notified.');
+      showToast('success', roundNumberToUse > 1 
+        ? `Round ${roundNumberToUse} added to Table ${tableNumber.trim()}! Kitchen has been notified.`
+        : 'Order placed successfully! The restaurant has been notified.');
     } catch (e: any) {
       showToast('error', e?.message || 'Your order did not go through. Please try again.');
     } finally {
@@ -573,8 +699,30 @@ export default function MenuPage() {
         <div>Prepared with care at <strong className="opacity-100">{client.businessName}</strong></div>
       </footer>
 
+      {/* Active Table Dining Session Floating Pill */}
+      {diningSession && diningSession.orders.length > 0 && !isSessionModalOpen && (
+        <button
+          type="button"
+          onClick={() => setIsSessionModalOpen(true)}
+          className="table-session-pill"
+          aria-label="View active table dining session"
+        >
+          <span className="table-session-dot" />
+          <div className="flex flex-col text-left">
+            <span className="font-bold text-white text-xs flex items-center gap-1.5">
+              <UtensilsCrossed size={13} className="text-[#e8783c]" />
+              Table {diningSession.tableNumber} • Round {diningSession.orders.length}
+            </span>
+            <span className="text-[11px] text-emerald-300 font-semibold mt-0.5">
+              Total Bill: ₹{diningSession.orders.reduce((sum, o) => sum + (o.total || 0), 0)} • View / Add Dishes
+            </span>
+          </div>
+          <ChevronRight size={14} className="opacity-70 ml-1 shrink-0 text-slate-300" />
+        </button>
+      )}
+
       {/* Active Order Floating Pill (Allows reopening the live status tracker) */}
-      {activeOrder && !isTrackerOpen && (
+      {activeOrder && !isTrackerOpen && !diningSession && (
         <button
           type="button"
           onClick={() => setIsTrackerOpen(true)}
@@ -817,6 +965,21 @@ export default function MenuPage() {
                   </div>
                 </div>
 
+                {/* Active Table Dining Add-on Notice */}
+                {orderType === 'DINE_IN' && diningSession && diningSession.orders.length > 0 && diningSession.tableNumber.trim().toLowerCase() === tableNumber.trim().toLowerCase() && (
+                  <div className="mb-3.5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs">
+                    <div className="font-bold text-amber-900 flex items-center gap-1.5">
+                      <span>🔔 Adding Round {diningSession.orders.length + 1} to Table {diningSession.tableNumber}</span>
+                    </div>
+                    <div className="text-amber-800 text-[11px] mt-1 leading-snug">
+                      Previous Orders ({diningSession.orders.length}): ₹{diningSession.orders.reduce((sum, o) => sum + (o.total || 0), 0)} • This Round: ₹{cartTotalAmount}
+                      <div className="font-bold text-amber-950 mt-0.5">
+                        New Running Table Total: ₹{diningSession.orders.reduce((sum, o) => sum + (o.total || 0), 0) + cartTotalAmount}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Bill Summary */}
                 <div className="menu-cart-summary">
                   <div className="summary-row">
@@ -855,11 +1018,160 @@ export default function MenuPage() {
                     <span>Sending Order to Restaurant...</span>
                   ) : (
                     <>
-                      <span>{orderType === 'DELIVERY' ? 'Confirm Delivery Order (Pay After Delivery)' : 'Place Order (Pay After Meal)'}</span>
+                      <span>{
+                        orderType === 'DINE_IN' && diningSession && diningSession.orders.length > 0 && diningSession.tableNumber.trim().toLowerCase() === tableNumber.trim().toLowerCase()
+                          ? `Send Round ${diningSession.orders.length + 1} Dishes to Kitchen`
+                          : (orderType === 'DELIVERY' ? 'Confirm Delivery Order (Pay After Delivery)' : 'Place Order (Pay After Meal)')
+                      }</span>
                       <ChevronRight size={18} />
                     </>
                   )}
                 </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Active Table Dining Session & Multi-Round Bill Modal */}
+      <AnimatePresence>
+        {isSessionModalOpen && diningSession && (
+          <motion.div
+            className="menu-cart-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSessionModalOpen(false)}
+          >
+            <motion.div
+              className="menu-cart-modal tracker-modal"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="menu-cart-header">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="m-0">Table {diningSession.tableNumber} Session</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                      Active
+                    </span>
+                  </div>
+                  <span className="text-xs text-[#64748b]">
+                    Dining at {client.businessName} • {diningSession.customerName || 'Guest'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsSessionModalOpen(false)}
+                  className="menu-cart-close"
+                  aria-label="Close session details"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="order-tracker-content overflow-y-auto max-h-[75vh]">
+                {/* Total Table Bill Summary Card */}
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-emerald-500/10 border border-emerald-500/30 flex items-center justify-between shadow-sm">
+                  <div>
+                    <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Current Table Bill ({diningSession.orders.length} {diningSession.orders.length === 1 ? 'Round' : 'Rounds'})
+                    </div>
+                    <div className="text-2xl font-black text-emerald-700 mt-0.5">
+                      ₹{diningSession.orders.reduce((sum, o) => sum + (o.total || 0), 0).toLocaleString('en-IN')}
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-1">
+                      Pay directly at table or counter when you finish dining.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSessionModalOpen(false);
+                      setIsCartOpen(true);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-[#e8783c] hover:bg-[#f08b55] text-white text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center gap-1.5"
+                  >
+                    <Plus size={14} />
+                    <span>Add Dishes</span>
+                  </button>
+                </div>
+
+                {/* Session Expiration & Auto-Refresh Notice */}
+                <div className="my-3 p-3 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-600 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-medium">
+                    <Clock3 size={14} className="text-slate-500 shrink-0" />
+                    <span>
+                      Session active for ~{Math.max(1, Math.round((diningSession.expiresAt - Date.now()) / (60 * 1000)))} more mins.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={finishDiningSession}
+                    className="text-[11px] font-bold text-rose-600 hover:text-rose-700 underline"
+                  >
+                    Finish Dining
+                  </button>
+                </div>
+
+                {/* Multi-Round Order Breakdown */}
+                <div className="space-y-3 mt-3">
+                  <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Dishes Ordered by Round
+                  </div>
+
+                  {diningSession.orders.map((ord, idx) => (
+                    <div key={ord.id || idx} className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm space-y-2">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 font-black text-xs">
+                            Round {ord.roundNumber || idx + 1}
+                          </span>
+                          <span className="text-xs text-slate-400 font-mono">#{ord.id}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-extrabold text-slate-800 text-sm">₹{ord.total}</span>
+                          <span className="text-[10px] text-emerald-600 font-bold block uppercase">{ord.status}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        {ord.items && ord.items.map((it, itemIdx) => (
+                          <div key={itemIdx} className="flex justify-between text-xs text-slate-700">
+                            <span className="font-medium">
+                              {it.quantity}x {it.name} {it.variant ? `(${it.variant})` : ''}
+                            </span>
+                            <span className="text-slate-500 font-mono">₹{it.price * it.quantity}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bottom Actions */}
+                <div className="mt-5 pt-3 border-t border-slate-200 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={finishDiningSession}
+                    className="flex-1 py-2.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold transition-colors"
+                  >
+                    Finish Dining & Leave
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSessionModalOpen(false);
+                      setIsCartOpen(true);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-[#e8783c] hover:bg-[#f08b55] text-white text-xs font-bold transition-all shadow-sm"
+                  >
+                    + Add More to Round {diningSession.orders.length + 1}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

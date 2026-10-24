@@ -226,6 +226,7 @@ function AdminPortalRoutes() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="clients/new/:step?" element={<ClientForm />} />
             <Route path="clients/:clientId/:step?" element={<ClientForm />} />
+            <Route path="clients" element={<ClientList />} />
             <Route path="restaurants" element={<ClientList />} />
             <Route path="dhabas" element={<ClientList />} />
             <Route path="cafes" element={<ClientList />} />

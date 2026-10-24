@@ -1486,10 +1486,13 @@ export default async function appRoutes(request, response, url) {
         delivery_address as "deliveryAddress",
         delivery_landmark as "deliveryLandmark",
         delivery_city as "deliveryCity",
-        notes,
+        notes, 
         items, 
         total, 
         status, 
+        session_id as "sessionId",
+        COALESCE(round_number, 1) as "roundNumber",
+        parent_order_id as "parentOrderId",
         rejection_reason as "rejectionReason",
         estimated_time_minutes as "estimatedTimeMinutes",
         estimated_delivery_time as "estimatedDeliveryTime",
@@ -1499,7 +1502,41 @@ export default async function appRoutes(request, response, url) {
         AND created_at >= NOW() - INTERVAL '24 HOURS'
       ORDER BY created_at DESC
     `, [user.tenantId]);
-    sendJson(response, 200, res.rows.map(r => ({ ...r, total: parseFloat(r.total) })));
+
+    const sessionMap = new Map();
+    for (const r of res.rows) {
+      if (r.sessionId) {
+        if (!sessionMap.has(r.sessionId)) sessionMap.set(r.sessionId, []);
+        sessionMap.get(r.sessionId).push(r);
+      }
+    }
+
+    const enriched = res.rows.map(r => {
+      let previousRoundItems = [];
+      let sessionTotal = parseFloat(r.total);
+
+      if (r.sessionId && sessionMap.has(r.sessionId)) {
+        const sessionOrders = sessionMap.get(r.sessionId);
+        const previousOrders = sessionOrders.filter(
+          so => so.id !== r.id && new Date(so.time).getTime() < new Date(r.time).getTime()
+        );
+        for (const po of previousOrders) {
+          if (Array.isArray(po.items)) {
+            previousRoundItems.push(...po.items.map(it => ({ ...it, roundNumber: po.roundNumber, orderId: po.id })));
+          }
+          sessionTotal += parseFloat(po.total || 0);
+        }
+      }
+
+      return {
+        ...r,
+        total: parseFloat(r.total),
+        sessionTotal: Math.round(sessionTotal * 100) / 100,
+        previousRoundItems,
+      };
+    });
+
+    sendJson(response, 200, enriched);
     return true;
   }
 

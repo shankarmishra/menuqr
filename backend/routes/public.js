@@ -407,6 +407,9 @@ export default async function publicRoutes(request, response, url) {
           items, 
           total, 
           status, 
+          session_id as "sessionId",
+          round_number as "roundNumber",
+          parent_order_id as "parentOrderId",
           rejection_reason as "rejectionReason",
           tracking_token as "trackingToken", estimated_time_minutes as "estimatedTimeMinutes",
           estimated_delivery_time as "estimatedDeliveryTime",
@@ -470,6 +473,10 @@ export default async function publicRoutes(request, response, url) {
     }
 
     const notes = String(input.notes || input.instructions || '').trim() || null;
+    const rawSessionId = input.sessionId ? String(input.sessionId).trim() : null;
+    const sessionId = rawSessionId && rawSessionId.length <= 100 ? rawSessionId : `sess_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const roundNumber = typeof input.roundNumber === 'number' && input.roundNumber > 0 ? Math.min(input.roundNumber, 20) : 1;
+    const parentOrderId = input.parentOrderId ? String(input.parentOrderId).trim() : null;
     
     if (!Array.isArray(input.items) || input.items.length === 0) {
       throw apiError(400, 'Order items are required.');
@@ -631,9 +638,9 @@ export default async function publicRoutes(request, response, url) {
       `INSERT INTO customer_orders (
          id, tenant_id, order_type, table_number, customer_name, customer_phone,
          delivery_address, delivery_landmark, delivery_city, notes, items, total, status,
-         idempotency_key, tracking_token
+         idempotency_key, tracking_token, session_id, round_number, parent_order_id
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'NEW', $13, $14)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'NEW', $13, $14, $15, $16, $17)
        ON CONFLICT (tenant_id, idempotency_key) WHERE idempotency_key IS NOT NULL
        DO NOTHING
        RETURNING 
@@ -649,6 +656,9 @@ export default async function publicRoutes(request, response, url) {
          items, 
          total, 
          status, 
+         session_id as "sessionId",
+         round_number as "roundNumber",
+         parent_order_id as "parentOrderId",
          tracking_token as "trackingToken",
          estimated_time_minutes as "estimatedTimeMinutes",
          estimated_delivery_time as "estimatedDeliveryTime",
@@ -667,7 +677,10 @@ export default async function publicRoutes(request, response, url) {
         JSON.stringify(validatedItems), 
         calculatedTotal,
         idempotencyKey,
-        trackingToken
+        trackingToken,
+        sessionId,
+        roundNumber,
+        parentOrderId
       ]
     );
     
@@ -690,6 +703,9 @@ export default async function publicRoutes(request, response, url) {
           items, 
           total, 
           status, 
+          session_id as "sessionId",
+          round_number as "roundNumber",
+          parent_order_id as "parentOrderId",
           rejection_reason as "rejectionReason",
           tracking_token as "trackingToken", estimated_time_minutes as "estimatedTimeMinutes",
           estimated_delivery_time as "estimatedDeliveryTime",
@@ -735,6 +751,9 @@ export default async function publicRoutes(request, response, url) {
         o.items,
         o.total,
         o.status,
+        o.session_id as "sessionId",
+        o.round_number as "roundNumber",
+        o.parent_order_id as "parentOrderId",
         o.rejection_reason as "rejectionReason",
         o.tracking_token as "trackingToken",
         o.estimated_time_minutes as "estimatedTimeMinutes",
