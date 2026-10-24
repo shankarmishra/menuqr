@@ -12,10 +12,12 @@ import {
   EyeOff,
   Copy,
   Layers,
-  FileSpreadsheet
+  FileSpreadsheet,
+  UploadCloud
 } from 'lucide-react';
 import { usePlan } from '../../lib/usePlan';
 import { useToast } from '../../components/feedback/ToastProvider';
+import { compressImageBeforeUpload } from '../../utils/imageCompressor';
 import {
   createMenuCategory,
   createMenuItem,
@@ -61,6 +63,31 @@ export default function Menu() {
   const [isImportWizardOpen, setIsImportWizardOpen] = useState(false);
   const [isItemDrawerOpen, setIsItemDrawerOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<AppMenuItem | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleDishImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const compressed = await compressImageBeforeUpload(file, 1000, 0.78);
+      const res = await fetch('/api/app/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ image: compressed.dataUrl, category: 'dishes' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      setItemForm(prev => ({ ...prev, imageUrl: data.url }));
+      showToast('success', `Photo compressed (-${compressed.reductionPercentage}%) and attached!`);
+    } catch (err: any) {
+      showToast('error', err?.message || 'Failed to upload photo.');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
 
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -886,6 +913,36 @@ export default function Menu() {
                   rows={2}
                   className="mt-1 w-full rounded-xl border border-[#384841] bg-[#151c19] px-3.5 py-2.5 text-sm text-white focus:border-[#e8783c] focus:outline-none"
                 />
+              </div>
+
+              {/* Dish Photo with Client Pre-Compression */}
+              <div>
+                <label className="text-xs font-semibold text-[#aab7b2]">Dish Photo (Auto-compressed before upload)</label>
+                <div className="mt-1.5 flex items-center gap-3">
+                  {itemForm.imageUrl ? (
+                    <div className="relative h-14 w-14 shrink-0 rounded-xl overflow-hidden border border-[#384841] bg-black/40">
+                      <img src={itemForm.imageUrl} alt="Dish" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setItemForm({ ...itemForm, imageUrl: '' })}
+                        className="absolute top-1 right-1 bg-black/80 rounded-full p-0.5 text-rose-400 hover:text-white"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : null}
+                  <label className="flex-1 cursor-pointer flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl border border-dashed border-[#384841] hover:border-[#e8783c] bg-[#151c19] text-xs font-semibold text-[#aab7b2] hover:text-white transition-all">
+                    <UploadCloud size={16} className="text-[#e8783c]" />
+                    <span>{uploadingImage ? 'Optimizing & Uploading...' : (itemForm.imageUrl ? 'Change Photo' : 'Upload Dish Photo')}</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      disabled={uploadingImage}
+                      onChange={handleDishImageUpload}
+                    />
+                  </label>
+                </div>
               </div>
 
               {/* Pricing Mode Selector */}

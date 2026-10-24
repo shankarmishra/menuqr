@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ChevronLeft,
   ChevronRight,
@@ -18,8 +18,7 @@ import {
   ArrowRight,
   CheckCircle2,
   XCircle,
-  Smartphone,
-  Eye
+  Smartphone
 } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -27,9 +26,9 @@ import {
    Inspired by ThreeUI Character Carousel (3D Filmstrip & Dynamic Wave)
    Elevated with:
    - 8 Custom Ultra-Realistic Commercial Editorial Photographs
-   - Real-World Restaurant Value Propositions (Surge, 86 Shield, Upsell, etc.)
+   - Restaurant Value Propositions (Surge, 86 Shield, Upsell, Lifetime QR, KOT, etc.)
    - MenusQR Signature Luxury Aesthetic (Parchment, Obsidian Emerald, Burnt Orange)
-   - 3D Inertia Drag, Touch Gestures, Wheel Scroll, and Auto-Idle Parallax
+   - Discrete Auto-Advance, Friction-Free Inertia Drag, Touch Gestures, & Direct Tabs
    ────────────────────────────────────────────────────────────────────────── */
 
 export interface SuperpowerItem {
@@ -57,7 +56,7 @@ const SUPERPOWERS: SuperpowerItem[] = [
     pillar: 'REVENUE ENGINE',
     title: 'Dynamic Peak-Hour Surge Pricing',
     shortTitle: 'Dynamic Surge Pricing',
-    tagline: 'Automatic Friday & Weekend Evening Margin Capture',
+    tagline: 'Automatic Friday & weekend dinner margin capture',
     metric: '+24% RevPASH',
     metricLabel: 'Weekend Revenue Per Seat',
     accentColor: '#FF5E4D',
@@ -74,8 +73,8 @@ const SUPERPOWERS: SuperpowerItem[] = [
     pillar: 'GUEST TRUST',
     title: 'Instant 86’d Sold-Out Shield',
     shortTitle: 'Instant Sold-Out Shield',
-    tagline: 'Hide Out-Of-Stock Dishes in 3 Seconds Flat',
-    metric: '0 Embarrassing Apologies',
+    tagline: 'Hide out-of-stock dishes in 3 seconds flat',
+    metric: '0 Apologies',
     metricLabel: 'Table Frustration Eliminated',
     accentColor: '#34B56A',
     image: '/marketing/carousel/chef_kitchen.jpg',
@@ -91,8 +90,8 @@ const SUPERPOWERS: SuperpowerItem[] = [
     pillar: 'BASKET SIZE',
     title: 'Appetite-Driven Smart Upselling',
     shortTitle: 'Smart Upsell Engine',
-    tagline: 'The Silent Waiter That Never Forgets to Pair',
-    metric: '+34% Higher AOV',
+    tagline: 'The silent waiter that never forgets to pair drinks & sides',
+    metric: '+34% AOV',
     metricLabel: 'Average Order Value Increase',
     accentColor: '#FFC928',
     image: '/marketing/carousel/smart_upsell.jpg',
@@ -106,16 +105,16 @@ const SUPERPOWERS: SuperpowerItem[] = [
     id: 'permanent-qr',
     index: '04',
     pillar: 'LIFETIME HARDWARE',
-    title: 'One Permanent Tabletop QR Standee',
+    title: 'One Permanent Tabletop Standee',
     shortTitle: 'Permanent Lifetime QR',
-    tagline: 'Never Spend a Single Rupee on Reprints Again',
+    tagline: 'Never spend a single rupee on menu reprints again',
     metric: '₹48,000 Saved / Yr',
     metricLabel: 'Zero Recurring Print Waste',
     accentColor: '#E8783C',
     image: '/marketing/carousel/walnut_standee.jpg',
     icon: <QrCode className="w-4 h-4 text-[#E8783C]" />,
     oldWay: 'Spending ₹12,000 every quarter to reprint grease-stained, torn, outdated paper menus.',
-    newWay: 'Mount high-grade solid walnut or acrylic table QR standees once. Update dishes, prices, and chef specials behind the code forever.',
+    newWay: 'Mount high-grade solid walnut or acrylic table QR standees once. Update dishes, prices, and specials behind the code forever.',
     impactStory: 'A 28-table restaurant saved ₹54,000 in printing bills in their very first year using permanent MenusQR plaques.',
     cardHighlight: 'Solid Walnut & Brass Plaque'
   },
@@ -125,14 +124,14 @@ const SUPERPOWERS: SuperpowerItem[] = [
     pillar: 'WORKFLOW SYNC',
     title: 'Direct WhatsApp Kitchen KOT',
     shortTitle: 'Instant WhatsApp KOT',
-    tagline: 'Zero Cost POS Hardware • Direct Chef Dispatch',
-    metric: '0 Missed Orders',
-    metricLabel: 'Order Accuracy & Speed',
+    tagline: 'Zero cost POS hardware • direct chef dispatch',
+    metric: '45s Dispatch',
+    metricLabel: 'Order-To-Stove Acceleration',
     accentColor: '#10B981',
     image: '/marketing/carousel/whatsapp_kot.jpg',
     icon: <MessageSquare className="w-4 h-4 text-[#10B981]" />,
     oldWay: 'Waiters scribble notes on paper slips, walk back and forth, losing precious table turn minutes.',
-    newWay: 'Guest orders fire directly to the kitchen chef’s WhatsApp or thermal printer with exact table number and allergies.',
+    newWay: 'Guest orders fire directly to the kitchen chef’s WhatsApp or thermal printer with exact table number and notes.',
     impactStory: 'Order-to-stove time plummeted from 8.5 minutes down to 45 seconds during peak dinner rush.',
     cardHighlight: 'Table #07 Direct Thermal Slip'
   },
@@ -142,7 +141,7 @@ const SUPERPOWERS: SuperpowerItem[] = [
     pillar: 'GLOBAL GUESTS',
     title: 'Automatic 12-Language Translation',
     shortTitle: '12-Language Live Menu',
-    tagline: 'Zero Language Barrier For International Diners',
+    tagline: 'Zero language barrier for domestic & foreign tourists',
     metric: '100% Clarity',
     metricLabel: 'Global Guest Satisfaction',
     accentColor: '#60A5FA',
@@ -159,7 +158,7 @@ const SUPERPOWERS: SuperpowerItem[] = [
     pillar: 'FRICTIONLESS UX',
     title: '400ms Zero-App Lightning Scan',
     shortTitle: 'Zero-App Instant Load',
-    tagline: 'No App Store Download • No OTP Phone Barrier',
+    tagline: 'No App Store download • no phone OTP barrier',
     metric: '99.8% Scan Rate',
     metricLabel: 'Instant Menu Accessibility',
     accentColor: '#C084FC',
@@ -176,13 +175,13 @@ const SUPERPOWERS: SuperpowerItem[] = [
     pillar: 'STAFF RETENTION',
     title: 'Split Bill & Instant UPI Waiter Tips',
     shortTitle: 'Split Bill & UPI Tipping',
-    tagline: 'Faster Table Turns & 4x Happier Service Staff',
+    tagline: 'Faster table turns & 4x happier service staff',
     metric: '4.2x Server Tips',
     metricLabel: 'Direct Digital Waiter Rewards',
     accentColor: '#F43F5E',
     image: '/marketing/carousel/split_bill.jpg',
     icon: <Coins className="w-4 h-4 text-[#F43F5E]" />,
-    oldWay: 'Groups spend 15 awkward minutes dividing bills; waiters walk back and forth with credit card machines.',
+    oldWay: 'Groups spend 15 awkward minutes dividing bills; waiters walk back and forth with card machines.',
     newWay: 'Friends split checks on their phones and pay via GPay / PhonePe / Paytm, with 1-tap waiter tip prompts.',
     impactStory: 'Servers earned ₹6,800+ in extra digital tips weekly, dramatically reducing restaurant staff turnover.',
     cardHighlight: 'Split 4 Ways + Direct UPI Tip'
@@ -232,7 +231,7 @@ export default function CharacterCarouselSection() {
   const moveToIndex = useCallback(
     (targetIndex: number) => {
       const s = stateRef.current;
-      const currentNearest = ((Math.round(s.phase) % count) + count) % count;
+      const currentNearest = ((Math.round(s.target) % count) + count) % count;
       let delta = targetIndex - currentNearest;
       if (delta > count / 2) delta -= count;
       if (delta < -count / 2) delta += count;
@@ -262,6 +261,22 @@ export default function CharacterCarouselSection() {
     s.lastInput = performance.now();
   }, []);
 
+  // Discrete Auto-advance timer (every 4.8 seconds, smooth step to next card)
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const timer = setInterval(() => {
+      const s = stateRef.current;
+      if (s.isHovered || s.isDragging || s.active) return;
+      if (performance.now() - s.lastInput < 3000) return;
+
+      s.base += 1;
+      s.target = s.base;
+    }, 4800);
+
+    return () => clearInterval(timer);
+  }, [isPlaying]);
+
   // Main 3D render loop
   useEffect(() => {
     let animationFrameId: number;
@@ -273,14 +288,9 @@ export default function CharacterCarouselSection() {
       const deltaTime = Math.min(32, time - previousTime);
       previousTime = time;
 
-      const ease = reducedMotion ? 1 : 1 - Math.pow(0.001, deltaTime / 1000);
+      const ease = reducedMotion ? 1 : 1 - Math.pow(0.001, deltaTime / 900);
 
-      // Auto-idle motion if user hasn't touched the carousel and isn't hovering
-      if (isPlaying && !s.isHovered && !s.active && !s.isDragging && time - s.lastInput > 2400) {
-        const idle = time - s.lastInput - 2400;
-        s.target = s.base + Math.sin(idle * 0.00035) * 1.85;
-      }
-
+      // Smoothly glide phase to target
       s.phase += (s.target - s.phase) * ease;
 
       const currentNearest = ((Math.round(s.phase) % count) + count) % count;
@@ -293,19 +303,34 @@ export default function CharacterCarouselSection() {
       const compact = stageWidth < 680;
       const isTablet = stageWidth >= 680 && stageWidth < 1024;
 
+      // Generous card spacing so cards never collide
       const horizontalSpacing = compact
-        ? Math.min(135, Math.max(95, stageWidth * 0.28))
+        ? Math.min(240, Math.max(200, stageWidth * 0.62))
         : isTablet
-        ? Math.min(175, Math.max(130, stageWidth * 0.18))
-        : Math.min(210, Math.max(150, stageWidth * 0.145));
+        ? Math.min(270, Math.max(240, stageWidth * 0.26))
+        : Math.min(315, Math.max(280, stageWidth * 0.21));
+
+      // Organic vertical breath for active card
+      const breathY = Math.sin(time * 0.0018) * 3;
 
       cardsRef.current.forEach((card, i) => {
         if (!card) return;
 
         const delta = wrappedDelta(i, s.phase);
         const distance = Math.abs(delta);
-        const focus = Math.exp(-distance * distance * 1.32);
-        const side = Math.max(0, 1 - distance / 4.4);
+
+        // Hide cards too far out to preserve performance and prevent screen edge clutter
+        if (distance > 2.6) {
+          card.style.opacity = '0';
+          card.style.pointerEvents = 'none';
+          card.style.transform = 'translate(-50%, -50%) scale(0.4)';
+          return;
+        }
+
+        card.style.pointerEvents = 'auto';
+
+        const focus = Math.exp(-distance * distance * 1.45);
+        const side = Math.max(0, 1 - distance / 2.6);
         const direction = Math.sign(delta);
 
         let x = 0;
@@ -317,43 +342,37 @@ export default function CharacterCarouselSection() {
         let rotateZ = 0;
 
         if (variant === 'filmstrip') {
-          // Cinematic 3D Concave Filmstrip
-          x = compact
-            ? delta * (horizontalSpacing * 0.95)
-            : delta * horizontalSpacing;
-          y = compact
-            ? Math.abs(delta) * 6 + s.pointerY * focus * 8
-            : Math.abs(delta) * 7 + s.pointerY * focus * 12;
-          z = focus * 160 - distance * 135;
+          // ThreeUI Concave Filmstrip Arc
+          x = delta * horizontalSpacing;
+          y = Math.abs(delta) * (compact ? 6 : 8) + (focus * breathY) + s.pointerY * focus * 8;
+          z = focus * 140 - distance * 115;
           scale = compact
-            ? 0.62 + side * 0.12 + focus * 0.38
-            : 0.6 + side * 0.14 + focus * 0.46;
-          rotateX = -s.pointerY * focus * 5;
-          rotateY = compact
-            ? -direction * (distance > 0.15 ? 12 + Math.min(distance, 2.5) * 5 : 0) + s.pointerX * focus * 3
-            : -direction * (distance > 0.15 ? 15 + Math.min(distance, 3) * 6 : 0) + s.pointerX * focus * 4;
-          rotateZ = delta * 0.55;
+            ? 0.72 + focus * 0.30
+            : 0.76 + focus * 0.28;
+          rotateX = -s.pointerY * focus * 4;
+          rotateY = -direction * (distance > 0.1 ? 22 + Math.min(distance, 2) * 6 : 0) + s.pointerX * focus * 4;
+          rotateZ = delta * 0.4;
         } else {
           // Dynamic Wave Flow
-          const wavePeriod = delta * 0.95;
+          const wavePeriod = delta * 0.92;
           x = delta * horizontalSpacing;
-          y = Math.sin(wavePeriod) * (compact ? 32 : 46) + s.pointerY * focus * 10;
-          z = Math.cos(wavePeriod) * (compact ? 80 : 120) + focus * 90 - distance * 70;
+          y = Math.sin(wavePeriod) * (compact ? 28 : 38) + (focus * breathY) + s.pointerY * focus * 6;
+          z = Math.cos(wavePeriod) * (compact ? 70 : 100) + focus * 70 - distance * 60;
           scale = compact
-            ? 0.64 + side * 0.12 + focus * 0.36
-            : 0.62 + side * 0.14 + focus * 0.44;
-          rotateX = Math.sin(wavePeriod) * 5 - s.pointerY * focus * 4;
+            ? 0.70 + focus * 0.30
+            : 0.74 + focus * 0.28;
+          rotateX = Math.sin(wavePeriod) * 5 - s.pointerY * focus * 3;
           rotateY = Math.cos(wavePeriod) * 16 + s.pointerX * focus * 4;
-          rotateZ = Math.sin(wavePeriod) * -3.2;
+          rotateZ = Math.sin(wavePeriod) * -3;
         }
 
-        const opacity = Math.max(0.12, side * 0.74 + focus * 0.26);
-        const blurAmount = Math.max(0, distance - 1.25) * 2.2;
+        const opacity = Math.max(0.2, side * 0.75 + focus * 0.25);
+        const blurAmount = Math.max(0, distance - 1.2) * 2;
 
         card.style.setProperty('--focus', focus.toFixed(4));
         card.style.zIndex = String(Math.round(1000 - distance * 100));
         card.style.opacity = opacity.toFixed(3);
-        card.style.filter = `blur(${blurAmount.toFixed(1)}px)`;
+        card.style.filter = blurAmount > 0.1 ? `blur(${blurAmount.toFixed(1)}px)` : 'none';
         card.style.transform = [
           'translate(-50%, -50%)',
           `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, ${z.toFixed(2)}px)`,
@@ -371,7 +390,7 @@ export default function CharacterCarouselSection() {
 
     animationFrameId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [variant, isPlaying, count, wrappedDelta, activeIndex]);
+  }, [variant, count, wrappedDelta, activeIndex]);
 
   // Pointer & Touch Drag Handlers
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -383,7 +402,11 @@ export default function CharacterCarouselSection() {
     s.dragDistance = 0;
     s.active = true;
     s.lastInput = performance.now();
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // Safe fallback
+    }
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -403,7 +426,7 @@ export default function CharacterCarouselSection() {
       const deltaX = e.clientX - s.startX;
       s.dragDistance = Math.abs(deltaX);
       const stageWidth = rect.width;
-      const sensitivity = stageWidth < 680 ? 120 : 180;
+      const sensitivity = stageWidth < 680 ? 150 : 220;
       s.target = s.startBase - deltaX / sensitivity;
       s.lastInput = performance.now();
     }
@@ -413,6 +436,7 @@ export default function CharacterCarouselSection() {
     const s = stateRef.current;
     if (s.isDragging) {
       s.isDragging = false;
+      // Snap to nearest integer card
       s.base = Math.round(s.target);
       s.target = s.base;
       s.lastInput = performance.now();
@@ -448,10 +472,10 @@ export default function CharacterCarouselSection() {
     const s = stateRef.current;
     const isHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY);
     const delta = isHorizontal ? e.deltaX : e.deltaY;
-    if (Math.abs(delta) < 8) return;
+    if (Math.abs(delta) < 15) return;
 
     const direction = Math.sign(delta);
-    s.base += direction * 0.75;
+    s.base += direction * 1;
     s.target = s.base;
     s.active = false;
     s.lastInput = performance.now();
@@ -474,7 +498,7 @@ export default function CharacterCarouselSection() {
     <section
       id="menusqr-superpowers"
       aria-label="MenusQR 8 Superpowers 3D Carousel"
-      className="py-20 md:py-28 px-4 sm:px-6 relative overflow-hidden bg-[#FAFAF7] border-y border-menusqr-emerald/5 select-none"
+      className="py-10 md:py-14 px-4 sm:px-6 relative overflow-hidden bg-[#FAFAF7] border-y border-menusqr-emerald/5 select-none"
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
@@ -489,15 +513,15 @@ export default function CharacterCarouselSection() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-menusqr-orange/10 via-menusqr-yellow/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       {/* ── Section Header ── */}
-      <div className="max-w-4xl mx-auto text-center relative z-10 mb-8 sm:mb-12">
+      <div className="max-w-4xl mx-auto text-center relative z-10 mb-3 sm:mb-5">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-menusqr-orange/10 border border-menusqr-orange/20 text-menusqr-orange text-xs sm:text-sm font-semibold tracking-wide uppercase mb-4"
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-menusqr-orange/10 border border-menusqr-orange/20 text-menusqr-orange text-xs font-semibold tracking-wide uppercase mb-2"
         >
-          <Sparkles className="w-4 h-4 text-menusqr-orange" />
+          <Sparkles className="w-3.5 h-3.5 text-menusqr-orange" />
           <span>The Architecture of Modern Dining</span>
         </motion.div>
 
@@ -506,7 +530,7 @@ export default function CharacterCarouselSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-menusqr-emerald tracking-tight leading-[1.15]"
+          className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-menusqr-emerald tracking-tight leading-[1.18]"
         >
           8 Superpowers Every Restaurant Needs. <br className="hidden sm:inline" />
           <span className="bg-gradient-to-r from-menusqr-orange via-amber-600 to-amber-700 bg-clip-text text-transparent">
@@ -519,22 +543,23 @@ export default function CharacterCarouselSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-4 text-base sm:text-lg text-menusqr-neutral-sec max-w-2xl mx-auto leading-relaxed"
+          className="text-xs sm:text-sm md:text-base text-menusqr-neutral-sec max-w-2xl mx-auto mt-2 leading-relaxed"
         >
-          Paper menus are static, fragile, and bleed money every time a price changes. MenusQR transforms every dining table into an intelligent real-time revenue engine.
+          Paper menus bleed money every time prices or ingredients shift.
+          MenusQR turns every dining table into an instant, intelligent revenue engine.
         </motion.p>
 
-        {/* ── View Controls Bar (Filmstrip Arc / Wave Flow, Auto-Pan & Prev/Next) ── */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          {/* Variant Selector */}
-          <div className="inline-flex p-1 rounded-full bg-menusqr-secondary border border-menusqr-emerald/10 shadow-sm backdrop-blur-md">
+        {/* ── Stage Controls (Modes, Autoplay, Navigation) ── */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-4">
+          {/* Mode Pill Toggle */}
+          <div className="inline-flex items-center p-0.5 rounded-full bg-menusqr-secondary border border-menusqr-emerald/10 shadow-inner">
             <button
               type="button"
               onClick={() => setVariant('filmstrip')}
-              className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer ${
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                 variant === 'filmstrip'
                   ? 'bg-menusqr-orange text-white shadow-md'
-                  : 'text-menusqr-neutral hover:text-menusqr-emerald'
+                  : 'text-menusqr-emerald/80 hover:text-menusqr-emerald'
               }`}
             >
               Filmstrip Arc
@@ -542,10 +567,10 @@ export default function CharacterCarouselSection() {
             <button
               type="button"
               onClick={() => setVariant('wave')}
-              className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer ${
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                 variant === 'wave'
                   ? 'bg-menusqr-orange text-white shadow-md'
-                  : 'text-menusqr-neutral hover:text-menusqr-emerald'
+                  : 'text-menusqr-emerald/80 hover:text-menusqr-emerald'
               }`}
             >
               Wave Flow
@@ -556,18 +581,18 @@ export default function CharacterCarouselSection() {
           <button
             type="button"
             onClick={() => setIsPlaying((p) => !p)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-menusqr-secondary border border-menusqr-emerald/10 text-xs sm:text-sm font-medium text-menusqr-emerald hover:bg-menusqr-white transition-colors shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-menusqr-secondary border border-menusqr-emerald/10 text-xs font-medium text-menusqr-emerald hover:bg-menusqr-white transition-colors shadow-sm cursor-pointer"
             title={isPlaying ? 'Pause Auto-Pan' : 'Resume Auto-Pan'}
           >
             {isPlaying ? (
               <>
-                <Pause className="w-3.5 h-3.5 text-menusqr-orange fill-menusqr-orange" />
-                <span className="hidden sm:inline">Auto-Pan</span>
+                <Pause className="w-3 h-3 text-menusqr-orange fill-menusqr-orange" />
+                <span className="hidden sm:inline text-xs">Auto-Pan</span>
               </>
             ) : (
               <>
-                <Play className="w-3.5 h-3.5 text-menusqr-orange fill-menusqr-orange" />
-                <span className="hidden sm:inline">Play</span>
+                <Play className="w-3 h-3 text-menusqr-orange fill-menusqr-orange" />
+                <span className="hidden sm:inline text-xs">Play</span>
               </>
             )}
           </button>
@@ -578,20 +603,20 @@ export default function CharacterCarouselSection() {
               type="button"
               onClick={handlePrev}
               aria-label="Previous Superpower"
-              className="w-8 h-8 rounded-full bg-menusqr-secondary border border-menusqr-emerald/10 text-menusqr-emerald flex items-center justify-center hover:bg-menusqr-white hover:border-menusqr-orange/40 transition-colors shadow-sm cursor-pointer"
+              className="w-7 h-7 rounded-full bg-menusqr-secondary border border-menusqr-emerald/10 text-menusqr-emerald flex items-center justify-center hover:bg-menusqr-white hover:border-menusqr-orange/40 transition-colors shadow-sm cursor-pointer"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5" />
             </button>
-            <span className="px-2 text-xs font-mono font-bold text-menusqr-emerald/70 min-w-[50px] text-center">
+            <span className="px-2 text-xs font-mono font-bold text-menusqr-emerald/70 min-w-[45px] text-center">
               {String(activeIndex + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}
             </span>
             <button
               type="button"
               onClick={handleNext}
               aria-label="Next Superpower"
-              className="w-8 h-8 rounded-full bg-menusqr-secondary border border-menusqr-emerald/10 text-menusqr-emerald flex items-center justify-center hover:bg-menusqr-white hover:border-menusqr-orange/40 transition-colors shadow-sm cursor-pointer"
+              className="w-7 h-7 rounded-full bg-menusqr-secondary border border-menusqr-emerald/10 text-menusqr-emerald flex items-center justify-center hover:bg-menusqr-white hover:border-menusqr-orange/40 transition-colors shadow-sm cursor-pointer"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -606,16 +631,16 @@ export default function CharacterCarouselSection() {
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerLeave}
         onWheel={handleWheel}
-        className="relative w-full h-[470px] sm:h-[540px] md:h-[600px] overflow-hidden cursor-grab active:cursor-grabbing touch-none select-none my-2"
+        className="relative w-full h-[370px] sm:h-[410px] md:h-[440px] overflow-hidden cursor-grab active:cursor-grabbing touch-none select-none my-1"
         style={{
-          perspective: '1450px',
+          perspective: '1350px',
           background:
-            'radial-gradient(circle at var(--pointer-x, 50%) 48%, rgba(232, 120, 60, 0.09), transparent 38%)'
+            'radial-gradient(circle at var(--pointer-x, 50%) 48%, rgba(232, 120, 60, 0.08), transparent 42%)'
         }}
       >
         {/* Soft Left & Right Ambient Vignette Shadows */}
-        <div className="absolute inset-y-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-[#FAFAF7] to-transparent z-20 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-[#FAFAF7] to-transparent z-20 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-12 sm:w-24 bg-gradient-to-r from-[#FAFAF7] to-transparent z-20 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-12 sm:w-24 bg-gradient-to-l from-[#FAFAF7] to-transparent z-20 pointer-events-none" />
 
         {/* ── 3D Card Deck ── */}
         <div
@@ -641,42 +666,46 @@ export default function CharacterCarouselSection() {
                 aria-label={`View Superpower ${item.index}: ${item.title}`}
                 className="group absolute top-1/2 left-1/2 rounded-2xl overflow-hidden text-left appearance-none outline-none cursor-pointer transition-shadow duration-300"
                 style={{
-                  width: 'clamp(215px, 22.5vw, 290px)',
-                  aspectRatio: '0.72',
+                  width: 'clamp(215px, 19vw, 265px)',
+                  aspectRatio: '0.74',
                   transformStyle: 'preserve-3d',
                   willChange: 'transform, opacity, filter',
-                  backgroundColor: '#0F1613',
+                  backgroundColor: '#0D1411',
                   border: isCurrent
                     ? `2px solid ${item.accentColor}`
-                    : '1px solid rgba(21, 28, 25, 0.2)',
+                    : '1px solid rgba(255, 255, 255, 0.12)',
                   boxShadow: isCurrent
-                    ? `0 26px 55px -10px rgba(0, 0, 0, 0.45), 0 0 0 3px ${item.accentColor}50`
-                    : '0 12px 28px -6px rgba(0, 0, 0, 0.22)'
+                    ? `0 22px 45px -8px rgba(0, 0, 0, 0.55), 0 0 30px -4px ${item.accentColor}45`
+                    : '0 10px 24px -5px rgba(0, 0, 0, 0.28)'
                 }}
               >
-                {/* ── Card Main Section: Real Editorial Photograph ── */}
-                <div className="absolute inset-x-0 top-0 bottom-[28%] overflow-hidden bg-neutral-900">
+                {/* ── Upper Section (68%): Full-Bleed Commercial Editorial Photograph ── */}
+                <div className="absolute inset-x-0 top-0 bottom-[32%] overflow-hidden bg-neutral-950">
                   <img
                     src={item.image}
                     alt={item.title}
                     loading="lazy"
-                    className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                     style={{
-                      filter: 'contrast(1.05) saturate(1.08)'
+                      filter: 'contrast(1.04) saturate(1.06)'
                     }}
                   />
 
                   {/* Gradient shadow over photo */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/45 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0D1411] via-black/15 to-black/40 pointer-events-none" />
 
-                  {/* Top Floating Badges */}
-                  <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-1 z-10">
-                    <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white font-mono text-[9px] tracking-widest uppercase font-bold flex items-center gap-1 shadow-sm">
+                  {/* Top Floating Badges (Category & Index) */}
+                  <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-1 z-10 pointer-events-none">
+                    <span className="px-2.5 py-1 rounded-full bg-black/65 backdrop-blur-md border border-white/20 text-white font-mono text-[9px] tracking-widest uppercase font-bold flex items-center gap-1.5 shadow-sm">
+                      <span
+                        className="w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{ backgroundColor: item.accentColor }}
+                      />
                       {item.pillar}
                     </span>
 
                     <span
-                      className="px-2 py-0.5 rounded-full font-mono font-bold text-[10px] shadow-sm bg-black/60 backdrop-blur-md"
+                      className="px-2 py-0.5 rounded-full font-mono font-bold text-[10px] shadow-sm bg-black/65 backdrop-blur-md"
                       style={{
                         color: item.accentColor,
                         border: `1px solid ${item.accentColor}80`
@@ -686,58 +715,48 @@ export default function CharacterCarouselSection() {
                     </span>
                   </div>
 
-                  {/* Bottom Highlight Chip on Photo */}
-                  <div className="absolute bottom-2.5 inset-x-3 z-10">
-                    <div className="p-2 rounded-xl bg-black/60 backdrop-blur-md border border-white/15 shadow-md flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        {item.icon}
-                        <span className="text-[11px] font-semibold text-white truncate">
-                          {item.cardHighlight}
-                        </span>
-                      </div>
-                      <span
-                        className="text-[10px] font-black px-1.5 py-0.5 rounded font-mono shrink-0"
-                        style={{ backgroundColor: `${item.accentColor}30`, color: item.accentColor }}
-                      >
-                        {item.metric.split(' ')[0]}
-                      </span>
-                    </div>
+                  {/* Subtle Accent Pill on Photo Bottom Right */}
+                  <div className="absolute bottom-2.5 right-3 z-10 pointer-events-none">
+                    <span
+                      className="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold bg-black/70 backdrop-blur-md shadow-sm border border-white/10"
+                      style={{ color: item.accentColor }}
+                    >
+                      {item.metric.split(' ')[0]}
+                    </span>
                   </div>
                 </div>
 
-                {/* ── Card Footer: MenusQR Signature Dark Emerald Palette ── */}
-                <div className="absolute inset-x-0 bottom-0 h-[28%] bg-[#151C19] text-[#FAF3E0] p-3 flex items-center gap-3 border-t border-white/10">
-                  {/* Number Circle Badge */}
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center font-mono font-bold text-xs shrink-0 shadow-inner"
-                    style={{
-                      border: `1px solid ${item.accentColor}`,
-                      backgroundColor: `${item.accentColor}18`,
-                      color: item.accentColor
-                    }}
-                  >
-                    {item.index}
-                  </div>
-
-                  {/* Meta Details */}
-                  <div className="min-w-0 flex-1">
-                    <span className="block font-bold text-xs sm:text-sm text-white tracking-wide truncate">
-                      {item.shortTitle}
-                    </span>
+                {/* ── Lower Section (32%): MenusQR Signature Dark Obsidian Emerald Plaque ── */}
+                <div className="absolute inset-x-0 bottom-0 h-[32%] bg-[#111815] text-[#FAF3E0] p-3.5 flex flex-col justify-between border-t border-white/10">
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      {item.icon}
+                      <span className="font-bold text-xs sm:text-sm text-white tracking-tight truncate">
+                        {item.shortTitle}
+                      </span>
+                    </div>
                     <span className="block text-[10px] text-[#FAF3E0]/70 truncate mt-0.5">
                       {item.tagline}
                     </span>
-                    <span
-                      className="block text-[9px] font-bold uppercase tracking-wider mt-0.5 truncate"
-                      style={{ color: item.accentColor }}
-                    >
-                      {item.metricLabel}
-                    </span>
                   </div>
 
-                  {/* Quick View Icon */}
-                  <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-white/70 group-hover:bg-menusqr-orange group-hover:text-white transition-colors">
-                    <Eye className="w-3.5 h-3.5" />
+                  {/* Bottom Metric Strip */}
+                  <div className="flex items-center justify-between pt-1 border-t border-white/5">
+                    <span
+                      className="text-[10px] font-bold uppercase tracking-wider truncate"
+                      style={{ color: item.accentColor }}
+                    >
+                      {item.metric} • {item.metricLabel}
+                    </span>
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded transition-colors ${
+                        isCurrent
+                          ? 'bg-white/20 text-white'
+                          : 'bg-white/5 text-white/50 group-hover:text-white group-hover:bg-menusqr-orange'
+                      }`}
+                    >
+                      {isCurrent ? 'ACTIVE' : 'EXPAND'}
+                    </span>
                   </div>
                 </div>
               </button>
@@ -746,127 +765,148 @@ export default function CharacterCarouselSection() {
         </div>
 
         {/* Floating Touch / Drag Hint for Users */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1.5 text-[11px] text-menusqr-neutral-sec font-medium bg-[#FAFAF7]/80 backdrop-blur-sm px-3 py-1 rounded-full border border-menusqr-emerald/10 shadow-sm">
+        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 pointer-events-none opacity-70 hover:opacity-100 transition-opacity flex items-center gap-1.5 text-[11px] text-menusqr-neutral-sec font-medium bg-[#FAFAF7]/85 backdrop-blur-sm px-3.5 py-1 rounded-full border border-menusqr-emerald/10 shadow-sm">
           <MoveHorizontal className="w-3.5 h-3.5 text-menusqr-orange animate-pulse" />
-          <span>Drag horizontally or click any card to focus</span>
+          <span>Swipe or click any superpower card to inspect</span>
         </div>
       </div>
 
-      {/* ── Focused Superpower Deep-Dive Panel ── */}
-      <div className="max-w-4xl mx-auto mt-6 relative z-10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentItem.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-            className="p-5 sm:p-7 rounded-2xl bg-white/95 backdrop-blur-md border border-menusqr-emerald/10 shadow-lg shadow-menusqr-emerald/5 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden"
-          >
-            {/* Ambient accent stripe from item's color */}
-            <div
-              className="absolute top-0 left-0 bottom-0 w-2"
-              style={{ backgroundColor: currentItem.accentColor }}
-            />
-
-            {/* Left: Superpower Breakdown */}
-            <div className="flex-1 space-y-3 text-center md:text-left pl-2">
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-                <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-menusqr-emerald text-white">
-                  SUPERPOWER #{currentItem.index}
-                </span>
+      {/* ── 8 Superpowers Direct Selector Track ── */}
+      <div className="max-w-4xl mx-auto mt-4 px-2 relative z-10">
+        <div className="flex items-center justify-center flex-wrap gap-1.5 sm:gap-2">
+          {SUPERPOWERS.map((sp, idx) => {
+            const isSelected = idx === activeIndex;
+            return (
+              <button
+                key={sp.id}
+                type="button"
+                onClick={() => moveToIndex(idx)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  isSelected
+                    ? 'bg-menusqr-emerald text-white shadow-md scale-105'
+                    : 'bg-white/80 hover:bg-white text-menusqr-emerald/70 hover:text-menusqr-emerald border border-menusqr-emerald/10 shadow-xs'
+                }`}
+              >
                 <span
-                  className="text-xs font-bold px-2.5 py-0.5 rounded-full border"
-                  style={{
-                    backgroundColor: `${currentItem.accentColor}15`,
-                    color: currentItem.accentColor,
-                    borderColor: `${currentItem.accentColor}30`
-                  }}
-                >
-                  {currentItem.pillar}
-                </span>
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  Live in MenusQR Core
-                </span>
-              </div>
+                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                  style={{ backgroundColor: sp.accentColor }}
+                />
+                <span className="font-mono text-[10px] opacity-75">{sp.index}</span>
+                <span className="hidden sm:inline">{sp.shortTitle}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-              <div>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-menusqr-emerald tracking-tight">
-                  {currentItem.title}
-                </h3>
-                <p className="text-xs sm:text-sm font-semibold text-menusqr-neutral-sec mt-0.5">
-                  {currentItem.tagline}
-                </p>
-              </div>
+      {/* ── Focused Superpower Deep-Dive Comparison Panel ── */}
+      <div className="max-w-4xl mx-auto mt-6 relative z-10">
+        <div
+          className="p-5 sm:p-7 rounded-2xl bg-white/95 backdrop-blur-md border border-menusqr-emerald/10 shadow-lg shadow-menusqr-emerald/5 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden transition-all duration-300"
+        >
+          {/* Ambient accent stripe from item's color */}
+          <div
+            className="absolute top-0 left-0 bottom-0 w-2.5 transition-colors duration-300"
+            style={{ backgroundColor: currentItem.accentColor }}
+          />
 
-              {/* The Old Way vs The MenusQR Way */}
-              <div className="grid sm:grid-cols-2 gap-3 pt-1">
-                <div className="bg-red-50/70 border border-red-200/60 p-3 rounded-xl text-left">
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-red-800 uppercase tracking-wider mb-1">
-                    <XCircle className="w-3.5 h-3.5 text-red-600" />
-                    The Old Paper Menu Way
-                  </span>
-                  <p className="text-xs text-red-950 leading-relaxed">
-                    {currentItem.oldWay}
-                  </p>
-                </div>
+          {/* Left: Superpower Breakdown */}
+          <div className="flex-1 space-y-3 text-center md:text-left pl-2">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+              <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-menusqr-emerald text-white">
+                SUPERPOWER #{currentItem.index}
+              </span>
+              <span
+                className="text-xs font-bold px-2.5 py-0.5 rounded-full border transition-colors duration-300"
+                style={{
+                  backgroundColor: `${currentItem.accentColor}15`,
+                  color: currentItem.accentColor,
+                  borderColor: `${currentItem.accentColor}30`
+                }}
+              >
+                {currentItem.pillar}
+              </span>
+              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Live in MenusQR Core
+              </span>
+            </div>
 
-                <div className="bg-emerald-50/70 border border-emerald-200/60 p-3 rounded-xl text-left">
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    The MenusQR Breakthrough
-                  </span>
-                  <p className="text-xs text-emerald-950 leading-relaxed font-medium">
-                    {currentItem.newWay}
-                  </p>
-                </div>
-              </div>
-
-              {/* Real World Impact Story */}
-              <p className="text-xs text-menusqr-neutral-sec italic bg-menusqr-secondary/50 p-2.5 rounded-xl border border-menusqr-emerald/5">
-                <strong className="text-menusqr-emerald font-semibold not-italic">Verified Impact:</strong> “{currentItem.impactStory}”
+            <div>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-menusqr-emerald tracking-tight">
+                {currentItem.title}
+              </h3>
+              <p className="text-xs sm:text-sm font-semibold text-menusqr-neutral-sec mt-0.5">
+                {currentItem.tagline}
               </p>
             </div>
 
-            {/* Right: Quantified Impact & CTAs */}
-            <div className="flex flex-col items-center md:items-end justify-center gap-4 shrink-0 w-full md:w-auto border-t md:border-t-0 md:border-l border-menusqr-emerald/10 pt-4 md:pt-0 md:pl-6">
-              <div className="text-center md:text-right">
-                <span className="text-[10px] font-bold text-menusqr-neutral-muted uppercase tracking-wider block">
-                  Measured Benefit
+            {/* The Old Way vs The MenusQR Way */}
+            <div className="grid sm:grid-cols-2 gap-3 pt-1">
+              <div className="bg-red-50/70 border border-red-200/60 p-3.5 rounded-xl text-left">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-red-800 uppercase tracking-wider mb-1">
+                  <XCircle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                  The Old Paper Menu Way
                 </span>
-                <span
-                  className="text-2xl sm:text-3xl font-black block mt-0.5"
-                  style={{ color: currentItem.accentColor }}
-                >
-                  {currentItem.metric}
-                </span>
-                <span className="text-[11px] font-semibold text-menusqr-neutral-sec">
-                  {currentItem.metricLabel}
-                </span>
+                <p className="text-xs text-red-950 leading-relaxed">
+                  {currentItem.oldWay}
+                </p>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full sm:w-auto">
-                <a
-                  href="/pricing"
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-menusqr-orange hover:bg-amber-600 text-white shadow-md text-xs font-bold transition-all active:scale-95 cursor-pointer text-center"
-                >
-                  <span>Get MenusQR For Your Restaurant</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </a>
-
-                <a
-                  href="#how-it-works"
-                  className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-menusqr-secondary hover:bg-stone-200 text-menusqr-emerald border border-menusqr-emerald/15 text-xs font-bold transition-all shadow-sm cursor-pointer text-center"
-                >
-                  <Smartphone className="w-3.5 h-3.5 text-menusqr-orange" />
-                  <span>See How It Works</span>
-                </a>
+              <div className="bg-emerald-50/70 border border-emerald-200/60 p-3.5 rounded-xl text-left">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  The MenusQR Breakthrough
+                </span>
+                <p className="text-xs text-emerald-950 leading-relaxed font-medium">
+                  {currentItem.newWay}
+                </p>
               </div>
             </div>
-          </motion.div>
-        </AnimatePresence>
+
+            {/* Real World Impact Story */}
+            <p className="text-xs text-menusqr-neutral-sec italic bg-menusqr-secondary/50 p-2.5 rounded-xl border border-menusqr-emerald/5">
+              <strong className="text-menusqr-emerald font-semibold not-italic">Verified Impact:</strong> “{currentItem.impactStory}”
+            </p>
+          </div>
+
+          {/* Right: Quantified Impact & CTAs */}
+          <div className="flex flex-col items-center md:items-end justify-center gap-4 shrink-0 w-full md:w-auto border-t md:border-t-0 md:border-l border-menusqr-emerald/10 pt-4 md:pt-0 md:pl-6">
+            <div className="text-center md:text-right">
+              <span className="text-[10px] font-bold text-menusqr-neutral-muted uppercase tracking-wider block">
+                Measured Benefit
+              </span>
+              <span
+                className="text-2xl sm:text-3xl font-black block mt-0.5 transition-colors duration-300"
+                style={{ color: currentItem.accentColor }}
+              >
+                {currentItem.metric}
+              </span>
+              <span className="text-[11px] font-semibold text-menusqr-neutral-sec">
+                {currentItem.metricLabel}
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full sm:w-auto">
+              <a
+                href="/pricing"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-menusqr-orange hover:bg-amber-600 text-white shadow-md text-xs font-bold transition-all active:scale-95 cursor-pointer text-center"
+              >
+                <span>Get MenusQR For Your Restaurant</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+
+              <a
+                href="#how-it-works"
+                className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-menusqr-secondary hover:bg-stone-200 text-menusqr-emerald border border-menusqr-emerald/15 text-xs font-bold transition-all shadow-sm cursor-pointer text-center"
+              >
+                <Smartphone className="w-3.5 h-3.5 text-menusqr-orange" />
+                <span>See How It Works</span>
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

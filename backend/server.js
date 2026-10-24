@@ -20,6 +20,7 @@ process.on('unhandledRejection', (reason) => {
 
 import { connectDB, pool } from './db.js';
 import { apiError, sendJson } from './utils.js';
+import { getSystemHealth, captureException } from './observability.js';
 import { createCorsOriginChecker } from './cors.js';
 import { startOutboxWorker, getEmailConfig } from './email.js';
 
@@ -176,9 +177,11 @@ const server = createServer(async (request, response) => {
       const pgCfg = checkPaymentGatewayConfig();
       const isDegraded = !dbConnected || (process.env.NODE_ENV === 'production' && !pgCfg.configured);
 
+      const telemetry = await getSystemHealth();
       sendJson(response, isDegraded ? 503 : 200, {
         status: isDegraded ? 'degraded' : 'ok',
         database: 'postgresql',
+        telemetry,
         dbConnected,
         paymentGateway: {
           configured: pgCfg.configured,

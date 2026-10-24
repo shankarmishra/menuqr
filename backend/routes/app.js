@@ -10,6 +10,7 @@ import { extractMenuFromPdf, refinePdfDesign } from '../pdfMenuService.js';
 import { validateDesignSpecification } from '../designSpecValidator.js';
 import { registerOrderClient, broadcastOrderEvent } from '../orderStream.js';
 import { optimizeAndSaveImage } from '../imageOptimizer.js';
+import { enqueueTask, getJobStatus, TASK_TYPES } from '../taskQueue.js';
 
 function inputText(value, maxLength = 255) {
   if (value === undefined || value === null) return '';
@@ -69,6 +70,16 @@ export default async function appRoutes(request, response, url) {
   
   const user = await enforceTenant(request);
   const authorization = await resolveTenantAuthorization(user);
+
+  // Background Job Status Polling
+  const jobStatusMatch = url.pathname.match(/^\/api\/app\/jobs\/([^/]+)$/);
+  if (request.method === 'GET' && jobStatusMatch) {
+    const jobId = decodeURIComponent(jobStatusMatch[1]);
+    const job = getJobStatus(jobId, user.tenantId);
+    if (!job) throw apiError(404, 'Job not found.');
+    sendJson(response, 200, job);
+    return true;
+  }
 
   // Image Upload & Sharp WebP Optimization Pipeline
   if (request.method === 'POST' && url.pathname === '/api/app/upload-image') {

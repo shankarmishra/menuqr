@@ -54,6 +54,66 @@
   transform: none;
 }
 
+/* Prominent Floating Folio Badges */
+.sb-nav-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 4px 14px rgba(35, 25, 15, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #1c1814;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 45;
+}
+.sb-nav-badge:hover:not(:disabled) {
+  background: #ffffff;
+  border-color: #d4af37;
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.28), 0 2px 6px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px) scale(1.03);
+}
+.sb-nav-badge:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  border-color: rgba(226, 219, 208, 0.7);
+}
+
+/* Subtle Floating Corner "Turn Page" Prompt */
+.sb-corner-flip {
+  position: absolute;
+  bottom: 12px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(26, 20, 15, 0.88);
+  color: #fceab2;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s ease;
+}
+.sb-corner-flip.right {
+  right: 12px;
+}
+.sb-corner-flip.left {
+  left: 12px;
+}
+
 /* Perspective stage */
 .sb-3d {
   position: relative;
@@ -208,8 +268,9 @@
   position: absolute;
   top: 0;
   height: 100%;
-  width: calc(var(--bw, 900px) * var(--span, 0.46) / var(--n, 16));
+  width: calc(var(--bw, 900px) * var(--span, 0.46) / var(--n, 10));
   transform-style: preserve-3d;
+  will-change: transform;
 }
 .curl.next .strip {
   transform-origin: left center;
@@ -243,6 +304,8 @@
   -webkit-backface-visibility: hidden;
   background-repeat: no-repeat;
   background-size: var(--bw, 900px) 100%;
+  transform: translateZ(0);
+  will-change: transform, opacity;
 }
 .face.back {
   transform: rotateY(180deg);
@@ -416,4 +479,31 @@
   .loupe {
     display: none;
   }
+}
+
+
+/* Optional 2D Vertical Scroll Gallery View */
+.sb-scroll-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+}
+.sb-scroll-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1760 / 1240;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(28, 20, 12, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #E8E2D5;
+  background: #FFFDF7;
+}
+.sb-scroll-card img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: fill;
 }

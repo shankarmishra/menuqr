@@ -4,7 +4,7 @@ import RoyalHeritageSketchbook from './RoyalHeritageSketchbook';
 
 export default function RoyalHeritageMenuSection() {
   return (
-    <section className="relative py-10 sm:py-14 overflow-hidden bg-[#FAFAF7] border-y border-[#E8E4DA]">
+    <section id="royal-sketchbook-section" className="relative py-10 sm:py-14 overflow-hidden bg-[#FAFAF7] border-y border-[#E8E4DA]">
       
       {/* Subtle warm ambient background glow matching the light theme */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-br from-[#D4AF37]/8 via-[#e8783c]/5 to-transparent blur-[100px] pointer-events-none" />

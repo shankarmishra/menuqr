@@ -1,156 +1,123 @@
+
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1760 1240" width="1760" height="1240">
   
     <defs>
-      <!-- 24K Royal Gold Gradient -->
+      <!-- 24K Royal Gold Gradient with Multi-Stop Metallic Sheen -->
       <linearGradient id="gold24k" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#FFF8E7" />
-        <stop offset="15%" stop-color="#F3E5AB" />
-        <stop offset="35%" stop-color="#D4AF37" />
-        <stop offset="60%" stop-color="#AA820A" />
-        <stop offset="85%" stop-color="#D4AF37" />
+        <stop offset="0%" stop-color="#FFFDF0" />
+        <stop offset="12%" stop-color="#FCEAB2" />
+        <stop offset="28%" stop-color="#E5C158" />
+        <stop offset="48%" stop-color="#AA820A" />
+        <stop offset="70%" stop-color="#D4AF37" />
+        <stop offset="88%" stop-color="#F7E7B4" />
         <stop offset="100%" stop-color="#6B4F09" />
       </linearGradient>
 
-      <!-- Horizontal Gold Shimmer -->
+      <!-- Horizontal Gold Shimmer Bar -->
       <linearGradient id="goldH" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stop-color="#8C6808" stop-opacity="0" />
         <stop offset="15%" stop-color="#D4AF37" />
-        <stop offset="50%" stop-color="#FFF9DB" />
+        <stop offset="50%" stop-color="#FFFBEB" />
         <stop offset="85%" stop-color="#D4AF37" />
         <stop offset="100%" stop-color="#8C6808" stop-opacity="0" />
       </linearGradient>
 
-      <!-- Circular Gold Medallion -->
-      <radialGradient id="goldFoilRadial" cx="45%" cy="40%" r="55%">
-        <stop offset="0%" stop-color="#FFFDF0" />
-        <stop offset="25%" stop-color="#F7E7B4" />
-        <stop offset="55%" stop-color="#D4AF37" />
-        <stop offset="80%" stop-color="#9C7714" />
+      <!-- Royal Medallion Gold Radial -->
+      <radialGradient id="goldFoilRadial" cx="45%" cy="38%" r="60%">
+        <stop offset="0%" stop-color="#FFFDF5" />
+        <stop offset="22%" stop-color="#FCEAB2" />
+        <stop offset="50%" stop-color="#D4AF37" />
+        <stop offset="78%" stop-color="#9C7714" />
         <stop offset="100%" stop-color="#4E3502" />
       </radialGradient>
 
       <!-- 3D Crimson Red Wax Seal -->
-      <radialGradient id="waxGrad" cx="35%" cy="30%" r="65%">
-        <stop offset="0%" stop-color="#DC2626" />
-        <stop offset="35%" stop-color="#991B1B" />
-        <stop offset="70%" stop-color="#7F1D1D" />
+      <radialGradient id="waxGrad" cx="35%" cy="30%" r="68%">
+        <stop offset="0%" stop-color="#EF4444" />
+        <stop offset="30%" stop-color="#B91C1C" />
+        <stop offset="65%" stop-color="#7F1D1D" />
         <stop offset="100%" stop-color="#450A0A" />
       </radialGradient>
 
-      <!-- Copper Metal Gradient -->
+      <!-- Copper Handi Gradient -->
       <linearGradient id="copperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#FCD5CE" />
-        <stop offset="30%" stop-color="#D97706" />
-        <stop offset="65%" stop-color="#B45309" />
-        <stop offset="100%" stop-color="#78350F" />
+        <stop offset="0%" stop-color="#FED7AA" />
+        <stop offset="30%" stop-color="#EA580C" />
+        <stop offset="65%" stop-color="#C2410C" />
+        <stop offset="100%" stop-color="#7C2D12" />
       </linearGradient>
 
-      <!-- Deep Emerald Leather Texture Gradient -->
-      <radialGradient id="leatherGrad" cx="30%" cy="30%" r="80%">
-        <stop offset="0%" stop-color="#1e3a2d" />
-        <stop offset="40%" stop-color="#14261e" />
-        <stop offset="80%" stop-color="#0b1712" />
-        <stop offset="100%" stop-color="#060c09" />
+      <!-- Emerald Morocco Leather Cover Gradient -->
+      <radialGradient id="leatherGrad" cx="30%" cy="30%" r="85%">
+        <stop offset="0%" stop-color="#1f3b2e" />
+        <stop offset="45%" stop-color="#12241c" />
+        <stop offset="80%" stop-color="#0a1510" />
+        <stop offset="100%" stop-color="#040806" />
       </radialGradient>
 
-      <!-- Center Gutter Shadow for open book fold -->
+      <!-- Gutter Crease Shadow -->
       <linearGradient id="gutterGrad" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stop-color="rgba(30,18,10,0)" />
-        <stop offset="32%" stop-color="rgba(30,18,10,0.18)" />
+        <stop offset="30%" stop-color="rgba(30,18,10,0.18)" />
         <stop offset="46%" stop-color="rgba(24,14,6,0.58)" />
         <stop offset="50%" stop-color="rgba(16,9,3,0.85)" />
         <stop offset="54%" stop-color="rgba(24,14,6,0.58)" />
-        <stop offset="68%" stop-color="rgba(30,18,10,0.18)" />
+        <stop offset="70%" stop-color="rgba(30,18,10,0.18)" />
         <stop offset="100%" stop-color="rgba(30,18,10,0)" />
       </linearGradient>
 
-      <!-- Aged Page Edge Vignette -->
+      <!-- Page Edge Vignettes -->
       <linearGradient id="leftVignette" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="rgba(42,28,14,0.32)" />
-        <stop offset="6%" stop-color="rgba(42,28,14,0.15)" />
+        <stop offset="0%" stop-color="rgba(42,28,14,0.30)" />
+        <stop offset="6%" stop-color="rgba(42,28,14,0.14)" />
         <stop offset="18%" stop-color="rgba(42,28,14,0.03)" />
         <stop offset="30%" stop-color="rgba(42,28,14,0)" />
       </linearGradient>
       <linearGradient id="rightVignette" x1="100%" y1="0%" x2="0%" y2="0%">
-        <stop offset="0%" stop-color="rgba(42,28,14,0.32)" />
-        <stop offset="6%" stop-color="rgba(42,28,14,0.15)" />
+        <stop offset="0%" stop-color="rgba(42,28,14,0.30)" />
+        <stop offset="6%" stop-color="rgba(42,28,14,0.14)" />
         <stop offset="18%" stop-color="rgba(42,28,14,0.03)" />
         <stop offset="30%" stop-color="rgba(42,28,14,0)" />
       </linearGradient>
 
-      <!-- Top/Bottom Edge Aging Vignette -->
-      <linearGradient id="topVignette" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="rgba(42,28,14,0.22)" />
-        <stop offset="5%" stop-color="rgba(42,28,14,0.08)" />
-        <stop offset="14%" stop-color="rgba(42,28,14,0)" />
-      </linearGradient>
-      <linearGradient id="bottomVignette" x1="0%" y1="100%" x2="0%" y2="0%">
-        <stop offset="0%" stop-color="rgba(42,28,14,0.25)" />
-        <stop offset="5%" stop-color="rgba(42,28,14,0.08)" />
-        <stop offset="14%" stop-color="rgba(42,28,14,0)" />
-      </linearGradient>
-
-      <!-- Authentic Mughal Jaali Lattice Pattern (Geometric Filigree) -->
+      <!-- Mughal Jaali Pattern -->
       <pattern id="mughalJaali" width="40" height="40" patternUnits="userSpaceOnUse">
-        <path d="M 20 0 L 40 20 L 20 40 L 0 20 Z" fill="none" stroke="#D4AF37" stroke-width="0.7" opacity="0.35" />
+        <path d="M 20 0 L 40 20 L 20 40 L 0 20 Z" fill="none" stroke="#D4AF37" stroke-width="0.75" opacity="0.38" />
         <circle cx="20" cy="20" r="3.5" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.4" />
         <path d="M 0 0 L 8 8 M 40 0 L 32 8 M 0 40 L 8 32 M 40 40 L 32 32" stroke="#D4AF37" stroke-width="0.5" opacity="0.25" />
       </pattern>
 
-      <!-- Fine Damask Parchment Watermark Pattern -->
+      <!-- Damask Watermark -->
       <pattern id="damaskParchment" width="60" height="60" patternUnits="userSpaceOnUse">
         <circle cx="30" cy="30" r="1.5" fill="#C5A059" opacity="0.12" />
         <path d="M 30 15 Q 35 25 30 35 Q 25 25 30 15 Z" fill="#C5A059" opacity="0.06" />
         <path d="M 15 30 Q 25 35 35 30 Q 25 25 15 30 Z" fill="#C5A059" opacity="0.06" />
       </pattern>
-
-      <!-- Soft Embossed Shadow Filter -->
-      <filter id="goldDropShadow" x="-10%" y="-10%" width="120%" height="120%">
-        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(40,25,10,0.3)" />
-      </filter>
-      <!-- Deep 3D Seal Shadow -->
-      <filter id="sealShadow" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="rgba(25,12,6,0.45)" />
-      </filter>
     </defs>
   
   
-    <!-- Base Paper Tint -->
     <rect width="1760" height="1240" fill="#F9F5EC" />
-    <!-- Fine Damask Watermark Across Spread -->
     <rect width="1760" height="1240" fill="url(#damaskParchment)" />
-    <!-- Warm Tea-Stain Aging Overlays -->
     <rect width="880" height="1240" fill="#F4EDE0" opacity="0.55" />
     <rect x="880" width="880" height="1240" fill="#F6EFE3" opacity="0.55" />
-    
-    <!-- Edge Aging Vignettes -->
     <rect width="220" height="1240" fill="url(#leftVignette)" />
     <rect x="1540" width="220" height="1240" fill="url(#rightVignette)" />
-    <rect width="1760" height="140" fill="url(#topVignette)" />
-    <rect y="1100" width="1760" height="140" fill="url(#bottomVignette)" />
-    
-    <!-- Gilded Gutter Shadow at Spine -->
     <rect x="790" width="180" height="1240" fill="url(#gutterGrad)" />
   
 
-  <!-- LEFT PAGE: The Soul of Dum Pukht -->
+  <!-- LEFT PAGE: The Soul of Dum Pukht (Folio 03) -->
   <g transform="translate(60, 50)">
     
     <g transform="translate(0, 0)">
-      <!-- Outer Solid 24K Gold Filigree -->
       <rect width="760" height="1140" fill="none" stroke="url(#gold24k)" stroke-width="2.5" rx="5" />
-      
-      <!-- Inner Ornate Jaali Inlay Ribbon -->
       <rect x="7" y="7" width="746" height="1126" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.5" rx="3" />
       <rect x="13" y="13" width="734" height="1114" fill="none" stroke="url(#gold24k)" stroke-width="1.2" stroke-dasharray="4,3" rx="2" />
       <rect x="18" y="18" width="724" height="1104" fill="none" stroke="#AA820A" stroke-width="0.5" opacity="0.3" rx="2" />
 
-      <!-- 4 Handcrafted Corner Cartouches -->
       
     <g transform="translate(18, 18) scale(1, 1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -161,7 +128,6 @@
     <g transform="translate(742, 18) scale(-1, 1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -172,7 +138,6 @@
     <g transform="translate(18, 1122) scale(1, -1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -183,7 +148,6 @@
     <g transform="translate(742, 1122) scale(-1, -1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -194,7 +158,7 @@
       <!-- Top Header Label -->
       <g transform="translate(380, 38)" text-anchor="middle">
         <text font-family="'Cinzel', 'Playfair Display', Georgia, serif" font-size="11" letter-spacing="5" fill="#8C6808" font-weight="700">
-          CHAPTER II • HANDI & DUM PUKHT
+          CHAPTER II • HANDI &amp; DUM PUKHT
         </text>
         <line x1="-120" y1="10" x2="120" y2="10" stroke="url(#goldH)" stroke-width="1.2" />
         <circle cx="0" cy="10" r="3" fill="#D4AF37" />
@@ -202,7 +166,7 @@
         <circle cx="120" cy="10" r="2" fill="#AA820A" />
       </g>
 
-      <!-- Bottom Folio Number & Seal -->
+      <!-- Bottom Folio -->
       <g transform="translate(50, 1112)" text-anchor="start">
         <text font-family="'Playfair Display', Georgia, serif" font-size="14" fill="#A89482" font-style="italic" font-weight="600">
           Folio 03
@@ -216,27 +180,26 @@
     </g>
   
 
+    <!-- Chapter Header (ALL ENGLISH) -->
     <g transform="translate(380, 75)" text-anchor="middle">
-      <text font-family="'Cinzel', serif" font-size="12" letter-spacing="6" fill="#AA820A" font-weight="800">THE SOUL OF DUM PUKHT</text>
-      <text y="40" font-family="'Rozha One', 'Cinzel', serif" font-size="30" letter-spacing="2" fill="#1C1814">अवधी दम पुख्त बिरयानी</text>
-      <line x1="-140" y1="58" x2="140" y2="58" stroke="url(#goldH)" stroke-width="1.8" />
+      <text font-family="'Cinzel', serif" font-size="12" letter-spacing="6" fill="#AA820A" font-weight="800">THE DUM PUKHT TRADITION</text>
+      <text y="38" font-family="'Cinzel Decorative', 'Cinzel', serif" font-size="28" letter-spacing="2" fill="#1C1814" font-weight="700">THE SECRET OF THE COPPER HANDI</text>
+      <line x1="-140" y1="54" x2="140" y2="54" stroke="url(#goldH)" stroke-width="1.8" />
     </g>
 
-    <!-- DISH 1: Awadhi Gosht Dum Biryani with Copper Handi Artwork -->
-    <g transform="translate(45, 175)">
+    <!-- DISH 1: Awadhi Gosht Dum Biryani -->
+    <g transform="translate(45, 155)">
       <!-- Copper Handi Illustration -->
-      <g transform="translate(60, 55)" filter="url(#goldDropShadow)">
+      <g transform="translate(55, 55)">
         <circle cx="0" cy="0" r="48" fill="#F7EFE1" stroke="url(#gold24k)" stroke-width="2" />
-        <circle cx="0" cy="0" r="42" fill="none" stroke="#D4AF37" stroke-width="0.8" stroke-dasharray="2,2" />
-        <!-- Handi Pot Body in Copper Gradient -->
-        <path d="M -28 12 Q -38 32 0 36 Q 38 32 28 12 Q 32 0 20 -4 L -20 -4 Q -32 0 -28 12 Z" fill="url(#copperGrad)" />
-        <!-- Purdah Dough Rim Seal -->
-        <path d="M -24 -4 Q 0 -10 24 -4 Q 28 2 24 6 Q 0 0 -24 6 Q -28 2 -24 -4 Z" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2" />
-        <!-- Steam Wisps -->
-        <path d="M -10 -10 Q -6 -24 -14 -32 M 0 -12 Q 4 -26 0 -36 M 10 -10 Q 14 -24 8 -32" fill="none" stroke="#FDE68A" stroke-width="1.8" stroke-linecap="round" opacity="0.8" />
+        <ellipse cx="0" cy="12" rx="34" ry="24" fill="url(#copperGrad)" />
+        <ellipse cx="0" cy="-6" rx="28" ry="8" fill="#D97706" />
+        <ellipse cx="0" cy="-10" rx="30" ry="10" fill="#FEF3C7" stroke="#B45309" stroke-width="1" />
+        <path d="M -8 -16 Q -12 -28 -4 -36" fill="none" stroke="#D4AF37" stroke-width="1.5" stroke-dasharray="2,2" />
+        <path d="M 6 -16 Q 12 -28 4 -36" fill="none" stroke="#D4AF37" stroke-width="1.5" stroke-dasharray="2,2" />
       </g>
 
-      <g transform="translate(130, 16)">
+      <g transform="translate(125, 14)">
         
     <g transform="translate(0, 0)">
       <rect x="0" y="0" width="18" height="18" fill="#FFF9EB" stroke="#AA820A" stroke-width="1" rx="3" />
@@ -245,26 +208,27 @@
     </g>
   
         <text x="28" y="16" font-family="'Cinzel Decorative', 'Cinzel', serif" font-size="22" fill="#1C1814" font-weight="700">Awadhi Gosht Dum Biryani</text>
-        <text x="540" y="16" font-family="'Cinzel', serif" font-size="20" fill="#AA820A" font-weight="800" text-anchor="end">₹620</text>
+        <text x="545" y="16" font-family="'Cinzel', serif" font-size="20" fill="#AA820A" font-weight="800" text-anchor="end">₹620</text>
         
-        <text x="0" y="44" font-family="'Newsreader', Georgia, serif" font-size="15" fill="#4A3B2C">
+        <text x="0" y="42" font-family="'Newsreader', Georgia, serif" font-size="14.5" fill="#4A3B2C">
           Two-year aged Himalayan extra-long Basmati and pasture mutton layered in a heavy copper degh,
         </text>
-        <text x="0" y="68" font-family="'Newsreader', Georgia, serif" font-size="15" fill="#4A3B2C">
-          hermetically sealed with whole-wheat dough. Steamed over embers with Meetha Ittar, kewra and saffron.
+        <text x="0" y="64" font-family="'Newsreader', Georgia, serif" font-size="14.5" fill="#4A3B2C">
+          hermetically sealed with whole-wheat dough. Steamed over embers with Meetha Ittar and saffron.
         </text>
-        <text x="0" y="94" font-family="'Playfair Display', serif" font-size="13" fill="#8C6808" font-style="italic">
+        <text x="0" y="88" font-family="'Playfair Display', serif" font-size="12.5" fill="#8C6808" font-style="italic">
           Accompaniment: Burani Garlic Raita &amp; Mirchi Ka Salan
         </text>
       </g>
     </g>
 
-    <line x1="80" y1="320" x2="680" y2="320" stroke="url(#goldH)" stroke-width="1" />
-    <circle cx="380" cy="320" r="3" fill="#D4AF37" />
+    <!-- Horizontal Divider -->
+    <line x1="80" y1="285" x2="680" y2="285" stroke="url(#goldH)" stroke-width="1" />
+    <circle cx="380" cy="285" r="3" fill="#D4AF37" />
 
-    <!-- DISH 2: Murgh Musallam Royale -->
-    <g transform="translate(45, 345)">
-      <g transform="translate(130, 16)">
+    <!-- DISH 2: Murgh Musallam Khas -->
+    <g transform="translate(45, 305)">
+      <g transform="translate(125, 14)">
         
     <g transform="translate(0, 0)">
       <rect x="0" y="0" width="18" height="18" fill="#FFF9EB" stroke="#AA820A" stroke-width="1" rx="3" />
@@ -273,76 +237,92 @@
     </g>
   
         <text x="28" y="16" font-family="'Cinzel Decorative', 'Cinzel', serif" font-size="22" fill="#1C1814" font-weight="700">Murgh Musallam Khas</text>
-        <text x="540" y="16" font-family="'Cinzel', serif" font-size="20" fill="#AA820A" font-weight="800" text-anchor="end">₹590</text>
+        <text x="545" y="16" font-family="'Cinzel', serif" font-size="20" fill="#AA820A" font-weight="800" text-anchor="end">₹590</text>
         
-        <text x="0" y="44" font-family="'Newsreader', Georgia, serif" font-size="15" fill="#4A3B2C">
+        <text x="0" y="42" font-family="'Newsreader', Georgia, serif" font-size="14.5" fill="#4A3B2C">
           Whole tender spring chicken slow-braised in an opulent almond, melon seed and saffron jus,
         </text>
-        <text x="0" y="68" font-family="'Newsreader', Georgia, serif" font-size="15" fill="#4A3B2C">
+        <text x="0" y="64" font-family="'Newsreader', Georgia, serif" font-size="14.5" fill="#4A3B2C">
           stuffed with spiced minced meat, golden sultanas and whole roasted pine nuts.
+        </text>
+        <text x="0" y="88" font-family="'Playfair Display', serif" font-size="12.5" fill="#8C6808" font-style="italic">
+          Crowned with silver vark, farm quail eggs &amp; fried almonds
         </text>
       </g>
     </g>
 
-    <!-- PURDAH DOUGH SEAL MANUSCRIPT BOX -->
-    <g transform="translate(40, 520)">
-      <rect width="680" height="540" fill="#F3EADB" stroke="url(#gold24k)" stroke-width="1.5" rx="6" />
-      <rect x="8" y="8" width="664" height="524" fill="none" stroke="#D4AF37" stroke-width="0.8" stroke-dasharray="3,3" rx="4" />
-      
-      <!-- Copper Deg Illustration in Center -->
-      <g transform="translate(340, 160)" text-anchor="middle" filter="url(#goldDropShadow)">
-        <ellipse cx="0" cy="90" rx="140" ry="24" fill="rgba(30,20,10,0.3)" />
-        <path d="M -90 10 Q -120 70 0 85 Q 120 70 90 10 Q 100 -20 60 -25 L -60 -25 Q -100 -20 -90 10 Z" fill="url(#copperGrad)" />
-        <!-- Dough Seal Ring -->
-        <rect x="-80" y="-35" width="160" height="18" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
-        <circle cx="0" cy="-26" r="3" fill="#DC2626" />
-        <!-- Handles -->
-        <path d="M -85 10 C -105 10 -105 40 -80 40" fill="none" stroke="#78350F" stroke-width="5" stroke-linecap="round" />
-        <path d="M 85 10 C 105 10 105 40 80 40" fill="none" stroke="#78350F" stroke-width="5" stroke-linecap="round" />
-      </g>
+    <!-- GRAND DUM PUKHT COURT CANON & REALISTIC QUOTATION BOX (ALL ENGLISH) -->
+    <g transform="translate(40, 465)">
+      <rect width="680" height="620" fill="#F6EDE0" stroke="url(#gold24k)" stroke-width="1.5" rx="6" />
+      <rect x="7" y="7" width="666" height="606" fill="none" stroke="#D4AF37" stroke-width="0.8" stroke-dasharray="3,3" rx="4" />
 
-      <g transform="translate(340, 360)" text-anchor="middle">
-        <text font-family="'Cinzel', serif" font-size="15" letter-spacing="5" fill="#1C1814" font-weight="800">4 HOURS UNBROKEN PURDAH STEAM</text>
-        <line x1="-160" y1="18" x2="160" y2="18" stroke="url(#goldH)" stroke-width="1.5" />
-        
-        <text y="52" font-family="'Playfair Display', serif" font-size="18" fill="#523F2F" font-style="italic">
-          Zero steam escapes the copper degh until it arrives at your table.
+      <g transform="translate(340, 52)" text-anchor="middle">
+        <circle cx="0" cy="0" r="36" fill="url(#copperGrad)" />
+        <ellipse cx="0" cy="-6" rx="22" ry="6" fill="#FEF3C7" stroke="#7C2D12" stroke-width="1" />
+        <path d="M -14 0 Q 0 16 14 0" fill="#FFFDF0" opacity="0.6" />
+
+        <text y="58" font-family="'Cinzel', serif" font-size="12" letter-spacing="5" fill="#8C6808" font-weight="800">
+          THE PROTOCOL OF THE PURDAH STEAM
         </text>
-        <text y="84" font-family="'Newsreader', serif" font-size="14.5" fill="#665545">
-          The moment the golden crust is cut open with an antique dagger, a rich cloud of Kashmiri
+        <text y="74" font-family="'Cinzel', serif" font-size="10" letter-spacing="3" fill="#AA820A">
+          THE IMPERIAL DUM CANON OF AWADH • 1590
         </text>
-        <text y="108" font-family="'Newsreader', serif" font-size="14.5" fill="#665545">
-          saffron and rose ittar envelops the room in pure sensory splendour.
+        <line x1="-150" y1="88" x2="150" y2="88" stroke="url(#goldH)" stroke-width="1.5" />
+
+        <!-- English Royal Couplets -->
+        <text y="134" font-family="'Cinzel Decorative', 'Playfair Display', serif" font-size="19" fill="#1C1814" letter-spacing="0.5" font-weight="700">
+          "The sacred canon of Dum Pukht — not even a breath of steam shall escape,"
+        </text>
+        <text y="166" font-family="'Cinzel Decorative', 'Playfair Display', serif" font-size="19" fill="#1C1814" letter-spacing="0.5" font-weight="700">
+          "Until the intoxicating perfume of the degh has enraptured the entire court."
         </text>
 
-        <g transform="translate(0, 145)">
-          <rect x="-140" y="-12" width="280" height="26" rx="13" fill="#E5D6C0" stroke="#D4AF37" stroke-width="0.8" />
-          <text y="5" font-family="'Cinzel', serif" font-size="9" letter-spacing="2" fill="#6B4F09" font-weight="700">
-            HERMETIC DUM SEAL CERTIFIED
-          </text>
+        <!-- Evocative Narrative -->
+        <text y="218" font-family="'Playfair Display', Georgia, serif" font-size="15.5" fill="#3D2E21" font-style="italic">
+          "To seal the copper degh with whole-wheat dough and weight it with coals
+        </text>
+        <text y="244" font-family="'Playfair Display', Georgia, serif" font-size="15.5" fill="#3D2E21" font-style="italic">
+          is to create a universe where meat cooks only in its own marrow juices.
+        </text>
+        <text y="270" font-family="'Playfair Display', Georgia, serif" font-size="15.5" fill="#3D2E21" font-style="italic">
+          Zero steam escapes the vessel until it arrives before the king.
+        </text>
+        <text y="296" font-family="'Playfair Display', Georgia, serif" font-size="15.5" fill="#3D2E21" font-style="italic">
+          The moment the golden crust is sliced open with an antique dagger,
+        </text>
+        <text y="322" font-family="'Playfair Display', Georgia, serif" font-size="15.5" fill="#3D2E21" font-style="italic">
+          a cloud of Kashmiri saffron and rose ittar envelops the banquet in ecstasy."
+        </text>
+
+        <text y="375" font-family="'Newsreader', Georgia, serif" font-size="14" fill="#6B533E">
+          — Dastur-e-Pakwan • Ain-i-Akbari (Imperial Cookery Annals, 1590)
+        </text>
+
+        <!-- Red Wax Seal -->
+        <g transform="translate(0, 465)">
+          <circle cx="0" cy="0" r="42" fill="url(#waxGrad)" stroke="#7F1D1D" stroke-width="1.5" />
+          <circle cx="0" cy="0" r="35" fill="none" stroke="#FCA5A5" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.6" />
+          <text y="-14" font-family="'Cinzel', serif" font-size="8" letter-spacing="2" fill="#FEF08A" font-weight="800">DUM PUKHT</text>
+          <text y="8" font-family="'Cinzel Decorative', serif" font-size="18" fill="#FFFFFF" font-weight="900">MQR</text>
+          <text y="25" font-family="'Cinzel', serif" font-size="8" letter-spacing="2" fill="#FCA5A5">HERMETIC SEAL</text>
         </g>
       </g>
     </g>
   </g>
 
-  <!-- RIGHT PAGE: Dal Bukhara & Nihari -->
+  <!-- RIGHT PAGE: The 18-Hour Coal Ember & Sommelier Cellar (Folio 04) -->
   <g transform="translate(940, 50)">
     
     <g transform="translate(0, 0)">
-      <!-- Outer Solid 24K Gold Filigree -->
       <rect width="760" height="1140" fill="none" stroke="url(#gold24k)" stroke-width="2.5" rx="5" />
-      
-      <!-- Inner Ornate Jaali Inlay Ribbon -->
       <rect x="7" y="7" width="746" height="1126" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.5" rx="3" />
       <rect x="13" y="13" width="734" height="1114" fill="none" stroke="url(#gold24k)" stroke-width="1.2" stroke-dasharray="4,3" rx="2" />
       <rect x="18" y="18" width="724" height="1104" fill="none" stroke="#AA820A" stroke-width="0.5" opacity="0.3" rx="2" />
 
-      <!-- 4 Handcrafted Corner Cartouches -->
       
     <g transform="translate(18, 18) scale(1, 1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -353,7 +333,6 @@
     <g transform="translate(742, 18) scale(-1, 1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -364,7 +343,6 @@
     <g transform="translate(18, 1122) scale(1, -1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -375,7 +353,6 @@
     <g transform="translate(742, 1122) scale(-1, -1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -386,7 +363,7 @@
       <!-- Top Header Label -->
       <g transform="translate(380, 38)" text-anchor="middle">
         <text font-family="'Cinzel', 'Playfair Display', Georgia, serif" font-size="11" letter-spacing="5" fill="#8C6808" font-weight="700">
-          18-HOUR CHARCOAL SIMMER
+          CHAPTER II • HANDI &amp; DUM PUKHT
         </text>
         <line x1="-120" y1="10" x2="120" y2="10" stroke="url(#goldH)" stroke-width="1.2" />
         <circle cx="0" cy="10" r="3" fill="#D4AF37" />
@@ -394,8 +371,8 @@
         <circle cx="120" cy="10" r="2" fill="#AA820A" />
       </g>
 
-      <!-- Bottom Folio Number & Seal -->
-      <g transform="translate(710, 1112)" text-anchor="end">
+      <!-- Bottom Folio -->
+      <g transform="translate(50, 1112)" text-anchor="start">
         <text font-family="'Playfair Display', Georgia, serif" font-size="14" fill="#A89482" font-style="italic" font-weight="600">
           Folio 04
         </text>
@@ -408,26 +385,16 @@
     </g>
   
 
+    <!-- Chapter Header (ALL ENGLISH) -->
     <g transform="translate(380, 75)" text-anchor="middle">
       <text font-family="'Cinzel', serif" font-size="12" letter-spacing="6" fill="#AA820A" font-weight="800">THE 18-HOUR COAL EMBER</text>
-      <text y="40" font-family="'Rozha One', 'Cinzel', serif" font-size="30" letter-spacing="2" fill="#1C1814">दाल बुखारा व नल्ली निहारी</text>
-      <line x1="-140" y1="58" x2="140" y2="58" stroke="url(#goldH)" stroke-width="1.8" />
+      <text y="38" font-family="'Cinzel Decorative', 'Cinzel', serif" font-size="28" letter-spacing="2" fill="#1C1814" font-weight="700">DAL BUKHARA &amp; NALLI NIHARI</text>
+      <line x1="-140" y1="54" x2="140" y2="54" stroke="url(#goldH)" stroke-width="1.8" />
     </g>
 
-    <!-- DISH 3: Dal Bukhara with Earthen Pot Artwork -->
-    <g transform="translate(45, 175)">
-      <g transform="translate(60, 55)" filter="url(#goldDropShadow)">
-        <circle cx="0" cy="0" r="48" fill="#F7EFE1" stroke="url(#gold24k)" stroke-width="2" />
-        <circle cx="0" cy="0" r="42" fill="none" stroke="#D4AF37" stroke-width="0.8" stroke-dasharray="2,2" />
-        <!-- Handi Pot with Simmering Dal -->
-        <circle cx="0" cy="4" r="32" fill="#1E293B" />
-        <circle cx="0" cy="4" r="26" fill="#331A12" />
-        <!-- White Butter Cream Swirl -->
-        <path d="M -12 4 Q 0 -6 12 4 Q 16 14 0 14 Q -14 10 -12 4 Z" fill="#FFFBEB" />
-        <circle cx="2" cy="4" r="2" fill="#D97706" />
-      </g>
-
-      <g transform="translate(130, 16)">
+    <!-- DISH 3: Dal Bukhara 18-Hour Simmer -->
+    <g transform="translate(45, 155)">
+      <g transform="translate(125, 14)">
         
     <g transform="translate(0, 0)">
       <rect x="0" y="0" width="18" height="18" fill="#FFF9EB" stroke="#AA820A" stroke-width="1" rx="3" />
@@ -436,26 +403,24 @@
     </g>
   
         <text x="28" y="16" font-family="'Cinzel Decorative', 'Cinzel', serif" font-size="22" fill="#1C1814" font-weight="700">Dal Bukhara 18-Hour Simmer</text>
-        <text x="540" y="16" font-family="'Cinzel', serif" font-size="20" fill="#AA820A" font-weight="800" text-anchor="end">₹480</text>
+        <text x="545" y="16" font-family="'Cinzel', serif" font-size="20" fill="#AA820A" font-weight="800" text-anchor="end">₹480</text>
         
-        <text x="0" y="44" font-family="'Newsreader', Georgia, serif" font-size="15" fill="#4A3B2C">
+        <text x="0" y="42" font-family="'Newsreader', Georgia, serif" font-size="14.5" fill="#4A3B2C">
           Whole black urad lentils slow-simmered overnight over smouldering charcoal embers with sun-ripened
         </text>
-        <text x="0" y="68" font-family="'Newsreader', Georgia, serif" font-size="15" fill="#4A3B2C">
-          San Marzano tomatoes, garlic, white churned cow butter and pure heavy cream. Velvety, smoky, iconic.
-        </text>
-        <text x="0" y="94" font-family="'Playfair Display', serif" font-size="13" fill="#8C6808" font-style="italic">
-          Served with Butter Garlic Naan &amp; Laccha Paratha
+        <text x="0" y="64" font-family="'Newsreader', Georgia, serif" font-size="14.5" fill="#4A3B2C">
+          tomatoes, fresh garlic, white churned cow butter and pure cream. Velvety, smoky, iconic.
         </text>
       </g>
     </g>
 
-    <line x1="80" y1="320" x2="680" y2="320" stroke="url(#goldH)" stroke-width="1" />
-    <circle cx="380" cy="320" r="3" fill="#D4AF37" />
+    <!-- Horizontal Divider -->
+    <line x1="80" y1="285" x2="680" y2="285" stroke="url(#goldH)" stroke-width="1" />
+    <circle cx="380" cy="285" r="3" fill="#D4AF37" />
 
     <!-- DISH 4: Nalli Nihari Khas -->
-    <g transform="translate(45, 345)">
-      <g transform="translate(130, 16)">
+    <g transform="translate(45, 305)">
+      <g transform="translate(125, 14)">
         
     <g transform="translate(0, 0)">
       <rect x="0" y="0" width="18" height="18" fill="#FFF9EB" stroke="#AA820A" stroke-width="1" rx="3" />
@@ -464,53 +429,73 @@
     </g>
   
         <text x="28" y="16" font-family="'Cinzel Decorative', 'Cinzel', serif" font-size="22" fill="#1C1814" font-weight="700">Nalli Nihari Khas</text>
-        <text x="540" y="16" font-family="'Cinzel', serif" font-size="20" fill="#AA820A" font-weight="800" text-anchor="end">₹660</text>
+        <text x="545" y="16" font-family="'Cinzel', serif" font-size="20" fill="#AA820A" font-weight="800" text-anchor="end">₹660</text>
         
-        <text x="0" y="44" font-family="'Newsreader', Georgia, serif" font-size="15" fill="#4A3B2C">
+        <text x="0" y="42" font-family="'Newsreader', Georgia, serif" font-size="14.5" fill="#4A3B2C">
           Prime marrow shanks simmered from twilight to dawn with 32 medicinal herbs and roghan glaze,
         </text>
-        <text x="0" y="68" font-family="'Newsreader', Georgia, serif" font-size="15" fill="#4A3B2C">
+        <text x="0" y="64" font-family="'Newsreader', Georgia, serif" font-size="14.5" fill="#4A3B2C">
           served with bone marrow reduction, fresh ginger matchsticks and hot green chillies.
         </text>
       </g>
     </g>
 
-    <!-- SOMMELIER SELECTIONS -->
-    <g transform="translate(40, 520)">
-      <rect width="680" height="540" fill="#F3EADB" stroke="url(#gold24k)" stroke-width="1.5" rx="6" />
-      <rect x="8" y="8" width="664" height="524" fill="none" stroke="#D4AF37" stroke-width="0.8" stroke-dasharray="3,3" rx="4" />
-      
-      <g transform="translate(340, 50)" text-anchor="middle">
-        <text font-family="'Cinzel', serif" font-size="14" letter-spacing="5" fill="#8C6808" font-weight="800">THE SOMMELIER'S CELLAR</text>
-        <line x1="-140" y1="16" x2="140" y2="16" stroke="url(#goldH)" stroke-width="1.2" />
-      </g>
+    <!-- REALISTIC KHANSAMA QUOTATION BOX (THE PHILOSOPHY OF PATIENCE - ALL ENGLISH) -->
+    <g transform="translate(40, 465)">
+      <rect width="680" height="280" fill="#F3EADB" stroke="url(#gold24k)" stroke-width="1.5" rx="6" />
+      <rect x="7" y="7" width="666" height="266" fill="none" stroke="#D4AF37" stroke-width="0.8" stroke-dasharray="3,3" rx="4" />
 
-      <g transform="translate(60, 110)">
-        <text font-family="'Cinzel Decorative', 'Cinzel', serif" font-size="17" fill="#1C1814" font-weight="700">Grover Zampa Chene Grand Réserve</text>
-        <text x="560" y="0" font-family="'Cinzel', serif" font-size="17" fill="#AA820A" font-weight="800" text-anchor="end">₹3,800</text>
-        <text y="26" font-family="'Newsreader', serif" font-size="14" fill="#523F2F">
-          Tempranillo &amp; Shiraz aged 15 months in French oak barrels. Dark cherry, roasted cacao and spice.
+      <g transform="translate(340, 40)" text-anchor="middle">
+        <text font-family="'Cinzel', serif" font-size="12" letter-spacing="5" fill="#8C6808" font-weight="800">
+          THE ART OF PATIENCE • OVERNIGHT EMBER SIMMER
+        </text>
+        <line x1="-130" y1="16" x2="130" y2="16" stroke="url(#goldH)" stroke-width="1.2" />
+
+        <!-- English Couplets -->
+        <text y="58" font-family="'Cinzel Decorative', 'Playfair Display', serif" font-size="19" fill="#1C1814" letter-spacing="0.5" font-weight="700">
+          "Patience is the sacred fire that transmutes humble lentils into royal nectar;"
+        </text>
+        <text y="90" font-family="'Cinzel Decorative', 'Playfair Display', serif" font-size="19" fill="#3D2E21" letter-spacing="0.5" font-weight="700">
+          "And time is the master chef that renders every flavor immortal."
+        </text>
+
+        <text y="136" font-family="'Playfair Display', Georgia, serif" font-size="15" fill="#4A3B2C" font-style="italic">
+          "Simmered from the twilight prayer through midnight until dawn awakens the city.
+        </text>
+        <text y="160" font-family="'Playfair Display', Georgia, serif" font-size="15" fill="#4A3B2C" font-style="italic">
+          The low embers do not rush the lentils; they coax their innermost richness into the butter."
+        </text>
+
+        <text y="200" font-family="'Newsreader', Georgia, serif" font-size="13" fill="#665545">
+          — Ustad Ataullah Khan • Master Chef, Imperial Court of Delhi
         </text>
       </g>
+    </g>
 
-      <line x1="60" y1="200" x2="620" y2="200" stroke="#E2D4BE" stroke-width="1" />
+    <!-- SOMMELIER'S CELLAR -->
+    <g transform="translate(40, 770)">
+      <rect width="680" height="315" fill="#F9F5EC" stroke="url(#gold24k)" stroke-width="1" rx="6" />
+      <text x="340" y="32" font-family="'Cinzel', serif" font-size="12" letter-spacing="5" fill="#8C6808" font-weight="800" text-anchor="middle">
+        THE SOMMELIER'S CELLAR • VINTAGE PAIRINGS
+      </text>
+      <line x1="200" y1="44" x2="480" y2="44" stroke="url(#goldH)" stroke-width="1" />
 
-      <g transform="translate(60, 240)">
-        <text font-family="'Cinzel Decorative', 'Cinzel', serif" font-size="17" fill="#1C1814" font-weight="700">KRSMA Cabernet Sauvignon, Hampi Hills</text>
-        <text x="560" y="0" font-family="'Cinzel', serif" font-size="17" fill="#AA820A" font-weight="800" text-anchor="end">₹4,400</text>
-        <text y="26" font-family="'Newsreader', serif" font-size="14" fill="#523F2F">
-          Full-bodied, structured ripe cassis and black pepper pairing effortlessly with Nalli Nihari.
-        </text>
+      <g transform="translate(40, 70)">
+        <text font-family="'Cinzel', serif" font-size="16" fill="#1C1814" font-weight="700">Grover Zampa Chêne Grand Réserve</text>
+        <text x="600" y="0" font-family="'Cinzel', serif" font-size="16" fill="#AA820A" font-weight="800" text-anchor="end">₹3,800</text>
+        <text y="22" font-family="'Newsreader', serif" font-size="13.5" fill="#4A3B2C">Tempranillo &amp; Shiraz aged 15 months in French oak barrels. Dark cherry, cacao and spice.</text>
       </g>
 
-      <line x1="60" y1="330" x2="620" y2="330" stroke="#E2D4BE" stroke-width="1" />
+      <g transform="translate(40, 145)">
+        <text font-family="'Cinzel', serif" font-size="16" fill="#1C1814" font-weight="700">KRSMA Cabernet Sauvignon, Hampi Hills</text>
+        <text x="600" y="0" font-family="'Cinzel', serif" font-size="16" fill="#AA820A" font-weight="800" text-anchor="end">₹4,400</text>
+        <text y="22" font-family="'Newsreader', serif" font-size="13.5" fill="#4A3B2C">Full-bodied, structured ripe cassis and black pepper pairing effortlessly with Nalli Nihari.</text>
+      </g>
 
-      <g transform="translate(60, 370)">
-        <text font-family="'Cinzel Decorative', 'Cinzel', serif" font-size="17" fill="#1C1814" font-weight="700">Royal Badam Kesar Thandai</text>
-        <text x="560" y="0" font-family="'Cinzel', serif" font-size="17" fill="#AA820A" font-weight="800" text-anchor="end">₹280</text>
-        <text y="26" font-family="'Newsreader', serif" font-size="14" fill="#523F2F">
-          Chilled full-cream milk steeped with soaked almonds, melon seeds, poppy seeds, and Damascus rose water.
-        </text>
+      <g transform="translate(40, 220)">
+        <text font-family="'Cinzel', serif" font-size="16" fill="#1C1814" font-weight="700">Royal Badam Kesar Thandai</text>
+        <text x="600" y="0" font-family="'Cinzel', serif" font-size="16" fill="#AA820A" font-weight="800" text-anchor="end">₹280</text>
+        <text y="22" font-family="'Newsreader', serif" font-size="13.5" fill="#4A3B2C">Chilled full-cream milk steeped with crushed almonds, poppy seeds, and Damascus rose water.</text>
       </g>
     </g>
   </g>
