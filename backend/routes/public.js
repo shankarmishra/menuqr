@@ -3,6 +3,7 @@ import { apiError, sendJson, readJson, getClientIp } from '../utils.js';
 import { resolveTenantAuthorization, requireEntitlement } from '../authorization.js';
 import { getCachedMenu, setCachedMenu, invalidateMenuCache } from '../redisClient.js';
 import { broadcastOrderEvent } from '../orderStream.js';
+import { randomUUID } from 'node:crypto';
 
 const contactRateLimits = new Map();
 const publicMenuCache = new Map();
@@ -818,6 +819,48 @@ export default async function publicRoutes(request, response, url) {
     }
 
     sendJson(response, 200, order);
+    return true;
+  }
+
+  // Dine-In Table Service Request (Call Waiter, Request Water, Request Bill)
+  const serviceReqMatch = url.pathname.match(/^\/api\/public\/menu\/([^/]+)\/service-request$/);
+  if (request.method === 'POST' && serviceReqMatch) {
+    const slug = decodeURIComponent(serviceReqMatch[1]);
+    const clientRes = await pool.query('SELECT id, status, business_name as "businessName" FROM clients WHERE menu_slug = $1', [slug]);
+    const client = clientRes.rows[0];
+    if (!client || client.status.toLowerCase() !== 'active') {
+      throw apiError(404, 'Restaurant menu not found.');
+    }
+
+    const input = await readJson(request);
+    const rawTable = String(input.tableNumber || input.table || '').trim();
+    if (!rawTable) {
+      throw apiError(400, 'Table number is required for dine-in service request.');
+    }
+
+    const allowedTypes = ['WATER', 'WAITER', 'BILL'];
+    const requestType = String(input.requestType || 'WAITER').toUpperCase();
+    if (!allowedTypes.includes(requestType)) {
+      throw apiError(400, 'Invalid request type. Allowed: WATER, WAITER, BILL');
+    }
+
+    const serviceEvent = {
+      id: randomUUID(),
+      tableNumber: rawTable,
+      requestType,
+      notes: input.notes ? String(input.notes).trim().slice(0, 100) : null,
+      customerName: input.customerName ? String(input.customerName).trim().slice(0, 50) : 'Guest',
+      time: new Date().toISOString()
+    };
+
+    // Broadcast in real-time to active kitchen & cashier dashboards
+    try {
+      broadcastOrderEvent(client.id, 'service_request', serviceEvent);
+    } catch (err) {
+      console.warn('[orderStream] Failed to broadcast service_request event:', err.message);
+    }
+
+    sendJson(response, 200, { success: true, serviceEvent });
     return true;
   }
   

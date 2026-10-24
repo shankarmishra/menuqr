@@ -17,7 +17,12 @@ import {
   Trash2,
   Globe,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  BellRing,
+  Droplets,
+  Receipt,
+  ConciergeBell,
+  HandPlatter
 } from 'lucide-react';
 
 function InstagramIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
@@ -116,6 +121,11 @@ export default function MenuPage() {
 
   // Live Second-by-Second Countdown Timer for Customer Order
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+
+  // Table Service Request (Call Waiter / Water / Bill)
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [isSendingService, setIsSendingService] = useState(false);
+  const [lastServiceSentAt, setLastServiceSentAt] = useState<number>(0);
   
 
   const currentMenuResult = menuResult?.slug === slug ? menuResult : undefined;
@@ -478,6 +488,42 @@ export default function MenuPage() {
     }
   };
 
+  const handleSendServiceRequest = async (requestType: 'WATER' | 'WAITER' | 'BILL') => {
+    const effectiveTable = (diningSession?.tableNumber || tableNumber || tableParam || '').trim();
+    if (!effectiveTable) {
+      showToast('error', 'Please enter your table number to request service.');
+      setIsServiceModalOpen(true);
+      return;
+    }
+    const now = Date.now();
+    if (now - lastServiceSentAt < 15000) {
+      showToast('info', 'Your request was already received. Staff is on the way!');
+      return;
+    }
+    setIsSendingService(true);
+    try {
+      const res = await fetch(`/api/public/menu/${slug}/service-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tableNumber: effectiveTable,
+          requestType,
+          customerName: customerName || diningSession?.customerName || 'Guest'
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not send service request');
+      setLastServiceSentAt(now);
+      const label = requestType === 'WATER' ? '💧 Drinking Water' : requestType === 'BILL' ? '🧾 Final Bill' : '🙋 Server Assistance';
+      showToast('success', `🔔 ${label} requested for Table ${effectiveTable}! Staff has been notified.`);
+      setIsServiceModalOpen(false);
+    } catch (err: any) {
+      showToast('error', err?.message || 'Could not send request. Please call staff directly.');
+    } finally {
+      setIsSendingService(false);
+    }
+  };
+
   useEffect(() => {
     let isCurrent = true;
     if (!slug) return;
@@ -809,6 +855,19 @@ export default function MenuPage() {
             )}
           </div>
           <ChevronRight size={14} className="opacity-70 ml-1 shrink-0" />
+        </button>
+      )}
+
+      {/* Floating Table Service Bell (Water / Waiter / Bill) */}
+      {isPremium && (
+        <button
+          type="button"
+          onClick={() => setIsServiceModalOpen(true)}
+          className={`table-service-bell-btn ${cart.length > 0 && !isCartOpen ? 'with-cart' : ''}`}
+          aria-label="Request table service"
+        >
+          <BellRing size={15} className="text-[#e8783c] animate-pulse shrink-0" />
+          <span>Call Waiter / Water</span>
         </button>
       )}
 
@@ -1229,6 +1288,32 @@ export default function MenuPage() {
                   ))}
                 </div>
 
+                {/* Celebratory Google Review Prompt in Dining Session */}
+                {client.googleReviews?.enabled && client.googleReviews?.reviewUrl && (
+                  <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-orange-500/10 border border-amber-300 text-center">
+                    <div className="flex items-center justify-center gap-1 text-amber-500 mb-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={15} className="fill-amber-400 text-amber-400" />
+                      ))}
+                    </div>
+                    <div className="text-xs font-black text-slate-800">
+                      Enjoying your dining at {client.businessName}?
+                    </div>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      Your 5-star review helps our small kitchen team immensely!
+                    </p>
+                    <a
+                      href={client.googleReviews.reviewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2.5 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-[#e8783c] text-white text-xs font-bold shadow-sm hover:opacity-95 transition-opacity"
+                    >
+                      <span>Rate 5 Stars on Google</span>
+                      <ExternalLink size={12} />
+                    </a>
+                  </div>
+                )}
+
                 {/* Bottom Actions */}
                 <div className="mt-5 pt-3 border-t border-slate-200 flex items-center justify-between gap-3">
                   <button
@@ -1248,6 +1333,137 @@ export default function MenuPage() {
                   >
                     + Add More to Round {diningSession.orders.length + 1}
                   </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Table Service Bell Request Modal (Call Waiter / Water / Bill) */}
+      <AnimatePresence>
+        {isServiceModalOpen && (
+          <motion.div 
+            className="menu-cart-modal-overlay" 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsServiceModalOpen(false)}
+          >
+            <motion.div 
+              className="menu-cart-modal !max-w-md"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="menu-cart-header">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-orange-500/15 text-[#e8783c] border border-orange-500/30">
+                    <ConciergeBell size={20} />
+                  </div>
+                  <div>
+                    <h3 className="m-0 text-base font-bold text-slate-900">Table Service Assistance</h3>
+                    <span className="text-xs text-slate-500">Need help from our floor team?</span>
+                  </div>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setIsServiceModalOpen(false)} 
+                  className="menu-cart-close"
+                  aria-label="Close service modal"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Table selector or indicator */}
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Your Table</span>
+                    {(diningSession?.tableNumber || tableParam) ? (
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
+                        Table {diningSession?.tableNumber || tableParam}
+                      </span>
+                    ) : (
+                      <input
+                        type="text"
+                        placeholder="Table No. (e.g. 4)"
+                        value={tableNumber}
+                        onChange={(e) => setTableNumber(e.target.value)}
+                        className="w-28 px-2.5 py-1 text-xs font-bold rounded-lg border border-slate-300 text-slate-800 focus:outline-none focus:border-[#e8783c]"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Service Options */}
+                <div className="grid grid-cols-1 gap-2.5">
+                  <button
+                    type="button"
+                    disabled={isSendingService}
+                    onClick={() => handleSendServiceRequest('WATER')}
+                    className="flex items-center justify-between p-3.5 rounded-2xl border border-sky-200 bg-sky-50/60 hover:bg-sky-100/80 transition-all text-left group disabled:opacity-50 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-xl bg-sky-500 text-white shadow-sm group-hover:scale-105 transition-transform">
+                        <Droplets size={20} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-slate-900">Drinking Water</div>
+                        <div className="text-xs text-slate-500">Request fresh table water glasses</div>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-sky-700 bg-sky-100 px-2.5 py-1 rounded-lg">
+                      Request 💧
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isSendingService}
+                    onClick={() => handleSendServiceRequest('WAITER')}
+                    className="flex items-center justify-between p-3.5 rounded-2xl border border-orange-200 bg-orange-50/60 hover:bg-orange-100/80 transition-all text-left group disabled:opacity-50 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-xl bg-[#e8783c] text-white shadow-sm group-hover:scale-105 transition-transform">
+                        <HandPlatter size={20} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-slate-900">Call Waiter / Server</div>
+                        <div className="text-xs text-slate-500">Staff will arrive at your table shortly</div>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-orange-700 bg-orange-100 px-2.5 py-1 rounded-lg">
+                      Call 🙋
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isSendingService}
+                    onClick={() => handleSendServiceRequest('BILL')}
+                    className="flex items-center justify-between p-3.5 rounded-2xl border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100/80 transition-all text-left group disabled:opacity-50 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-sm group-hover:scale-105 transition-transform">
+                        <Receipt size={20} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-slate-900">Request Final Bill</div>
+                        <div className="text-xs text-slate-500">Get check ready for table / counter pay</div>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">
+                      Bill 🧾
+                    </span>
+                  </button>
+                </div>
+
+                <div className="text-center text-[11px] text-slate-400">
+                  ⚡ Notifies kitchen display and server handheld devices instantly.
                 </div>
               </div>
             </motion.div>
@@ -1448,6 +1664,31 @@ export default function MenuPage() {
                     ))}
                   </div>
                 </div>
+
+                {/* 5-Star Google Review Prompt on Order Delivery / Completion */}
+                {['DELIVERED', 'COMPLETED'].includes(activeOrder.status) && client.googleReviews?.enabled && client.googleReviews?.reviewUrl && (
+                  <div className="my-4 p-4 rounded-2xl bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-emerald-500/15 border-2 border-amber-400/50 text-center shadow-sm">
+                    <div className="flex items-center justify-center gap-1 text-amber-400 mb-1.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={18} className="fill-amber-400 text-amber-400 animate-pulse" />
+                      ))}
+                    </div>
+                    <h5 className="text-sm font-black text-slate-900">How was your meal?</h5>
+                    <p className="text-xs text-slate-600 mt-1">
+                      Loved the flavors? Please take 10 seconds to share your 5-star rating on Google!
+                    </p>
+                    <a
+                      href={client.googleReviews.reviewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#e8783c] text-white text-xs font-extrabold shadow-md hover:scale-[1.02] active:scale-95 transition-transform"
+                    >
+                      <Star size={14} className="fill-white" />
+                      <span>Review on Google</span>
+                      <ExternalLink size={13} />
+                    </a>
+                  </div>
+                )}
 
                 {/* Action buttons */}
                 <div className="order-actions-grid">

@@ -1513,3 +1513,46 @@
     bottom: 84px;
   }
 }
+
+/* Floating Table Service Bell Button */
+.table-service-bell-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 20px;
+  background: linear-gradient(135deg, #18221e 0%, #111714 100%);
+  border: 1.5px solid #2e4038;
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(232, 120, 60, 0.15);
+  z-index: 40;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.table-service-bell-btn:hover {
+  transform: translateY(-2px);
+  border-color: #e8783c;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(232, 120, 60, 0.25);
+}
+
+.table-service-bell-btn.with-cart {
+  bottom: 86px;
+}
+
+@media (max-width: 640px) {
+  .table-service-bell-btn {
+    bottom: 20px;
+    left: 16px;
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+  .table-service-bell-btn.with-cart {
+    bottom: 84px;
+  }
+}

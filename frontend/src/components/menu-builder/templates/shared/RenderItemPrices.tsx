@@ -15,17 +15,33 @@ export const DietIndicator: React.FC<{
   className?: string;
 }> = ({ type, compact, color, className = '' }) => {
   const isVeg = type === 'veg' || type === 'vegan';
-  const borderColor = color || (isVeg ? '#2E7D32' : '#D32F2F');
-  const dotColor = color || (isVeg ? '#2E7D32' : '#D32F2F');
-  const size = compact ? 'w-3 h-3 p-[1px]' : 'w-3.5 h-3.5 p-0.5';
+  const size = compact ? 'w-3.5 h-3.5 p-[2px]' : 'w-4 h-4 p-[2.5px]';
+
+  if (isVeg) {
+    return (
+      <span
+        className={`inline-flex items-center justify-center border-2 border-emerald-600 rounded-[3px] bg-white shrink-0 shadow-xs ${size} ${className}`}
+        style={color ? { borderColor: color } : undefined}
+        title="Vegetarian (Pure Veg)"
+      >
+        <span 
+          className="w-full h-full rounded-full bg-emerald-600" 
+          style={color ? { backgroundColor: color } : undefined} 
+        />
+      </span>
+    );
+  }
 
   return (
     <span
-      className={`inline-flex items-center justify-center border shrink-0 ${size} ${className}`}
-      style={{ borderColor }}
-      title={type.toUpperCase()}
+      className={`inline-flex items-center justify-center border-2 border-rose-600 rounded-[3px] bg-white shrink-0 shadow-xs ${size} ${className}`}
+      style={color ? { borderColor: color } : undefined}
+      title="Non-Vegetarian"
     >
-      <span className="w-full h-full rounded-full" style={{ backgroundColor: dotColor }} />
+      <span 
+        className="w-full h-full rounded-full bg-rose-600" 
+        style={color ? { backgroundColor: color } : undefined} 
+      />
     </span>
   );
 };

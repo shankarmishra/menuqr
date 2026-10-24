@@ -66,6 +66,15 @@ export type CustomerOrder = {
   sessionTotal?: number;
 };
 
+export type ServiceRequest = {
+  id: string;
+  tableNumber: string;
+  requestType: 'WATER' | 'WAITER' | 'BILL';
+  notes?: string | null;
+  customerName?: string;
+  time: string;
+};
+
 // ==========================================
 // Web Audio API Synthesizers (No external MP3 files needed)
 // ==========================================
@@ -208,6 +217,7 @@ export default function Orders() {
   const [viewMode, setViewMode] = useState<'KANBAN' | 'TABLE_MATRIX'>('KANBAN');
   const [buzzerSnoozed, setBuzzerSnoozed] = useState(false);
   const [selectedTableModal, setSelectedTableModal] = useState<string | null>(null);
+  const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
 
   const knownOrderIds = useRef<Set<string>>(new Set());
   const initialLoadDone = useRef(false);
@@ -540,6 +550,25 @@ export default function Orders() {
           }
         });
 
+        eventSource.addEventListener('service_request', (e: MessageEvent) => {
+          if (!isMounted) return;
+          try {
+            const sEvent: ServiceRequest = JSON.parse(e.data);
+            setServiceRequests(prev => [sEvent, ...prev.filter(s => s.id !== sEvent.id)]);
+            if (audioEnabledRef.current) {
+              playNewOrderSound();
+            }
+            const label = sEvent.requestType === 'WATER' 
+              ? '💧 Drinking Water' 
+              : sEvent.requestType === 'BILL' 
+              ? '🧾 Final Bill' 
+              : '🙋 Server Assistance';
+            showToast('info', `🔔 Table ${sEvent.tableNumber}: ${label} requested!`);
+          } catch (err) {
+            console.warn('[SSE] Failed to parse service_request payload:', err);
+          }
+        });
+
         eventSource.onerror = () => {
           if (isMounted) setIsSseConnected(false);
           if (eventSource) {
@@ -725,12 +754,17 @@ export default function Orders() {
         {tableGroups.map(group => {
           const seatedMins = Math.max(1, Math.round((Date.now() - new Date(group.seatedTime).getTime()) / 60000));
           const latestOrder = group.orders[group.orders.length - 1];
+          const activeTableService = serviceRequests.find(
+            r => r.tableNumber.trim().toLowerCase() === group.tableNumber.trim().toLowerCase()
+          );
 
           return (
             <div 
               key={group.tableNumber}
               className={`rounded-2xl p-5 border flex flex-col justify-between gap-4 transition-all shadow-lg ${
-                group.hasNewOrder 
+                activeTableService
+                  ? 'bg-gradient-to-b from-sky-950/30 via-[#151c19] to-[#151c19] border-sky-400 ring-2 ring-sky-400/40 shadow-sky-500/10'
+                  : group.hasNewOrder 
                   ? 'bg-gradient-to-b from-[#e8783c]/15 via-[#151c19] to-[#151c19] border-[#e8783c] ring-2 ring-[#e8783c]/30 shadow-[#e8783c]/10' 
                   : group.hasCookingOrder
                   ? 'bg-[#151c19] border-blue-500/40 hover:border-blue-400'
@@ -741,6 +775,21 @@ export default function Orders() {
             >
               {/* Header */}
               <div>
+                {/* Active Table Service Alert Callout */}
+                {activeTableService && (
+                  <div className="mb-3 p-2 rounded-xl bg-sky-500/20 border border-sky-400 text-sky-200 text-xs font-black flex items-center justify-between animate-pulse">
+                    <span>
+                      {activeTableService.requestType === 'WATER' ? '💧 Water' : activeTableService.requestType === 'BILL' ? '🧾 Bill' : '🙋 Waiter'} Requested
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setServiceRequests(prev => prev.filter(r => r.id !== activeTableService.id))}
+                      className="px-2 py-0.5 rounded bg-sky-500 hover:bg-sky-400 text-white text-[10px] cursor-pointer"
+                    >
+                      Done ✓
+                    </button>
+                  </div>
+                )}
                 <div className="flex items-center justify-between border-b border-[#24332d] pb-3 mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xl font-black text-white font-serif tracking-tight">
@@ -1592,6 +1641,49 @@ export default function Orders() {
           >
             Retry Now
           </button>
+        </div>
+      )}
+
+      {/* Real-Time Table Service Requests Banner (Call Waiter / Water / Bill) */}
+      {serviceRequests.length > 0 && (
+        <div className="mb-3 bg-gradient-to-r from-sky-500/20 via-blue-500/15 to-sky-500/20 border-2 border-sky-400 rounded-2xl p-3 md:px-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-lg shadow-sky-500/15">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-sky-500 text-white shadow-md shadow-sky-500/30 animate-pulse">
+              <BellRing size={18} />
+            </div>
+            <div>
+              <div className="text-xs md:text-sm font-black text-white flex items-center gap-2">
+                <span>{serviceRequests.length} Active Table Service Call{serviceRequests.length > 1 ? 's' : ''}!</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-500/30 text-sky-200 border border-sky-500/40">
+                  Guest Waiting
+                </span>
+              </div>
+              <div className="text-[11px] text-sky-200 mt-0.5">
+                Staff attention requested directly from digital table QR stand.
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
+            {serviceRequests.map((req) => (
+              <div key={req.id} className="flex items-center gap-2 bg-[#141b18] border border-sky-500/40 rounded-xl px-3 py-1.5 text-xs text-white shadow-sm">
+                <span className="font-black text-sky-400 tracking-wider">TABLE {req.tableNumber}:</span>
+                <span className="font-bold">
+                  {req.requestType === 'WATER' ? '💧 Water' : req.requestType === 'BILL' ? '🧾 Final Bill' : '🙋 Server Assistance'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setServiceRequests(prev => prev.filter(r => r.id !== req.id));
+                    showToast('success', `Marked Table ${req.tableNumber} request as completed.`);
+                  }}
+                  className="ml-1 px-2 py-0.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-black text-[10px] transition-colors cursor-pointer"
+                >
+                  Done ✓
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
