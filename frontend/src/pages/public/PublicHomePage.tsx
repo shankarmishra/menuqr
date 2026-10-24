@@ -2,6 +2,7 @@ import SiteHeader from '../../components/marketing/SiteHeader';
 import SiteFooter from '../../components/marketing/SiteFooter';
 import HeroSection from '../../components/marketing/HeroSection';
 import OneQrSection from '../../components/marketing/OneQrSection';
+import DiningStorytellingSection from '../../components/marketing/DiningStorytellingSection';
 import PhysicalQrSection from '../../components/marketing/PhysicalQrSection';
 import BuiltForTableSection from '../../components/marketing/BuiltForTableSection';
 import TemplateGallerySection from '../../components/marketing/TemplateGallerySection';
@@ -36,6 +37,7 @@ export default function PublicHomePage() {
       <main className="relative z-10">
         <HeroSection />
         <OneQrSection />
+        <DiningStorytellingSection />
         <PhysicalQrSection />
         <BuiltForTableSection />
         <TemplateGallerySection />

@@ -16,7 +16,8 @@ import {
   AlertTriangle,
   Trash2,
   Globe,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 
 function InstagramIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
@@ -112,6 +113,9 @@ export default function MenuPage() {
   // Multi-Round Table Dining Session (3.5 hours TTL)
   const [diningSession, setDiningSession] = useState<DiningSession | null>(null);
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
+
+  // Live Second-by-Second Countdown Timer for Customer Order
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   
 
   const currentMenuResult = menuResult?.slug === slug ? menuResult : undefined;
@@ -528,6 +532,40 @@ export default function MenuPage() {
   const cartTotalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartTotalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  // Live countdown timer ticking down second-by-second
+  useEffect(() => {
+    if (!activeOrder || !['ACCEPTED', 'PREPARING', 'IN_PROGRESS'].includes(activeOrder.status)) {
+      setRemainingSeconds(null);
+      return;
+    }
+
+    const calcRemaining = () => {
+      let target: number | null = null;
+      if (activeOrder.estimatedDeliveryTime) {
+        target = new Date(activeOrder.estimatedDeliveryTime).getTime();
+      } else if (activeOrder.estimatedTimeMinutes && activeOrder.time) {
+        target = new Date(activeOrder.time).getTime() + activeOrder.estimatedTimeMinutes * 60 * 1000;
+      }
+      if (!target) return null;
+      return Math.max(0, Math.floor((target - Date.now()) / 1000));
+    };
+
+    setRemainingSeconds(calcRemaining());
+    const ticker = setInterval(() => {
+      setRemainingSeconds(calcRemaining());
+    }, 1000);
+
+    return () => clearInterval(ticker);
+  }, [activeOrder?.estimatedDeliveryTime, activeOrder?.estimatedTimeMinutes, activeOrder?.time, activeOrder?.status]);
+
+  const formatTimerClock = (secs: number | null) => {
+    if (secs === null) return '';
+    if (secs <= 0) return 'Plating & Serving Now!';
+    const mins = Math.floor(secs / 60);
+    const rem = secs % 60;
+    return `${mins}:${rem.toString().padStart(2, '0')}`;
+  };
+
   const getFriendlyStatus = (status: string) => {
     switch (status) {
       case 'NEW': return { label: 'Received • Waiting for Kitchen', color: 'bg-amber-100 text-amber-900 border-amber-200' };
@@ -737,8 +775,14 @@ export default function MenuPage() {
               <UtensilsCrossed size={13} className="text-[#e8783c]" />
               Table {diningSession.tableNumber} • Round {diningSession.orders.length}
             </span>
-            <span className="text-[11px] text-emerald-300 font-semibold mt-0.5">
-              Total Bill: ₹{diningSession.orders.reduce((sum, o) => sum + (o.total || 0), 0)} • View / Add Dishes
+            <span className="text-[11px] text-emerald-300 font-semibold mt-0.5 flex items-center gap-1.5">
+              {remainingSeconds !== null && remainingSeconds > 0 ? (
+                <span className="text-amber-300 font-black font-mono flex items-center gap-1">
+                  <Clock3 size={11} className="animate-spin text-amber-400" style={{ animationDuration: '8s' }} />
+                  Food in: {formatTimerClock(remainingSeconds)} •
+                </span>
+              ) : null}
+              <span>Bill: ₹{diningSession.orders.reduce((sum, o) => sum + (o.total || 0), 0)} • View / Add</span>
             </span>
           </div>
           <ChevronRight size={14} className="opacity-70 ml-1 shrink-0 text-slate-300" />
@@ -1251,36 +1295,58 @@ export default function MenuPage() {
                   <div className="order-tracker-id">Order ID: #{activeOrder.id}</div>
                 </div>
 
-                {/* Estimated Delivery / Prep Time Notice */}
+                {/* Live Countdown & Preparation Timer Card */}
                 {activeOrder.status !== 'CANCELLED' && (
-                  activeOrder.estimatedTimeMinutes ? (
-                    <div className="my-3.5 p-4 rounded-2xl bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-emerald-500/15 border-2 border-emerald-500/30 text-center shadow-sm">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold tracking-wide uppercase">
-                        <Clock3 size={13} />
-                        <span>{activeOrder.orderType === 'DELIVERY' ? 'Order Delivery Time' : 'Kitchen Preparation Time'}</span>
+                  ['ACCEPTED', 'PREPARING', 'IN_PROGRESS'].includes(activeOrder.status) && remainingSeconds !== null ? (
+                    <div className="my-3.5 p-5 rounded-2xl bg-gradient-to-br from-orange-500/15 via-amber-500/10 to-emerald-500/15 border-2 border-[#e8783c]/50 text-center shadow-lg relative overflow-hidden">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e8783c]/20 text-amber-300 text-xs font-black tracking-wide uppercase">
+                        <Clock3 size={13} className="animate-spin" style={{ animationDuration: '6s' }} />
+                        <span>{activeOrder.orderType === 'DELIVERY' ? '🛵 Food Arriving At Your Doorstep In' : `🍽️ Arriving at Table ${activeOrder.tableNumber || ''} In`}</span>
                       </div>
-                      <div className="text-3xl font-black text-emerald-300 mt-2 tracking-tight">
-                        ~{activeOrder.estimatedTimeMinutes} Minutes
+
+                      {/* Big Digital Countdown Clock */}
+                      <div className="text-4xl sm:text-5xl font-black text-white mt-3 font-mono tracking-tight drop-shadow-md">
+                        {formatTimerClock(remainingSeconds)}
                       </div>
-                      {activeOrder.estimatedDeliveryTime && (
-                        <div className="text-xs text-emerald-200/90 font-medium mt-1">
-                          Expected by: <strong>{new Date(activeOrder.estimatedDeliveryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong>
-                        </div>
-                      )}
-                      <p className="text-[11px] text-slate-400 mt-1.5">
-                        {activeOrder.orderType === 'DELIVERY'
-                          ? 'Your fresh meal is being prepared and will be delivered within the estimated time.'
-                          : 'Our chef is preparing your dishes hot and fresh for your table.'}
+
+                      {/* Animated Progress Bar */}
+                      <div className="w-full bg-black/30 rounded-full h-2.5 mt-3 overflow-hidden border border-white/10">
+                        <div 
+                          className="bg-gradient-to-r from-[#e8783c] to-emerald-400 h-full rounded-full transition-all duration-1000 ease-linear"
+                          style={{ 
+                            width: `${Math.min(100, Math.max(8, 100 - (remainingSeconds / ((activeOrder.estimatedTimeMinutes || 20) * 60)) * 100))}%` 
+                          }}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-slate-300/80 font-medium mt-2 px-1">
+                        <span>Chef Cooking on Flame 🔥</span>
+                        {activeOrder.estimatedDeliveryTime && (
+                          <span>Estimated by <strong>{new Date(activeOrder.estimatedDeliveryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong></span>
+                        )}
+                      </div>
+                    </div>
+                  ) : activeOrder.status === 'READY' ? (
+                    <div className="my-3.5 p-4 rounded-2xl bg-gradient-to-br from-purple-500/20 to-emerald-500/20 border-2 border-purple-500/40 text-center shadow-md animate-pulse">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/25 text-purple-200 text-xs font-black uppercase">
+                        <Sparkles size={14} className="text-amber-300" />
+                        <span>Hot & Freshly Plated!</span>
+                      </div>
+                      <div className="text-2xl font-black text-white mt-2">
+                        {activeOrder.orderType === 'DELIVERY' ? 'Out for Delivery!' : `Serving to Table ${activeOrder.tableNumber || ''} Right Now!`}
+                      </div>
+                      <p className="text-xs text-purple-200/90 mt-1 font-medium">
+                        Dishes are ready. Please get ready to enjoy your meal!
                       </p>
                     </div>
                   ) : activeOrder.status === 'NEW' ? (
-                    <div className="my-3.5 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-center">
-                      <div className="text-xs text-amber-300 font-semibold flex items-center justify-center gap-1.5">
-                        <Clock3 size={14} className="animate-pulse" />
-                        <span>Restaurant is reviewing your order...</span>
+                    <div className="my-3.5 p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 text-center">
+                      <div className="text-xs text-amber-300 font-extrabold flex items-center justify-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping shrink-0" />
+                        <span>Order Received • Waiting for Kitchen Confirmation...</span>
                       </div>
-                      <p className="text-[11px] text-amber-200/70 mt-1">
-                        Preparation & delivery time will be updated here as soon as the restaurant accepts.
+                      <p className="text-[11px] text-amber-200/80 mt-1.5 leading-snug">
+                        Our kitchen manager is reviewing your order. The live cooking timer will appear here in ~1-2 minutes.
                       </p>
                     </div>
                   ) : null

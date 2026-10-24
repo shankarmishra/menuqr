@@ -17,7 +17,8 @@ import {
   VolumeX, 
   AlertTriangle,
   Search,
-  ArrowUpDown
+  ArrowUpDown,
+  Printer
 } from 'lucide-react';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { getOrders, updateOrderStatus, updateOrderEstimatedTime } from './appStore';
@@ -105,6 +106,92 @@ export default function Orders() {
   const [adjustMinutes, setAdjustMinutes] = useState<number>(30);
   const [isUpdatingTime, setIsUpdatingTime] = useState(false);
   const [isSseConnected, setIsSseConnected] = useState(false);
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+
+  const toggleItemCheck = (orderId: string, itemIdx: number) => {
+    const key = `${orderId}-${itemIdx}`;
+    setCheckedItems(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const printKOT = (order: CustomerOrder) => {
+    const printWindow = window.open('', '_blank', 'width=380,height=600');
+    if (!printWindow) return;
+
+    const timeFormatted = new Date(order.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dateFormatted = new Date(order.time).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>KOT - #${order.id}</title>
+          <style>
+            @page { size: 80mm auto; margin: 3mm; }
+            body { font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.35; color: #000; margin: 0; padding: 10px; }
+            .center { text-align: center; }
+            .bold { font-weight: 900; }
+            .dashed { border-bottom: 1.5px dashed #000; padding-bottom: 6px; margin-bottom: 8px; }
+            .dashed-top { border-top: 1.5px dashed #000; padding-top: 6px; margin-top: 8px; }
+            .table-hero { font-size: 26px; font-weight: 900; letter-spacing: 1px; }
+            .item-row { display: flex; justify-content: space-between; font-size: 14px; margin: 5px 0; }
+            .qty { font-size: 16px; font-weight: 900; width: 36px; }
+            .item-name { flex: 1; font-weight: 900; }
+            .badge { display: inline-block; background: #000; color: #fff; padding: 3px 8px; font-size: 12px; font-weight: 900; border-radius: 4px; }
+          </style>
+        </head>
+        <body>
+          <div class="center dashed">
+            <div class="bold" style="font-size: 16px;">KITCHEN ORDER TICKET (KOT)</div>
+            <div style="font-size: 11px; margin-top: 2px;">${dateFormatted} • ${timeFormatted}</div>
+            <div class="table-hero" style="margin: 6px 0;">
+              ${order.orderType === 'DELIVERY' ? '🛵 DELIVERY' : `TABLE ${order.tableNumber || 'N/A'}`}
+            </div>
+            ${order.roundNumber && order.roundNumber > 1 ? `<div class="badge">🔔 ROUND ${order.roundNumber} ADD-ON</div>` : ''}
+            <div style="font-size: 11px; margin-top: 4px;">Order #${order.id} • ${order.customerName || 'Guest'}</div>
+          </div>
+
+          <div style="margin: 10px 0;">
+            <div class="bold" style="font-size: 12px; margin-bottom: 6px;">
+              ${order.roundNumber && order.roundNumber > 1 ? `🔥 PREPARE THESE DISHES (ROUND ${order.roundNumber})` : 'DISHES TO PREPARE:'}
+            </div>
+            ${(order.items || []).map(it => `
+              <div class="item-row">
+                <span class="qty">${it.quantity}x</span>
+                <span class="item-name">${it.name} ${it.variant ? `(${it.variant})` : ''}</span>
+              </div>
+            `).join('')}
+          </div>
+
+          ${order.notes ? `
+            <div class="dashed-top" style="font-size: 12px;">
+              <div class="bold">SPECIAL INSTRUCTIONS:</div>
+              <div style="font-style: italic;">${order.notes}</div>
+            </div>
+          ` : ''}
+
+          ${order.roundNumber && order.roundNumber > 1 && order.previousRoundItems && order.previousRoundItems.length > 0 ? `
+            <div class="dashed-top" style="font-size: 10px; color: #444;">
+              <div class="bold">ALREADY SERVED (DO NOT RECOOK):</div>
+              <div>${order.previousRoundItems.map(it => `${it.quantity}x ${it.name}`).join(', ')}</div>
+            </div>
+          ` : ''}
+
+          <div class="center dashed-top" style="font-size: 10px; margin-top: 12px;">
+            --- MenusQR Digital Kitchen Dispatch ---
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
   
   const knownOrderIds = useRef<Set<string>>(new Set());
   const initialLoadDone = useRef(false);
@@ -371,10 +458,21 @@ export default function Orders() {
               </div>
             )}
           </div>
-          <div className="text-right">
-            <div className="text-[#849a90] text-xs font-mono font-bold">#{order.id}</div>
-            <div className="text-xs text-[#62756d] flex items-center gap-1 justify-end mt-0.5">
-              <Clock size={12} className="text-[#849a90]" /> {timeFormatted}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => printKOT(order)}
+              className="p-1.5 rounded-lg bg-[#24332d] hover:bg-[#e8783c] text-slate-300 hover:text-white transition-all flex items-center gap-1 text-[11px] font-bold border border-[#2a3832]"
+              title="Print Kitchen Order Ticket (KOT)"
+            >
+              <Printer size={13} />
+              <span>KOT</span>
+            </button>
+            <div className="text-right">
+              <div className="text-[#849a90] text-xs font-mono font-bold">#{order.id}</div>
+              <div className="text-xs text-[#62756d] flex items-center gap-1 justify-end mt-0.5">
+                <Clock size={12} className="text-[#849a90]" /> {timeFormatted}
+              </div>
             </div>
           </div>
         </div>
@@ -468,16 +566,54 @@ export default function Orders() {
                 </span>
               )}
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setTimeAdjustOrder(order);
-                setAdjustMinutes(order.estimatedTimeMinutes || (isDelivery ? 35 : 20));
-              }}
-              className="text-[11px] font-bold text-emerald-400 hover:text-white underline ml-2"
-            >
-              Adjust Time
-            </button>
+            <div className="flex items-center gap-1 ml-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  const currentMins = order.estimatedTimeMinutes || (isDelivery ? 35 : 20);
+                  const nextMins = currentMins + 5;
+                  try {
+                    await updateOrderEstimatedTime(order.id, nextMins);
+                    await fetchOrders(true);
+                    showToast('success', `Added +5m rush time to Order #${order.id.substring(0, 6)}`);
+                  } catch (e: any) {
+                    showToast('error', e?.message || 'Could not update time');
+                  }
+                }}
+                className="px-1.5 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] font-extrabold border border-emerald-500/30 transition-colors"
+                title="Quick add +5 minutes rush time"
+              >
+                +5m
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const currentMins = order.estimatedTimeMinutes || (isDelivery ? 35 : 20);
+                  const nextMins = currentMins + 10;
+                  try {
+                    await updateOrderEstimatedTime(order.id, nextMins);
+                    await fetchOrders(true);
+                    showToast('success', `Added +10m rush time to Order #${order.id.substring(0, 6)}`);
+                  } catch (e: any) {
+                    showToast('error', e?.message || 'Could not update time');
+                  }
+                }}
+                className="px-1.5 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] font-extrabold border border-emerald-500/30 transition-colors"
+                title="Quick add +10 minutes rush time"
+              >
+                +10m
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTimeAdjustOrder(order);
+                  setAdjustMinutes(order.estimatedTimeMinutes || (isDelivery ? 35 : 20));
+                }}
+                className="text-[11px] font-bold text-emerald-400 hover:text-white underline ml-1"
+              >
+                Adjust
+              </button>
+            </div>
           </div>
         )}
 
@@ -496,14 +632,27 @@ export default function Orders() {
                     {order.items?.reduce((s, it) => s + it.quantity, 0)} {order.items?.reduce((s, it) => s + it.quantity, 0) === 1 ? 'item' : 'items'}
                   </span>
                 </div>
-                {order.items && order.items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-[#e8783c] bg-[#e8783c]/20 border border-[#e8783c]/40 px-2 py-0.5 rounded text-xs">
-                        {item.quantity}x
-                      </span>
-                      <div>
-                        <span className="text-white font-bold">{item.name}</span>
+                {order.items && order.items.map((item, idx) => {
+                  const isChecked = checkedItems[`${order.id}-${idx}`] || false;
+                  return (
+                    <div 
+                      key={idx} 
+                      onClick={() => toggleItemCheck(order.id, idx)}
+                      className={`flex justify-between items-center text-sm p-1.5 rounded-lg cursor-pointer transition-colors ${
+                        isChecked ? 'bg-emerald-500/10 line-through opacity-60' : 'hover:bg-white/5'
+                      }`}
+                      title="Click to mark cooked / ready"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`font-extrabold px-2 py-0.5 rounded text-xs border ${
+                          isChecked 
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' 
+                            : 'text-[#e8783c] bg-[#e8783c]/20 border-[#e8783c]/40'
+                        }`}>
+                          {isChecked ? '✓' : `${item.quantity}x`}
+                        </span>
+                        <div>
+                          <span className={`font-bold ${isChecked ? 'text-slate-400' : 'text-white'}`}>{item.name}</span>
                         {item.variant && <span className="ml-1.5 text-xs text-amber-200/80 font-normal">({item.variant})</span>}
                         {Array.isArray(item.addons) && item.addons.length > 0 && (
                           <div className="text-xs text-emerald-400 font-medium mt-0.5">
@@ -514,7 +663,8 @@ export default function Orders() {
                     </div>
                     <div className="text-white font-mono text-xs font-bold">₹{((item.price || 0) + (Array.isArray(item.addons) ? item.addons.reduce((sum, a) => sum + (a.price || 0), 0) : 0)) * item.quantity}</div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Section 2: PREVIOUSLY DELIVERED IN EARLIER ROUNDS */}
