@@ -695,30 +695,50 @@ export async function sendLoginOtpEmail({ email, otp, ownerName }) {
   const name = ownerName ? ownerName.trim() : 'Partner';
 
   const bodyHtml = `
-    <h1 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 700; color: #111827;">Security Verification Code</h1>
-    
-    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #374151;">
-      Hello <strong>${name}</strong>, a sign-in attempt was initiated for your MENUSQR portal account.
+    <h1 style="margin: 0 0 14px 0; font-size: 22px; font-weight: 800; color: #111827; letter-spacing: -0.5px;">
+      🔐 Login Verification Code
+    </h1>
+
+    <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.7; color: #374151;">
+      Hello <strong>${name}</strong>,<br>
+      A sign-in request was made for your <strong>MENUSQR</strong> account.
+      Use the one-time code below to complete your login.
     </p>
 
-    <div style="margin: 24px 0; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; text-align: center;">
-      <p style="margin: 0 0 8px 0; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b;">Your 6-Digit OTP Code</p>
-      <div style="font-family: 'Courier New', Courier, monospace; font-size: 38px; font-weight: 800; color: #0f172a; letter-spacing: 8px; margin: 8px 0;">${otp}</div>
-      <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">This code will expire in 5 minutes.</p>
-    </div>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 24px 0;">
+      <tr>
+        <td align="center" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px; padding: 32px 24px;">
+          <p style="margin: 0 0 10px 0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: #94a3b8;">
+            Your One-Time Password
+          </p>
+          <p style="margin: 0; font-family: 'Courier New', Courier, monospace; font-size: 42px; font-weight: 900; letter-spacing: 10px; color: #f8fafc; line-height: 1.1;">
+            ${otp}
+          </p>
+          <p style="margin: 12px 0 0 0; font-size: 12px; color: #64748b;">
+            ⏱ Expires in <strong style="color: #f59e0b;">5 minutes</strong>
+          </p>
+        </td>
+      </tr>
+    </table>
 
-    <div style="margin: 0 0 20px 0; padding: 12px 16px; background-color: #fffbeb; border-left: 4px solid #d97706; border-radius: 0 4px 4px 0;">
-      <p style="margin: 0; font-size: 12px; color: #92400e; line-height: 1.5;">
-        <strong>Security Notice:</strong> Never share this code with anyone. MENUSQR staff will never call or message you asking for your verification code.
+    <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+      Enter this code on the login screen to access your dashboard.
+      If you did not request this, you can safely ignore this email — no changes have been made to your account.
+    </p>
+
+    <div style="padding: 14px 18px; background-color: #fff7ed; border-left: 4px solid #f97316; border-radius: 0 8px 8px 0;">
+      <p style="margin: 0; font-size: 12px; color: #7c2d12; line-height: 1.6;">
+        <strong>🛡️ Security Tip:</strong> Never share this code with anyone — not even MENUSQR support.
+        This code is for your use only.
       </p>
     </div>
   `;
 
   return sendEmailDirectly({
     to: email,
-    subject: `${otp} is your MENUSQR login verification code`,
-    html: buildCorporateEmailHtml({ title: 'Login OTP Code', bodyHtml }),
-    text: `Your MENUSQR 2-step verification code is: ${otp}. Valid for 5 minutes.`,
+    subject: `${otp} — Your MENUSQR Login Code`,
+    html: buildCorporateEmailHtml({ title: 'Login Verification Code', bodyHtml }),
+    text: `Your MENUSQR login verification code is: ${otp}\n\nThis code expires in 5 minutes. Do not share this code with anyone.\n\nIf you did not request this, please ignore this email.`,
   }, `client login OTP for ${maskEmail(email)}`);
 }
 
@@ -731,23 +751,40 @@ export async function sendAdminLoginOtpEmail({ email, otp }) {
   }
 
   const bodyHtml = `
-    <h1 style="margin: 0 0 12px; font-size: 21px; line-height: 1.3; font-weight: 700; color: #17231e;">Admin sign-in code</h1>
-    <p style="margin: 0 0 22px; font-size: 14px; line-height: 1.65; color: #53615a;">
-      Use this one-time code to sign in to the MENUSQR administration portal. It expires in five minutes.
+    <h1 style="margin: 0 0 14px; font-size: 22px; font-weight: 800; color: #17231e; letter-spacing: -0.5px;">
+      🔐 Admin Sign-In Code
+    </h1>
+    <p style="margin: 0 0 24px; font-size: 15px; line-height: 1.7; color: #374151;">
+      Use this one-time code to sign in to the <strong>MENUSQR Administration Portal</strong>.
+      This code expires in <strong>5 minutes</strong>.
     </p>
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 22px; background: #f5f8f6; border: 1px solid #dbe5de; border-radius: 8px;">
-      <tr><td align="center" style="padding: 24px 16px 20px;">
-        <p style="margin: 0 0 10px; font-size: 11px; font-weight: 700; color: #6e7e74; text-transform: uppercase;">Your verification code</p>
-        <p style="margin: 0; font-family: 'Courier New', Courier, monospace; font-size: 34px; line-height: 1.2; font-weight: 700; letter-spacing: 7px; color: #17231e;">${otp}</p>
-      </td></tr>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 24px;">
+      <tr>
+        <td align="center" style="background: linear-gradient(135deg, #17231e 0%, #2d4a3e 100%); border-radius: 12px; padding: 32px 24px;">
+          <p style="margin: 0 0 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: #94a3b8;">
+            Your One-Time Password
+          </p>
+          <p style="margin: 0; font-family: 'Courier New', Courier, monospace; font-size: 42px; font-weight: 900; letter-spacing: 10px; color: #f0fdf4; line-height: 1.1;">
+            ${otp}
+          </p>
+          <p style="margin: 12px 0 0; font-size: 12px; color: #6b7280;">
+            ⏱ Valid for <strong style="color: #f59e0b;">5 minutes only</strong>
+          </p>
+        </td>
+      </tr>
     </table>
+    <div style="padding: 14px 18px; background-color: #fff7ed; border-left: 4px solid #f97316; border-radius: 0 8px 8px 0;">
+      <p style="margin: 0; font-size: 12px; color: #7c2d12; line-height: 1.6;">
+        <strong>🛡️ Security:</strong> Never share this code. Admin access is restricted — if you did not request this, contact support immediately.
+      </p>
+    </div>
   `;
 
   return sendEmailDirectly({
     to: email,
-    subject: 'Your MENUSQR admin sign-in code',
+    subject: `${otp} — Your MENUSQR Admin Sign-In Code`,
     html: buildCorporateEmailHtml({ title: 'Admin Sign-In Code', bodyHtml }),
-    text: `Your MENUSQR admin sign-in code is ${otp}. It expires in five minutes.`,
+    text: `Your MENUSQR admin sign-in code is: ${otp}\n\nExpires in 5 minutes. Do not share this code with anyone.`,
   }, `admin sign-in OTP for ${maskEmail(email)}`);
 }
 
@@ -761,24 +798,48 @@ export async function sendPasswordResetOtpEmail({ email, otp, ownerName }) {
   const name = ownerName ? ownerName.trim() : 'Partner';
 
   const bodyHtml = `
-    <h1 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 700; color: #111827;">Password Reset Request</h1>
-    
-    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #374151;">
-      Hello <strong>${name}</strong>, we received a request to reset the password for your MENUSQR portal account (<span style="font-family: monospace;">${email}</span>).
+    <h1 style="margin: 0 0 14px 0; font-size: 22px; font-weight: 800; color: #111827; letter-spacing: -0.5px;">
+      🔑 Password Reset Code
+    </h1>
+
+    <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.7; color: #374151;">
+      Hello <strong>${name}</strong>,<br>
+      We received a request to reset the password for your MENUSQR account
+      (<span style="font-family: monospace; color: #1d4ed8;">${email}</span>).
     </p>
 
-    <div style="margin: 24px 0; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 24px; text-align: center;">
-      <p style="margin: 0 0 8px 0; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Reset Verification Code</p>
-      <div style="font-family: 'Courier New', Courier, monospace; font-size: 38px; font-weight: 800; color: #2563eb; letter-spacing: 8px; margin: 8px 0;">${otp}</div>
-      <p style="margin: 8px 0 0 0; font-size: 12px; color: #64748b;">This code will expire in 10 minutes.</p>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 24px 0;">
+      <tr>
+        <td align="center" style="background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 100%); border-radius: 12px; padding: 32px 24px;">
+          <p style="margin: 0 0 10px 0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: #93c5fd;">
+            Password Reset Code
+          </p>
+          <p style="margin: 0; font-family: 'Courier New', Courier, monospace; font-size: 42px; font-weight: 900; letter-spacing: 10px; color: #f8fafc; line-height: 1.1;">
+            ${otp}
+          </p>
+          <p style="margin: 12px 0 0 0; font-size: 12px; color: #93c5fd;">
+            ⏱ Expires in <strong style="color: #f59e0b;">10 minutes</strong>
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+      Enter this code to set a new password. If you did not request a password reset, please ignore this email — your account is safe.
+    </p>
+
+    <div style="padding: 14px 18px; background-color: #fff7ed; border-left: 4px solid #f97316; border-radius: 0 8px 8px 0;">
+      <p style="margin: 0; font-size: 12px; color: #7c2d12; line-height: 1.6;">
+        <strong>🛡️ Security:</strong> Never share this reset code with anyone. MENUSQR support will never ask for this code.
+      </p>
     </div>
   `;
 
   return sendEmailDirectly({
     to: email,
-    subject: `Password Reset Code: ${otp} - MENUSQR`,
+    subject: `${otp} — Your MENUSQR Password Reset Code`,
     html: buildCorporateEmailHtml({ title: 'Password Reset Request', bodyHtml }),
-    text: `Your MENUSQR password reset code is: ${otp}. Valid for 10 minutes.`,
+    text: `Your MENUSQR password reset code is: ${otp}\n\nThis code expires in 10 minutes. Do not share this code with anyone.\n\nIf you did not request a password reset, please ignore this email.`,
   }, `password reset OTP for ${maskEmail(email)}`);
 }
 
