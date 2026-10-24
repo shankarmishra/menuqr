@@ -10,14 +10,16 @@ try {
 
 // ===========================================================================
 // EMAIL SERVICE MASTER TOGGLE:
-// As requested: All outbound email delivery across the entire application is
-// paused/disabled by default. No emails will be attempted anywhere, completely
-// avoiding Render outbound SMTP blocks, timeouts, and Resend 401 errors.
-// To re-enable when a new paid API key is added:
-// Set ENABLE_EMAIL_SERVICE=true in Render / environment settings.
+// Active when ENABLE_EMAIL_SERVICE=true or when BREVO_API_KEY / RESEND_API_KEY is provisioned.
+// Can be explicitly paused by setting ENABLE_EMAIL_SERVICE=false.
 // ===========================================================================
 export function isEmailServiceActive(environment = process.env) {
-  return environment.ENABLE_EMAIL_SERVICE === 'true';
+  if (environment.ENABLE_EMAIL_SERVICE === 'false') return false;
+  if (environment.ENABLE_EMAIL_SERVICE === 'true') return true;
+  if (Boolean(environment.BREVO_API_KEY || environment.SENDINBLUE_API_KEY || environment.RESEND_API_KEY)) {
+    return true;
+  }
+  return false;
 }
 
 export function getSmtpTimeoutOptions(environment = process.env) {
@@ -88,32 +90,30 @@ export function getEmailConfig(environment = process.env) {
   const isProduction = environment.NODE_ENV === 'production' || process.env.NODE_ENV === 'production';
 
   let provider = 'none';
-  if (preferredProvider === 'resend' && apiKey) {
-    provider = 'resend';
-  } else if (preferredProvider === 'brevo' && brevoApiKey) {
+  if (preferredProvider === 'brevo' && brevoApiKey) {
     provider = 'brevo';
+  } else if (preferredProvider === 'resend' && apiKey) {
+    provider = 'resend';
   } else if (preferredProvider === 'smtp' && smtpHost) {
     provider = 'smtp';
   } else if (isRender || isProduction) {
     // CRITICAL: Render Free Tier permanently blocks outbound SMTP traffic on ports 25, 465, and 587!
-    // Therefore, in Render / cloud production, prioritize HTTPS REST API providers (Resend or Brevo) on Port 443!
-    if (apiKey) {
-      provider = 'resend';
-    } else if (brevoApiKey) {
+    // Prioritize free HTTPS REST API providers (Brevo or Resend) on Port 443!
+    if (brevoApiKey) {
       provider = 'brevo';
+    } else if (apiKey) {
+      provider = 'resend';
     } else if (smtpHost) {
       provider = 'smtp';
     }
   } else {
     // Non-Render / local development environment:
-    // Prefer direct SMTP by default whenever SMTP credentials are provisioned (e.g. Gmail SMTP),
-    // otherwise Resend or Brevo
-    if (smtpHost) {
+    if (brevoApiKey) {
+      provider = 'brevo';
+    } else if (smtpHost) {
       provider = 'smtp';
     } else if (apiKey) {
       provider = 'resend';
-    } else if (brevoApiKey) {
-      provider = 'brevo';
     }
   }
 
@@ -415,13 +415,13 @@ export async function sendEmailDirectly(message, label = 'transactional email') 
   const allConfigured = [];
   if (config.isRender || config.isProduction) {
     // In cloud / production, always prefer HTTPS REST APIs (Port 443) over blocked SMTP
-    if (hasResend) allConfigured.push('resend');
     if (hasBrevo) allConfigured.push('brevo');
+    if (hasResend) allConfigured.push('resend');
     if (hasSmtp) allConfigured.push('smtp');
   } else {
+    if (hasBrevo) allConfigured.push('brevo');
     if (hasSmtp) allConfigured.push('smtp');
     if (hasResend) allConfigured.push('resend');
-    if (hasBrevo) allConfigured.push('brevo');
   }
 
   for (const p of allConfigured) {
