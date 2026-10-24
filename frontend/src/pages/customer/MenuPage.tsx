@@ -286,6 +286,32 @@ export default function MenuPage() {
     };
   }, [activeOrder?.id, activeOrder?.status, activeOrder?.trackingToken, slug]);
 
+  // Live countdown timer ticking down second-by-second (top-level hook)
+  useEffect(() => {
+    if (!activeOrder || !['ACCEPTED', 'PREPARING', 'IN_PROGRESS'].includes(activeOrder.status)) {
+      setRemainingSeconds(null);
+      return;
+    }
+
+    const calcRemaining = () => {
+      let target: number | null = null;
+      if (activeOrder.estimatedDeliveryTime) {
+        target = new Date(activeOrder.estimatedDeliveryTime).getTime();
+      } else if (activeOrder.estimatedTimeMinutes && activeOrder.time) {
+        target = new Date(activeOrder.time).getTime() + activeOrder.estimatedTimeMinutes * 60 * 1000;
+      }
+      if (!target) return null;
+      return Math.max(0, Math.floor((target - Date.now()) / 1000));
+    };
+
+    setRemainingSeconds(calcRemaining());
+    const ticker = setInterval(() => {
+      setRemainingSeconds(calcRemaining());
+    }, 1000);
+
+    return () => clearInterval(ticker);
+  }, [activeOrder?.estimatedDeliveryTime, activeOrder?.estimatedTimeMinutes, activeOrder?.time, activeOrder?.status]);
+
   const addToCart = (item: any, priceStr?: string, variant?: string) => {
     if (!isPremium || !priceStr) return;
     const price = parseFloat(priceStr.replace(/[^0-9.]/g, ''));
@@ -532,31 +558,7 @@ export default function MenuPage() {
   const cartTotalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartTotalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Live countdown timer ticking down second-by-second
-  useEffect(() => {
-    if (!activeOrder || !['ACCEPTED', 'PREPARING', 'IN_PROGRESS'].includes(activeOrder.status)) {
-      setRemainingSeconds(null);
-      return;
-    }
 
-    const calcRemaining = () => {
-      let target: number | null = null;
-      if (activeOrder.estimatedDeliveryTime) {
-        target = new Date(activeOrder.estimatedDeliveryTime).getTime();
-      } else if (activeOrder.estimatedTimeMinutes && activeOrder.time) {
-        target = new Date(activeOrder.time).getTime() + activeOrder.estimatedTimeMinutes * 60 * 1000;
-      }
-      if (!target) return null;
-      return Math.max(0, Math.floor((target - Date.now()) / 1000));
-    };
-
-    setRemainingSeconds(calcRemaining());
-    const ticker = setInterval(() => {
-      setRemainingSeconds(calcRemaining());
-    }, 1000);
-
-    return () => clearInterval(ticker);
-  }, [activeOrder?.estimatedDeliveryTime, activeOrder?.estimatedTimeMinutes, activeOrder?.time, activeOrder?.status]);
 
   const formatTimerClock = (secs: number | null) => {
     if (secs === null) return '';
