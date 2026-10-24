@@ -11,6 +11,7 @@ import PremiumOrderingSection from '../../components/marketing/PremiumOrderingSe
 import PlanComparisonSection from '../../components/marketing/PlanComparisonSection';
 import HowItWorksSection from '../../components/marketing/HowItWorksSection';
 import CustomerExperienceSection from '../../components/marketing/CustomerExperienceSection';
+import SpatialStudioMockup from '../../components/marketing/SpatialStudioMockup';
 import FaqSection from '../../components/marketing/FaqSection';
 import FinalCtaSection from '../../components/marketing/FinalCtaSection';
 import { SEO } from '../../seo/SEO';
@@ -36,6 +37,10 @@ export default function PublicHomePage() {
         <OneQrSection />
         <PhysicalQrSection />
         <BuiltForTableSection />
+        {/* ThreeUI-Style 3D Spatial Studio Showcase */}
+        <section className="py-8 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <SpatialStudioMockup />
+        </section>
         <TemplateGallerySection />
         <SameMenuDifferentPersonality />
         <DashboardDemoSection />
