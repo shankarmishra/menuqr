@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, Eye, Palette, Save, Lock, Zap, Smartphone, Monitor, Sparkles } from 'lucide-react';
+import { Check, Eye, Palette, Save, Lock, Zap, Smartphone, Monitor, Sparkles, ShoppingCart, ChevronRight, MapPin, RotateCcw } from 'lucide-react';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import PremiumIPhoneMockup from '../../components/marketing/PremiumIPhoneMockup';
+import IsolatedMobileFrame from '../../components/menu-builder/IsolatedMobileFrame';
+import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import { menuTemplates, isTemplateDark, isColorDark } from '../../data/menuTemplates';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { 
@@ -32,6 +34,7 @@ export default function Appearance() {
   const [previewMode, setPreviewMode] = useState<'phone' | 'desktop'>('phone');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [mockCart, setMockCart] = useState<Array<{ id: string; name: string; price: number; quantity: number }>>([]);
   const showToast = useToast();
 
   useEffect(() => {
@@ -112,12 +115,50 @@ export default function Appearance() {
     id: item.id,
     name: item.name,
     description: item.description ?? '',
-    price: Number(item.price || 0),
+    price: item.price ? Number(item.price) : 0,
+    halfPrice: item.half_price ? Number(item.half_price) : undefined,
+    fullPrice: item.full_price ? Number(item.full_price) : undefined,
+    pricingType: item.pricing_type,
+    variants: item.variants,
     category: category.id,
     dietType: (item.diet_type === 'non-veg' ? 'non-veg' : item.diet_type === 'vegan' ? 'vegan' : 'veg') as 'veg' | 'non-veg' | 'vegan',
     available: item.is_available !== false,
     image: item.image_url || undefined,
   })));
+
+  // Interactive cart simulation inside preview
+  const handleAddToCart = (item: { id: string; name: string; price?: number; halfPrice?: number }, priceStr?: string, variant?: string) => {
+    const parsedPrice = priceStr ? Number(priceStr.replace(/[^0-9.]/g, '')) : Number(item.price || item.halfPrice || 0);
+    const cartItemId = variant ? `${item.id}-${variant}` : item.id;
+    const cartItemName = variant ? `${item.name} (${variant})` : item.name;
+    setMockCart((prev) => {
+      const existing = prev.find((i) => i.id === cartItemId);
+      if (existing) {
+        return prev.map((i) => (i.id === cartItemId ? { ...i, quantity: i.quantity + 1 } : i));
+      }
+      return [...prev, { id: cartItemId, name: cartItemName, price: parsedPrice, quantity: 1 }];
+    });
+  };
+
+  const handleRemoveFromCart = (itemId: string, variant?: string) => {
+    const cartItemId = variant ? `${itemId}-${variant}` : itemId;
+    setMockCart((prev) => {
+      const existing = prev.find((i) => i.id === cartItemId);
+      if (!existing) return prev;
+      if (existing.quantity <= 1) {
+        return prev.filter((i) => i.id !== cartItemId);
+      }
+      return prev.map((i) => (i.id === cartItemId ? { ...i, quantity: i.quantity - 1 } : i));
+    });
+  };
+
+  const getItemQuantity = (itemId: string, variant?: string) => {
+    const cartItemId = variant ? `${itemId}-${variant}` : itemId;
+    return mockCart.find((i) => i.id === cartItemId)?.quantity || 0;
+  };
+
+  const cartTotalAmount = mockCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const cartTotalQuantity = mockCart.reduce((sum, item) => sum + item.quantity, 0);
 
   const hasPhotos = previewItems.some((i) => Boolean(i.image));
 
@@ -301,31 +342,93 @@ export default function Appearance() {
           </div>
           
           {previewMode === 'phone' ? (
-            <div className="py-2">
+            <div className="py-1 w-full flex justify-center">
               <PremiumIPhoneMockup
-                className="!w-[290px] sm:!w-[310px] shadow-2xl"
+                className="!w-[340px] sm:!w-[365px] max-w-full shadow-2xl"
                 badgeText={activeMode === 'ai-studio' ? 'Bespoke AI Preview' : 'Classic Theme Preview'}
                 statusBarTheme={activeIsDark ? 'light' : 'dark'}
                 homeIndicatorTheme={activeIsDark ? 'light' : 'dark'}
                 screenStyle={{ backgroundColor: activeBgColor }}
                 screenClassName=""
               >
-                <div className="h-full w-full overflow-y-auto">
-                  <MenuTemplateRenderer
-                    templateId={templateId}
-                    accentConfiguration={activeMode === 'ai-studio' ? customDesignSpec : undefined}
-                    restaurant={{ 
-                      name: profile?.businessName || 'Your Restaurant', 
-                      tagline: profile?.tagline, 
-                      phone: profile?.phone, 
-                      address: profile?.address, 
-                      logo: profile?.logoUrl 
-                    }}
-                    categories={previewCategories}
-                    items={previewItems}
-                    compact={true}
-                  />
-                </div>
+                <IsolatedMobileFrame backgroundColor={activeBgColor}>
+                  <div className="flex flex-col min-h-full w-full relative">
+                    {/* Customer Experience Top Bar */}
+                    <header className="px-3.5 py-2.5 border-b border-white/10 flex items-center justify-between backdrop-blur-md sticky top-0 z-40 bg-black/50 shrink-0">
+                      <div className="flex items-center gap-2">
+                        <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
+                      </div>
+                      <div className="flex items-center gap-2 text-[10px] font-mono text-white/80">
+                        {profile?.city && (
+                          <span className="flex items-center gap-1">
+                            <MapPin size={10} className="text-[#e8783c]" />
+                            {[profile.city, profile.state].filter(Boolean).join(', ')}
+                          </span>
+                        )}
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px] font-bold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live
+                        </span>
+                      </div>
+                    </header>
+
+                    {/* Actual Menu Content */}
+                    <div className="flex-1 pb-24">
+                      <MenuTemplateRenderer
+                        templateId={templateId}
+                        accentConfiguration={activeMode === 'ai-studio' ? customDesignSpec : undefined}
+                        restaurant={{ 
+                          name: profile?.businessName || 'Your Restaurant', 
+                          tagline: profile?.tagline, 
+                          phone: profile?.phone, 
+                          address: profile?.address, 
+                          city: profile?.city,
+                          logo: profile?.logoUrl 
+                        }}
+                        categories={previewCategories}
+                        items={previewItems}
+                        compact={false}
+                        onAddToCart={handleAddToCart}
+                        onRemoveFromCart={handleRemoveFromCart}
+                        getItemQuantity={getItemQuantity}
+                        isPremium={true}
+                      />
+                    </div>
+
+                    {/* Interactive Floating Order Bar in Phone Screen */}
+                    {mockCart.length > 0 && (
+                      <div className="fixed bottom-3 inset-x-3 z-50 rounded-2xl bg-[#153b32] border border-[#2b594d] shadow-2xl p-2.5 flex items-center justify-between text-white animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <div className="flex items-center gap-2.5 pl-1">
+                          <div className="w-7 h-7 rounded-full bg-[#e8783c] flex items-center justify-center text-white">
+                            <ShoppingCart size={14} />
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-bold leading-tight">
+                              {cartTotalQuantity} {cartTotalQuantity === 1 ? 'item' : 'items'}
+                            </p>
+                            <p className="text-[10px] font-mono text-emerald-300">
+                              ₹{cartTotalAmount.toLocaleString('en-IN')}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setMockCart([])}
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors"
+                            title="Reset Cart"
+                          >
+                            <RotateCcw size={13} />
+                          </button>
+                          <div className="flex items-center gap-1 bg-[#e8783c] px-3 py-1.5 rounded-xl font-bold text-xs shadow-md">
+                            <span>Order</span>
+                            <ChevronRight size={13} />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </IsolatedMobileFrame>
               </PremiumIPhoneMockup>
             </div>
           ) : (
@@ -339,11 +442,16 @@ export default function Appearance() {
                     tagline: profile?.tagline, 
                     phone: profile?.phone, 
                     address: profile?.address, 
+                    city: profile?.city,
                     logo: profile?.logoUrl 
                   }}
                   categories={previewCategories}
                   items={previewItems}
                   compact={false}
+                  onAddToCart={handleAddToCart}
+                  onRemoveFromCart={handleRemoveFromCart}
+                  getItemQuantity={getItemQuantity}
+                  isPremium={true}
                 />
               </div>
             </div>

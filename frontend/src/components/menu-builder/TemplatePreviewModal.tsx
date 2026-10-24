@@ -4,6 +4,7 @@ import { DEMO_RESTAURANT, isTemplateDark } from '../../data/menuTemplates';
 import type { MenuTemplate } from '../../data/menuTemplates';
 import MenuTemplateRenderer from './MenuTemplateRenderer';
 import PremiumIPhoneMockup from '../marketing/PremiumIPhoneMockup';
+import IsolatedMobileFrame from './IsolatedMobileFrame';
 
 interface TemplatePreviewModalProps {
   template: MenuTemplate | null;
@@ -144,26 +145,28 @@ export default function TemplatePreviewModal({
             {/* Right Col: High Res Phone Frame Preview */}
             <div className="md:col-span-7 flex justify-center py-2">
               <PremiumIPhoneMockup
-                className="!w-[290px] sm:!w-[310px] shadow-2xl"
+                className="!w-[330px] sm:!w-[360px] max-w-full shadow-2xl"
                 badgeText="Interactive Preview"
                 statusBarTheme={isTemplateDark(template) ? 'light' : 'dark'}
                 homeIndicatorTheme={isTemplateDark(template) ? 'light' : 'dark'}
                 screenStyle={{ backgroundColor: template.colors.bg }}
                 screenClassName=""
               >
-                <div className="h-full w-full overflow-y-auto">
-                  <MenuTemplateRenderer
-                    templateId={template.id}
-                    restaurant={{
-                      name: restaurantToUse.name,
-                      tagline: restaurantToUse.tagline,
-                      cuisine: restaurantToUse.cuisine,
-                    }}
-                    categories={restaurantToUse.categories}
-                    items={restaurantToUse.items as any}
-                    compact={false}
-                  />
-                </div>
+                <IsolatedMobileFrame backgroundColor={template.colors.bg}>
+                  <div className="h-full w-full overflow-y-auto">
+                    <MenuTemplateRenderer
+                      templateId={template.id}
+                      restaurant={{
+                        name: restaurantToUse.name,
+                        tagline: restaurantToUse.tagline,
+                        cuisine: restaurantToUse.cuisine,
+                      }}
+                      categories={restaurantToUse.categories}
+                      items={restaurantToUse.items as any}
+                      compact={false}
+                    />
+                  </div>
+                </IsolatedMobileFrame>
               </PremiumIPhoneMockup>
             </div>
           </div>
