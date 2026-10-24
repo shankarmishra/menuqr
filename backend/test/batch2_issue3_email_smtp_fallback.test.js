@@ -4,10 +4,14 @@ import { sendEmailDirectly, getEmailConfig } from '../email.js';
 
 test('Batch 2 #3: Email SMTP (nodemailer) fallback when RESEND_API_KEY is missing', async (t) => {
   const originalEnv = { ...process.env };
+  delete process.env.BREVO_API_KEY;
+  delete process.env.SENDINBLUE_API_KEY;
   process.env.ENABLE_EMAIL_SERVICE = 'true';
 
   t.afterEach(() => {
     process.env = { ...originalEnv };
+    delete process.env.BREVO_API_KEY;
+    delete process.env.SENDINBLUE_API_KEY;
     process.env.ENABLE_EMAIL_SERVICE = 'true';
   });
 

@@ -10,16 +10,10 @@ try {
 
 // ===========================================================================
 // EMAIL SERVICE MASTER TOGGLE:
-// Active when ENABLE_EMAIL_SERVICE=true or when BREVO_API_KEY / RESEND_API_KEY is provisioned.
-// Can be explicitly paused by setting ENABLE_EMAIL_SERVICE=false.
+// Active when ENABLE_EMAIL_SERVICE=true in Render / environment settings.
 // ===========================================================================
 export function isEmailServiceActive(environment = process.env) {
-  if (environment.ENABLE_EMAIL_SERVICE === 'false') return false;
-  if (environment.ENABLE_EMAIL_SERVICE === 'true') return true;
-  if (Boolean(environment.BREVO_API_KEY || environment.SENDINBLUE_API_KEY || environment.RESEND_API_KEY)) {
-    return true;
-  }
-  return false;
+  return environment.ENABLE_EMAIL_SERVICE === 'true';
 }
 
 export function getSmtpTimeoutOptions(environment = process.env) {

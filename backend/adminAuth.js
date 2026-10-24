@@ -201,7 +201,7 @@ export async function verifyAdminOtp(email, otp, ip) {
     const adminId = dbUser.rows[0].id;
     const token = randomBytes(32).toString('hex');
     const tokenHash = createHash('sha256').update(token).digest('hex');
-    const sessionExpiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
+    const sessionExpiresAt = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000); // 15 days
     const sessionId = randomBytes(16).toString('hex');
     await client.query(
       'INSERT INTO admin_sessions (id, admin_id, token_hash, expires_at, ip_address) VALUES ($1, $2, $3, $4, $5)',

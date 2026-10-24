@@ -1,5 +1,5 @@
 const ADMIN_SESSION_COOKIE_NAME = 'menusqr_admin_session';
-const ADMIN_SESSION_TTL_SECONDS = 8 * 60 * 60;
+const ADMIN_SESSION_TTL_SECONDS = 15 * 24 * 60 * 60; // 15 days;
 
 function isSecureCookie(environment) {
   return environment.NODE_ENV === 'production' || environment.COOKIE_SECURE === 'true';

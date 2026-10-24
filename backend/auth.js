@@ -95,7 +95,7 @@ export function generateAuthToken(user) {
     role: user.role,
     tenantId: user.tenantId || null,
   };
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '15d' });
 }
 
 export function generateAuthCookie(userOrToken) {
@@ -109,7 +109,7 @@ export function generateAuthCookie(userOrToken) {
     secure,
     sameSite: secure ? 'none' : 'lax',
     path: '/',
-    maxAge: 8 * 60 * 60, // 8 hours
+    maxAge: 15 * 24 * 60 * 60, // 15 days (1,296,000 seconds)
     ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
   });
 }

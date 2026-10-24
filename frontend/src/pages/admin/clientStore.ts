@@ -110,17 +110,23 @@ let activeAuthToken: string | null = null;
 export function setAuthToken(token: string | null | undefined): void {
   if (token) {
     activeAuthToken = token;
-    try { sessionStorage.setItem('menusqr_auth_token', token); } catch {}
+    try {
+      sessionStorage.setItem('menusqr_auth_token', token);
+      localStorage.setItem('menusqr_auth_token', token);
+    } catch {}
   } else {
     activeAuthToken = null;
-    try { sessionStorage.removeItem('menusqr_auth_token'); } catch {}
+    try {
+      sessionStorage.removeItem('menusqr_auth_token');
+      localStorage.removeItem('menusqr_auth_token');
+    } catch {}
   }
 }
 
 export function getAuthToken(): string | null {
   if (activeAuthToken) return activeAuthToken;
   try {
-    const saved = sessionStorage.getItem('menusqr_auth_token');
+    const saved = localStorage.getItem('menusqr_auth_token') || sessionStorage.getItem('menusqr_auth_token');
     if (saved) {
       activeAuthToken = saved;
       return saved;

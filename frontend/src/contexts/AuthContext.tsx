@@ -62,6 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setCsrfToken(null);
       setUser(null);
+      try {
+        localStorage.removeItem('menusqr_auth_token');
+        sessionStorage.removeItem('menusqr_auth_token');
+      } catch {}
     } catch (e) {
       console.error(e);
     }

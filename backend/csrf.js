@@ -37,7 +37,7 @@ export function createCsrfCookie(csrfToken, environment = process.env) {
     secure,
     sameSite: secure ? 'none' : 'lax',
     path: '/',
-    maxAge: 8 * 60 * 60,
+    maxAge: 15 * 24 * 60 * 60, // 15 days
     ...(environment.COOKIE_DOMAIN ? { domain: environment.COOKIE_DOMAIN } : {}),
   });
 }

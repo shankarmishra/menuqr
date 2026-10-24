@@ -13,7 +13,7 @@ test('production admin session cookie is secure, HttpOnly, same-site none, and h
   assert.equal(cookie.secure, true);
   assert.equal(cookie.sameSite, 'none');
   assert.equal(cookie.path, '/');
-  assert.equal(cookie.maxAge, 8 * 60 * 60);
+  assert.equal(cookie.maxAge, 15 * 24 * 60 * 60);
   assert.equal('domain' in cookie, false);
 });
 
