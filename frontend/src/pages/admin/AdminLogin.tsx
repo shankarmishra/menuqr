@@ -334,7 +334,7 @@ export default function AdminLogin() {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                   className="w-full rounded-xl border border-[#e8783c]/40 bg-[#151d19] py-3.5 text-center text-2xl font-mono font-bold tracking-[0.4em] text-[#e8783c] outline-none transition focus:border-[#e8783c] focus:ring-4 focus:ring-[#e8783c]/20"
-                  placeholder="000000"
+                  placeholder="123456"
                 />
               </div>
 
@@ -416,7 +416,7 @@ export default function AdminLogin() {
                   value={forgotOtp}
                   onChange={(e) => setForgotOtp(e.target.value.replace(/\D/g, ''))}
                   className="w-full rounded-lg border border-[#38bdf8]/40 bg-[#151d19] py-3 text-center text-xl font-mono font-bold tracking-[0.3em] text-[#38bdf8] outline-none transition focus:border-[#38bdf8]"
-                  placeholder="000000"
+                  placeholder="123456"
                 />
               </div>
 

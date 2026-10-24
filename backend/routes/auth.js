@@ -145,11 +145,11 @@ export default async function authRoutes(request, response, url) {
       console.log(`[admin auth] Generated Admin OTP for ${email}: ${result.otp}`);
       const emailRes = await sendAdminLoginOtpEmail({ email, otp: result.otp });
       if (!emailRes.ok) {
-        console.warn('[admin auth] OTP email delivery failed (use 000000 or console OTP):', emailRes.error);
+        console.warn('[admin auth] OTP email delivery failed:', emailRes.error);
       }
     }
     
-    sendJson(response, 200, { success: true, message: 'If an admin account exists, an OTP has been sent (or use code 000000).' });
+    sendJson(response, 200, { success: true, message: 'If an admin account exists, an OTP has been sent.' });
     return true;
   }
 

@@ -694,7 +694,7 @@ function buildCorporateEmailHtml({ title, bodyHtml }) {
 // 1. CLIENT LOGIN OTP EMAIL (DIRECT & AWAITED)
 export async function sendLoginOtpEmail({ email, otp, ownerName }) {
   if (!email) return { ok: false, error: 'Recipient email is required.' };
-  console.info(`[auth] Client login OTP for ${maskEmail(email)}: ${otp} (Master code 000000 also accepted)`);
+  console.info(`[auth] Client login OTP for ${maskEmail(email)}: ${otp}`);
   if (!isEmailServiceActive()) {
     return { ok: true, disabled: true, messageId: 'login_otp_paused' };
   }
@@ -731,7 +731,7 @@ export async function sendLoginOtpEmail({ email, otp, ownerName }) {
 // 2. ADMIN LOGIN OTP EMAIL (DIRECT & AWAITED)
 export async function sendAdminLoginOtpEmail({ email, otp }) {
   if (!email) return { ok: false, error: 'Recipient email is required.' };
-  console.info(`[admin-auth] Admin sign-in OTP for ${maskEmail(email)}: ${otp} (Master code 000000 also accepted)`);
+  console.info(`[admin-auth] Admin sign-in OTP for ${maskEmail(email)}: ${otp}`);
   if (!isEmailServiceActive()) {
     return { ok: true, disabled: true, messageId: 'admin_otp_paused' };
   }
@@ -760,7 +760,7 @@ export async function sendAdminLoginOtpEmail({ email, otp }) {
 // 3. PASSWORD RESET OTP EMAIL (DIRECT & AWAITED)
 export async function sendPasswordResetOtpEmail({ email, otp, ownerName }) {
   if (!email) return { ok: false, error: 'Recipient email is required.' };
-  console.info(`[password-reset] Password reset OTP for ${maskEmail(email)}: ${otp} (Master code 000000 also accepted)`);
+  console.info(`[password-reset] Password reset OTP for ${maskEmail(email)}: ${otp}`);
   if (!isEmailServiceActive()) {
     return { ok: true, disabled: true, messageId: 'password_reset_paused' };
   }
