@@ -852,8 +852,13 @@ export default async function purchaseRoutes(request, response, url) {
       isServerEmailVerified = true;
     }
 
-    if (!isServerEmailVerified) {
+    const { isEmailServiceActive } = await import('../email.js');
+    const emailActive = isEmailServiceActive();
+    if (emailActive && !isServerEmailVerified) {
       throw apiError(400, 'Email address must be verified via OTP before completing checkout.');
+    }
+    if (!emailActive) {
+      isServerEmailVerified = true;
     }
 
     // Account Uniqueness Guard

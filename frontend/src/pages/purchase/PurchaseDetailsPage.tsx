@@ -84,26 +84,6 @@ export default function PurchaseDetailsPage() {
     website: '',
   });
 
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [emailVerificationToken, setEmailVerificationToken] = useState('');
-
-  // Email Verification State
-  const [emailOtpSending, setEmailOtpSending] = useState(false);
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [emailChallengeId, setEmailChallengeId] = useState('');
-  const [emailOtpInput, setEmailOtpInput] = useState('');
-  const [emailOtpVerifying, setEmailOtpVerifying] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [emailOtpError, setEmailOtpError] = useState('');
-
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const timer = setInterval(() => {
-      setResendCooldown((prev) => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [resendCooldown]);
-
   // Coupon State
   const [couponValidating, setCouponValidating] = useState(false);
   const [couponApplied, setCouponApplied] = useState<{
@@ -202,56 +182,6 @@ export default function PurchaseDetailsPage() {
     );
   };
 
-  const handleSendEmailOtp = async () => {
-    if (!formData.customerEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customerEmail)) {
-      setValidationErrors(prev => ({ ...prev, customerEmail: 'Valid email address is required to send verification code' }));
-      return;
-    }
-    setEmailOtpSending(true);
-    setError('');
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/auth/verify-email/request-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.customerEmail }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to send email verification OTP.');
-      setEmailChallengeId(data.challengeId);
-      setEmailOtpSent(true);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setEmailOtpSending(false);
-    }
-  };
-
-  const handleVerifyEmailOtp = async () => {
-    if (!emailOtpInput || emailOtpInput.length !== 6) return;
-    setEmailOtpVerifying(true);
-    setError('');
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/auth/verify-email/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ challengeId: emailChallengeId, otp: emailOtpInput }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Invalid OTP code.');
-      setEmailVerified(true);
-      if (data.verificationToken) {
-        setEmailVerificationToken(data.verificationToken);
-      }
-      setEmailOtpSent(false);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setEmailOtpVerifying(false);
-    }
-  };
-
-
-
   const handleApplyCoupon = async () => {
     setCouponError('');
     if (planId === 'basic') {
@@ -339,9 +269,9 @@ export default function PurchaseDetailsPage() {
           currency: 'INR',
           couponCode: couponApplied?.code || formData.couponCode || null,
           selectedAddons: isGoogleReviewsSelected ? ['google_reviews'] : [],
-          emailVerificationToken,
-          emailVerified,
-          emailChallengeId,
+          emailVerificationToken: null,
+          emailVerified: true,
+          emailChallengeId: null,
           phoneVerified: false,
         }),
       });
@@ -369,12 +299,6 @@ export default function PurchaseDetailsPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (name === 'customerEmail') {
-      setEmailVerified(false);
-      setEmailOtpSent(false);
-      setEmailVerificationToken('');
-      setEmailOtpError('');
-    }
     if (validationErrors[name]) {
       setValidationErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -441,20 +365,6 @@ export default function PurchaseDetailsPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="block text-xs font-semibold text-[#151C19]">Email Address *</label>
-                      {emailVerified ? (
-                        <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 shadow-sm">
-                          <CheckCircle2 size={13} /> Verified
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleSendEmailOtp}
-                          disabled={emailOtpSending || !formData.customerEmail.trim() || resendCooldown > 0}
-                          className="text-[11px] font-semibold text-[#E8783C] hover:underline disabled:opacity-50"
-                        >
-                          {emailOtpSending ? 'Sending OTP...' : resendCooldown > 0 ? `Wait ${resendCooldown}s` : emailOtpSent ? 'Resend Code' : 'Verify Email'}
-                        </button>
-                      )}
                     </div>
                     <input
                       type="email"
@@ -468,7 +378,7 @@ export default function PurchaseDetailsPage() {
                     />
 
                     {/* Smart Typo Detection Banner */}
-                    {getSuggestedEmail(formData.customerEmail) && !emailVerified && (
+                    {getSuggestedEmail(formData.customerEmail) && (
                       <div className="mt-1.5 p-2.5 bg-amber-50/90 border border-amber-300 rounded-xl flex items-center justify-between text-xs text-amber-900 shadow-sm animate-fade-in">
                         <span className="flex items-center gap-1.5 font-medium">
                           <AlertCircle size={14} className="text-amber-600 shrink-0" />
@@ -494,67 +404,6 @@ export default function PurchaseDetailsPage() {
                       <p className="text-rose-500 text-[11px] mt-1.5 font-medium flex items-center gap-1">
                         <AlertCircle size={12} className="shrink-0" /> {validationErrors.customerEmail}
                       </p>
-                    )}
-
-                    {emailOtpSent && !emailVerified && (
-                      <div className="mt-2.5 p-3.5 bg-amber-50/80 rounded-xl border border-amber-200 text-xs shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="font-semibold text-amber-900">
-                            Enter 6-digit code sent to <span className="font-bold underline text-amber-950">{formData.customerEmail}</span>:
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEmailOtpSent(false);
-                              setEmailOtpInput('');
-                              setEmailOtpError('');
-                            }}
-                            className="text-[11px] text-gray-500 hover:text-gray-900 underline ml-2 shrink-0 font-medium"
-                          >
-                            Change Email
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            maxLength={6}
-                            value={emailOtpInput}
-                            onChange={(e) => {
-                              setEmailOtpInput(e.target.value.replace(/[^0-9]/g, ''));
-                              if (emailOtpError) setEmailOtpError('');
-                            }}
-                            className="w-32 px-3 py-2 border border-amber-300 rounded-xl text-center font-mono font-bold text-base tracking-widest bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E8783C]/30 focus:border-[#E8783C]"
-                            placeholder="123456"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleVerifyEmailOtp}
-                            disabled={emailOtpVerifying || emailOtpInput.length !== 6}
-                            className="px-4 py-2 bg-[#E8783C] hover:bg-[#d36428] text-white font-bold rounded-xl disabled:opacity-50 transition-colors shadow-sm text-xs"
-                          >
-                            {emailOtpVerifying ? 'Checking...' : 'Confirm'}
-                          </button>
-                          {resendCooldown > 0 ? (
-                            <span className="text-[11px] text-gray-400 font-medium ml-1">
-                              Resend in {resendCooldown}s
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={handleSendEmailOtp}
-                              disabled={emailOtpSending}
-                              className="text-[11px] text-[#E8783C] font-semibold hover:underline ml-1 disabled:opacity-50"
-                            >
-                              {emailOtpSending ? 'Sending...' : 'Resend Code'}
-                            </button>
-                          )}
-                        </div>
-                        {emailOtpError && (
-                          <p className="mt-2 text-rose-600 text-xs font-medium flex items-center gap-1 bg-rose-50 p-2 rounded-lg border border-rose-200">
-                            <AlertCircle size={14} className="shrink-0" /> {emailOtpError}
-                          </p>
-                        )}
-                      </div>
                     )}
                   </div>
                 </div>
