@@ -94,6 +94,18 @@ export default function RoyalHeritageSketchbook() {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') {
+        if (idx < PAGES.length - 1) turnTo(idx + 1, 'next');
+      } else if (e.key === 'ArrowLeft') {
+        if (idx > 0) turnTo(idx - 1, 'prev');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [idx, turnTo]);
+
   // Set CSS variables for turning leaf
   const applyTurnMath = useCallback((t: number) => {
     if (!sb3dRef.current) return;
@@ -305,23 +317,17 @@ export default function RoyalHeritageSketchbook() {
   const currentSpread = PAGES[turn ? turn.to : idx];
 
   return (
-    <div className="w-full flex flex-col items-center select-none py-6">
+    <div className="w-full flex flex-col items-center select-none py-1">
       
-      {/* SECTION HEADER & CHAPTER SELECTOR */}
-      <div className="text-center max-w-2xl px-4 mb-8">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-black tracking-widest uppercase mb-3">
-          <Crown size={13} className="text-[#D4AF37]" />
-          <span>The Living Indian Culinary Heritage</span>
+      {/* COMPACT CHAPTER SELECTOR & LIVE TITLE */}
+      <div className="text-center max-w-xl px-4 mb-3">
+        <div className="flex items-center justify-center gap-2 text-xs font-bold text-[#8C6808] uppercase tracking-wider mb-1">
+          <Crown size={12} className="text-[#AA820A]" />
+          <span>{currentSpread.folio} • {currentSpread.title}</span>
         </div>
-        <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight font-serif">
-          {currentSpread.title}
-        </h2>
-        <p className="text-sm sm:text-base text-[#a3b8ad] mt-2 font-serif italic">
-          {currentSpread.subtitle}
-        </p>
 
         {/* Chapter Folio Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1.5">
           {PAGES.map((page, pIdx) => {
             const isActive = idx === pIdx;
             return (
@@ -332,10 +338,10 @@ export default function RoyalHeritageSketchbook() {
                   if (pIdx > idx) turnTo(pIdx, 'next');
                   else if (pIdx < idx) turnTo(pIdx, 'prev');
                 }}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer border ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#D4AF37] to-[#F3E5AB] text-[#121815] border-[#D4AF37] shadow-lg shadow-[#D4AF37]/20 scale-105'
-                    : 'bg-[#15201b] hover:bg-[#1c2a24] text-[#849a90] hover:text-white border-[#273830]'
+                    ? 'bg-gradient-to-r from-[#D4AF37] to-[#F3E5AB] text-[#121815] border-[#D4AF37] shadow-sm font-extrabold scale-102'
+                    : 'bg-white hover:bg-[#F5EFE6] text-[#6B5E52] hover:text-[#1C1814] border-[#E2DBD0]'
                 }`}
               >
                 {page.chapter}
@@ -346,7 +352,7 @@ export default function RoyalHeritageSketchbook() {
       </div>
 
       {/* 3D STAGE */}
-      <div className="sb-wrap w-full max-w-5xl px-2 sm:px-6">
+      <div className="sb-wrap w-full max-w-[880px] px-2 sm:px-4">
         <div
           ref={stageRef}
           className="sb-stage"
@@ -471,12 +477,12 @@ export default function RoyalHeritageSketchbook() {
         </div>
 
         {/* CONTROLS BAR: Zoom & Loupe & Instruction */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full max-w-2xl px-4 py-3 rounded-2xl bg-[#131c17]/90 border border-[#273830] backdrop-blur-md text-xs shadow-xl">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full max-w-xl px-3.5 py-2 rounded-xl bg-white/95 border border-[#E2DBD0] backdrop-blur-md text-xs shadow-sm">
           
           {/* Interaction Hint */}
-          <div className="flex items-center gap-2 text-[#9bb0a5] text-xs">
+          <div className="flex items-center gap-2 text-[#6B5E52] text-xs">
             <span className="flex h-2 w-2 rounded-full bg-[#D4AF37] animate-ping" />
-            <span>Click or drag page edge to turn • Drag brass magnifier to inspect</span>
+            <span>Click or drag page edge • Drag brass magnifier</span>
           </div>
 
           {/* Right Control Buttons */}
@@ -486,39 +492,39 @@ export default function RoyalHeritageSketchbook() {
             <button
               type="button"
               onClick={() => setLoupeOn((prev) => !prev)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-bold transition-all cursor-pointer ${
                 loupeOn
-                  ? 'bg-[#D4AF37]/20 border-[#D4AF37] text-[#F3E5AB]'
-                  : 'bg-[#1b2620] border-[#2c3d34] text-[#849a90] hover:text-white'
+                  ? 'bg-[#D4AF37]/15 border-[#D4AF37] text-[#8C6808]'
+                  : 'bg-[#FAF7F0] border-[#E0D7C9] text-[#786657] hover:text-[#1C1814]'
               }`}
               title="Toggle Brass Magnifying Loupe"
             >
-              <Search size={14} className={loupeOn ? 'text-[#D4AF37]' : ''} />
-              <span>{loupeOn ? 'Loupe 2.5x Active' : 'Loupe Off'}</span>
+              <Search size={13} className={loupeOn ? 'text-[#8C6808]' : ''} />
+              <span>{loupeOn ? 'Loupe 2.4x' : 'Loupe Off'}</span>
             </button>
 
             {/* Zoom Out / In */}
-            <div className="inline-flex bg-[#19241e] p-0.5 rounded-lg border border-[#2c3d34] items-center">
+            <div className="inline-flex bg-[#FAF7F0] p-0.5 rounded-lg border border-[#E0D7C9] items-center">
               <button
                 type="button"
                 onClick={() => setZoom((z) => Math.max(0.9, parseFloat((z - 0.1).toFixed(2))))}
                 disabled={zoom <= 0.9}
-                className="p-1.5 text-[#849a90] hover:text-white disabled:opacity-30 cursor-pointer"
+                className="p-1 text-[#786657] hover:text-[#1C1814] disabled:opacity-30 cursor-pointer"
                 title="Zoom Out"
               >
-                <ZoomOut size={14} />
+                <ZoomOut size={13} />
               </button>
-              <span className="px-2 font-mono text-[11px] text-[#D4AF37] font-bold">
+              <span className="px-1.5 font-mono text-[11px] text-[#8C6808] font-bold">
                 {Math.round(zoom * 100)}%
               </span>
               <button
                 type="button"
                 onClick={() => setZoom((z) => Math.min(1.3, parseFloat((z + 0.1).toFixed(2))))}
                 disabled={zoom >= 1.3}
-                className="p-1.5 text-[#849a90] hover:text-white disabled:opacity-30 cursor-pointer"
+                className="p-1 text-[#786657] hover:text-[#1C1814] disabled:opacity-30 cursor-pointer"
                 title="Zoom In"
               >
-                <ZoomIn size={14} />
+                <ZoomIn size={13} />
               </button>
             </div>
 

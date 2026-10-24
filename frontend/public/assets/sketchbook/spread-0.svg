@@ -1,135 +1,114 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1760 1240" width="1760" height="1240">
   
     <defs>
-      <!-- 24K Royal Gold Gradient -->
+      <!-- 24K Royal Gold Gradient with Multi-Stop Metallic Sheen -->
       <linearGradient id="gold24k" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#FFF8E7" />
-        <stop offset="15%" stop-color="#F3E5AB" />
-        <stop offset="35%" stop-color="#D4AF37" />
-        <stop offset="60%" stop-color="#AA820A" />
-        <stop offset="85%" stop-color="#D4AF37" />
+        <stop offset="0%" stop-color="#FFFDF0" />
+        <stop offset="12%" stop-color="#FCEAB2" />
+        <stop offset="28%" stop-color="#E5C158" />
+        <stop offset="48%" stop-color="#AA820A" />
+        <stop offset="70%" stop-color="#D4AF37" />
+        <stop offset="88%" stop-color="#F7E7B4" />
         <stop offset="100%" stop-color="#6B4F09" />
       </linearGradient>
 
-      <!-- Horizontal Gold Shimmer -->
+      <!-- Horizontal Gold Shimmer Bar -->
       <linearGradient id="goldH" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stop-color="#8C6808" stop-opacity="0" />
         <stop offset="15%" stop-color="#D4AF37" />
-        <stop offset="50%" stop-color="#FFF9DB" />
+        <stop offset="50%" stop-color="#FFFBEB" />
         <stop offset="85%" stop-color="#D4AF37" />
         <stop offset="100%" stop-color="#8C6808" stop-opacity="0" />
       </linearGradient>
 
-      <!-- Circular Gold Medallion -->
-      <radialGradient id="goldFoilRadial" cx="45%" cy="40%" r="55%">
-        <stop offset="0%" stop-color="#FFFDF0" />
-        <stop offset="25%" stop-color="#F7E7B4" />
-        <stop offset="55%" stop-color="#D4AF37" />
-        <stop offset="80%" stop-color="#9C7714" />
+      <!-- Royal Medallion Gold Radial -->
+      <radialGradient id="goldFoilRadial" cx="45%" cy="38%" r="60%">
+        <stop offset="0%" stop-color="#FFFDF5" />
+        <stop offset="22%" stop-color="#FCEAB2" />
+        <stop offset="50%" stop-color="#D4AF37" />
+        <stop offset="78%" stop-color="#9C7714" />
         <stop offset="100%" stop-color="#4E3502" />
       </radialGradient>
 
       <!-- 3D Crimson Red Wax Seal -->
-      <radialGradient id="waxGrad" cx="35%" cy="30%" r="65%">
-        <stop offset="0%" stop-color="#DC2626" />
-        <stop offset="35%" stop-color="#991B1B" />
-        <stop offset="70%" stop-color="#7F1D1D" />
+      <radialGradient id="waxGrad" cx="35%" cy="30%" r="68%">
+        <stop offset="0%" stop-color="#EF4444" />
+        <stop offset="30%" stop-color="#B91C1C" />
+        <stop offset="65%" stop-color="#7F1D1D" />
         <stop offset="100%" stop-color="#450A0A" />
       </radialGradient>
 
-      <!-- Copper Metal Gradient -->
+      <!-- Copper Handi Gradient -->
       <linearGradient id="copperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#FCD5CE" />
-        <stop offset="30%" stop-color="#D97706" />
-        <stop offset="65%" stop-color="#B45309" />
-        <stop offset="100%" stop-color="#78350F" />
+        <stop offset="0%" stop-color="#FED7AA" />
+        <stop offset="30%" stop-color="#EA580C" />
+        <stop offset="65%" stop-color="#C2410C" />
+        <stop offset="100%" stop-color="#7C2D12" />
       </linearGradient>
 
-      <!-- Deep Emerald Leather Texture Gradient -->
-      <radialGradient id="leatherGrad" cx="30%" cy="30%" r="80%">
-        <stop offset="0%" stop-color="#1e3a2d" />
-        <stop offset="40%" stop-color="#14261e" />
-        <stop offset="80%" stop-color="#0b1712" />
-        <stop offset="100%" stop-color="#060c09" />
+      <!-- Emerald Morocco Leather Cover Gradient -->
+      <radialGradient id="leatherGrad" cx="30%" cy="30%" r="85%">
+        <stop offset="0%" stop-color="#1f3b2e" />
+        <stop offset="45%" stop-color="#12241c" />
+        <stop offset="80%" stop-color="#0a1510" />
+        <stop offset="100%" stop-color="#040806" />
       </radialGradient>
 
-      <!-- Center Gutter Shadow for open book fold -->
+      <!-- Gutter Crease Shadow -->
       <linearGradient id="gutterGrad" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stop-color="rgba(30,18,10,0)" />
-        <stop offset="32%" stop-color="rgba(30,18,10,0.18)" />
+        <stop offset="30%" stop-color="rgba(30,18,10,0.18)" />
         <stop offset="46%" stop-color="rgba(24,14,6,0.58)" />
         <stop offset="50%" stop-color="rgba(16,9,3,0.85)" />
         <stop offset="54%" stop-color="rgba(24,14,6,0.58)" />
-        <stop offset="68%" stop-color="rgba(30,18,10,0.18)" />
+        <stop offset="70%" stop-color="rgba(30,18,10,0.18)" />
         <stop offset="100%" stop-color="rgba(30,18,10,0)" />
       </linearGradient>
 
-      <!-- Aged Page Edge Vignette -->
+      <!-- Page Edge Vignette -->
       <linearGradient id="leftVignette" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="rgba(42,28,14,0.32)" />
-        <stop offset="6%" stop-color="rgba(42,28,14,0.15)" />
+        <stop offset="0%" stop-color="rgba(42,28,14,0.30)" />
+        <stop offset="6%" stop-color="rgba(42,28,14,0.14)" />
         <stop offset="18%" stop-color="rgba(42,28,14,0.03)" />
         <stop offset="30%" stop-color="rgba(42,28,14,0)" />
       </linearGradient>
       <linearGradient id="rightVignette" x1="100%" y1="0%" x2="0%" y2="0%">
-        <stop offset="0%" stop-color="rgba(42,28,14,0.32)" />
-        <stop offset="6%" stop-color="rgba(42,28,14,0.15)" />
+        <stop offset="0%" stop-color="rgba(42,28,14,0.30)" />
+        <stop offset="6%" stop-color="rgba(42,28,14,0.14)" />
         <stop offset="18%" stop-color="rgba(42,28,14,0.03)" />
         <stop offset="30%" stop-color="rgba(42,28,14,0)" />
       </linearGradient>
 
-      <!-- Top/Bottom Edge Aging Vignette -->
-      <linearGradient id="topVignette" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="rgba(42,28,14,0.22)" />
-        <stop offset="5%" stop-color="rgba(42,28,14,0.08)" />
-        <stop offset="14%" stop-color="rgba(42,28,14,0)" />
-      </linearGradient>
-      <linearGradient id="bottomVignette" x1="0%" y1="100%" x2="0%" y2="0%">
-        <stop offset="0%" stop-color="rgba(42,28,14,0.25)" />
-        <stop offset="5%" stop-color="rgba(42,28,14,0.08)" />
-        <stop offset="14%" stop-color="rgba(42,28,14,0)" />
-      </linearGradient>
-
-      <!-- Authentic Mughal Jaali Lattice Pattern (Geometric Filigree) -->
+      <!-- Mughal Jaali Pattern -->
       <pattern id="mughalJaali" width="40" height="40" patternUnits="userSpaceOnUse">
-        <path d="M 20 0 L 40 20 L 20 40 L 0 20 Z" fill="none" stroke="#D4AF37" stroke-width="0.7" opacity="0.35" />
+        <path d="M 20 0 L 40 20 L 20 40 L 0 20 Z" fill="none" stroke="#D4AF37" stroke-width="0.75" opacity="0.38" />
         <circle cx="20" cy="20" r="3.5" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.4" />
         <path d="M 0 0 L 8 8 M 40 0 L 32 8 M 0 40 L 8 32 M 40 40 L 32 32" stroke="#D4AF37" stroke-width="0.5" opacity="0.25" />
       </pattern>
 
-      <!-- Fine Damask Parchment Watermark Pattern -->
+      <!-- Damask Watermark -->
       <pattern id="damaskParchment" width="60" height="60" patternUnits="userSpaceOnUse">
         <circle cx="30" cy="30" r="1.5" fill="#C5A059" opacity="0.12" />
         <path d="M 30 15 Q 35 25 30 35 Q 25 25 30 15 Z" fill="#C5A059" opacity="0.06" />
         <path d="M 15 30 Q 25 35 35 30 Q 25 25 15 30 Z" fill="#C5A059" opacity="0.06" />
       </pattern>
 
-      <!-- Soft Embossed Shadow Filter -->
+      <!-- Drop Shadows -->
       <filter id="goldDropShadow" x="-10%" y="-10%" width="120%" height="120%">
-        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(40,25,10,0.3)" />
+        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(40,25,10,0.35)" />
       </filter>
-      <!-- Deep 3D Seal Shadow -->
       <filter id="sealShadow" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="rgba(25,12,6,0.45)" />
+        <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="rgba(25,12,6,0.48)" />
       </filter>
     </defs>
   
   
-    <!-- Base Paper Tint -->
     <rect width="1760" height="1240" fill="#F9F5EC" />
-    <!-- Fine Damask Watermark Across Spread -->
     <rect width="1760" height="1240" fill="url(#damaskParchment)" />
-    <!-- Warm Tea-Stain Aging Overlays -->
     <rect width="880" height="1240" fill="#F4EDE0" opacity="0.55" />
     <rect x="880" width="880" height="1240" fill="#F6EFE3" opacity="0.55" />
-    
-    <!-- Edge Aging Vignettes -->
     <rect width="220" height="1240" fill="url(#leftVignette)" />
     <rect x="1540" width="220" height="1240" fill="url(#rightVignette)" />
-    <rect width="1760" height="140" fill="url(#topVignette)" />
-    <rect y="1100" width="1760" height="140" fill="url(#bottomVignette)" />
-    
-    <!-- Gilded Gutter Shadow at Spine -->
     <rect x="790" width="180" height="1240" fill="url(#gutterGrad)" />
   
 
@@ -147,7 +126,6 @@
     <g transform="translate(66, 66) scale(1.4, 1.4)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -158,7 +136,6 @@
     <g transform="translate(814, 66) scale(-1.4, 1.4)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -169,7 +146,6 @@
     <g transform="translate(66, 1174) scale(1.4, -1.4)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -180,7 +156,6 @@
     <g transform="translate(814, 1174) scale(-1.4, -1.4)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -188,42 +163,57 @@
     </g>
   
 
-  <!-- Left Cover Central Gold Foil Emblem & Proclamation -->
-  <g transform="translate(440, 500)" text-anchor="middle">
+  <!-- Left Cover Central Gold Foil Emblem & Evocative Royal Quotations -->
+  <g transform="translate(440, 480)" text-anchor="middle">
     <!-- Royal Two Fishes Insignia (Awadh Mahi Maratib Crest) -->
     <g filter="url(#goldDropShadow)">
-      <circle cx="0" cy="-100" r="58" fill="url(#goldFoilRadial)" stroke="#FFF9DB" stroke-width="1.5" />
-      <circle cx="0" cy="-100" r="50" fill="none" stroke="#4E3502" stroke-width="1" stroke-dasharray="2,2" />
-      <!-- Mughal Twin Carp Motifs -->
-      <path d="M -32 -100 Q -18 -124 0 -114 Q 18 -124 32 -100 Q 18 -76 0 -86 Q -18 -76 -32 -100 Z" fill="#4E3502" opacity="0.85" />
-      <circle cx="0" cy="-100" r="8" fill="url(#gold24k)" />
-      <path d="M 0 -140 L 4 -128 L 16 -128 L 6 -120 L 10 -108 L 0 -116 L -10 -108 L -6 -120 L -16 -128 L -4 -128 Z" fill="url(#gold24k)" />
+      <circle cx="0" cy="-120" r="58" fill="url(#goldFoilRadial)" stroke="#FFF9DB" stroke-width="1.5" />
+      <circle cx="0" cy="-120" r="50" fill="none" stroke="#4E3502" stroke-width="1" stroke-dasharray="2,2" />
+      <path d="M -32 -120 Q -18 -144 0 -134 Q 18 -144 32 -120 Q 18 -96 0 -106 Q -18 -96 -32 -120 Z" fill="#4E3502" opacity="0.85" />
+      <circle cx="0" cy="-120" r="8" fill="url(#gold24k)" />
+      <path d="M 0 -160 L 4 -148 L 16 -148 L 6 -140 L 10 -128 L 0 -136 L -10 -128 L -6 -140 L -16 -148 L -4 -148 Z" fill="url(#gold24k)" />
     </g>
 
-    <text y="0" font-family="'Cinzel', Georgia, serif" font-size="14" letter-spacing="8" fill="#F3E5AB" font-weight="700">THE IMPERIAL PROCLAMATION</text>
-    <line x1="-160" y1="18" x2="160" y2="18" stroke="url(#goldH)" stroke-width="1.8" />
+    <!-- Royal Awadh Court Header -->
+    <text y="-25" font-family="'Cinzel', Georgia, serif" font-size="13" letter-spacing="6" fill="#FCEAB2" font-weight="700">
+      नवाब-ए-अवध का शाही फ़रमान
+    </text>
+    <text y="-5" font-family="'Cinzel', Georgia, serif" font-size="11" letter-spacing="4" fill="#D4AF37">
+      THE IMPERIAL COURT PROCLAMATION • 1924
+    </text>
+    <line x1="-180" y1="12" x2="180" y2="12" stroke="url(#goldH)" stroke-width="1.8" />
     
-    <!-- Gold Embossed Proclamation Poetry -->
-    <text y="65" font-family="'Playfair Display', Georgia, serif" font-size="22" fill="#FFFDF0" font-style="italic" letter-spacing="1">
-      "Every extraordinary banquet begins
+    <!-- Royal Couplet 1 in Devanagari Hindi -->
+    <text y="55" font-family="'Rozha One', 'Cinzel', serif" font-size="24" fill="#FFFDF0" letter-spacing="1">
+      "ज़ायका वो नहीं जो सिर्फ़ ज़ुबान को भाए,"
     </text>
-    <text y="105" font-family="'Playfair Display', Georgia, serif" font-size="22" fill="#FFFDF0" font-style="italic" letter-spacing="1">
-      with a story written in embers,
-    </text>
-    <text y="145" font-family="'Playfair Display', Georgia, serif" font-size="22" fill="#FFFDF0" font-style="italic" letter-spacing="1">
-      botanical spice, and time."
+    <text y="92" font-family="'Rozha One', 'Cinzel', serif" font-size="24" fill="#FFFDF0" letter-spacing="1">
+      "लज़्ज़त वो है जो रूह को सदियों तक महकाए।"
     </text>
 
-    <text y="215" font-family="'Cinzel', Georgia, serif" font-size="12" letter-spacing="4" fill="#D4AF37">AWADH • HYDERABAD • RAMPUR • MEWAR</text>
-    <text y="240" font-family="'Newsreader', Georgia, serif" font-size="13" fill="#A2B7AB" font-style="italic">
-      Preserved in the Royal Dastarkhwan Archives for Century-Old Dining
+    <!-- Evocative English Royal Prose Quotation -->
+    <text y="155" font-family="'Playfair Display', Georgia, serif" font-size="19" fill="#FCEAB2" font-style="italic" letter-spacing="0.5">
+      "In the royal banquets of the Nawabs, dining was never
+    </text>
+    <text y="185" font-family="'Playfair Display', Georgia, serif" font-size="19" fill="#FCEAB2" font-style="italic" letter-spacing="0.5">
+      mere sustenance; it was a sacred fine art where patience
+    </text>
+    <text y="215" font-family="'Playfair Display', Georgia, serif" font-size="19" fill="#FCEAB2" font-style="italic" letter-spacing="0.5">
+      was the chief ingredient, and embers the master painter."
+    </text>
+    <text y="255" font-family="'Newsreader', Georgia, serif" font-size="15" fill="#D1DFD6" font-style="italic">
+      "To feast at this dastarkhwan is to taste four centuries of Nawabi nostalgia."
     </text>
 
-    <!-- Stamped Gold Seal at Bottom of Left Page -->
-    <g transform="translate(0, 380)">
-      <rect x="-160" y="-24" width="320" height="48" rx="6" fill="#0D1813" stroke="url(#gold24k)" stroke-width="1.2" />
+    <text y="305" font-family="'Cinzel', Georgia, serif" font-size="11" letter-spacing="3" fill="#D4AF37">
+      — उस्ताद मीर बाक़िर अली • प्रधान खानसामा (Chief Royal Chef)
+    </text>
+
+    <!-- Verified Royal Seal Stamp -->
+    <g transform="translate(0, 375)">
+      <rect x="-180" y="-22" width="360" height="44" rx="22" fill="#0D1813" stroke="url(#gold24k)" stroke-width="1.2" />
       <text y="6" font-family="'Cinzel', serif" font-size="10" letter-spacing="3" fill="#D4AF37" font-weight="700">
-        VERIFIED ROYAL MASTERPIECE
+        VERIFIED ROYAL MASTERPIECE • 100% HERITAGE
       </text>
     </g>
   </g>
@@ -232,20 +222,15 @@
   <g transform="translate(940, 50)">
     
     <g transform="translate(0, 0)">
-      <!-- Outer Solid 24K Gold Filigree -->
       <rect width="760" height="1140" fill="none" stroke="url(#gold24k)" stroke-width="2.5" rx="5" />
-      
-      <!-- Inner Ornate Jaali Inlay Ribbon -->
       <rect x="7" y="7" width="746" height="1126" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.5" rx="3" />
       <rect x="13" y="13" width="734" height="1114" fill="none" stroke="url(#gold24k)" stroke-width="1.2" stroke-dasharray="4,3" rx="2" />
       <rect x="18" y="18" width="724" height="1104" fill="none" stroke="#AA820A" stroke-width="0.5" opacity="0.3" rx="2" />
 
-      <!-- 4 Handcrafted Corner Cartouches -->
       
     <g transform="translate(18, 18) scale(1, 1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -256,7 +241,6 @@
     <g transform="translate(742, 18) scale(-1, 1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -267,7 +251,6 @@
     <g transform="translate(18, 1122) scale(1, -1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -278,7 +261,6 @@
     <g transform="translate(742, 1122) scale(-1, -1)">
       <path d="M 0 0 L 45 0 Q 30 15 15 15 Q 15 30 0 45 Z" fill="url(#gold24k)" opacity="0.3" />
       <path d="M 4 4 L 42 4 Q 28 18 14 18 Q 18 28 4 42 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.2" />
-      <!-- Botanical Lotus Petal in Corner -->
       <path d="M 8 8 Q 24 16 16 24 Q 16 16 8 8 Z" fill="#D4AF37" opacity="0.75" />
       <circle cx="8" cy="8" r="3" fill="#8C6808" />
       <circle cx="28" cy="4" r="2" fill="#D4AF37" />
@@ -286,7 +268,6 @@
     </g>
   
 
-      <!-- Top Header Label -->
       <g transform="translate(380, 38)" text-anchor="middle">
         <text font-family="'Cinzel', 'Playfair Display', Georgia, serif" font-size="11" letter-spacing="5" fill="#8C6808" font-weight="700">
           IMPERIAL AWADH ARCHIVES
@@ -297,7 +278,6 @@
         <circle cx="120" cy="10" r="2" fill="#AA820A" />
       </g>
 
-      <!-- Bottom Folio Number & Seal -->
       <g transform="translate(710, 1112)" text-anchor="end">
         <text font-family="'Playfair Display', Georgia, serif" font-size="14" fill="#A89482" font-style="italic" font-weight="600">
           Folio 00
@@ -318,11 +298,10 @@
           fill="none" stroke="#D4AF37" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.6" />
 
     <!-- Royal Sunburst & Chhatri Finial -->
-    <g transform="translate(380, 230)" text-anchor="middle" filter="url(#goldDropShadow)">
+    <g transform="translate(380, 225)" text-anchor="middle" filter="url(#goldDropShadow)">
       <circle cx="0" cy="0" r="62" fill="url(#goldFoilRadial)" />
       <circle cx="0" cy="0" r="54" fill="none" stroke="#FFFDF0" stroke-width="1.8" />
       <circle cx="0" cy="0" r="48" fill="none" stroke="#6B4F09" stroke-width="0.8" stroke-dasharray="2,2" />
-      <!-- Royal Crown Motif -->
       <path d="M -22 14 L -28 -14 L -10 -2 L 0 -24 L 10 -2 L 28 -14 L 22 14 Z" fill="#4E3502" />
       <circle cx="-28" cy="-16" r="3.5" fill="#DC2626" />
       <circle cx="0" cy="-26" r="4" fill="#16A34A" />
@@ -330,7 +309,7 @@
     </g>
 
     <!-- Masterpiece Title Typography -->
-    <g transform="translate(380, 410)" text-anchor="middle">
+    <g transform="translate(380, 395)" text-anchor="middle">
       <text font-family="'Cinzel', Georgia, serif" font-size="13" letter-spacing="8" fill="#AA820A" font-weight="700">THE ROYAL DEG ARCHIVES</text>
       <text y="48" font-family="'Rozha One', 'Cinzel', serif" font-size="38" letter-spacing="3" fill="#1C1814" font-weight="900">खानसामा की दास्तान</text>
       <text y="98" font-family="'Cinzel Decorative', 'Cinzel', serif" font-size="30" letter-spacing="4" fill="#2B2219" font-weight="700">THE IMPERIAL DASTARKHWAN</text>
@@ -338,7 +317,7 @@
       <line x1="-180" y1="130" x2="180" y2="130" stroke="url(#goldH)" stroke-width="2" />
       <polygon points="0,126 5,130 0,134 -5,130" fill="#AA820A" />
 
-      <text y="168" font-family="'Playfair Display', Georgia, serif" font-size="18" fill="#5E4C3D" font-style="italic">
+      <text y="166" font-family="'Playfair Display', Georgia, serif" font-size="18" fill="#5E4C3D" font-style="italic">
         Volume I: Preserved Culinary Recipes of Awadh, Rampur &amp; Mewar
       </text>
       <text y="196" font-family="'Newsreader', Georgia, serif" font-size="15" fill="#7D6A5A">
@@ -347,16 +326,13 @@
     </g>
 
     <!-- 3D Crimson Red Wax Seal with Gold Foil Stamp -->
-    <g transform="translate(380, 780)" text-anchor="middle" filter="url(#sealShadow)">
-      <!-- Ribbon Tails -->
+    <g transform="translate(380, 770)" text-anchor="middle" filter="url(#sealShadow)">
       <path d="M -24 30 L -36 120 L -18 105 L 0 120 L -8 30 Z" fill="#7F1D1D" opacity="0.95" />
       <path d="M 8 30 L 0 120 L 18 105 L 36 120 L 24 30 Z" fill="#991B1B" opacity="0.95" />
 
-      <!-- Irregular Wax Seal Base -->
       <circle cx="0" cy="0" r="78" fill="url(#waxGrad)" />
       <path d="M -76 10 Q -82 -30 -55 -60 Q -20 -82 20 -80 Q 65 -75 78 -30 Q 82 20 60 65 Q 20 84 -20 80 Q -65 72 -76 10 Z" fill="url(#waxGrad)" opacity="0.8" />
       
-      <!-- Inner Stamped Gold Monogram -->
       <circle cx="0" cy="0" r="62" fill="none" stroke="#FDE047" stroke-width="2" opacity="0.8" />
       <circle cx="0" cy="0" r="56" fill="none" stroke="#7F1D1D" stroke-width="1.5" stroke-dasharray="3,2" />
       
@@ -366,7 +342,7 @@
       <text y="42" font-family="'Cinzel', serif" font-size="9" letter-spacing="2" fill="#FCA5A5">ESTD • 1924</text>
     </g>
 
-    <!-- Interactive Bottom Turn Prompt -->
+    <!-- Bottom Turn Prompt -->
     <g transform="translate(380, 1020)" text-anchor="middle">
       <rect x="-190" y="-18" width="380" height="36" rx="18" fill="#F3EBDD" stroke="url(#gold24k)" stroke-width="1" />
       <text y="5" font-family="'Cinzel', serif" font-size="11" letter-spacing="4" fill="#6B4F09" font-weight="700">
