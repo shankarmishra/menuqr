@@ -191,11 +191,11 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
     return fn ? fn(dishId, variant) : 0;
   };
 
-  // Group dynamic categories into the authentic 12 Chapters
+  // Group dynamic categories into chapters, ensuring ALL categories are preserved
   const chaptersWithCategories = useMemo(() => {
     const list = rawCategories.length > 0 ? rawCategories : categories;
 
-    return CHAPTER_DEFINITIONS.map((chDef) => {
+    const matched = CHAPTER_DEFINITIONS.map((chDef) => {
       const matchedCats = list.filter((cat) => {
         const catNameLower = cat.name.toLowerCase().trim();
         return chDef.subcategories.some((kw) => catNameLower.includes(kw));
@@ -209,6 +209,30 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
         totalItems,
       };
     }).filter((ch) => ch.totalItems > 0);
+
+    // Safeguard: Capture any unmatched categories so no customer menu items are ever lost
+    const matchedCatIds = new Set(
+      matched.flatMap((ch) => ch.categories.map((c) => c.id || c.name))
+    );
+    const unmatched = list.filter((cat) => !matchedCatIds.has(cat.id || cat.name));
+    if (unmatched.length > 0) {
+      unmatched.forEach((cat, idx) => {
+        matched.push({
+          id: `custom-ch-${idx}`,
+          title: cat.name,
+          shortTitle: cat.name,
+          pdfPageNumber: idx + 2,
+          heroImage: cat.items[0]?.image || '/uploads/mannat/assets/crunchy_bites.webp',
+          heroSubtitle: (cat as any).description || `${cat.items.length} Specialties`,
+          themeClass: 'chapter-theme-gravies',
+          subcategories: [cat.name.toLowerCase()],
+          categories: [cat],
+          totalItems: cat.items.length,
+        });
+      });
+    }
+
+    return matched;
   }, [rawCategories, categories]);
 
   // Filtered chapters based on selection
@@ -233,21 +257,79 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
       }}
     >
       {/* ═══════════════════════════════════════════════════════════════════════
-          MASTHEAD: AUTHENTIC 1ST PAGE BRAND COVER (ART BOARD 3.PDF PAGE 1)
-          Direct high-resolution render of the official Mannat cover
+          MASTHEAD: AUTHENTIC BRAND COVER
+          Renders official Mannat cover for Mannat Tandoori, or client's own bespoke header with logo
           ═══════════════════════════════════════════════════════════════════════ */}
-      <header className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-[#FAB700] bg-[#CD1B2D]">
-        <div className="relative w-full flex justify-center bg-[#CD1B2D]">
-          <picture>
-            <source srcSet="/uploads/mannat/assets/mannat_cover_p1_official.webp" type="image/webp" />
-            <img
-              src="/uploads/mannat/assets/mannat_cover_p1_official.png"
-              alt="Mannat Tandoori Junction - Official Brand Cover"
-              className="w-full max-w-2xl h-auto object-contain mx-auto select-none"
-              loading="eager"
-            />
-          </picture>
-        </div>
+      <header
+        className="relative rounded-3xl overflow-hidden shadow-2xl border-2"
+        style={{
+          borderColor: colors.accent || '#FAB700',
+          backgroundColor: colors.surface || '#CD1B2D',
+        }}
+      >
+        {restaurant.name?.toLowerCase().includes('mannat') ? (
+          <div className="relative w-full flex justify-center bg-[#CD1B2D]">
+            <picture>
+              <source srcSet="/uploads/mannat/assets/mannat_cover_p1_official.webp" type="image/webp" />
+              <img
+                src="/uploads/mannat/assets/mannat_cover_p1_official.png"
+                alt="Mannat Tandoori Junction - Official Brand Cover"
+                className="w-full max-w-2xl h-auto object-contain mx-auto select-none"
+                loading="eager"
+              />
+            </picture>
+          </div>
+        ) : (
+          <div
+            className="relative w-full p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-4"
+            style={{
+              background: `linear-gradient(135deg, ${colors.surface} 0%, ${colors.surfaceAlt || colors.surface} 100%)`,
+            }}
+          >
+            {restaurant.logo ? (
+              <div
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden p-2 shadow-xl border-2 mb-2 bg-white/10 backdrop-blur-md"
+                style={{
+                  borderColor: colors.accent,
+                }}
+              >
+                <img
+                  src={restaurant.logo}
+                  alt={restaurant.name}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            ) : (
+              <div
+                className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold shadow-lg border-2 mb-2 bg-white/10"
+                style={{
+                  borderColor: colors.accent,
+                  color: colors.accent,
+                  fontFamily: typography.headingFont,
+                }}
+              >
+                {(restaurant.name || 'Menu').slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <h1
+              className="text-2xl sm:text-4xl font-extrabold tracking-tight"
+              style={{
+                color: colors.heading,
+                fontFamily: typography.headingFont,
+              }}
+            >
+              {restaurant.name}
+            </h1>
+            {restaurant.tagline && (
+              <p
+                className="text-sm sm:text-base max-w-lg opacity-80 italic"
+                style={{ color: colors.textMuted || colors.text }}
+              >
+                {restaurant.tagline}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Storefront Contact & Badges Strip */}
         <div className="bg-[#181E19] text-[#FAF4EC] px-4 py-2.5 sm:px-6 flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#FAB700]/50 relative z-20">

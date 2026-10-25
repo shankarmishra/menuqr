@@ -8,6 +8,8 @@ import { EditorialFineDiningComposition } from './compositions/EditorialFineDini
 import { ModernImageLedComposition } from './compositions/ModernImageLedComposition';
 import { CompactBistroComposition } from './compositions/CompactBistroComposition';
 import { HeritageArtboardComposition } from './compositions/HeritageArtboardComposition';
+import { ChalkboardClipboardComposition } from './compositions/ChalkboardClipboardComposition';
+import { ParametricArtboardComposition } from './compositions/ParametricArtboardComposition';
 
 export interface DynamicDesignEngineProps extends LayoutProps {
   spec: DesignSpecification;
@@ -40,19 +42,37 @@ export const DynamicDesignEngine: React.FC<DynamicDesignEngineProps> = (props) =
         color: colors.text,
         fontFamily: typography.bodyFont,
         backgroundImage: pattern !== 'none' ? pattern : undefined,
+        // @ts-ignore CSS custom properties for theme inheritance
+        '--theme-bg': colors.bg,
+        '--theme-surface': colors.surface,
+        '--theme-surface-alt': colors.surfaceAlt,
+        '--theme-text': colors.text,
+        '--theme-text-muted': colors.textMuted,
+        '--theme-heading': colors.heading,
+        '--theme-accent': colors.accent,
+        '--theme-border': colors.border,
       }}
     >
-      {(spec.composition === 'heritage-artboard' || spec.themeId === 'pdf-bespoke-theme') && (
+      {(spec.composition === 'parametric-artboard' || Boolean(spec.layoutGrammar)) && (
+        <ParametricArtboardComposition {...props} />
+      )}
+      {(spec.composition === 'chalkboard-artboard' || spec.themeId?.includes('yoursteak') || spec.themeId?.includes('chalkboard')) && !spec.layoutGrammar && spec.composition !== 'parametric-artboard' && (
+        <ChalkboardClipboardComposition {...props} />
+      )}
+      {spec.composition === 'heritage-artboard' && !spec.layoutGrammar && !spec.themeId?.includes('yoursteak') && !spec.themeId?.includes('chalkboard') && (
         <HeritageArtboardComposition {...props} />
       )}
-      {spec.composition === 'editorial' && spec.themeId !== 'pdf-bespoke-theme' && (
+      {spec.composition === 'editorial' && !spec.layoutGrammar && (
         <EditorialFineDiningComposition {...props} />
       )}
-      {spec.composition === 'image-showcase' && spec.themeId !== 'pdf-bespoke-theme' && (
+      {spec.composition === 'image-showcase' && !spec.layoutGrammar && !spec.themeId?.includes('yoursteak') && !spec.themeId?.includes('chalkboard') && (
         <ModernImageLedComposition {...props} />
       )}
-      {spec.composition === 'compact-bistro' && spec.themeId !== 'pdf-bespoke-theme' && (
+      {spec.composition === 'compact-bistro' && !spec.layoutGrammar && !spec.themeId?.includes('yoursteak') && !spec.themeId?.includes('chalkboard') && (
         <CompactBistroComposition {...props} />
+      )}
+      {!['heritage-artboard', 'editorial', 'image-showcase', 'compact-bistro', 'chalkboard-artboard', 'parametric-artboard'].includes(spec.composition) && !spec.layoutGrammar && !spec.themeId?.includes('yoursteak') && !spec.themeId?.includes('chalkboard') && (
+        <ModernImageLedComposition {...props} />
       )}
     </div>
   );

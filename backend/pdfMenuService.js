@@ -5,14 +5,16 @@ import { GoogleGenAI } from '@google/genai';
 import { PDFParse } from 'pdf-parse';
 import { validateDesignSpecification } from './designSpecValidator.js';
 import { isGeminiAvailable } from './aiDesignService.js';
+import { extractImagesFromPdf, generateMonogramLogo } from './pdfImageExtractor.js';
+import { resolveDishImage } from './culinaryImageService.js';
 
 const MAX_PDF_SIZE_BYTES = 25 * 1024 * 1024; // 25MB
 const MAX_PDF_PAGES = 20;
 
-// Candidate models for resilience
+// Candidate models for resilience (stable production models)
 const CANDIDATE_MODELS = [
-  'gemini-3.5-flash-lite',
   'gemini-2.5-flash',
+  'gemini-3.8-flash',
   'gemini-flash-latest',
 ];
 
@@ -214,57 +216,89 @@ export function deterministicPdfExtraction(rawText, filename, inspectedData = {}
     });
   }
 
+  // Populate appetizing culinary dish images
+  let dishIndex = 0;
+  for (const cat of categories) {
+    for (const item of cat.items) {
+      if (!item.imageUrl) {
+        item.imageUrl = resolveDishImage(item.name, cat.name, [], dishIndex++);
+        item.image = item.imageUrl;
+      }
+    }
+  }
+
   // Derive high-fidelity DesignSpecification fallback
   const isFineDining = categories.some(c => /royal|mughlai|heritage|wine|banquet|gourmet/i.test(c.name));
-  const composition = isFineDining ? 'editorial' : (categories.length > 4 ? 'compact-bistro' : 'image-showcase');
+  const isChalkboard = /steak|chalk|bbq|grill|clipboard/i.test(inspectedData.rawText) || /chalkboard|clipboard|yoursteak/i.test(filename);
+  const composition = isChalkboard ? 'parametric-artboard' : (isFineDining ? 'editorial' : (categories.length > 4 ? 'compact-bistro' : 'image-showcase'));
+  const rawName = typeof filename === 'string' ? filename : (inspectedData?.fileName || inspectedData?.filename || 'Restaurant Menu');
+  const cleanFilename = rawName.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
+  const cleanSlug = cleanFilename.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'menu';
 
   const designSpec = {
     version: '1.0',
     composition,
-    themeId: 'reconstructed-pdf-theme',
+    themeId: `bespoke-${cleanSlug}`,
     colors: {
-      bg: isFineDining ? '#180912' : '#F9F7F2',
-      surface: isFineDining ? '#270F1E' : '#FFFFFF',
-      surfaceAlt: isFineDining ? '#2D1223' : '#F4EFE6',
-      text: isFineDining ? '#FAF3E0' : '#1F2923',
-      textMuted: isFineDining ? '#C9BFA8' : '#68786E',
-      heading: isFineDining ? '#E5C058' : '#163328',
-      accent: isFineDining ? '#D4AF37' : '#C4703C',
-      border: isFineDining ? 'rgba(212, 175, 55, 0.35)' : 'rgba(22, 51, 40, 0.15)',
-      badgeBg: isFineDining ? '#D4AF37' : '#C4703C',
+      bg: isChalkboard ? '#141414' : (isFineDining ? '#180912' : '#F9F7F2'),
+      surface: isChalkboard ? '#1D1D1D' : (isFineDining ? '#270F1E' : '#FFFFFF'),
+      surfaceAlt: isChalkboard ? '#262626' : (isFineDining ? '#2D1223' : '#F4EFE6'),
+      text: isChalkboard ? '#EFECE6' : (isFineDining ? '#FAF3E0' : '#1F2923'),
+      textMuted: isChalkboard ? '#9F988F' : (isFineDining ? '#C9BFA8' : '#68786E'),
+      heading: isChalkboard ? '#FFFFFF' : (isFineDining ? '#E5C058' : '#163328'),
+      accent: isChalkboard ? '#C27038' : (isFineDining ? '#D4AF37' : '#C4703C'),
+      border: isChalkboard ? 'rgba(255, 255, 255, 0.15)' : (isFineDining ? 'rgba(212, 175, 55, 0.35)' : 'rgba(22, 51, 40, 0.15)'),
+      badgeBg: isChalkboard ? '#C27038' : (isFineDining ? '#D4AF37' : '#C4703C'),
       badgeText: '#FFFFFF',
     },
     typography: {
-      headingFont: isFineDining ? "'Cinzel', serif" : "'Plus Jakarta Sans', sans-serif",
+      headingFont: isChalkboard ? "'Bebas Neue', 'Oswald', sans-serif" : (isFineDining ? "'Cinzel', serif" : "'Plus Jakarta Sans', sans-serif"),
       bodyFont: "'Plus Jakarta Sans', sans-serif",
-      style: isFineDining ? 'serif' : 'sans',
+      style: isChalkboard ? 'display' : (isFineDining ? 'serif' : 'sans'),
       headingWeight: 'bold',
     },
     header: {
-      style: isFineDining ? 'centered-crest' : 'minimal-stacked',
+      style: isChalkboard ? 'minimal-stacked' : (isFineDining ? 'centered-crest' : 'minimal-stacked'),
       showLogo: true,
-      decorativeElement: isFineDining ? 'crest' : 'minimal-line',
+      decorativeElement: isChalkboard ? 'minimal-line' : (isFineDining ? 'crest' : 'minimal-line'),
       crestType: isFineDining ? 'crown' : 'none',
     },
     categories: {
-      navStyle: 'pills',
-      headerStyle: isFineDining ? 'arch' : 'divider-line',
+      navStyle: isChalkboard ? 'chips' : 'pills',
+      headerStyle: isChalkboard ? 'badge' : (isFineDining ? 'arch' : 'divider-line'),
     },
     items: {
-      cardStyle: composition === 'compact-bistro' ? 'compact-row' : (composition === 'image-showcase' ? 'photo-hero' : 'classic-leader'),
-      imagePosition: 'right',
-      priceStyle: composition === 'compact-bistro' ? 'pill-badge' : 'aligned-right',
+      cardStyle: isChalkboard ? 'classic-leader' : (composition === 'compact-bistro' ? 'compact-row' : (composition === 'image-showcase' ? 'photo-hero' : 'classic-leader')),
+      imagePosition: isChalkboard ? 'none' : 'right',
+      priceStyle: isChalkboard ? 'aligned-right' : (composition === 'compact-bistro' ? 'pill-badge' : 'aligned-right'),
     },
     decorations: {
-      texture: isFineDining ? 'silk-lattice' : 'clean',
-      borderRadius: 'md',
-      borderStyle: 'hairline',
+      texture: isChalkboard ? 'subtle-grain' : (isFineDining ? 'silk-lattice' : 'clean'),
+      borderRadius: isChalkboard ? 'sm' : 'md',
+      borderStyle: isChalkboard ? 'solid' : 'hairline',
       shadow: 'subtle',
     },
+    layoutGrammar: isChalkboard ? {
+      containerMetaphor: 'clipboard',
+      coverPage: {
+        enabled: true,
+        titleLayout: 'stamp-ribbon',
+        ribbonText: 'FOOD',
+        heroPlatter: true,
+        badges: [
+          { label: 'OPEN HOUR', value: '8AM' },
+          { label: 'LIVE MUSIC', value: '6PM' },
+        ],
+        footerText: 'WWW.YOURSTEAK.COM',
+      },
+      pageLayout: { columns: 2, columnBalance: 'equal' },
+      categoryStyle: { badgeType: 'banner-ribbon' },
+      itemStyle: { presentation: 'dotted-leader', pricePlacement: 'dotted-end', showImages: false },
+      calloutBoxes: [
+        { categoryMatch: 'FAVOURITE|SPECIAL', style: 'double-border', badgeText: '$22' },
+      ],
+    } : undefined,
   };
-
-  const rawName = typeof filename === 'string' ? filename : (inspectedData?.fileName || inspectedData?.filename || 'Restaurant Menu');
-  const cleanFilename = rawName.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
 
   return {
     success: true,
@@ -321,13 +355,35 @@ export async function extractMenuFromPdf(arg1, arg2) {
     throw new Error(`PDF has ${inspectedData.pageCount} pages. Maximum supported document length is ${MAX_PDF_PAGES} pages.`);
   }
 
-  // 3. Check Gemini Availability
+  // 3. Extract embedded media, logo candidates, and dish photos from PDF
+  const extractedMedia = await extractImagesFromPdf(buffer, tenantId, filename);
+
+  // 4. Check Gemini Availability
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || apiKey.trim().length === 0) {
-    return deterministicPdfExtraction(inspectedData.rawText, filename, inspectedData);
+    const fallback = deterministicPdfExtraction(inspectedData.rawText, filename, inspectedData);
+    let dishGlobalIdx = 0;
+    for (const cat of fallback.categories) {
+      for (const item of cat.items) {
+        if (!item.imageUrl) {
+          item.imageUrl = resolveDishImage(item.name, cat.name, extractedMedia.dishImages, dishGlobalIdx++);
+          item.image = item.imageUrl;
+        }
+      }
+    }
+    const finalLogoUrl = extractedMedia.logoUrl || await generateMonogramLogo({
+      restaurantName: fallback.restaurant?.name || filename.replace(/\.pdf$/i, ''),
+      primaryColor: fallback.designSpec?.colors?.heading || '#1F2923',
+      accentColor: fallback.designSpec?.colors?.accent || '#D4AF37',
+      backgroundColor: fallback.designSpec?.colors?.surface || '#FFFFFF',
+      tenantId,
+    });
+    fallback.restaurant.logo = finalLogoUrl;
+    fallback.candidateLogos = extractedMedia.candidateLogos;
+    return fallback;
   }
 
-  // 4. Multimodal AI Extraction with Gemini
+  // 5. Multimodal AI Extraction with Gemini
   const base64Data = buffer.toString('base64');
   const promptText = `
 You are the Chief Document Extraction Architect & Art Director for MENUQR, a premium restaurant menu platform.
@@ -383,8 +439,8 @@ OUTPUT FORMAT: Return ONLY a valid JSON object matching this exact structure:
   ],
   "designSpec": {
     "version": "1.0",
-    "composition": "editorial",
-    "themeId": "pdf-bespoke-theme",
+    "composition": "image-showcase",
+    "themeId": "bespoke-theme",
     "colors": {
       "bg": "#HEX or rgba",
       "surface": "#HEX or rgba",
@@ -423,6 +479,33 @@ OUTPUT FORMAT: Return ONLY a valid JSON object matching this exact structure:
       "borderRadius": "none | sm | md | lg | xl | full",
       "borderStyle": "none | hairline | solid | double",
       "shadow": "none | subtle | elevated | glass"
+    },
+    "layoutGrammar": {
+      "containerMetaphor": "clipboard | leather-folio | parchment | newspaper | minimal-sheet",
+      "containerTexture": "wood-clamp | dark-chalkboard | aged-paper | clean",
+      "coverPage": {
+        "enabled": true,
+        "titleLayout": "stamp-ribbon | crest-centered | split-masthead | minimal-clean",
+        "ribbonText": "FOOD",
+        "heroPlatter": true,
+        "badges": [{"label": "OPEN HOUR", "value": "8AM"}, {"label": "LIVE MUSIC", "value": "6PM"}],
+        "footerText": "WWW.YOURSTEAK.COM"
+      },
+      "pageLayout": {
+        "columns": 2,
+        "columnBalance": "equal"
+      },
+      "categoryStyle": {
+        "badgeType": "banner-ribbon | chalk-badge | minimal-underline | royal-crest | solid-chip"
+      },
+      "itemStyle": {
+        "presentation": "dotted-leader | modern-card | compact-row | framed-box",
+        "pricePlacement": "dotted-end | boxed-right | subhead-pill",
+        "showImages": false
+      },
+      "calloutBoxes": [
+        {"categoryMatch": "OUR FAVOURITE", "style": "double-border", "badgeText": "$22"}
+      ]
     }
   },
   "warnings": []
@@ -449,7 +532,8 @@ CRITICAL RULES:
   * "accent" MUST be the brand's secondary highlight or metallic color (e.g. "#FAB700" for mustard gold).
   * "surface" MUST be "#FFFFFF" (on light theme) or card surface color with high readability.
   * "text" MUST be high-contrast body color (e.g. "#1F2923" on light bg).
-  * "composition": If the PDF contains food photos, dish cards, sizzlers, or meal graphics, select "image-showcase". If it is an upscale traditional text layout, use "editorial". Only use "compact-bistro" for ultra-dense single-page price sheets without photos.
+  * "composition": If the PDF is a physical flyer, wooden clipboard, rustic chalkboard, or themed artboard, ALWAYS select "parametric-artboard". If it is an upscale traditional text layout, use "editorial". If modern casual food cards, use "image-showcase". If dense tabular price list, use "compact-bistro".
+  * When selecting "parametric-artboard", faithfully populate "layoutGrammar" with the physical presentation (containerMetaphor, coverPage, columns, itemStyle presentation like dotted-leader, categoryStyle badgeType like banner-ribbon, calloutBoxes for special sections).
 
 - Contrast Rule: Ensure WCAG readable contrast between text/heading and bg/surface. Never output dark text on dark background or red on red.
 - Dietary Rule: Assign dietType = "veg", "non-veg", "vegan", or "egg" accurately based on dish name, ingredients, or green/red dots on the PDF.
@@ -498,7 +582,8 @@ CRITICAL RULES:
         validatedSpec = fallbackRes.designSpec;
       }
 
-      // Normalize items & prices
+      // Normalize items & prices & attach appetizing images
+      let dishGlobalIdx = 0;
       const normalizedCategories = parsed.categories.map((cat, cIdx) => ({
         id: `cat-${cIdx + 1}`,
         name: String(cat.name || `Section ${cIdx + 1}`).trim(),
@@ -508,10 +593,12 @@ CRITICAL RULES:
           const price = Number.isFinite(rawPrice) && rawPrice >= 0 ? rawPrice : null;
           const halfPrice = Number.isFinite(Number(it.halfPrice)) ? Number(it.halfPrice) : null;
           const fullPrice = Number.isFinite(Number(it.fullPrice)) ? Number(it.fullPrice) : null;
-          
+          const dishName = String(it.name || 'Untitled Dish').trim();
+          const imageUrl = it.imageUrl || it.image || resolveDishImage(dishName, cat.name, extractedMedia.dishImages, dishGlobalIdx++);
+
           return {
             id: `item-${cIdx + 1}-${iIdx + 1}`,
-            name: String(it.name || 'Untitled Dish').trim(),
+            name: dishName,
             description: String(it.description || '').trim(),
             price,
             halfPrice,
@@ -523,11 +610,25 @@ CRITICAL RULES:
             })) : [],
             addonGroups: Array.isArray(it.addonGroups) ? it.addonGroups : [],
             dietType: ['veg', 'non-veg', 'vegan', 'egg'].includes(String(it.dietType).toLowerCase()) ? String(it.dietType).toLowerCase() : 'veg',
+            imageUrl,
+            image: imageUrl,
             confidence: typeof it.confidence === 'number' ? it.confidence : 0.9,
             warnings: Array.isArray(it.warnings) ? it.warnings : (price === null ? ['Price was missing or unclear in document.'] : [])
           };
         }) : []
       }));
+
+      const restaurantName = parsed.restaurant?.name || filename.replace(/\.pdf$/i, '');
+      const cleanSlug = restaurantName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'menu';
+      validatedSpec.themeId = `bespoke-${cleanSlug}`;
+
+      const finalLogoUrl = extractedMedia.logoUrl || await generateMonogramLogo({
+        restaurantName,
+        primaryColor: validatedSpec.colors.heading,
+        accentColor: validatedSpec.colors.accent,
+        backgroundColor: validatedSpec.colors.surface,
+        tenantId,
+      });
 
       return {
         success: true,
@@ -536,14 +637,16 @@ CRITICAL RULES:
         pageCount: inspectedData.pageCount,
         isScanned: inspectedData.isScanned,
         restaurant: {
-          name: parsed.restaurant?.name || filename.replace(/\.pdf$/i, ''),
+          name: restaurantName,
           cuisine: parsed.restaurant?.cuisine || 'Contemporary Cuisine',
           tagline: parsed.restaurant?.tagline || '',
           description: parsed.restaurant?.description || '',
           address: parsed.restaurant?.address || '',
           phone: parsed.restaurant?.phone || '',
           openingHours: parsed.restaurant?.openingHours || '11:00 AM - 11:00 PM',
+          logo: finalLogoUrl,
         },
+        candidateLogos: extractedMedia.candidateLogos,
         categories: normalizedCategories,
         designSpec: validatedSpec,
         warnings: Array.isArray(parsed.warnings) ? parsed.warnings : [],
@@ -556,6 +659,24 @@ CRITICAL RULES:
 
   console.warn('All Gemini models failed for PDF extraction, running deterministic fallback.');
   const fallback = deterministicPdfExtraction(inspectedData.rawText, filename, inspectedData);
+  let dishGlobalIdx = 0;
+  for (const cat of fallback.categories) {
+    for (const item of cat.items) {
+      if (!item.imageUrl) {
+        item.imageUrl = resolveDishImage(item.name, cat.name, extractedMedia.dishImages, dishGlobalIdx++);
+        item.image = item.imageUrl;
+      }
+    }
+  }
+  const fallbackLogoUrl = extractedMedia.logoUrl || await generateMonogramLogo({
+    restaurantName: fallback.restaurant?.name || filename.replace(/\.pdf$/i, ''),
+    primaryColor: fallback.designSpec?.colors?.heading || '#1F2923',
+    accentColor: fallback.designSpec?.colors?.accent || '#D4AF37',
+    backgroundColor: fallback.designSpec?.colors?.surface || '#FFFFFF',
+    tenantId,
+  });
+  fallback.restaurant.logo = fallbackLogoUrl;
+  fallback.candidateLogos = extractedMedia.candidateLogos;
   fallback.warnings.push(`AI extraction unavailable (${lastError?.message || 'high demand'}). Analyzed via local deterministic engine.`);
   return fallback;
 }

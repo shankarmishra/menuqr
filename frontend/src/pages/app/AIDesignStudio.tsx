@@ -350,7 +350,7 @@ export const AIDesignStudio: React.FC<AIDesignStudioProps> = ({
             </div>
             <p className="text-xs text-[#849a90] mt-0.5">
               {hasSavedSpec
-                ? 'Your bespoke menu design is established and active on your permanent QR code. Re-generation is locked to preserve your live restaurant identity.'
+                ? 'Your bespoke menu design is active on your live QR code. You can re-generate new looks, switch atmospheres, or refine with AI anytime.'
                 : aiStatus?.available 
                 ? 'Synthesizes multimodal photo cues, restaurant atmosphere, and typography into a production web menu.'
                 : 'Generates tailored typography, balanced color harmonies, and responsive layouts via verified fallback rules.'}
@@ -358,27 +358,24 @@ export const AIDesignStudio: React.FC<AIDesignStudioProps> = ({
           </div>
         </div>
 
-        {hasSavedSpec ? (
-          <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold shrink-0">
-            <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
-            <span>Design Active & Locked</span>
-          </div>
-        ) : !currentSpec ? (
+        <div className="flex items-center gap-2.5 shrink-0">
+          {hasSavedSpec && (
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+              <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+              <span>Active on QR</span>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={() => handleGenerate(false)}
             disabled={generating}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#e8783c] hover:bg-[#f08b55] text-white text-xs font-bold transition-all shadow-md shadow-[#e8783c]/20 shrink-0 cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#e8783c] to-amber-500 hover:from-[#f08b55] hover:to-amber-400 text-white text-xs font-bold transition-all shadow-md shadow-[#e8783c]/20 shrink-0 cursor-pointer disabled:opacity-50 active:scale-95"
           >
             {generating ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
-            {generating ? 'Composing...' : 'Generate Menu Design'}
+            {generating ? 'Composing...' : (currentSpec || hasSavedSpec ? 'Re-generate Design' : 'Generate Menu Design')}
           </button>
-        ) : (
-          <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#e8783c]/15 border border-[#e8783c]/30 text-[#e8783c] text-xs font-semibold shrink-0">
-            <Check size={16} className="text-[#e8783c] shrink-0" />
-            <span>1st-Time Design Generated</span>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* FEEDBACK BANNER */}
@@ -567,9 +564,9 @@ export const AIDesignStudio: React.FC<AIDesignStudioProps> = ({
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          SECTION 4: REVISION FLOW (Only available during initial 1st-time draft)
+          SECTION 4: REVISION FLOW (Always available for iterative refinement)
           ═══════════════════════════════════════════════════════════════════════ */}
-      {!hasSavedSpec && currentSpec && (
+      {currentSpec && (
         <div className="bg-[#19221e] border border-[#e8783c]/30 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-[#e8783c] flex items-center gap-2">
@@ -621,13 +618,6 @@ export const AIDesignStudio: React.FC<AIDesignStudioProps> = ({
                 key={m.id}
                 type="button"
                 onClick={() => {
-                  if (hasSavedSpec) {
-                    setFeedbackMessage({
-                      type: 'info',
-                      text: 'Your bespoke menu design is established and locked. Re-generation is disabled to preserve brand consistency.',
-                    });
-                    return;
-                  }
                   setMood(m.id);
                   if (!currentSpec) return;
                   const profile: RestaurantDesignProfile = {

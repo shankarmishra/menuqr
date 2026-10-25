@@ -7,7 +7,7 @@ export function isValidColor(val) {
   return SAFE_COLOR_REGEX.test(val.trim());
 }
 
-const ALLOWED_COMPOSITIONS = ['editorial', 'image-showcase', 'compact-bistro', 'heritage-artboard'];
+const ALLOWED_COMPOSITIONS = ['editorial', 'image-showcase', 'compact-bistro', 'heritage-artboard', 'chalkboard-artboard', 'parametric-artboard'];
 const ALLOWED_TYPOGRAPHY_STYLES = ['serif', 'sans', 'display', 'editorial'];
 const ALLOWED_WEIGHTS = ['light', 'normal', 'bold', 'black'];
 const ALLOWED_HEADER_STYLES = ['centered-crest', 'split-masthead', 'minimal-stacked', 'banner-hero'];
@@ -120,5 +120,58 @@ export function validateDesignSpecification(raw) {
       borderStyle: ALLOWED_BORDER_STYLES.includes(data.decorations?.borderStyle) ? data.decorations.borderStyle : 'hairline',
       shadow: ALLOWED_SHADOWS.includes(data.decorations?.shadow) ? data.decorations.shadow : 'subtle',
     },
+    layoutGrammar: sanitizeLayoutGrammar(data.layoutGrammar, composition),
+  };
+}
+
+function sanitizeLayoutGrammar(g, composition) {
+  if (!g || typeof g !== 'object') {
+    if (composition === 'chalkboard-artboard') {
+      return {
+        containerMetaphor: 'clipboard',
+        pageLayout: { columns: 2, columnBalance: 'equal' },
+        categoryStyle: { badgeType: 'banner-ribbon' },
+        itemStyle: { presentation: 'dotted-leader', pricePlacement: 'dotted-end', showImages: false },
+      };
+    }
+    return undefined;
+  }
+
+  const validMetaphors = ['clipboard', 'leather-folio', 'parchment', 'newspaper', 'minimal-sheet', 'glassmorphism'];
+  const metaphor = validMetaphors.includes(g.containerMetaphor)
+    ? g.containerMetaphor
+    : (composition === 'chalkboard-artboard' ? 'clipboard' : 'minimal-sheet');
+
+  return {
+    containerMetaphor: metaphor,
+    containerTexture: typeof g.containerTexture === 'string' ? g.containerTexture.slice(0, 50) : undefined,
+    coverPage: g.coverPage && typeof g.coverPage === 'object' ? {
+      enabled: Boolean(g.coverPage.enabled),
+      titleLayout: ['stamp-ribbon', 'crest-centered', 'split-masthead', 'minimal-clean'].includes(g.coverPage.titleLayout) ? g.coverPage.titleLayout : 'stamp-ribbon',
+      ribbonText: typeof g.coverPage.ribbonText === 'string' ? g.coverPage.ribbonText.slice(0, 50) : undefined,
+      heroPlatter: Boolean(g.coverPage.heroPlatter),
+      badges: Array.isArray(g.coverPage.badges) ? g.coverPage.badges.slice(0, 6).map(b => ({ label: String(b?.label || '').slice(0, 30), value: String(b?.value || '').slice(0, 30) })) : [],
+      footerText: typeof g.coverPage.footerText === 'string' ? g.coverPage.footerText.slice(0, 200) : undefined,
+    } : undefined,
+    pageLayout: {
+      columns: [1, 2, 3].includes(g.pageLayout?.columns) ? g.pageLayout.columns : 2,
+      columnBalance: ['equal', 'featured-left', 'featured-right'].includes(g.pageLayout?.columnBalance) ? g.pageLayout.columnBalance : 'equal',
+    },
+    categoryStyle: {
+      badgeType: ['banner-ribbon', 'chalk-badge', 'minimal-underline', 'royal-crest', 'solid-chip'].includes(g.categoryStyle?.badgeType) ? g.categoryStyle.badgeType : 'banner-ribbon',
+      badgeColor: isValidColor(g.categoryStyle?.badgeColor) ? g.categoryStyle.badgeColor : undefined,
+      badgeTextColor: isValidColor(g.categoryStyle?.badgeTextColor) ? g.categoryStyle.badgeTextColor : undefined,
+    },
+    itemStyle: {
+      presentation: ['dotted-leader', 'modern-card', 'compact-row', 'framed-box'].includes(g.itemStyle?.presentation) ? g.itemStyle.presentation : 'dotted-leader',
+      pricePlacement: ['dotted-end', 'boxed-right', 'subhead-pill'].includes(g.itemStyle?.pricePlacement) ? g.itemStyle.pricePlacement : 'dotted-end',
+      showImages: Boolean(g.itemStyle?.showImages),
+      imageShape: ['round', 'rounded-rect', 'thumbnail'].includes(g.itemStyle?.imageShape) ? g.itemStyle.imageShape : 'rounded-rect',
+    },
+    calloutBoxes: Array.isArray(g.calloutBoxes) ? g.calloutBoxes.slice(0, 10).map(cb => ({
+      categoryMatch: String(cb?.categoryMatch || '').slice(0, 60),
+      style: ['double-border', 'chalk-frame', 'gold-foil', 'tinted-card'].includes(cb?.style) ? cb.style : 'double-border',
+      badgeText: typeof cb?.badgeText === 'string' ? cb.badgeText.slice(0, 40) : undefined,
+    })) : [],
   };
 }

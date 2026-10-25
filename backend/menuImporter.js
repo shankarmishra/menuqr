@@ -258,12 +258,13 @@ export async function executeImportTransaction(client, tenantId, menuId, parsedC
       
       let itemId;
       const pricingType = item.pricingType || (item.variants?.length > 0 ? 'variants' : 'single');
+      const finalImageUrl = item.imageUrl || item.image || item.image_url || null;
       
       if (existingItem && mode === 'update') {
         itemId = existingItem.id;
         await queryPortable(client,
           'UPDATE menu_items SET category_id = ?, name = ?, description = ?, price = ?, half_price = ?, full_price = ?, image_url = ?, diet_type = ?, is_available = ?, pricing_type = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
-          [categoryId, item.name, item.description || null, item.price || 0, item.halfPrice || null, item.fullPrice || null, item.imageUrl || null, item.dietType || 'veg', item.available !== false, pricingType, itemId, tenantId]
+          [categoryId, item.name, item.description || null, item.price || 0, item.halfPrice || null, item.fullPrice || null, finalImageUrl, item.dietType || 'veg', item.available !== false, pricingType, itemId, tenantId]
         );
         itemsUpdated++;
         
@@ -278,7 +279,7 @@ export async function executeImportTransaction(client, tenantId, menuId, parsedC
         );
         await queryPortable(client,
           'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, half_price, full_price, image_url, diet_type, is_available, sort_order, pricing_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [itemId, menuId, tenantId, categoryId, item.name, item.description || null, item.price || 0, item.halfPrice || null, item.fullPrice || null, item.imageUrl || null, item.dietType || 'veg', item.available !== false, nextSort.rows[0].next_order, pricingType]
+          [itemId, menuId, tenantId, categoryId, item.name, item.description || null, item.price || 0, item.halfPrice || null, item.fullPrice || null, finalImageUrl, item.dietType || 'veg', item.available !== false, nextSort.rows[0].next_order, pricingType]
         );
         itemsCreated++;
       }

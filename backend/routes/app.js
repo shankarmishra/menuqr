@@ -247,15 +247,6 @@ export default async function appRoutes(request, response, url) {
       throw apiError(400, 'Restaurant name and cuisine are required.');
     }
 
-    // Enforce 1st-time only rule: Bespoke designs cannot be regenerated once established on the panel
-    const existingAppearance = await pool.query(
-      'SELECT accent_configuration FROM appearance_settings WHERE tenant_id = $1',
-      [user.tenantId]
-    );
-    if (existingAppearance.rows[0]?.accent_configuration != null) {
-      throw apiError(403, 'Design generation is only permitted once during initial setup. Bespoke designs cannot be regenerated once established on your panel.');
-    }
-
     try {
       const result = await generateAiMenuDesign({
         tenantId: user.tenantId,
@@ -334,6 +325,7 @@ export default async function appRoutes(request, response, url) {
         pageCount: result.pageCount,
         isScanned: result.isScanned,
         restaurant: result.restaurant,
+        candidateLogos: result.candidateLogos || [],
         categories: result.categories,
         designSpec: result.designSpec,
         warnings: result.warnings,
@@ -487,22 +479,24 @@ export default async function appRoutes(request, response, url) {
       if (approveDesign !== false && validatedSpec) {
         const settingId = randomUUID();
         await client.query(`
-          INSERT INTO appearance_settings (id, tenant_id, template_id, accent_configuration, restaurant_display_name, tagline)
-          VALUES ($1, $2, $3, $4, $5, $6)
+          INSERT INTO appearance_settings (id, tenant_id, template_id, accent_configuration, restaurant_display_name, tagline, logo)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
           ON CONFLICT (tenant_id)
           DO UPDATE SET
             template_id = COALESCE(EXCLUDED.template_id, appearance_settings.template_id),
             accent_configuration = EXCLUDED.accent_configuration,
             restaurant_display_name = COALESCE(EXCLUDED.restaurant_display_name, appearance_settings.restaurant_display_name),
             tagline = COALESCE(EXCLUDED.tagline, appearance_settings.tagline),
+            logo = COALESCE(EXCLUDED.logo, appearance_settings.logo),
             updated_at = CURRENT_TIMESTAMP
         `, [
           settingId,
           user.tenantId,
-          validatedSpec.themeId || 'pdf-bespoke-theme',
+          validatedSpec.themeId || 'bespoke-theme',
           JSON.stringify(validatedSpec),
           inputText(restaurant?.name, 255) || null,
-          inputText(restaurant?.tagline, 255) || null
+          inputText(restaurant?.tagline, 255) || null,
+          inputText(restaurant?.logo, 2000) || null,
         ]);
       }
 
@@ -517,8 +511,9 @@ export default async function appRoutes(request, response, url) {
             address = COALESCE($5, address),
             phone = COALESCE($6, phone),
             opening_hours = COALESCE($7, opening_hours),
+            logo_url = COALESCE($8, logo_url),
             updated_at = CURRENT_TIMESTAMP
-          WHERE id = $8
+          WHERE id = $9
         `, [
           inputText(restaurant.name, 255) || null,
           inputText(restaurant.tagline, 255) || null,
@@ -527,6 +522,7 @@ export default async function appRoutes(request, response, url) {
           inputText(restaurant.address, 1000) || null,
           inputText(restaurant.phone, 50) || null,
           inputText(restaurant.openingHours, 255) || null,
+          inputText(restaurant.logo, 2000) || null,
           user.tenantId
         ]);
       }

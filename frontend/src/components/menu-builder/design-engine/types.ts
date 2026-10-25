@@ -2,7 +2,13 @@
 
 import type { LayoutProps } from '../templates/types';
 
-export type DesignCompositionStrategy = 'editorial' | 'image-showcase' | 'compact-bistro' | 'heritage-artboard';
+export type DesignCompositionStrategy = 
+  | 'editorial' 
+  | 'image-showcase' 
+  | 'compact-bistro' 
+  | 'heritage-artboard' 
+  | 'chalkboard-artboard'
+  | 'parametric-artboard';
 
 export type RestaurantPositioning = 'fine-dining' | 'casual' | 'contemporary' | 'rustic' | 'minimalist';
 
@@ -29,6 +35,39 @@ export interface RestaurantDesignProfile {
   logoUrl?: string;
   tagline?: string;
   customNotes?: string;
+}
+
+export interface LayoutGrammar {
+  containerMetaphor: 'clipboard' | 'leather-folio' | 'parchment' | 'newspaper' | 'minimal-sheet' | 'glassmorphism';
+  containerTexture?: string;
+  coverPage?: {
+    enabled: boolean;
+    titleLayout?: 'stamp-ribbon' | 'crest-centered' | 'split-masthead' | 'minimal-clean';
+    ribbonText?: string;
+    heroPlatter?: boolean;
+    badges?: Array<{ label: string; value: string }>;
+    footerText?: string;
+  };
+  pageLayout: {
+    columns: 1 | 2 | 3;
+    columnBalance?: 'equal' | 'featured-left' | 'featured-right';
+  };
+  categoryStyle: {
+    badgeType: 'banner-ribbon' | 'chalk-badge' | 'minimal-underline' | 'royal-crest' | 'solid-chip';
+    badgeColor?: string;
+    badgeTextColor?: string;
+  };
+  itemStyle: {
+    presentation: 'dotted-leader' | 'modern-card' | 'compact-row' | 'framed-box';
+    pricePlacement: 'dotted-end' | 'boxed-right' | 'subhead-pill';
+    showImages: boolean;
+    imageShape?: 'round' | 'rounded-rect' | 'thumbnail';
+  };
+  calloutBoxes?: Array<{
+    categoryMatch: string;
+    style: 'double-border' | 'chalk-frame' | 'gold-foil' | 'tinted-card';
+    badgeText?: string;
+  }>;
 }
 
 export interface DesignSpecification {
@@ -74,6 +113,7 @@ export interface DesignSpecification {
     borderStyle: 'none' | 'hairline' | 'solid' | 'double';
     shadow: 'none' | 'subtle' | 'elevated' | 'glass';
   };
+  layoutGrammar?: LayoutGrammar;
 }
 
 export interface CompositionProps extends LayoutProps {
@@ -95,7 +135,7 @@ export function validateDesignSpecification(raw: unknown): DesignSpecification |
 
   if (data.version !== '1.0') return null;
 
-  const validCompositions: DesignCompositionStrategy[] = ['editorial', 'image-showcase', 'compact-bistro', 'heritage-artboard'];
+  const validCompositions: DesignCompositionStrategy[] = ['editorial', 'image-showcase', 'compact-bistro', 'heritage-artboard', 'chalkboard-artboard', 'parametric-artboard'];
   if (!data.composition || !validCompositions.includes(data.composition)) {
     return null;
   }
@@ -158,5 +198,6 @@ export function validateDesignSpecification(raw: unknown): DesignSpecification |
       borderStyle: data.decorations?.borderStyle || 'hairline',
       shadow: data.decorations?.shadow || 'subtle',
     },
+    layoutGrammar: data.layoutGrammar,
   };
 }

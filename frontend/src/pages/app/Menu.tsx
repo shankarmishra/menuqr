@@ -12,8 +12,8 @@ import {
   EyeOff,
   Copy,
   Layers,
-  FileSpreadsheet,
-  UploadCloud
+  UploadCloud,
+  Sparkles
 } from 'lucide-react';
 import { usePlan } from '../../lib/usePlan';
 import { useToast } from '../../components/feedback/ToastProvider';
@@ -450,14 +450,14 @@ export default function Menu() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Smart Excel Import Action Button */}
+          {/* AI PDF / Image & Excel Import Action Button */}
           <button
             type="button"
             onClick={() => setIsImportWizardOpen(true)}
-            className="flex items-center gap-2 rounded-xl border border-[#e8783c]/40 bg-[#e8783c]/10 px-4 py-2.5 text-xs font-bold text-[#e8783c] transition-all hover:bg-[#e8783c]/20 hover:border-[#e8783c]"
+            className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 to-[#e8783c]/15 px-4 py-2.5 text-xs font-bold text-amber-300 transition-all hover:border-amber-400 hover:text-white hover:brightness-110 shadow-sm cursor-pointer"
           >
-            <FileSpreadsheet className="h-4 w-4" />
-            Import Excel Menu
+            <Sparkles className="h-4 w-4 text-amber-400" />
+            AI PDF / Image Import
           </button>
 
           <button
@@ -667,10 +667,10 @@ export default function Menu() {
             <button
               type="button"
               onClick={() => setIsImportWizardOpen(true)}
-              className="flex items-center gap-2 rounded-xl bg-[#e8783c] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#d6672b]"
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#e8783c] to-amber-500 px-5 py-2.5 text-xs font-bold text-white hover:brightness-110 shadow-md shadow-[#e8783c]/20 cursor-pointer"
             >
-              <FileSpreadsheet className="h-4 w-4" />
-              Import Excel Spreadsheet
+              <Sparkles className="h-4 w-4" />
+              AI PDF / Image / Excel Import
             </button>
             <button
               type="button"

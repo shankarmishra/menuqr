@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 // MENUQR PDF-to-Digital-Menu Reconstruction Engine
 // Full High-Fidelity PDF Import, Document Understanding, Side-by-Side Review & Responsive Adaptation
 
@@ -838,6 +839,7 @@ export function PdfMenuImportWizard({
                             template={menuTemplates[0]}
                             restaurant={{
                               name: restaurantInfo.name || 'Your Restaurant',
+                              logo: restaurantInfo.logo,
                               tagline: restaurantInfo.tagline,
                               cuisine: restaurantInfo.cuisine,
                               address: restaurantInfo.address,
@@ -855,6 +857,7 @@ export function PdfMenuImportWizard({
                                 fullPrice: i.fullPrice ?? undefined,
                                 dietType: (i.dietType === 'egg' ? 'non-veg' : i.dietType) || 'veg',
                                 available: true,
+                                image: i.imageUrl || i.image,
                                 variants: i.variants?.map(v => ({ name: v.name, price: v.price })),
                               })),
                             }))}
@@ -870,6 +873,7 @@ export function PdfMenuImportWizard({
                                 fullPrice: i.fullPrice ?? undefined,
                                 dietType: (i.dietType === 'egg' ? 'non-veg' : i.dietType) || 'veg',
                                 available: true,
+                                image: i.imageUrl || i.image,
                                 variants: i.variants?.map(v => ({ name: v.name, price: v.price })),
                               })),
                             }))}
@@ -888,6 +892,42 @@ export function PdfMenuImportWizard({
                     ═══════════════════════════════════════════════════════════════ */}
                 {activeTab === 'profile' && (
                   <div className="bg-[#151c19] border border-[#2a3832] rounded-xl p-4 space-y-4 text-xs">
+                    {/* RESTAURANT LOGO PREVIEW & CANDIDATES */}
+                    <div className="p-3 bg-[#101513] border border-[#2a3832] rounded-xl flex flex-col sm:flex-row items-center gap-4">
+                      {restaurantInfo.logo ? (
+                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/5 border border-[#2a3832] flex items-center justify-center shrink-0 p-1">
+                          <img src={restaurantInfo.logo} alt="Logo" className="w-full h-full object-contain" />
+                        </div>
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl bg-white/5 border border-[#2a3832] flex items-center justify-center shrink-0 font-bold text-lg text-[#e8783c]">
+                          {(restaurantInfo.name || 'QR').slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex-1 text-center sm:text-left">
+                        <span className="text-white font-semibold block text-sm">Extracted Brand Identity</span>
+                        <span className="text-[#849a90] text-[11px] block">
+                          {restaurantInfo.logo ? 'Brand logo extracted from PDF header / bespoke vector mark.' : 'No graphic logo detected; auto-generated monogram badge active.'}
+                        </span>
+                        {extractionData?.candidateLogos && extractionData.candidateLogos.length > 1 && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-[10px] text-[#849a90] uppercase font-bold">Candidates:</span>
+                            {extractionData.candidateLogos.map((cand, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => setRestaurantInfo({ ...restaurantInfo, logo: cand.url })}
+                                className={clsx(
+                                  'w-8 h-8 rounded border overflow-hidden p-0.5',
+                                  restaurantInfo.logo === cand.url ? 'border-[#e8783c] ring-1 ring-[#e8783c]' : 'border-[#2a3832] opacity-70 hover:opacity-100'
+                                )}
+                              >
+                                <img src={cand.url} alt={`Candidate ${idx + 1}`} className="w-full h-full object-contain" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                     <div>
                       <label className="block text-[#849a90] font-semibold uppercase tracking-wider mb-1">
                         Restaurant Name

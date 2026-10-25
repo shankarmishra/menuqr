@@ -50,6 +50,7 @@ export interface AppProfile {
   state?: string;
   cuisine?: string;
   openingHours?: string;
+  logo?: string;
   instagram?: string;
   facebook?: string;
   website?: string;
@@ -281,6 +282,8 @@ export interface ExtractedPdfItem {
   addonGroups?: Array<{ name: string; isRequired?: boolean; minSelect?: number; maxSelect?: number; options: Array<{ name: string; price: number }> }>;
   dietType: 'veg' | 'non-veg' | 'vegan' | 'egg';
   confidence: number;
+  imageUrl?: string;
+  image?: string;
   warnings?: string[];
 }
 
@@ -299,6 +302,7 @@ export interface ExtractedPdfRestaurantInfo {
   address?: string;
   phone?: string;
   openingHours?: string;
+  logo?: string;
 }
 
 export interface PdfExtractionResponse {
@@ -307,6 +311,7 @@ export interface PdfExtractionResponse {
   pageCount: number;
   isScanned: boolean;
   restaurant: ExtractedPdfRestaurantInfo;
+  candidateLogos?: Array<{ url: string; score: number; width: number; height: number; aspectRatio: number; page: number }>;
   categories: ExtractedPdfCategory[];
   designSpec: any;
   warnings: string[];
