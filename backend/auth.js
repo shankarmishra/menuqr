@@ -175,10 +175,17 @@ export async function enforceAuth(req) {
 export async function enforceSuperAdmin(req) {
   const cookies = parse(req.headers.cookie || '');
   const bearerToken = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null;
-  const adminToken = cookies['menusqr_admin_session'] || bearerToken;
-  
-  if (adminToken) {
-    const adminUser = await verifyAdminSession(adminToken);
+  const cookieToken = cookies['menusqr_admin_session'];
+
+  // Check Bearer token first (explicit client credential header from client storage)
+  if (bearerToken) {
+    const adminUser = await verifyAdminSession(bearerToken);
+    if (adminUser) return adminUser;
+  }
+
+  // Fallback to admin cookie token if present
+  if (cookieToken) {
+    const adminUser = await verifyAdminSession(cookieToken);
     if (adminUser) return adminUser;
   }
   

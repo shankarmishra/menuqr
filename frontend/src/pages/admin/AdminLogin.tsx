@@ -64,7 +64,10 @@ export default function AdminLogin() {
     }
     const redirectQuery = new URLSearchParams(location.search).get('redirect');
     const defaultDest = role === 'SUPER_ADMIN' ? '/admin' : (redirectQuery || '/app');
-    const dest = returnTo ? `${returnTo.pathname ?? defaultDest}${returnTo.search ?? ''}${returnTo.hash ?? ''}` : defaultDest;
+    const isLoginPath = returnTo?.pathname === '/login' || returnTo?.pathname === '/admin/login';
+    const dest = (returnTo && !isLoginPath)
+      ? `${returnTo.pathname ?? defaultDest}${returnTo.search ?? ''}${returnTo.hash ?? ''}`
+      : defaultDest;
     navigate(dest, { replace: true });
   }
 
@@ -117,6 +120,8 @@ export default function AdminLogin() {
         : await verifyLoginOtp(tempToken, otp);
       if (res.authenticated) {
         handleLoginSuccess(res.role, res.onboardingState);
+      } else {
+        setError(res.message || 'Verification could not be completed. Please request a new code.');
       }
     } catch (err: any) {
       setError(err?.message || (isAdminPage

@@ -20,5 +20,9 @@ export function getAdminRedirectUrl(
   const isLoginOrRootAdminPath = pathname === '/admin' || pathname === '/admin/' || pathname === '/admin/login';
   const path = isLoginOrRootAdminPath ? '/login' : pathname;
   const suffix = isLoginOrRootAdminPath ? '' : `${search}${hash}`;
-  return `https://${normalizeHostname(adminHostname)}${path}${suffix}`;
+  const normalized = normalizeHostname(adminHostname);
+  const isLocal = normalized.includes('localhost') || normalized === '127.0.0.1';
+  const protocol = isLocal ? 'http' : 'https';
+  const port = (typeof window !== 'undefined' && window.location.port) ? `:${window.location.port}` : '';
+  return `${protocol}://${normalized}${port}${path}${suffix}`;
 }

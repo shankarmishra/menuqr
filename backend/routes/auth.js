@@ -165,6 +165,7 @@ export default async function authRoutes(request, response, url) {
     try {
       result = await verifyAdminOtp(email.trim().toLowerCase(), otp, address);
     } catch (err) {
+      console.error(`[admin auth] verify-otp failed for ${email}:`, err.message, err.status);
       throw apiError(err.status || 401, err.status === 429
         ? 'Unable to verify sign-in. Please request a new code.'
         : 'Unable to verify sign-in. Check your details or request a new code.');
@@ -172,13 +173,15 @@ export default async function authRoutes(request, response, url) {
 
     const { stringifySetCookie: serialize } = await import('cookie');
     const { generateCsrfToken, createCsrfCookie } = await import('../csrf.js');
+    const { clearAuthCookie } = await import('../auth.js');
     const adminCookie = serialize(createAdminSessionCookieOptions(result.token));
     const csrfToken = generateCsrfToken(result.token);
     const csrfCookie = createCsrfCookie(csrfToken);
+    const clearedAuthCookie = clearAuthCookie();
     
     response.writeHead(200, {
       'Content-Type': 'application/json',
-      'Set-Cookie': [adminCookie, csrfCookie],
+      'Set-Cookie': [adminCookie, csrfCookie, clearedAuthCookie],
       'Cache-Control': 'no-store'
     });
     response.end(JSON.stringify({ authenticated: true, role: 'SUPER_ADMIN', email: result.email, token: result.token, csrfToken }));
@@ -190,10 +193,13 @@ export default async function authRoutes(request, response, url) {
     const { createClearedCsrfCookie } = await import('../csrf.js');
     const cookies = parse(request.headers.cookie || '');
     const bearerToken = request.headers.authorization?.startsWith('Bearer ') ? request.headers.authorization.split(' ')[1] : null;
-    const adminToken = cookies['menusqr_admin_session'] || bearerToken;
-    if (adminToken) {
-      const { clearAdminSession } = await import('../adminAuth.js');
-      await clearAdminSession(adminToken);
+    const cookieToken = cookies['menusqr_admin_session'];
+    const { clearAdminSession } = await import('../adminAuth.js');
+    if (cookieToken) {
+      await clearAdminSession(cookieToken);
+    }
+    if (bearerToken && bearerToken !== cookieToken) {
+      await clearAdminSession(bearerToken);
     }
     const adminCookie = serialize(createClearedAdminSessionCookieOptions());
     const csrfCookie = createClearedCsrfCookie();
@@ -208,22 +214,37 @@ export default async function authRoutes(request, response, url) {
 
   if (request.method === 'GET' && url.pathname === '/api/auth/session') {
     response.setHeader('Cache-Control', 'no-store');
-    let user = await getAuthenticatedUser(request);
-    let sessionToken = null;
     const { parseCookie: parse } = await import('cookie');
     const cookies = parse(request.headers.cookie || '');
     const bearerToken = request.headers.authorization?.startsWith('Bearer ') ? request.headers.authorization.split(' ')[1] : null;
-    sessionToken = cookies['menusqr_auth'] || bearerToken || null;
+    const adminCookie = cookies['menusqr_admin_session'];
+    const authCookie = cookies['menusqr_auth'];
 
+    let user = null;
+    let sessionToken = null;
+
+    // 1. Check if caller has an active Super Admin token (via Bearer header first, then admin cookie)
+    const { verifyAdminSession } = await import('../adminAuth.js');
+    if (bearerToken) {
+      const adminUser = await verifyAdminSession(bearerToken);
+      if (adminUser) {
+        user = adminUser;
+        sessionToken = bearerToken;
+      }
+    }
+    if (!user && adminCookie) {
+      const adminUser = await verifyAdminSession(adminCookie);
+      if (adminUser) {
+        user = adminUser;
+        sessionToken = adminCookie;
+      }
+    }
+
+    // 2. If not a Super Admin, check for client/restaurant owner authentication
     if (!user) {
-      const adminToken = cookies['menusqr_admin_session'] || bearerToken;
-      if (adminToken) {
-        const { verifyAdminSession } = await import('../adminAuth.js');
-        const adminUser = await verifyAdminSession(adminToken);
-        if (adminUser) {
-          user = adminUser;
-          sessionToken = adminToken;
-        }
+      user = await getAuthenticatedUser(request);
+      if (user) {
+        sessionToken = authCookie || bearerToken || null;
       }
     }
 
