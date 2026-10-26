@@ -1,21 +1,19 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="128" height="128" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="fav-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#FFC928" />
-      <stop offset="60%" stopColor="#E8783C" />
-      <stop offset="100%" stopColor="#FF5E4D" />
+    <linearGradient id="electric-grad-favicon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFC928" />
+      <stop offset="50%" stop-color="#E8783C" />
+      <stop offset="100%" stop-color="#FF5E4D" />
     </linearGradient>
   </defs>
 
-  {/* Dark Emerald Badge Base */}
-  <rect width="64" height="64" rx="16" fill="#151C19" />
+  <!-- Pure White Background (#FFFFFF) with Soft Squircle Radius -->
+  <rect width="100" height="100" rx="22" fill="#FFFFFF" />
+  <rect x="0.5" y="0.5" width="99" height="99" rx="21.5" stroke="#E5E7EB" stroke-width="1" />
 
-  {/* Signature M Mark */}
-  <path
-    d="M 12 50 L 25 14 L 32 32 L 39 14 L 52 50 L 44 50 L 38 28 L 32 42 L 26 28 L 20 50 Z"
-    fill="url(#fav-grad)"
-  />
+  <!-- Top-Right QR Finder Dot -->
+  <rect x="74" y="18" width="10" height="10" rx="3" fill="#E8783C" />
 
-  {/* QR Finder Module Accent Dot */}
-  <rect x="46" y="12" width="7" height="7" rx="2" fill="#E8783C" />
+  <!-- Central Lightning M (Exact Instagram Profile Mark) -->
+  <path d="M 16 80 L 36 20 L 50 48 L 64 20 L 84 80 L 71 80 L 61 44 L 50 64 L 39 44 L 29 80 Z" fill="url(#electric-grad-favicon)" />
 </svg>

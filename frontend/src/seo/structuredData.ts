@@ -6,7 +6,8 @@ export const getOrganizationSchema = () => {
     "@type": "Organization",
     "name": "MenusQR",
     "url": DOMAIN,
-    "logo": `${DOMAIN}/favicon.svg`,
+    "logo": `${DOMAIN}/assets/brand/menusqr-logo-white-bg.png`,
+    "image": `${DOMAIN}/assets/brand/menusqr-logo-white-bg.png`,
     "email": "support@menusqr.in",
     "telephone": "+91 87965 30323",
     "contactPoint": [{
