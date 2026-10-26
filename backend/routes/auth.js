@@ -274,6 +274,67 @@ export default async function authRoutes(request, response, url) {
     throw apiError(403, 'Direct card/mock checkout is disabled. Please complete registration via the secure /api/purchase flow.');
   }
 
+  // CLIENT PASSWORDLESS LOGIN OTP REQUEST ROUTE
+  if (request.method === 'POST' && url.pathname === '/api/auth/request-login-otp') {
+    const address = getClientIp(request);
+    const input = await readJson(request);
+    const normalizedEmail = normalizeEmail(input?.email);
+
+    if (!normalizedEmail) {
+      throw apiError(400, 'Please enter your registered email address.');
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      throw apiError(400, 'Please enter a valid email address.');
+    }
+
+    const typoCorrection = detectEmailTypoDomain(normalizedEmail);
+    if (typoCorrection) {
+      throw apiError(400, `Did you mean @${typoCorrection}? Please check your email spelling.`);
+    }
+
+    const { isApprovedAdminEmail } = await import('../adminAuth.js');
+    if (isApprovedAdminEmail(normalizedEmail)) {
+      throw apiError(400, 'This is an Admin account. Please log in at https://admin.menusqr.in/login');
+    }
+
+    const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
+    const dbUser = dbRes.rows[0];
+
+    if (!dbUser || dbUser.role === 'SUPER_ADMIN') {
+      throw apiError(404, 'No restaurant account found with this email. Please check your spelling or contact support.');
+    }
+
+    const { createClientOtpChallenge, invalidateClientOtpChallenge } = await import('../clientAuth.js');
+    let challenge;
+    try {
+      challenge = await createClientOtpChallenge(normalizedEmail, address);
+    } catch (err) {
+      throw apiError(err.status || 429, err.message);
+    }
+
+    const emailResult = await sendLoginOtpEmail({
+      email: normalizedEmail,
+      otp: challenge.otp,
+      ownerName: normalizedEmail.split('@')[0],
+    });
+
+    if (!emailResult.ok) {
+      await invalidateClientOtpChallenge(challenge.challengeId, normalizedEmail);
+      throw apiError(500, `Failed to send login code: ${emailResult.error || 'Provider rejected request'}`);
+    }
+
+    sendJson(response, 200, {
+      success: true,
+      requireOtp: true,
+      tempToken: challenge.challengeId,
+      email: normalizedEmail,
+      message: 'A 6-digit login code has been sent to your email.',
+    });
+    return true;
+  }
+
   // CLIENT LOGIN ROUTE (POSTGRESQL-BACKED OTP)
   if (request.method === 'POST' && url.pathname === '/api/auth/login') {
     const address = getClientIp(request);
@@ -403,6 +464,10 @@ export default async function authRoutes(request, response, url) {
     const dbRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
     const dbUser = dbRes.rows[0];
     if (!dbUser) throw apiError(404, 'User account not found.');
+
+    if (dbUser.failed_attempts > 0 || dbUser.locked_until) {
+      await pool.query('UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = $1', [dbUser.id]);
+    }
 
     const sessionUser = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
     const { generateAuthToken } = await import('../auth.js');

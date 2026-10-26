@@ -859,6 +859,12 @@ export async function sendClientWelcomeEmail(client) {
     <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #374151;">
       Your digital restaurant account for <strong>${client.businessName}</strong> has been provisioned and is live.
     </p>
+    ${client.temporaryPassword ? `
+    <div style="margin: 20px 0; padding: 14px 18px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+      <p style="margin: 0 0 6px 0; font-size: 13px; font-weight: 600; color: #1e293b;">Your Temporary Account Password:</p>
+      <code style="font-size: 16px; font-weight: 700; color: #e8783c; font-family: monospace; letter-spacing: 1px;">${client.temporaryPassword}</code>
+      <p style="margin: 6px 0 0 0; font-size: 11px; color: #64748b;">You can also sign in anytime using instant 1-click Email OTP without entering a password.</p>
+    </div>` : ''}
     <div style="margin: 28px 0; text-align: left;">
       <a href="${loginUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin-right: 12px;">Sign In to Client Portal &rarr;</a>
       <a href="${setPasswordUrl}" style="display: inline-block; background-color: #f1f5f9; color: #0f172a; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 6px; text-decoration: none; border: 1px solid #cbd5e1;">Set Password</a>

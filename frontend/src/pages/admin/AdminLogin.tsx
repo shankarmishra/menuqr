@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { SEO } from '../../seo/SEO';
 import { isAdminHostname } from '../../utils/hostRouting';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
-import { loginAdmin, verifyLoginOtp, resendLoginOtp, requestForgotPassword, resetPassword, requestSuperAdminOtp, verifySuperAdminOtp } from './clientStore';
+import { loginAdmin, verifyLoginOtp, resendLoginOtp, requestForgotPassword, resetPassword, requestSuperAdminOtp, verifySuperAdminOtp, requestClientLoginOtp } from './clientStore';
 
 interface LoginLocationState {
   from?: { pathname?: string; search?: string; hash?: string };
@@ -24,6 +24,7 @@ export default function AdminLogin() {
     const params = new URLSearchParams(window.location.search);
     return (params.get('action') === 'forgot' || params.get('mode') === 'forgot') ? 'FORGOT_EMAIL' : 'LOGIN';
   });
+  const [loginMethod, setLoginMethod] = useState<'otp' | 'password'>('otp');
   const [email, setEmail] = useState(() => {
     if (typeof window === 'undefined') return '';
     return new URLSearchParams(window.location.search).get('email') || '';
@@ -84,7 +85,16 @@ export default function AdminLogin() {
         setTargetEmail(email);
         setResendTimer(30);
         setInfoMessage(res.message || 'A 6-digit OTP code has been sent to your email.');
+      } else if (loginMethod === 'otp') {
+        if (!email) throw new Error('Email is required.');
+        const res = await requestClientLoginOtp(email);
+        setTempToken(res.tempToken!);
+        setTargetEmail(res.email || email);
+        setMode('OTP');
+        setResendTimer(30);
+        setInfoMessage(res.message || 'A 6-digit OTP code has been sent to your email.');
       } else {
+        if (!password) throw new Error('Password is required.');
         const res = await loginAdmin(password, email || undefined);
         if (res.requireOtp && res.tempToken) {
           setTempToken(res.tempToken);
@@ -231,8 +241,35 @@ export default function AdminLogin() {
         )}
 
         {error && (
-          <div className="mb-5 rounded-lg border border-rose-500/20 bg-rose-500/10 p-3.5 text-xs text-rose-300" role="alert">
-            {error}
+          <div className="mb-5 rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-xs text-rose-300 space-y-2.5" role="alert">
+            <p className="font-medium">{error}</p>
+            {!isAdminPage && loginMethod === 'password' && (
+              <button
+                type="button"
+                onClick={async () => {
+                  setLoginMethod('otp');
+                  setError('');
+                  if (email) {
+                    setIsSubmitting(true);
+                    try {
+                      const res = await requestClientLoginOtp(email);
+                      setTempToken(res.tempToken!);
+                      setTargetEmail(res.email || email);
+                      setMode('OTP');
+                      setResendTimer(30);
+                      setInfoMessage(res.message || 'A 6-digit OTP code has been sent to your email.');
+                    } catch (otpErr: any) {
+                      setError(otpErr?.message || 'Could not send OTP.');
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 font-bold text-[#e8783c] hover:underline cursor-pointer bg-white/5 px-2.5 py-1.5 rounded-lg border border-[#e8783c]/30"
+              >
+                Sign in with Email OTP instead (No password needed) &rarr;
+              </button>
+            )}
           </div>
         )}
 
@@ -241,10 +278,37 @@ export default function AdminLogin() {
           <>
             <h1 className="text-2xl font-bold">{isAdminPage ? 'Administrator sign in' : 'Sign in to continue'}</h1>
             <p className="mt-2 text-sm text-[#aab7b2]">
-              {isAdminPage ? 'Private access for approved administrators.' : 'Enter your restaurant credentials to manage your digital menu.'}
+              {isAdminPage ? 'Private access for approved administrators.' : 'Access your restaurant portal to manage dishes, orders, and themes.'}
             </p>
 
-            <form onSubmit={handleInitialLogin} className="mt-7 space-y-5">
+            {!isAdminPage && (
+              <div className="mt-6 grid grid-cols-2 gap-2 rounded-xl bg-[#151c19] p-1.5 border border-white/5">
+                <button
+                  type="button"
+                  onClick={() => { setLoginMethod('otp'); setError(''); }}
+                  className={`rounded-lg py-2 text-xs font-bold transition-all cursor-pointer ${
+                    loginMethod === 'otp'
+                      ? 'bg-[#e8783c] text-white shadow-md'
+                      : 'text-[#849a90] hover:text-white'
+                  }`}
+                >
+                  Instant OTP Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setLoginMethod('password'); setError(''); }}
+                  className={`rounded-lg py-2 text-xs font-bold transition-all cursor-pointer ${
+                    loginMethod === 'password'
+                      ? 'bg-[#e8783c] text-white shadow-md'
+                      : 'text-[#849a90] hover:text-white'
+                  }`}
+                >
+                  Password Sign In
+                </button>
+              </div>
+            )}
+
+            <form onSubmit={handleInitialLogin} className="mt-6 space-y-5">
               <label className="block text-sm font-semibold text-[#dce5df]" htmlFor="email">
                 Email Address
                 <span className="relative mt-2 block">
@@ -264,9 +328,14 @@ export default function AdminLogin() {
                     placeholder={isAdminPage ? 'Administrator email address' : 'owner@restaurant.com'}
                   />
                 </span>
+                {!isAdminPage && loginMethod === 'otp' && (
+                  <span className="mt-1.5 block text-[11px] text-[#849a90]">
+                    We'll send a 6-digit one-time code to this email. No password needed!
+                  </span>
+                )}
               </label>
 
-              {!isAdminPage && (
+              {!isAdminPage && loginMethod === 'password' && (
                 <div>
                   <div className="flex items-center justify-between text-sm font-semibold text-[#dce5df]">
                     <label htmlFor="admin-password">Password</label>
@@ -304,11 +373,27 @@ export default function AdminLogin() {
 
               <button
                 type="submit"
-                disabled={isSubmitting || (isAdminPage ? !email : !password)}
-                className="w-full rounded-lg bg-[#e8783c] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#f18b50] disabled:cursor-wait disabled:opacity-60"
+                disabled={isSubmitting || !email || (!isAdminPage && loginMethod === 'password' && !password)}
+                className="w-full rounded-xl bg-gradient-to-r from-[#e8783c] to-[#f08b55] px-4 py-3 text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60 shadow-lg shadow-[#e8783c]/20 cursor-pointer"
               >
-                {isSubmitting ? (isAdminPage ? 'Sending OTP...' : 'Verifying credentials...') : isAdminPage ? 'Request sign-in code' : 'Continue to Sign In \u2192'}
+                {isSubmitting 
+                  ? 'Sending verification code...' 
+                  : (isAdminPage || loginMethod === 'otp') 
+                    ? 'Send 6-Digit Login Code \u2192' 
+                    : 'Sign In with Password \u2192'}
               </button>
+
+              {!isAdminPage && loginMethod === 'password' && (
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => { setLoginMethod('otp'); setError(''); }}
+                    className="text-xs text-[#849a90] hover:text-[#e8783c] transition-colors"
+                  >
+                    Don't remember your password? <span className="font-bold underline text-[#e8783c]">Sign in with OTP</span>
+                  </button>
+                </div>
+              )}
             </form>
           </>
         )}

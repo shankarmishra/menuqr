@@ -23,7 +23,7 @@ const steps = [
 const emptyClient: Omit<ClientRecord, 'id' | 'createdAt'> = {
   businessName: '', category: 'restaurants', ownerName: '', email: '', phone: '', website: '',
   address: '', city: '', state: '', postalCode: '', country: 'India', menuSlug: '', plan: 'Starter',
-  billingCycle: 'Monthly', monthlyPrice: '', openingHours: '', services: ['Dine-in'], menuItems: [], heroImage: '', status: 'Active', notes: '',
+  billingCycle: 'Monthly', monthlyPrice: '', openingHours: '', services: ['Dine-in'], menuItems: [], heroImage: '', status: 'Active', notes: '', password: '',
 };
 
 const inputClass = 'mt-2 w-full rounded-lg border border-white/10 bg-[#17211e] px-3.5 py-3 text-sm text-white outline-none transition placeholder:text-[#728079] focus:border-[#e8783c] focus:ring-2 focus:ring-[#e8783c]/20';
@@ -166,7 +166,20 @@ export default function ClientForm() {
 
         {step === 2 && <section className="admin-panel rounded-2xl border p-5 sm:p-7">
           <div className="mb-6 flex items-center gap-3"><span className="rounded-lg bg-sky-400/10 p-2.5 text-sky-300"><UserRound size={19} /></span><div><h2 className="font-bold text-white">Primary contact</h2><p className="mt-1 text-xs text-[#94a39d]">The person responsible for the MenusQR account.</p></div></div>
-          <div className="grid gap-5 sm:grid-cols-2"><Field label="Owner / manager name *"><input className={inputClass} required autoComplete="name" value={form.ownerName} onChange={(e) => update('ownerName', e.target.value)} placeholder="Full name" /></Field><Field label="Work email *"><input className={inputClass} required type="email" autoComplete="email" value={form.email} onChange={(e) => update('email', e.target.value)} placeholder="name@business.com" /></Field><Field label="Phone number *"><input className={inputClass} required type="tel" autoComplete="tel" value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="+91 98XXXXXXXX" /></Field><Field label="Account status"><select className={inputClass} value={form.status} onChange={(e) => update('status', e.target.value)}><option>Active</option><option>Trial</option><option>Pending</option><option>Paused</option></select></Field></div>
+          <div className="grid gap-5 sm:grid-cols-2"><Field label="Owner / manager name *"><input className={inputClass} required autoComplete="name" value={form.ownerName} onChange={(e) => update('ownerName', e.target.value)} placeholder="Full name" /></Field><Field label="Work email *"><input className={inputClass} required type="email" autoComplete="email" value={form.email} onChange={(e) => update('email', e.target.value)} placeholder="name@business.com" /></Field><Field label="Phone number *"><input className={inputClass} required type="tel" autoComplete="tel" value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="+91 98XXXXXXXX" /></Field><Field label="Account status"><select className={inputClass} value={form.status} onChange={(e) => update('status', e.target.value)}><option>Active</option><option>Trial</option><option>Pending</option><option>Paused</option></select></Field>
+            <Field label="Initial Account Password (optional)" className="sm:col-span-2">
+              <input 
+                className={inputClass} 
+                type="text" 
+                value={form.password || ''} 
+                onChange={(e) => update('password', e.target.value)} 
+                placeholder="e.g. WelcomePass2026 (Leave blank to auto-generate)" 
+              />
+              <span className="mt-1 block text-[11px] text-[#87958e]">
+                Set an initial password for the client. The client can also log in anytime using passwordless Email OTP.
+              </span>
+            </Field>
+          </div>
         </section>}
 
         {step === 3 && <section className="admin-panel rounded-2xl border p-5 sm:p-7">

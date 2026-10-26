@@ -44,6 +44,8 @@ export interface ClientRecord {
   heroImage?: string;
   status: string;
   notes: string;
+  password?: string;
+  temporaryPassword?: string;
   createdAt: string;
 }
 
@@ -277,6 +279,14 @@ export async function loginAdmin(password: string, email?: string): Promise<Logi
   });
   if (res.csrfToken) setCsrfToken(res.csrfToken);
   if (res.token) setAuthToken(res.token);
+  return res;
+}
+
+export async function requestClientLoginOtp(email: string): Promise<LoginResponse> {
+  const res = await request<LoginResponse>('/auth/request-login-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
   return res;
 }
 
