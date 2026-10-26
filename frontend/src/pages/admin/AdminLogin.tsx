@@ -377,7 +377,7 @@ export default function AdminLogin() {
                 className="w-full rounded-xl bg-gradient-to-r from-[#e8783c] to-[#f08b55] px-4 py-3 text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60 shadow-lg shadow-[#e8783c]/20 cursor-pointer"
               >
                 {isSubmitting 
-                  ? 'Sending verification code...' 
+                  ? (!isAdminPage && loginMethod === 'password' ? 'Signing in...' : 'Sending verification code...') 
                   : (isAdminPage || loginMethod === 'otp') 
                     ? 'Send 6-Digit Login Code \u2192' 
                     : 'Sign In with Password \u2192'}

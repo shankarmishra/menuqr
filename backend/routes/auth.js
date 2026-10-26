@@ -412,34 +412,29 @@ export default async function authRoutes(request, response, url) {
     clientLoginAttempts.delete(compoundKey);
     clientLoginAttempts.delete(address);
 
-    // Create PostgreSQL-backed OTP Challenge
-    const { createClientOtpChallenge, invalidateClientOtpChallenge } = await import('../clientAuth.js');
-    let challenge;
-    try {
-      challenge = await createClientOtpChallenge(userEmail, address);
-    } catch (err) {
-      throw apiError(err.status || 500, err.message);
-    }
+    // Immediate login upon valid email + password authentication (no OTP required)
+    const sessionUser = { id: String(dbUser.id), role: dbUser.role, tenantId: dbUser.tenant_id };
+    const { generateAuthToken } = await import('../auth.js');
+    const sessionToken = generateAuthToken(sessionUser);
+    const authCookie = generateAuthCookie(sessionToken);
 
-    // Await email delivery before reporting success!
-    const emailResult = await sendLoginOtpEmail({
-      email: userEmail,
-      otp: challenge.otp,
-      ownerName: userEmail.split('@')[0],
+    const { generateCsrfToken, createCsrfCookie } = await import('../csrf.js');
+    const csrfToken = generateCsrfToken(sessionToken);
+    const csrfCookie = createCsrfCookie(csrfToken);
+
+    response.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Set-Cookie': [authCookie, csrfCookie],
+      'Cache-Control': 'no-store'
     });
-
-    if (!emailResult.ok) {
-      await invalidateClientOtpChallenge(challenge.challengeId, userEmail);
-      throw apiError(500, `Failed to send verification code email: ${emailResult.error || 'Provider rejected request'}`);
-    }
-
-    sendJson(response, 200, {
-      requireOtp: true,
-      tempToken: challenge.challengeId,
-      email: userEmail,
-      emailSent: true,
-      message: 'A 6-digit 2-step verification code has been sent to your email.'
-    });
+    response.end(JSON.stringify({
+      authenticated: true,
+      role: sessionUser.role,
+      user: sessionUser,
+      token: sessionToken,
+      onboardingState: dbUser.onboarding_state,
+      csrfToken,
+    }));
     return true;
   }
 

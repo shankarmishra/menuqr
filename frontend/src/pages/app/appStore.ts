@@ -109,7 +109,17 @@ export interface OnboardingPayload {
   menuName?: string;
   templateId?: string;
   categories: Array<{ name: string; description?: string }>;
-  items: Array<{ categoryIndex: number; name: string; description?: string; price: number; imageUrl?: string; dietType?: string; available?: boolean }>;
+  items: Array<{
+    categoryIndex: number;
+    name: string;
+    description?: string;
+    price: number;
+    halfPrice?: number;
+    fullPrice?: number;
+    imageUrl?: string;
+    dietType?: string;
+    available?: boolean;
+  }>;
 }
 
 export interface StickerRequest {

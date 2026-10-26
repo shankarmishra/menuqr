@@ -23,6 +23,8 @@ export interface ArtisanGraphicTemplateProps {
   layoutMode?: 'single-column' | 'two-column';
   className?: string;
   isPrintPreview?: boolean;
+  onAddToCart?: (item: any, priceStr?: string, variant?: string) => void;
+  getItemQuantity?: (itemId: string, variant?: string) => number;
 }
 
 // Authentic FSSAI-style dietary indicator badge
@@ -51,6 +53,8 @@ export function ArtisanGraphicTemplate({
   layoutMode = 'two-column',
   className = '',
   isPrintPreview = false,
+  onAddToCart,
+  getItemQuantity,
 }: ArtisanGraphicTemplateProps) {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
 
@@ -332,6 +336,29 @@ export function ArtisanGraphicTemplate({
                           >
                             ₹{item.price}
                           </span>
+                        )}
+                        {onAddToCart && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const p = item.price || item.fullPrice || item.halfPrice || 0;
+                              onAddToCart(item, `₹${p}`);
+                            }}
+                            className="ml-1.5 px-2 py-0.5 rounded text-[10px] font-bold transition-transform hover:scale-105 active:scale-95 cursor-pointer shadow-xs inline-flex items-center gap-0.5"
+                            style={{
+                              backgroundColor: colors.subheading,
+                              color: '#FFFFFF',
+                            }}
+                            title={`Add ${item.name} to order`}
+                          >
+                            <span>+</span>
+                            {getItemQuantity && getItemQuantity(item.id) > 0 && (
+                              <span className="ml-1 px-1 rounded-full bg-white text-black font-extrabold text-[9px]">
+                                {getItemQuantity(item.id)}
+                              </span>
+                            )}
+                          </button>
                         )}
                       </div>
                     </div>
