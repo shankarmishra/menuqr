@@ -217,6 +217,17 @@ export function updateAppearance(data: AppAppearanceData): Promise<AppAppearance
   return request<AppAppearanceData>('/appearance', { method: 'PUT', body: JSON.stringify(data) });
 }
 
+export function uploadImage(
+  image: string,
+  category: 'dishes' | 'logos' | 'covers' = 'dishes',
+  maxWidth = 1200
+): Promise<{ success: boolean; url: string }> {
+  return request<{ success: boolean; url: string }>('/upload-image', {
+    method: 'POST',
+    body: JSON.stringify({ image, category, maxWidth }),
+  });
+}
+
 export interface AiDesignStatus {
   available: boolean;
   provider: string;

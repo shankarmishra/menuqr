@@ -758,19 +758,23 @@ export default async function appRoutes(request, response, url) {
         cover_image = COALESCE(EXCLUDED.cover_image, appearance_settings.cover_image),
         restaurant_display_name = COALESCE(EXCLUDED.restaurant_display_name, appearance_settings.restaurant_display_name),
         tagline = COALESCE(EXCLUDED.tagline, appearance_settings.tagline),
-        accent_configuration = COALESCE(EXCLUDED.accent_configuration, appearance_settings.accent_configuration),
+        accent_configuration = EXCLUDED.accent_configuration,
         updated_at = CURRENT_TIMESTAMP
       RETURNING template_id as "templateId", logo, cover_image as "coverImage", restaurant_display_name as "restaurantDisplayName", tagline, accent_configuration as "accentConfiguration"
     `, [
       settingId,
       user.tenantId,
       input.templateId,
-      input.logo,
-      input.coverImage,
-      input.restaurantDisplayName,
-      input.tagline,
-      input.accentConfiguration
+      input.logo || null,
+      input.coverImage || null,
+      input.restaurantDisplayName || null,
+      input.tagline || null,
+      input.accentConfiguration || null
     ]);
+    
+    if (input.logo) {
+      await pool.query('UPDATE clients SET logo_url = $1 WHERE id = $2', [input.logo, user.tenantId]);
+    }
     
     invalidatePublicMenuCache(user.tenantId);
     sendJson(response, 200, res.rows[0]);

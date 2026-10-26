@@ -13,7 +13,7 @@ import {
   Copy,
   Layers,
   UploadCloud,
-  Sparkles
+  FileSpreadsheet
 } from 'lucide-react';
 import { usePlan } from '../../lib/usePlan';
 import { useToast } from '../../components/feedback/ToastProvider';
@@ -450,14 +450,14 @@ export default function Menu() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* AI PDF / Image & Excel Import Action Button */}
+          {/* Smart Excel Import Action Button */}
           <button
             type="button"
             onClick={() => setIsImportWizardOpen(true)}
-            className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 to-[#e8783c]/15 px-4 py-2.5 text-xs font-bold text-amber-300 transition-all hover:border-amber-400 hover:text-white hover:brightness-110 shadow-sm cursor-pointer"
+            className="flex items-center gap-2 rounded-xl border border-[#3b82f6]/40 bg-[#3b82f6]/10 px-4 py-2.5 text-xs font-bold text-[#60a5fa] transition-all hover:bg-[#3b82f6]/20 hover:border-[#3b82f6] cursor-pointer"
           >
-            <Sparkles className="h-4 w-4 text-amber-400" />
-            AI PDF / Image Import
+            <FileSpreadsheet className="h-4 w-4 text-[#3b82f6]" />
+            Import Excel Spreadsheet
           </button>
 
           <button
@@ -667,10 +667,10 @@ export default function Menu() {
             <button
               type="button"
               onClick={() => setIsImportWizardOpen(true)}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#e8783c] to-amber-500 px-5 py-2.5 text-xs font-bold text-white hover:brightness-110 shadow-md shadow-[#e8783c]/20 cursor-pointer"
+              className="flex items-center gap-2 rounded-xl bg-[#3b82f6] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#2563eb] shadow-md shadow-[#3b82f6]/20 cursor-pointer"
             >
-              <Sparkles className="h-4 w-4" />
-              AI PDF / Image / Excel Import
+              <FileSpreadsheet className="h-4 w-4" />
+              Import Excel Spreadsheet
             </button>
             <button
               type="button"
@@ -1044,20 +1044,42 @@ export default function Menu() {
               <div>
                 <label className="text-xs font-semibold text-[#aab7b2]">Diet Classification</label>
                 <div className="mt-2 flex gap-3">
-                  {['veg', 'non-veg', 'vegan'].map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setItemForm({ ...itemForm, dietType: type })}
-                      className={`flex-1 rounded-xl border py-2 text-xs font-bold capitalize transition-all ${
-                        itemForm.dietType === type
-                          ? 'border-[#e8783c] bg-[#e8783c]/15 text-[#e8783c]'
-                          : 'border-[#384841] bg-[#151c19] text-[#aab7b2]'
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setItemForm({ ...itemForm, dietType: 'veg' })}
+                    className={`flex-1 rounded-xl border py-2.5 text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      itemForm.dietType === 'veg'
+                        ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500'
+                        : 'border-[#384841] bg-[#151c19] text-[#aab7b2] hover:text-white'
+                    }`}
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                    Pure Veg
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setItemForm({ ...itemForm, dietType: 'non-veg' })}
+                    className={`flex-1 rounded-xl border py-2.5 text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      itemForm.dietType === 'non-veg'
+                        ? 'border-rose-500 bg-rose-500/20 text-rose-300 ring-1 ring-rose-500'
+                        : 'border-[#384841] bg-[#151c19] text-[#aab7b2] hover:text-white'
+                    }`}
+                  >
+                    <span className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[8px] border-b-rose-400" />
+                    Non-Veg
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setItemForm({ ...itemForm, dietType: 'vegan' })}
+                    className={`flex-1 rounded-xl border py-2.5 text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      itemForm.dietType === 'vegan'
+                        ? 'border-teal-500 bg-teal-500/20 text-teal-300 ring-1 ring-teal-500'
+                        : 'border-[#384841] bg-[#151c19] text-[#aab7b2] hover:text-white'
+                    }`}
+                  >
+                    <span>🌱</span>
+                    Vegan
+                  </button>
                 </div>
               </div>
 

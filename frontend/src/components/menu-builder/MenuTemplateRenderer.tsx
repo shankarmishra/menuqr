@@ -1,14 +1,10 @@
 import React, { useState, useMemo, Suspense } from 'react';
 import clsx from 'clsx';
-import { menuTemplates, isTemplateDark, isColorDark } from '../../data/menuTemplates';
+import { menuTemplates, isTemplateDark } from '../../data/menuTemplates';
 import { getTemplateComponent, getTemplateTextureKey, TEMPLATE_TEXTURES, type CategoryGroup } from './templates';
 import { UniversalMenuSearch } from './templates/shared/UniversalMenuSearch';
 import { MenuCartContext } from './templates/shared/MenuCartContext';
-import { validateDesignSpecification } from './design-engine/types';
 
-const DynamicDesignEngine = React.lazy(() =>
-  import('./design-engine/DynamicDesignEngine').then((m) => ({ default: m.DynamicDesignEngine }))
-);
 
 function TemplateFallback({ compact, isDark }: { compact?: boolean; isDark?: boolean }) {
   return (
@@ -87,10 +83,11 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
   onRemoveFromCart,
   getItemQuantity,
   isPremium = false,
-  accentConfiguration,
+  accentConfiguration: _accentConfiguration,
 }) => {
   const template = menuTemplates.find((t) => t.id === templateId || t.name.toLowerCase().replace(/\s+/g, '-') === templateId) || menuTemplates[0];
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [dietFilter, setDietFilter] = useState<'all' | 'veg' | 'non-veg'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Authoritative entitlement gating: only provide addToCart when plan ordering is permitted
@@ -99,14 +96,25 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
   // Search filtering: matches name and meaningful description
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
+  const totalVegCount = useMemo(() => items.filter((i) => i.dietType === 'veg' || i.dietType === 'vegan').length, [items]);
+  const totalNonVegCount = useMemo(() => items.filter((i) => i.dietType === 'non-veg').length, [items]);
+
   const matchingItems = useMemo(() => {
-    if (!normalizedQuery) return items;
-    return items.filter((item) => {
-      const name = (item.name || '').toLowerCase();
-      const desc = (item.description || '').toLowerCase();
-      return name.includes(normalizedQuery) || desc.includes(normalizedQuery);
-    });
-  }, [items, normalizedQuery]);
+    let result = items;
+    if (normalizedQuery) {
+      result = result.filter((item) => {
+        const name = (item.name || '').toLowerCase();
+        const desc = (item.description || '').toLowerCase();
+        return name.includes(normalizedQuery) || desc.includes(normalizedQuery);
+      });
+    }
+    if (dietFilter === 'veg') {
+      result = result.filter((item) => item.dietType === 'veg' || item.dietType === 'vegan');
+    } else if (dietFilter === 'non-veg') {
+      result = result.filter((item) => item.dietType === 'non-veg');
+    }
+    return result;
+  }, [items, normalizedQuery, dietFilter]);
 
   // Group items by category
   const sortedCategories = [...categories].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -136,46 +144,7 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
     return true;
   });
 
-  const validatedSpec = useMemo(() => {
-    return accentConfiguration ? validateDesignSpecification(accentConfiguration) : null;
-  }, [accentConfiguration]);
 
-  // If a valid custom Design Specification exists, render through the Dynamic Design Engine
-  if (validatedSpec) {
-    const isDark = isColorDark(validatedSpec.colors.bg);
-    const searchBar = compact ? null : (
-      <UniversalMenuSearch
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        accentColor={validatedSpec.colors.accent || validatedSpec.colors.heading}
-        placeholder="Search dishes..."
-        isDarkTheme={isDark}
-      />
-    );
-
-    return (
-      <MenuCartContext.Provider value={{ onAddToCart: effectiveAddToCart, onRemoveFromCart, getItemQuantity, isPremium }}>
-        <Suspense fallback={<TemplateFallback compact={compact} isDark={isDark} />}>
-          <DynamicDesignEngine
-            spec={validatedSpec}
-            template={template}
-            restaurant={restaurant}
-            categories={filteredCategories}
-            rawCategories={rawCategories}
-            compact={compact}
-            onAddToCart={effectiveAddToCart}
-            isPremium={isPremium}
-            activeCategory={activeCategory}
-            setActiveCategory={setActiveCategory}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            searchBar={searchBar}
-            className={className}
-          />
-        </Suspense>
-      </MenuCartContext.Provider>
-    );
-  }
 
   const TemplateComponent = getTemplateComponent(template.id);
   const textureKey = getTemplateTextureKey(template.id);
@@ -183,13 +152,61 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
   const isDark = isTemplateDark(template);
 
   const searchBar = compact ? null : (
-    <UniversalMenuSearch
-      searchQuery={searchQuery}
-      onSearchChange={setSearchQuery}
-      accentColor={template.colors.accent || template.colors.heading}
-      placeholder="Search dishes..."
-      isDarkTheme={isDark}
-    />
+    <div className="space-y-3 mb-6">
+      <UniversalMenuSearch
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        accentColor={template.colors.accent || template.colors.heading}
+        placeholder="Search dishes..."
+        isDarkTheme={isDark}
+      />
+      {(totalVegCount > 0 || totalNonVegCount > 0) && (
+        <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setDietFilter('all')}
+            className={clsx(
+              'px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border cursor-pointer',
+              dietFilter === 'all'
+                ? (isDark ? 'bg-white/20 text-white border-white/40 shadow-sm' : 'bg-black/15 text-black border-black/30 shadow-sm')
+                : (isDark ? 'bg-black/30 text-white/70 border-white/10 hover:text-white' : 'bg-white/60 text-black/70 border-black/10 hover:text-black')
+            )}
+          >
+            All Dishes ({items.length})
+          </button>
+          {totalVegCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setDietFilter('veg')}
+              className={clsx(
+                'px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 cursor-pointer',
+                dietFilter === 'veg'
+                  ? 'bg-emerald-600 text-white border-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                  : (isDark ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40 hover:bg-emerald-900/50' : 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100')
+              )}
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 border border-white/50" />
+              Pure Veg ({totalVegCount})
+            </button>
+          )}
+          {totalNonVegCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setDietFilter('non-veg')}
+              className={clsx(
+                'px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 cursor-pointer',
+                dietFilter === 'non-veg'
+                  ? 'bg-[#8B3A2B] text-white border-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.4)]'
+                  : (isDark ? 'bg-rose-950/40 text-rose-300 border-rose-900/40 hover:bg-rose-900/50' : 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100')
+              )}
+            >
+              <span className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[8px] border-b-rose-400" />
+              Non-Veg ({totalNonVegCount})
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 
   return (

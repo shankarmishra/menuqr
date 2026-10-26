@@ -10,13 +10,10 @@ import {
   Download,
   Loader2,
   Layers,
-  ChevronRight,
-  Sparkles,
-  FileText
+  ChevronRight
 } from 'lucide-react';
 import { executeMenuImport, previewMenuImport } from '../../pages/app/appStore';
 import { useToast } from '../feedback/ToastProvider';
-import { PdfMenuImportWizard } from './PdfMenuImportWizard';
 
 interface SmartImportWizardProps {
   isOpen: boolean;
@@ -70,20 +67,8 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
-  const [importModeType, setImportModeType] = useState<'pdf' | 'excel'>('pdf');
 
   if (!isOpen) return null;
-
-  if (importModeType === 'pdf') {
-    return (
-      <PdfMenuImportWizard
-        isOpen={isOpen}
-        onClose={onClose}
-        onSuccess={onSuccess}
-        onSwitchToExcel={() => setImportModeType('excel')}
-      />
-    );
-  }
 
   const handleFileUpload = (file: File) => {
     if (!file) return;
@@ -276,14 +261,7 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setImportModeType('pdf')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e8783c]/40 bg-[#e8783c]/10 text-xs font-semibold text-[#e8783c] hover:bg-[#e8783c]/20 transition-colors cursor-pointer"
-            >
-              <FileText size={14} />
-              <span>Switch to PDF Reconstruction</span>
-            </button>
+            
             <button
               onClick={onClose}
               className="rounded-lg p-2 text-[#aab7b2] hover:bg-[#25322c] hover:text-white"
@@ -695,7 +673,7 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
                 disabled={isProcessing}
                 className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-emerald-500 disabled:opacity-50"
               >
-                Confirm & Import Menu <Sparkles className="h-4 w-4" />
+                Confirm & Import Menu <CheckCircle2 className="h-4 w-4" />
               </button>
             </>
           )}

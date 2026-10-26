@@ -9,23 +9,24 @@ export const FormatPrice = formatIndianPrice;
 export { parseItemPricing, formatIndianPrice };
 
 export const DietIndicator: React.FC<{
-  type: 'veg' | 'non-veg' | 'vegan';
+  type?: 'veg' | 'non-veg' | 'vegan' | string;
   compact?: boolean;
   color?: string;
   className?: string;
 }> = ({ type, compact, color, className = '' }) => {
-  const isVeg = type === 'veg' || type === 'vegan';
-  const size = compact ? 'w-3.5 h-3.5 p-[2px]' : 'w-4 h-4 p-[2.5px]';
+  const isVeg = type === 'veg' || type === 'vegan' || !type;
+  const isVegan = type === 'vegan';
+  const size = compact ? 'w-3.5 h-3.5 p-[2px]' : 'w-4 h-4 p-[2px]';
 
   if (isVeg) {
     return (
       <span
-        className={`inline-flex items-center justify-center border-2 border-emerald-600 rounded-[3px] bg-white shrink-0 shadow-xs ${size} ${className}`}
+        className={`inline-flex items-center justify-center border-[1.5px] border-emerald-600 rounded-[3px] bg-white shrink-0 shadow-xs ${size} ${className}`}
         style={color ? { borderColor: color } : undefined}
-        title="Vegetarian (Pure Veg)"
+        title={isVegan ? 'Vegan' : 'Vegetarian (Pure Veg)'}
       >
         <span 
-          className="w-full h-full rounded-full bg-emerald-600" 
+          className="w-[75%] h-[75%] rounded-full bg-emerald-600" 
           style={color ? { backgroundColor: color } : undefined} 
         />
       </span>
@@ -34,13 +35,16 @@ export const DietIndicator: React.FC<{
 
   return (
     <span
-      className={`inline-flex items-center justify-center border-2 border-rose-600 rounded-[3px] bg-white shrink-0 shadow-xs ${size} ${className}`}
+      className={`inline-flex items-center justify-center border-[1.5px] border-[#8B3A2B] rounded-[3px] bg-white shrink-0 shadow-xs ${size} ${className}`}
       style={color ? { borderColor: color } : undefined}
       title="Non-Vegetarian"
     >
       <span 
-        className="w-full h-full rounded-full bg-rose-600" 
-        style={color ? { backgroundColor: color } : undefined} 
+        className="w-[75%] h-[75%] bg-[#8B3A2B]"
+        style={{
+          clipPath: 'polygon(50% 10%, 0% 90%, 100% 90%)',
+          backgroundColor: color || '#8B3A2B'
+        }}
       />
     </span>
   );
