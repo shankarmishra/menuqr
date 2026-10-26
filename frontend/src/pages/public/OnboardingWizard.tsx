@@ -22,7 +22,9 @@ import {
   Flame
 } from 'lucide-react';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
-import ScannableQRCode from '../../components/marketing/ScannableQRCode';
+import QRCode from 'qrcode';
+import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerCard';
+import { exportStickerToPng } from '../../utils/stickerExporter';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import QRGenerationSequence from '../../components/qr-studio/QRGenerationSequence';
 import { menuTemplates } from '../../data/menuTemplates';
@@ -160,6 +162,11 @@ export default function OnboardingWizard() {
   // Theme selection tab state: 20 Artisan Graphic vs 15 Modern CSS
   const [themeTab, setThemeTab] = useState<'artisan' | 'modern'>('artisan');
 
+  // Luxury Table Plaque Sticker State
+  const [stickerQrDataUrl, setStickerQrDataUrl] = useState<string>('');
+  const stickerCardRef = useRef<HTMLDivElement>(null);
+  const [isDownloadingSticker, setIsDownloadingSticker] = useState(false);
+
   useEffect(() => {
     Promise.allSettled([
       getSubscription(),
@@ -258,6 +265,22 @@ export default function OnboardingWizard() {
   const [isPrinterOpen, setIsPrinterOpen] = useState(false);
   const [qrReady, setQrReady] = useState(false);
 
+  useEffect(() => {
+    const slug = restaurantData.name ? restaurantData.name.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'demo';
+    const targetUrl = qr?.qrId
+      ? `${window.location.origin}/qr/${encodeURIComponent(qr.qrId)}`
+      : `${window.location.origin}/m/${slug}`;
+
+    QRCode.toDataURL(targetUrl, {
+      width: 600,
+      margin: 2,
+      color: { dark: '#140D05', light: '#FFFFFF' },
+      errorCorrectionLevel: 'H',
+    })
+      .then((url) => setStickerQrDataUrl(url))
+      .catch(() => {});
+  }, [qr?.qrId, restaurantData.name]);
+
   // Handle Excel / CSV File Drop or Select
   const handleFileUpload = async (file: File) => {
     const ext = file.name.split('.').pop()?.toLowerCase();
@@ -340,16 +363,12 @@ export default function OnboardingWizard() {
           available: item.available,
         })),
       });
-      const existingQr = await getQr();
-      if (existingQr?.qrId) {
-        setQr(existingQr);
-        setQrReady(true);
-        showToast('success', 'Your saved menu is ready. Your permanent QR is unchanged.');
-        return;
+      let currentQr = await getQr();
+      if (!currentQr?.qrId) {
+        currentQr = await createPermanentQr();
       }
-      const createdQr = await createPermanentQr();
-      if (!createdQr.qrId) throw new Error('QR could not be created.');
-      setQr(createdQr);
+      if (!currentQr?.qrId) throw new Error('QR could not be created.');
+      setQr(currentQr);
       setIsPrinterOpen(true);
     } catch {
       showToast('error', 'We could not save your menu just now. Your details are still here; please try again.');
@@ -935,40 +954,103 @@ export default function OnboardingWizard() {
               <motion.div key="step-preview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
                 <div className="space-y-2 text-center">
                   <span className="text-xs font-mono text-[#34B56A] uppercase tracking-widest flex items-center justify-center gap-1.5"><Check size={14} /> Ready</span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white">Your Permanent QR Menu</h2>
-                  {planId === 'BASIC' && <p className="text-xs text-[#E8783C] mt-2">20 menu changes are included after setup.</p>}
+                  <h2 className="text-2xl sm:text-3xl font-black text-white">Your Official Table Stand & Permanent QR Menu</h2>
+                  <p className="text-xs sm:text-sm text-[#AAB7B2]">
+                    Here is your custom 24K gold & marble table plaque sticker artwork alongside your live digital menu.
+                  </p>
                 </div>
-                {!qrReady ? (
-                  <div className="mx-auto max-w-lg space-y-4 text-center">
-                    <p className="text-sm text-[#AAB7B2]">Your menu with uploaded dishes and chosen background theme is ready to be locked to your permanent QR code.</p>
-                    <button
-                      type="button"
-                      onClick={() => void createFirstQr()}
-                      disabled={isSubmitting}
-                      className="rounded-xl bg-[#E8783C] hover:bg-[#f08b55] px-8 py-3.5 text-sm font-bold text-white disabled:opacity-60 shadow-lg transition-colors cursor-pointer"
-                    >
-                      {isSubmitting ? 'Saving Menu & Creating QR...' : 'Save menu and create permanent QR'}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                    <div className="bg-[#151C19] p-6 rounded-2xl border border-white/15 flex flex-col items-center text-center space-y-4">
-                      {qr?.qrId && <ScannableQRCode url={`${window.location.origin}/qr/${encodeURIComponent(qr.qrId)}`} size={160} />}
-                      <div>
-                        <h4 className="font-extrabold text-sm text-white">{restaurantData.name || 'Your Restaurant'}</h4>
-                        <p className="text-[10px] font-mono text-[#E8783C] mt-0.5 uppercase tracking-widest">PERMANENT QR CODE</p>
-                      </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
+                  {/* Left Column (6 cols): LUXURY PRINT-READY STICKER CARD */}
+                  <div className="lg:col-span-6 flex flex-col items-center space-y-4">
+                    <div className="w-full flex items-center justify-between px-1">
+                      <span className="text-xs font-mono uppercase text-[#E8783C] font-bold tracking-wider flex items-center gap-1.5">
+                        <Sparkles size={14} /> Table Plaque Artwork
+                      </span>
+                      {qrReady && (
+                        <button
+                          type="button"
+                          disabled={isDownloadingSticker}
+                          onClick={async () => {
+                            if (stickerCardRef.current) {
+                              setIsDownloadingSticker(true);
+                              try {
+                                await exportStickerToPng(stickerCardRef.current, {
+                                  fileName: `${(restaurantData.name || 'restaurant').toLowerCase().replace(/[^a-z0-9]/g, '_')}_table_qr.png`,
+                                });
+                                showToast('success', 'High-resolution printable sticker downloaded!');
+                              } catch {
+                                showToast('error', 'Could not export sticker image.');
+                              } finally {
+                                setIsDownloadingSticker(false);
+                              }
+                            }
+                          }}
+                          className="px-3.5 py-1.5 rounded-xl bg-[#E8783C] hover:bg-[#d66a30] text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          <Download size={13} /> {isDownloadingSticker ? 'Exporting...' : 'Download Sticker (PNG)'}
+                        </button>
+                      )}
                     </div>
-                    <div className="h-[360px] rounded-2xl overflow-hidden border border-white/15 shadow-xl bg-black">
+
+                    <div className="w-full flex justify-center scale-[0.88] sm:scale-100 origin-top">
+                      <RoyalWalnutStickerCard
+                        stickerRef={stickerCardRef}
+                        restaurantName={restaurantData.name || 'Your Restaurant'}
+                        category={restaurantData.tagline || 'FINE DINING & CULINARY EXCELLENCE'}
+                        menuUrl={
+                          qr?.qrId
+                            ? `${window.location.origin}/qr/${encodeURIComponent(qr.qrId)}`
+                            : `${window.location.origin}/m/${(restaurantData.name || 'demo').toLowerCase().replace(/[^a-z0-9]/g, '-')}`
+                        }
+                        qrImage={stickerQrDataUrl}
+                        phone={restaurantData.phone}
+                        address={restaurantData.address}
+                        headerText="SCAN FOR DIGITAL MENU"
+                        footerText="Point Camera to Scan Menu"
+                        showStatusBadge={false}
+                        showDownloadButtons={false}
+                      />
+                    </div>
+
+                    {!qrReady && (
+                      <div className="w-full max-w-sm pt-2 text-center space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => void createFirstQr()}
+                          disabled={isSubmitting}
+                          className="w-full rounded-2xl bg-[#E8783C] hover:bg-[#f08b55] px-6 py-3.5 text-sm font-bold text-white disabled:opacity-60 shadow-xl transition-all hover:scale-[1.02] cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          <Sparkles size={16} />
+                          {isSubmitting ? 'Saving Menu & Activating QR...' : 'Lock & Activate Permanent QR'}
+                        </button>
+                        <p className="text-[11px] text-[#AAB7B2]">
+                          Locks your dishes, prices, and activates your permanent table QR standee.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column (6 cols): LIVE CUSTOMER MENU MOCKUP */}
+                  <div className="lg:col-span-6 flex flex-col items-center space-y-3">
+                    <div className="w-full flex items-center justify-between px-1 text-xs font-mono text-[#AAB7B2]">
+                      <span>LIVE CUSTOMER MENU</span>
+                      <span className="text-[#E8783C] font-bold">
+                        {artisanGraphicThemes.find((t) => t.id === restaurantData.templateId)?.name ||
+                         menuTemplates.find((t) => t.id === restaurantData.templateId)?.name || 'Custom Theme'}
+                      </span>
+                    </div>
+
+                    <div className="w-full max-w-[340px] h-[520px] rounded-3xl overflow-hidden border-2 border-stone-800 shadow-2xl bg-black">
                       <MenuTemplateRenderer
                         templateId={restaurantData.templateId}
                         restaurant={{
-                          name: restaurantData.name,
+                          name: restaurantData.name || 'Your Restaurant',
                           tagline: restaurantData.tagline,
                           phone: restaurantData.phone,
                           address: restaurantData.address,
                           city: restaurantData.city,
-                          logo: restaurantData.logoUrl
+                          logo: restaurantData.logoUrl,
                         }}
                         categories={restaurantData.categories}
                         items={restaurantData.items as any}
@@ -976,7 +1058,7 @@ export default function OnboardingWizard() {
                       />
                     </div>
                   </div>
-                )}
+                </div>
               </motion.div>
             )}
 
