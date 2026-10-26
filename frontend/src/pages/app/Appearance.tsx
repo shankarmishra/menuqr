@@ -16,9 +16,11 @@ import {
   Upload, 
   Trash2, 
   Image as ImageIcon,
-  Sparkles
+  Sparkles,
+  FileSpreadsheet
 } from 'lucide-react';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
+import { MultiPageMenuStudio } from '../../components/menu-builder/MultiPageMenuStudio';
 import PremiumIPhoneMockup from '../../components/marketing/PremiumIPhoneMockup';
 import IsolatedMobileFrame from '../../components/menu-builder/IsolatedMobileFrame';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
@@ -68,6 +70,7 @@ export default function Appearance() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [isMultiPageStudioOpen, setIsMultiPageStudioOpen] = useState(false);
   const [mockCart, setMockCart] = useState<Array<{ id: string; name: string; price: number; quantity: number }>>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const showToast = useToast();
@@ -276,14 +279,25 @@ export default function Appearance() {
           </p>
         </div>
 
-        <button 
-          type="button" 
-          onClick={saveTheme} 
-          disabled={saving} 
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#e8783c] to-[#f08b55] hover:brightness-110 px-7 py-3 text-sm font-bold text-white disabled:opacity-50 transition-all shadow-xl shadow-[#e8783c]/20 cursor-pointer shrink-0"
-        >
-          <Save size={18} /> {saving ? 'Applying...' : 'Apply & Publish Theme'}
-        </button>
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsMultiPageStudioOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-5 py-3 text-sm font-bold transition-all shrink-0 cursor-pointer"
+          >
+            <FileSpreadsheet size={18} />
+            <span>35 Themes Multi-Page Studio</span>
+          </button>
+
+          <button 
+            type="button" 
+            onClick={saveTheme} 
+            disabled={saving} 
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#e8783c] to-[#f08b55] hover:brightness-110 px-7 py-3 text-sm font-bold text-white disabled:opacity-50 transition-all shadow-xl shadow-[#e8783c]/20 cursor-pointer shrink-0"
+          >
+            <Save size={18} /> {saving ? 'Applying...' : 'Apply & Publish Theme'}
+          </button>
+        </div>
       </header>
 
       {/* Main Grid: Left Controls & Themes, Right Interactive Preview */}
@@ -658,6 +672,24 @@ export default function Appearance() {
           </div>
         </section>
       </div>
+
+      {/* Multi-Page Studio Modal for all 35 themes with Excel Ingestion */}
+      <MultiPageMenuStudio
+        isOpen={isMultiPageStudioOpen}
+        onClose={() => setIsMultiPageStudioOpen(false)}
+        restaurant={{
+          name: displayName.trim() || profile?.businessName || 'Your Restaurant',
+          tagline: brandTagline.trim() || profile?.tagline,
+          phone: profile?.phone,
+          address: profile?.address,
+          city: profile?.city,
+          state: profile?.state,
+          logo: brandLogo || profile?.logoUrl,
+          slug: profile?.menuSlug || 'demo',
+        }}
+        initialCategories={previewCategories}
+        initialItems={previewItems}
+      />
     </div>
   );
 }

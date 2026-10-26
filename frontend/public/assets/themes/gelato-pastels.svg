@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1700" width="1200" height="1700">
+            <defs>
+                
+            <linearGradient id="pastelPink" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFF0F5"/>
+                <stop offset="50%" stop-color="#FCE4EC"/>
+                <stop offset="100%" stop-color="#F8BBD0"/>
+            </linearGradient>
+        
+            </defs>
+            
+            <rect width="1200" height="1700" fill="url(#pastelPink)"/>
+
+            <!-- Rainbow Sprinkles on Corners -->
+            <g opacity="0.6">
+                <rect x="40" y="40" width="14" height="6" rx="3" fill="#BE185D" transform="rotate(30 40 40)"/>
+                <rect x="70" y="30" width="14" height="6" rx="3" fill="#0284C7" transform="rotate(-40 70 30)"/>
+                <rect x="1120" y="50" width="14" height="6" rx="3" fill="#16A34A" transform="rotate(20 1120 50)"/>
+                <rect x="1100" y="1620" width="14" height="6" rx="3" fill="#CA8A04" transform="rotate(45 1100 1620)"/>
+            </g>
+
+            <!-- Center Sweet Card -->
+            <rect x="85" y="85" width="1030" height="1530" rx="14" fill="#FFFFFF" fill-opacity="0.97" stroke="#BE185D" stroke-width="1.6" stroke-opacity="0.3"/>
+            <rect x="100" y="100" width="1000" height="1500" rx="10" fill="none" stroke="#F472B6" stroke-width="1" stroke-dasharray="6,4" stroke-opacity="0.3"/>
+        
+        </svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1700" width="1200" height="1700">
+            <defs>
+                
+            <linearGradient id="obsidianMarble" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0a0c10"/>
+                <stop offset="50%" stop-color="#12151c"/>
+                <stop offset="100%" stop-color="#08090d"/>
+            </linearGradient>
+            <linearGradient id="gold24k" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#EAB308"/>
+                <stop offset="50%" stop-color="#FEF08A"/>
+                <stop offset="100%" stop-color="#CA8A04"/>
+            </linearGradient>
+        
+            </defs>
+            
+            <rect width="1200" height="1700" fill="url(#obsidianMarble)"/>
+
+            <!-- Art-Deco Geometric Border in Pure 24K Gold -->
+            <rect x="40" y="40" width="1120" height="1620" fill="none" stroke="url(#gold24k)" stroke-width="1.5" opacity="0.3"/>
+            <rect x="55" y="55" width="1090" height="1590" fill="none" stroke="url(#gold24k)" stroke-width="0.8" opacity="0.2"/>
+
+            <!-- Center Matte Obsidian Card -->
+            <rect x="85" y="85" width="1030" height="1530" rx="14" fill="#0E1117" fill-opacity="0.96" stroke="url(#gold24k)" stroke-width="2"/>
+            <rect x="100" y="100" width="1000" height="1500" rx="10" fill="none" stroke="#EAB308" stroke-width="0.8" stroke-dasharray="12,6" stroke-opacity="0.3"/>
+            
+            <!-- Corner Diamond Accents -->
+            <polygon points="100,100 115,100 100,115" fill="url(#gold24k)"/>
+            <polygon points="1100,100 1085,100 1100,115" fill="url(#gold24k)"/>
+            <polygon points="100,1600 115,1600 100,1585" fill="url(#gold24k)"/>
+            <polygon points="1100,1600 1085,1600 1100,1585" fill="url(#gold24k)"/>
+        
+        </svg>

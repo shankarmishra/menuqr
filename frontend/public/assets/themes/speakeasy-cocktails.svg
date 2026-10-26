@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1700" width="1200" height="1700">
+            <defs>
+                
+            <linearGradient id="midnightSlate" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0b0d13"/>
+                <stop offset="50%" stop-color="#121620"/>
+                <stop offset="100%" stop-color="#07080c"/>
+            </linearGradient>
+            <radialGradient id="cocktailAmber" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+            </radialGradient>
+        
+            </defs>
+            
+            <rect width="1200" height="1700" fill="url(#midnightSlate)"/>
+            <circle cx="150" cy="150" r="250" fill="url(#cocktailAmber)"/>
+            <circle cx="1050" cy="1550" r="280" fill="url(#cocktailAmber)"/>
+
+            <!-- Geometric Art Deco Lines & Cocktail Glass Silhouette -->
+            <g stroke="#F59E0B" stroke-width="1.2" opacity="0.35" fill="none">
+                <path d="M60 140 L100 80 L140 140 Z M100 140 L100 180 M80 180 L120 180"/>
+                <path d="M1060 1620 L1100 1560 L1140 1620 Z M1100 1620 L1100 1660 M1080 1660 L1120 1660"/>
+            </g>
+
+            <!-- Center Slate Card -->
+            <rect x="90" y="90" width="1020" height="1520" rx="14" fill="#0F121A" fill-opacity="0.94" stroke="#F59E0B" stroke-width="1.5" stroke-opacity="0.4"/>
+            <rect x="105" y="105" width="990" height="1490" rx="10" fill="none" stroke="#FBBF24" stroke-width="1" stroke-dasharray="10,5" stroke-opacity="0.25"/>
+            <!-- Art Deco Stepped Corners -->
+            <path d="M105 135 L135 135 L135 105" stroke="#F59E0B" stroke-width="2" fill="none"/>
+            <path d="M1095 135 L1065 135 L1065 105" stroke="#F59E0B" stroke-width="2" fill="none"/>
+            <path d="M105 1565 L135 1565 L135 1595" stroke="#F59E0B" stroke-width="2" fill="none"/>
+            <path d="M1095 1565 L1065 1565 L1065 1595" stroke="#F59E0B" stroke-width="2" fill="none"/>
+        
+        </svg>
