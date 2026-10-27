@@ -6,10 +6,8 @@ import {
   ArrowRight, 
   ArrowLeft, 
   Store, 
-  Palette, 
   Sparkles, 
   Smartphone, 
-  Monitor, 
   Upload, 
   X, 
   Image as ImageIcon, 
@@ -143,7 +141,7 @@ export default function OnboardingWizard() {
   const showToast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [planId, setPlanId] = useState('PREMIUM');
+  const [_planId, setPlanId] = useState('PREMIUM');
   const [isPreloaded, setIsPreloaded] = useState(false);
   const [isEditingIdentity, setIsEditingIdentity] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -198,9 +196,7 @@ export default function OnboardingWizard() {
   }, []);
 
   const getSteps = () => {
-    if (planId === 'BASIC') return ['identity', 'branding', 'excel-upload', 'preview'];
-    if (planId === 'INTERMEDIATE') return ['identity', 'branding', 'excel-upload', 'templates', 'preview'];
-    return ['identity', 'branding', 'excel-upload', 'templates', 'ordering', 'reception', 'preview'];
+    return ['identity', 'excel-upload', 'templates', 'preview'];
   };
 
   const steps = getSteps();
@@ -249,12 +245,9 @@ export default function OnboardingWizard() {
 
   const getStepTitle = (stepId: string) => {
     switch(stepId) {
-      case 'identity': return 'Restaurant Identity';
-      case 'branding': return 'Branding & Logo';
+      case 'identity': return 'Restaurant Identity & Logo';
       case 'excel-upload': return 'Menu Spreadsheet Upload';
       case 'templates': return 'Select Theme (35 Themes)';
-      case 'ordering': return 'Ordering Setup';
-      case 'reception': return 'Reception Panel';
       case 'preview': return 'Preview & Permanent QR';
       default: return '';
     }
@@ -537,48 +530,27 @@ export default function OnboardingWizard() {
                         <label className="block text-xs font-semibold text-[#AAB7B2]">Full Address</label>
                         <input type="text" aria-label="Restaurant address" placeholder="e.g. Shop 12, Main Street, Bandra West, Mumbai" value={restaurantData.address} onChange={(e) => setRestaurantData({ ...restaurantData, address: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
                       </div>
+
+                      <div className="sm:col-span-2 pt-3 border-t border-white/10">
+                        <ImageSelector
+                          label="Restaurant Logo / Brand Mark (Recommended)"
+                          value={restaurantData.logoUrl}
+                          onChange={(val) => setRestaurantData((prev) => ({ ...prev, logoUrl: val }))}
+                          placeholder="https://example.com/logo.png"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
               </motion.div>
             )}
 
-            {/* STEP 2: BRANDING & LOGO */}
-            {currentStep === 'branding' && (
-              <motion.div key="step-branding" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-                <div className="space-y-2">
-                  <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5"><Palette size={14} /> Step 2</span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white">Logo & Branding</h2>
-                  <p className="text-xs sm:text-sm text-[#AAB7B2]">Upload your restaurant logo to crown your digital QR menu and front cover page.</p>
-                </div>
-                
-                <div className="p-6 bg-[#151C19] rounded-2xl border border-white/15 space-y-6">
-                  <ImageSelector
-                    label="Restaurant Logo Image"
-                    value={restaurantData.logoUrl}
-                    onChange={(val) => setRestaurantData({ ...restaurantData, logoUrl: val })}
-                    placeholder="https://example.com/logo.png"
-                  />
-                  <div className="pt-2 border-t border-white/10">
-                    <label className="block text-xs font-semibold text-[#AAB7B2] mb-1.5">Restaurant Tagline / Slogan</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Fresh ingredients, great taste"
-                      value={restaurantData.tagline}
-                      onChange={(e) => setRestaurantData({ ...restaurantData, tagline: e.target.value })}
-                      className="w-full bg-[#1D2723] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C]"
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* STEP 3: EXCEL MENU SPREADSHEET UPLOAD */}
+            {/* STEP 2: EXCEL MENU SPREADSHEET UPLOAD */}
             {currentStep === 'excel-upload' && (
               <motion.div key="step-excel-upload" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
                 <div className="space-y-2">
                   <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5">
-                    <FileSpreadsheet size={14} /> Step 3
+                    <FileSpreadsheet size={14} /> Step 2
                   </span>
                   <h2 className="text-2xl sm:text-3xl font-black text-white">Upload Menu Spreadsheet</h2>
                   <p className="text-xs sm:text-sm text-[#AAB7B2]">
@@ -751,13 +723,13 @@ export default function OnboardingWizard() {
               </motion.div>
             )}
 
-            {/* STEP 4: SELECT MENU THEME (ALL 35 THEMES) */}
+            {/* STEP 3: SELECT MENU THEME (ALL 35 THEMES) */}
             {currentStep === 'templates' && (
               <motion.div key="step-templates" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-1">
                     <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5">
-                      <Sparkles size={14} /> Step 4
+                      <Sparkles size={14} /> Step 3
                     </span>
                     <h2 className="text-2xl sm:text-3xl font-black text-white">Select Menu Theme (35 Themes)</h2>
                     <p className="text-xs sm:text-sm text-[#AAB7B2]">
@@ -890,7 +862,7 @@ export default function OnboardingWizard() {
                       </span>
                     </div>
 
-                    <div className="w-full max-w-[340px] h-[480px] rounded-2xl overflow-hidden border-2 border-stone-800 shadow-2xl bg-black">
+                    <div className="w-full max-w-[360px] min-h-[500px] max-h-[600px] overflow-y-auto rounded-3xl border-2 border-stone-800 shadow-2xl bg-black custom-scrollbar flex flex-col items-center p-2">
                       <MenuTemplateRenderer
                         templateId={restaurantData.templateId}
                         restaurant={{
@@ -912,48 +884,11 @@ export default function OnboardingWizard() {
               </motion.div>
             )}
 
-            {/* STEP 5: ORDERING */}
-            {currentStep === 'ordering' && (
-              <motion.div key="step-ordering" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-                <div className="space-y-2">
-                  <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5"><Smartphone size={14} /> Step 5</span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white">Enable Table Ordering</h2>
-                  <p className="text-[#aab7b2] text-sm">Premium feature: allow diners to place orders directly from their mobile menu scan.</p>
-                </div>
-                <div className="flex items-center justify-between p-5 bg-[#151C19] rounded-2xl border border-white/15">
-                  <div>
-                    <h4 className="font-bold text-white text-sm">Direct Table QR Ordering</h4>
-                    <p className="text-xs text-[#AAB7B2] mt-0.5">Orders will appear live in your reception dashboard.</p>
-                  </div>
-                  <button
-                    onClick={() => setRestaurantData({ ...restaurantData, orderingEnabled: !restaurantData.orderingEnabled })}
-                    className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${restaurantData.orderingEnabled ? 'bg-[#E8783C]' : 'bg-[#2A3832]'}`}
-                  >
-                    <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${restaurantData.orderingEnabled ? 'left-7' : 'left-1'}`} />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* STEP 6: RECEPTION */}
-            {currentStep === 'reception' && (
-              <motion.div key="step-reception" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-                <div className="space-y-2">
-                  <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5"><Monitor size={14} /> Reception Panel</span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white">Live Orders Panel</h2>
-                  <p className="text-[#aab7b2] text-sm">Your order reception terminal is enabled and connected to your account.</p>
-                </div>
-                <div className="p-5 bg-[#151C19] rounded-2xl border border-white/15">
-                  <p className="text-white text-sm">Reception panel successfully provisioned. You can access it anytime from your dashboard.</p>
-                </div>
-              </motion.div>
-            )}
-
-            {/* FINAL STEP: PREVIEW & PERMANENT QR */}
+            {/* STEP 4: PREVIEW & PERMANENT QR */}
             {currentStep === 'preview' && (
               <motion.div key="step-preview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
                 <div className="space-y-2 text-center">
-                  <span className="text-xs font-mono text-[#34B56A] uppercase tracking-widest flex items-center justify-center gap-1.5"><Check size={14} /> Ready</span>
+                  <span className="text-xs font-mono text-[#34B56A] uppercase tracking-widest flex items-center justify-center gap-1.5"><Check size={14} /> Step 4 (Final)</span>
                   <h2 className="text-2xl sm:text-3xl font-black text-white">Your Official Table Stand & Permanent QR Menu</h2>
                   <p className="text-xs sm:text-sm text-[#AAB7B2]">
                     Here is your custom 24K gold & marble table plaque sticker artwork alongside your live digital menu.
@@ -1013,8 +948,25 @@ export default function OnboardingWizard() {
                       />
                     </div>
 
+                    {/* Optional Direct Table Ordering Toggle */}
+                    <div className="w-full max-w-sm p-3.5 rounded-2xl bg-[#151C19] border border-white/10 flex items-center justify-between shadow-md">
+                      <div>
+                        <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
+                          <Smartphone size={13} className="text-[#E8783C]" /> Direct Table QR Ordering
+                        </h4>
+                        <p className="text-[10px] text-[#AAB7B2]">Let customers place orders directly from their phones</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setRestaurantData((prev) => ({ ...prev, orderingEnabled: !prev.orderingEnabled }))}
+                        className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer shrink-0 ${restaurantData.orderingEnabled ? 'bg-[#E8783C]' : 'bg-[#2A3832]'}`}
+                      >
+                        <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${restaurantData.orderingEnabled ? 'left-5' : 'left-0.5'}`} />
+                      </button>
+                    </div>
+
                     {!qrReady && (
-                      <div className="w-full max-w-sm pt-2 text-center space-y-2">
+                      <div className="w-full max-w-sm pt-1 text-center space-y-2">
                         <button
                           type="button"
                           onClick={() => void createFirstQr()}
@@ -1041,7 +993,7 @@ export default function OnboardingWizard() {
                       </span>
                     </div>
 
-                    <div className="w-full max-w-[340px] h-[520px] rounded-3xl overflow-hidden border-2 border-stone-800 shadow-2xl bg-black">
+                    <div className="w-full max-w-[360px] min-h-[500px] max-h-[600px] overflow-y-auto rounded-3xl border-2 border-stone-800 shadow-2xl bg-black custom-scrollbar flex flex-col items-center p-2">
                       <MenuTemplateRenderer
                         templateId={restaurantData.templateId}
                         restaurant={{

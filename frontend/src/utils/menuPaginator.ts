@@ -50,7 +50,7 @@ export interface PaginationOptions {
 function getItemWeight(item: PagedMenuItem): number {
   let weight = 1.0;
   if (item.description && item.description.trim().length > 0) {
-    weight += 0.6;
+    weight += 0.4;
   }
   if (item.halfPrice || item.fullPrice || item.regPrice || item.largePrice) {
     weight += 0.3;
@@ -69,8 +69,8 @@ export function paginateMenu(
   } = options;
 
   // Virtual capacity per inner page (in weight units)
-  // Two-column fits ~22 weight units; Single-column fits ~12 weight units
-  const maxCapacityPerPage = layoutMode === 'two-column' ? 22 : 12;
+  // Calibrated for optimal luxury layout without clipping
+  const maxCapacityPerPage = layoutMode === 'two-column' ? 18 : 10;
 
   // Filter available items and group by category
   const activeItems = items.filter(it => it.available !== false);
@@ -107,7 +107,7 @@ export function paginateMenu(
     let isContinuation = false;
 
     while (itemCursor < catItems.length) {
-      const headingWeight = 2.2;
+      const headingWeight = 1.8;
       const remainingSpace = maxCapacityPerPage - currentWeight;
 
       // If there is no space on the current page even for the heading + 1 item, bump to a new page
@@ -124,7 +124,7 @@ export function paginateMenu(
 
       // Calculate how many items can fit on the current page
       const chunkItems: PagedMenuItem[] = [];
-      let accumulatedChunkWeight = currentSections.length === 0 ? headingWeight : (headingWeight * 0.8);
+      let accumulatedChunkWeight = currentSections.length === 0 ? headingWeight : (headingWeight * 0.7);
 
       while (itemCursor < catItems.length) {
         const nextItem = catItems[itemCursor];

@@ -355,8 +355,8 @@ export default async function authRoutes(request, response, url) {
     const dbUser = dbRes.rows[0];
 
     const { isApprovedAdminEmail } = await import('../adminAuth.js');
-    if (isApprovedAdminEmail(normalizedEmail) && (!dbUser || dbUser.role === 'SUPER_ADMIN')) {
-      throw apiError(400, 'This is an Admin account. Please log in at https://admin.menusqr.in/login');
+    if (isApprovedAdminEmail(normalizedEmail) || (dbUser && dbUser.role === 'SUPER_ADMIN')) {
+      throw apiError(400, 'This is an Admin account. Admins must log in using OTP at https://admin.menusqr.in/login');
     }
 
     const compoundKey = `${normalizedEmail}:${address}`;

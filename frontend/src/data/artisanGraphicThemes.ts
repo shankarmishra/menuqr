@@ -87,7 +87,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Steakhouses, BBQ & Smokehouse',
     badge: 'Charred Oak & Embers',
     description: 'Charred dark oak with glowing charcoal embers, cast iron skillets, cracked peppercorns and roasted garlic sprigs.',
-    bgImage: '/assets/themes/rustic-bbq.svg',
+    bgImage: '/assets/themes/rustic-bbq.jpg',
     accentIcon: 'Flame',
     colors: {
       heading: '#FAF0E6',
@@ -126,7 +126,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Italian, Pizzeria & Wine Bar',
     badge: 'San Marzano & Olive Leaf',
     description: 'Sun-drenched Mediterranean rustic table with ripe vine tomatoes, fresh basil leaves, extra virgin olive oil cruet and folded linen.',
-    bgImage: '/assets/themes/tuscan-italian.svg',
+    bgImage: '/assets/themes/tuscan-italian.jpg',
     accentIcon: 'Pizza',
     colors: {
       heading: '#2B1700',
@@ -165,7 +165,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'North Indian, Mughlai & Biryani',
     badge: 'Hammered Copper & Saffron',
     description: 'Rich velvet backdrop framed with hand-hammered copper handis, star anise, saffron strands and whole cinnamon barks.',
-    bgImage: '/assets/themes/royal-darbar.svg',
+    bgImage: '/assets/themes/royal-darbar.jpg',
     accentIcon: 'Crown',
     colors: {
       heading: '#D4AF37',
@@ -204,7 +204,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Bakery, Pastry & Dessert Parlour',
     badge: 'Flour Dust & Wheat Sheaves',
     description: 'White marble workstation with dusted flour, golden wheat sheaves, pastel macarons and antique wooden pastry tools.',
-    bgImage: '/assets/themes/artisan-bakery.svg',
+    bgImage: '/assets/themes/artisan-bakery.jpg',
     accentIcon: 'Croissant',
     colors: {
       heading: '#3D2B1F',
@@ -243,7 +243,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Specialty Coffee, Roasters & Brunch',
     badge: 'Jute Sack & Roasted Arabica',
     description: 'Rustic burlap sack textures, scattered dark-roast coffee beans, brass manual grinder and watermarks of espresso crema rings.',
-    bgImage: '/assets/themes/vintage-cafe.svg',
+    bgImage: '/assets/themes/vintage-cafe.jpg',
     accentIcon: 'Coffee',
     colors: {
       heading: '#2D1B11',
@@ -282,7 +282,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Craft Bar, Taproom & Nightclub',
     badge: 'Dark Slate & Crystal Glass',
     description: 'Midnight black textured slate with glowing amber lights, etched cocktail shakers, dehydrated citrus twists and copper bar spoons.',
-    bgImage: '/assets/themes/speakeasy-cocktails.svg',
+    bgImage: '/assets/themes/speakeasy-cocktails.jpg',
     accentIcon: 'Wine',
     colors: {
       heading: '#FBBF24',
@@ -321,7 +321,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Farm-to-Table, Vegan & Clean Bowls',
     badge: 'Monstera & White Marble',
     description: 'Polished Carrera white marble framed with lush green monstera leaves, eucalyptus sprigs, and gentle botanical watermarks.',
-    bgImage: '/assets/themes/botanical-greens.svg',
+    bgImage: '/assets/themes/botanical-greens.jpg',
     accentIcon: 'Leaf',
     colors: {
       heading: '#143826',
@@ -360,7 +360,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Chinese, Pan-Asian & Dim Sum',
     badge: 'Bamboo Steamer & Ink Wash',
     description: 'Traditional woven bamboo steamer textures with red bird-eye chilies, dark lacquered chopsticks, and oriental brush flourishes.',
-    bgImage: '/assets/themes/asian-dimsum.svg',
+    bgImage: '/assets/themes/asian-dimsum.jpg',
     accentIcon: 'Soup',
     colors: {
       heading: '#881337',
@@ -399,7 +399,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Japanese Sushi, Ramen & Izakaya',
     badge: 'Cedar Wood & Nori Slate',
     description: 'Japanese dark cedar wood with natural grain, pickled pink ginger, wasabi leaf accents, and minimalist calligraphy frames.',
-    bgImage: '/assets/themes/tokyo-sushi.svg',
+    bgImage: '/assets/themes/tokyo-sushi.jpg',
     accentIcon: 'Fish',
     colors: {
       heading: '#E5E7EB',
@@ -438,7 +438,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Chaat, Kadhai & Indian Street Food',
     badge: 'Truck Art & Kulhad Clay',
     description: 'Vibrant desi truck-art floral borders, earthen kulhad terracotta cups, fresh mint chutney drops and rustic butter paper texture.',
-    bgImage: '/assets/themes/desi-street-food.svg',
+    bgImage: '/assets/themes/desi-street-food.jpg',
     accentIcon: 'Sparkles',
     colors: {
       heading: '#854D0E',
@@ -477,7 +477,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Burgers, Shakes & American Diner',
     badge: 'Wax Deli Paper & Checker',
     description: 'Vintage red-and-white checkered picnic tablecloth, golden toasted brioche, crisp fries basket and retro chrome diner badging.',
-    bgImage: '/assets/themes/retro-burger-diner.svg',
+    bgImage: '/assets/themes/retro-burger-diner.jpg',
     accentIcon: 'Beef',
     colors: {
       heading: '#991B1B',
@@ -516,7 +516,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Mexican, Tacos & Tex-Mex',
     badge: 'Talavera Tile & Jalapeno',
     description: 'Sun-warmed terracotta pottery, artisanal glazed Mexican blue-orange tiles, roasted jalapeños, and fresh lime wedges.',
-    bgImage: '/assets/themes/mexican-cantina.svg',
+    bgImage: '/assets/themes/mexican-cantina.jpg',
     accentIcon: 'Utensils',
     colors: {
       heading: '#7C2D12',
@@ -555,7 +555,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Greek, Lebanese & Mediterranean',
     badge: 'Limestone & Olive Branch',
     description: 'Chalky white Mediterranean limestone, fresh leafy olive branches, raw sea salt crystals and hand-thrown ceramic bowls.',
-    bgImage: '/assets/themes/mediterranean-mezze.svg',
+    bgImage: '/assets/themes/mediterranean-mezze.jpg',
     accentIcon: 'Salad',
     colors: {
       heading: '#1E3A8A',
@@ -594,7 +594,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Luxury Steakhouse & Caviar Bar',
     badge: 'Obsidian Marble & 24K Gold',
     description: 'Flawless black Belgian marble veins with brushed metallic 24K gold geometric art-deco borders and gold foil typography.',
-    bgImage: '/assets/themes/black-gold-luxury.svg',
+    bgImage: '/assets/themes/black-gold-luxury.jpg',
     accentIcon: 'Crown',
     colors: {
       heading: '#FDE047',
@@ -633,7 +633,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Awadhi, Lucknowi & Royal Mughlai',
     badge: 'Silver Wark & Kashmiri Velvet',
     description: 'Deep royal plum velvet border embellished with silver wark foils, royal green cardamom pods, and dried Damascus rose petals.',
-    bgImage: '/assets/themes/nawabi-dum-pukht.svg',
+    bgImage: '/assets/themes/nawabi-dum-pukht.jpg',
     accentIcon: 'Sparkles',
     colors: {
       heading: '#E5E7EB',
@@ -672,7 +672,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Ice Cream, Waffles & Sundaes',
     badge: 'Waffle Grid & Rainbow Sprinkles',
     description: 'Soft crisp waffle cone grid textures, pastel strawberry and pistachio cream drips, and celebratory rainbow sugar sprinkles.',
-    bgImage: '/assets/themes/gelato-pastels.svg',
+    bgImage: '/assets/themes/gelato-pastels.jpg',
     accentIcon: 'Sparkles',
     colors: {
       heading: '#831843',
@@ -711,7 +711,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Gastropub, Microbrewery & Grills',
     badge: 'Aged Slate & Hand-Drawn Chalk',
     description: 'Deep matte blackboard with authentic chalk dust textures, hand-sketched beer mugs, barley stalks and playful bistro flourishes.',
-    bgImage: '/assets/themes/chalkboard-bistro.svg',
+    bgImage: '/assets/themes/chalkboard-bistro.jpg',
     accentIcon: 'Beer',
     colors: {
       heading: '#FEF08A',
@@ -750,7 +750,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Artisan Cafe, Brunch & Daily Specials',
     badge: 'Recycled Fiber & Rubber Stamp',
     description: 'Authentic fibrous brown kraft paper with brass binder clip impressions, postal rubber stamps, and vintage typewriter aesthetic.',
-    bgImage: '/assets/themes/industrial-kraft.svg',
+    bgImage: '/assets/themes/industrial-kraft.jpg',
     accentIcon: 'FileText',
     colors: {
       heading: '#261C14',
@@ -789,7 +789,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     cuisine: 'Sichuan Hotpot, BBQ & Korean Grill',
     badge: 'Charcoal Flames & Red Lanterns',
     description: 'Deep scorched coal background with glowing orange embers, red Sichuan peppercorns, dried chilies, and crimson lantern silhouettes.',
-    bgImage: '/assets/themes/firepot-dragon.svg',
+    bgImage: '/assets/themes/firepot-dragon.jpg',
     accentIcon: 'Flame',
     colors: {
       heading: '#FF4D4D',

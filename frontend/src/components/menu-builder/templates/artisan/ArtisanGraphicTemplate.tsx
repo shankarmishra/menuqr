@@ -99,12 +99,11 @@ export function ArtisanGraphicTemplate({
 
         {/* Center Safe-Zone Content Parchment Card */}
         <div
-          className="relative h-full flex flex-col justify-between items-center text-center px-6 sm:px-10 py-8 sm:py-12 z-10"
+          className="relative h-full flex flex-col justify-between items-center text-center p-5 sm:p-8 z-10 rounded-2xl shadow-xl border backdrop-blur-[1px]"
           style={{
-            paddingTop: safeZoneMargins.top,
-            paddingBottom: safeZoneMargins.bottom,
-            paddingLeft: safeZoneMargins.left,
-            paddingRight: safeZoneMargins.right,
+            backgroundColor: colors.safeZoneBg || 'rgba(255, 255, 255, 0.90)',
+            borderColor: colors.border,
+            margin: `${safeZoneMargins.top} ${safeZoneMargins.right} ${safeZoneMargins.bottom} ${safeZoneMargins.left}`,
           }}
         >
           {/* Top Crest / Establishment Badge */}
@@ -242,12 +241,11 @@ export function ArtisanGraphicTemplate({
 
       {/* Center Safe-Zone Content Card */}
       <div
-        className="relative h-full flex flex-col justify-between px-6 sm:px-10 py-6 sm:py-9 z-10"
+        className="relative h-full flex flex-col justify-between p-4 sm:p-6 z-10 rounded-2xl shadow-xl border backdrop-blur-[1px]"
         style={{
-          paddingTop: safeZoneMargins.top,
-          paddingBottom: safeZoneMargins.bottom,
-          paddingLeft: safeZoneMargins.left,
-          paddingRight: safeZoneMargins.right,
+          backgroundColor: colors.safeZoneBg || 'rgba(255, 255, 255, 0.90)',
+          borderColor: colors.border,
+          margin: `${safeZoneMargins.top} ${safeZoneMargins.right} ${safeZoneMargins.bottom} ${safeZoneMargins.left}`,
         }}
       >
         {/* Running Top Page Header */}
@@ -264,11 +262,11 @@ export function ArtisanGraphicTemplate({
         </div>
 
         {/* Page Content: Categories & Dishes */}
-        <div className="flex-1 overflow-hidden my-3 flex flex-col justify-start space-y-4">
+        <div className="flex-1 overflow-y-auto my-2 flex flex-col justify-start space-y-3 pr-0.5 scrollbar-thin">
           {page.sections.map((section, sIdx) => (
-            <div key={`${section.categoryId}-${sIdx}`} className="space-y-2">
+            <div key={`${section.categoryId}-${sIdx}`} className="space-y-1.5">
               {/* Category Header */}
-              <div className="flex items-center gap-2 pt-1 pb-0.5">
+              <div className="flex items-center gap-2 pt-0.5 pb-0.5">
                 <span
                   className="text-xs sm:text-sm font-bold uppercase tracking-widest shrink-0"
                   style={{
@@ -286,7 +284,7 @@ export function ArtisanGraphicTemplate({
               <div
                 className={
                   layoutMode === 'two-column'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5'
+                    ? 'grid grid-cols-2 gap-x-3 sm:gap-x-5 gap-y-2'
                     : 'space-y-2'
                 }
               >

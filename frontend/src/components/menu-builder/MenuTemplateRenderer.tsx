@@ -159,13 +159,20 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
   const [activeArtisanPageIdx, setActiveArtisanPageIdx] = useState(0);
   const [artisanViewMode, setArtisanViewMode] = useState<'flip' | 'scroll'>('scroll');
 
+  const effectiveCategoriesForPagination = useMemo(() => {
+    if (categories && categories.length > 0) {
+      return categories;
+    }
+    return rawCategories.map((c, i) => ({ id: c.id, name: c.name, order: i }));
+  }, [categories, rawCategories]);
+
   const artisanPages = useMemo(() => {
     if (!artisanTheme) return [];
-    return paginateMenu(categories, matchingItems as any, {
+    return paginateMenu(effectiveCategoriesForPagination, matchingItems as any, {
       layoutMode: 'two-column',
       enableCoverPage: true,
     });
-  }, [artisanTheme, categories, matchingItems]);
+  }, [artisanTheme, effectiveCategoriesForPagination, matchingItems]);
 
   const TemplateComponent = getTemplateComponent(template.id);
   const textureKey = getTemplateTextureKey(template.id);
@@ -274,7 +281,34 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
             )}
 
             {(compact || artisanViewMode === 'flip') ? (
-              <div className="flex flex-col items-center space-y-3">
+              <div className="flex flex-col items-center space-y-2 w-full">
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between w-full max-w-sm px-3 py-1.5 bg-neutral-900/95 border border-white/10 rounded-xl shadow-lg backdrop-blur-md text-xs mb-1 sticky top-0 z-30">
+                    <button
+                      type="button"
+                      disabled={safeIdx <= 0}
+                      onClick={() => setActiveArtisanPageIdx((p) => Math.max(0, p - 1))}
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-white transition-all cursor-pointer flex items-center gap-1 font-semibold text-[11px]"
+                    >
+                      <ChevronLeft size={14} /> Prev
+                    </button>
+                    <span className="font-mono text-stone-200 font-bold text-center text-xs">
+                      Page {safeIdx + 1} of {totalPages}
+                      <span className="text-[9px] text-amber-400 font-normal block">
+                        {currentPage.pageType === 'cover' ? 'Front Cover' : currentPage.runningTitle || 'Menu Dishes'}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      disabled={safeIdx >= totalPages - 1}
+                      onClick={() => setActiveArtisanPageIdx((p) => Math.min(totalPages - 1, p + 1))}
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-white transition-all cursor-pointer flex items-center gap-1 font-semibold text-[11px]"
+                    >
+                      Next <ChevronRight size={14} />
+                    </button>
+                  </div>
+                )}
+
                 <div className="w-full rounded-2xl overflow-hidden shadow-2xl border border-white/10">
                   <ArtisanGraphicTemplate
                     theme={artisanTheme}
@@ -296,7 +330,7 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
                   />
                 </div>
 
-                {totalPages > 1 && (
+                {!compact && totalPages > 1 && (
                   <div className="flex items-center justify-between w-full max-w-sm px-4 py-2 bg-neutral-900/90 border border-white/10 rounded-2xl shadow-lg backdrop-blur-md text-xs mt-2">
                     <button
                       type="button"
@@ -308,9 +342,6 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
                     </button>
                     <span className="font-mono text-stone-300 font-bold text-center">
                       Page {safeIdx + 1} of {totalPages}
-                      <span className="text-[10px] text-amber-400 font-normal block">
-                        {currentPage.pageType === 'cover' ? 'Front Cover' : 'Menu Dishes'}
-                      </span>
                     </span>
                     <button
                       type="button"

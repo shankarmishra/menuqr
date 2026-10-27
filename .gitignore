@@ -69,3 +69,5 @@ test_*.js
 
 docs/
 uploads/
+
+~$*
