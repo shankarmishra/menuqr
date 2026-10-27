@@ -101,13 +101,17 @@ export function ArtisanGraphicTemplate({
       }
     : safeZoneMargins;
 
+  // Authoritative contrast detection
+  const isDarkTheme = ['rustic-bbq', 'speakeasy-cocktails', 'black-gold-luxury', 'chalkboard-bistro', 'firepot-dragon'].includes(theme.id);
+  const textShadowStyle = isDarkTheme ? '0 1px 2px rgba(0,0,0,0.85)' : '0 1px 1px rgba(255,255,255,0.75)';
+
   // -------------------------------------------------------------
   // RENDER COVER PAGE (PAGE 1)
   // -------------------------------------------------------------
   if (page.pageType === 'cover') {
     return (
       <div
-        className={`relative w-full aspect-[1/1.414] overflow-hidden select-none bg-stone-900 ${isPrintPreview ? 'shadow-none' : 'shadow-2xl'} transition-all ${className}`}
+        className={`relative w-full aspect-[9/16] overflow-hidden select-none bg-stone-900 ${isPrintPreview ? 'shadow-none' : 'shadow-2xl'} transition-all ${className}`}
         style={{
           backgroundImage: `url(${pageBg})`,
           backgroundSize: 'cover',
@@ -175,6 +179,7 @@ export function ArtisanGraphicTemplate({
               style={{
                 color: colors.heading,
                 fontFamily: typography.headingFont,
+                textShadow: textShadowStyle,
               }}
             >
               {restaurant.name}
@@ -250,7 +255,7 @@ export function ArtisanGraphicTemplate({
   // -------------------------------------------------------------
   return (
     <div
-      className={`relative w-full aspect-[1/1.414] overflow-hidden select-none bg-stone-900 ${isPrintPreview ? 'shadow-none' : 'shadow-2xl'} transition-all ${className}`}
+      className={`relative w-full aspect-[9/16] overflow-hidden select-none bg-stone-900 ${isPrintPreview ? 'shadow-none' : 'shadow-2xl'} transition-all ${className}`}
       style={{
         backgroundImage: `url(${pageBg})`,
         backgroundSize: 'cover',
@@ -298,6 +303,7 @@ export function ArtisanGraphicTemplate({
                   style={{
                     color: colors.subheading,
                     fontFamily: typography.subheadingFont,
+                    textShadow: textShadowStyle,
                   }}
                 >
                   {section.categoryName} {section.isContinuation ? '(Cont.)' : ''}
@@ -323,8 +329,8 @@ export function ArtisanGraphicTemplate({
 
                       {/* Dish Name */}
                       <span
-                        className="text-xs sm:text-[13px] font-semibold tracking-wide leading-tight truncate min-w-0"
-                        style={{ color: colors.text }}
+                        className="text-xs sm:text-[13px] font-bold tracking-wide leading-tight truncate min-w-0"
+                        style={{ color: colors.text, textShadow: textShadowStyle }}
                         title={item.name}
                       >
                         {item.name}
@@ -353,10 +359,11 @@ export function ArtisanGraphicTemplate({
                           </div>
                         ) : (
                           <span
-                            className="text-xs sm:text-[13px] font-bold"
+                            className="text-xs sm:text-[13px] font-extrabold"
                             style={{
                               color: colors.price,
                               fontFamily: typography.priceFont,
+                              textShadow: textShadowStyle,
                             }}
                           >
                             ₹{item.price}
