@@ -76,6 +76,9 @@ export function ArtisanGraphicTemplate({
   }, [restaurant.slug, theme.colors.heading]);
 
   const { colors, typography, safeZoneMargins } = theme;
+  const isCompactLayout = layoutMode === 'single-column' || (typeof window !== 'undefined' && window.innerWidth < 640);
+  const marginH = isCompactLayout ? '4.5%' : safeZoneMargins.left;
+  const marginV = isCompactLayout ? '5%' : safeZoneMargins.top;
 
   // -------------------------------------------------------------
   // RENDER COVER PAGE (PAGE 1)
@@ -99,11 +102,11 @@ export function ArtisanGraphicTemplate({
 
         {/* Center Safe-Zone Content Parchment Card */}
         <div
-          className="relative h-full flex flex-col justify-between items-center text-center p-5 sm:p-8 z-10 rounded-2xl shadow-xl border backdrop-blur-[1px]"
+          className="relative h-full flex flex-col justify-between items-center text-center p-4 sm:p-8 z-10 rounded-2xl shadow-xl border backdrop-blur-[1px]"
           style={{
             backgroundColor: colors.safeZoneBg || 'rgba(255, 255, 255, 0.90)',
             borderColor: colors.border,
-            margin: `${safeZoneMargins.top} ${safeZoneMargins.right} ${safeZoneMargins.bottom} ${safeZoneMargins.left}`,
+            margin: `${marginV} ${marginH} ${marginV} ${marginH}`,
           }}
         >
           {/* Top Crest / Establishment Badge */}
@@ -241,34 +244,34 @@ export function ArtisanGraphicTemplate({
 
       {/* Center Safe-Zone Content Card */}
       <div
-        className="relative h-full flex flex-col justify-between p-4 sm:p-6 z-10 rounded-2xl shadow-xl border backdrop-blur-[1px]"
+        className="relative h-full flex flex-col justify-between p-3.5 sm:p-6 z-10 rounded-2xl shadow-xl border backdrop-blur-[1px]"
         style={{
           backgroundColor: colors.safeZoneBg || 'rgba(255, 255, 255, 0.90)',
           borderColor: colors.border,
-          margin: `${safeZoneMargins.top} ${safeZoneMargins.right} ${safeZoneMargins.bottom} ${safeZoneMargins.left}`,
+          margin: `${marginV} ${marginH} ${marginV} ${marginH}`,
         }}
       >
         {/* Running Top Page Header */}
         <div
-          className="flex items-center justify-between pb-2 border-b text-[11px] sm:text-xs tracking-wider uppercase font-semibold shrink-0"
+          className="flex items-center justify-between pb-2 border-b text-[10px] sm:text-xs tracking-wider uppercase font-semibold shrink-0 gap-2"
           style={{ borderColor: colors.border, color: colors.subheading }}
         >
-          <span className="truncate max-w-[65%]" style={{ fontFamily: typography.headingFont }}>
+          <span className="truncate max-w-[48%]" style={{ fontFamily: typography.headingFont }}>
             {restaurant.name}
           </span>
-          <span className="text-[10px] tracking-widest opacity-80">
+          <span className="text-[9.5px] sm:text-[10px] tracking-widest opacity-80 truncate max-w-[50%] text-right">
             {page.runningTitle || 'Specialties'}
           </span>
         </div>
 
         {/* Page Content: Categories & Dishes */}
-        <div className="flex-1 overflow-y-auto my-2 flex flex-col justify-start space-y-3 pr-0.5 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden my-2 flex flex-col justify-start space-y-2.5 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {page.sections.map((section, sIdx) => (
-            <div key={`${section.categoryId}-${sIdx}`} className="space-y-1.5">
+            <div key={`${section.categoryId}-${sIdx}`} className="space-y-1.5 min-w-0">
               {/* Category Header */}
-              <div className="flex items-center gap-2 pt-0.5 pb-0.5">
+              <div className="flex items-center gap-2 pt-0.5 pb-0.5 min-w-0">
                 <span
-                  className="text-xs sm:text-sm font-bold uppercase tracking-widest shrink-0"
+                  className="text-xs sm:text-sm font-bold uppercase tracking-widest shrink-0 truncate max-w-[75%]"
                   style={{
                     color: colors.subheading,
                     fontFamily: typography.subheadingFont,
@@ -280,7 +283,7 @@ export function ArtisanGraphicTemplate({
                 <span className="text-[10px] opacity-60 font-serif" style={{ color: colors.ornament }}>❦</span>
               </div>
 
-              {/* Items Grid (1-Column or 2-Column) */}
+              {/* Items Grid (Single-Column for mobile/compact, Two-Column for desktop/print) */}
               <div
                 className={
                   layoutMode === 'two-column'
@@ -289,30 +292,31 @@ export function ArtisanGraphicTemplate({
                 }
               >
                 {section.items.map((item) => (
-                  <div key={item.id} className="flex flex-col group">
+                  <div key={item.id} className="flex flex-col group min-w-0">
                     {/* Item Title, Dots Leader & Price */}
-                    <div className="flex items-baseline gap-1.5 w-full">
+                    <div className="flex items-baseline gap-1.5 w-full min-w-0">
                       {/* Veg / Non-Veg Indicator */}
                       <DietBadge type={item.dietType} colors={colors} />
 
                       {/* Dish Name */}
                       <span
-                        className="text-xs sm:text-[13px] font-semibold tracking-wide leading-tight"
+                        className="text-xs sm:text-[13px] font-semibold tracking-wide leading-tight truncate min-w-0"
                         style={{ color: colors.text }}
+                        title={item.name}
                       >
                         {item.name}
                       </span>
 
                       {/* Dotted Leader Line */}
                       <span
-                        className="flex-1 border-b border-dotted mx-1 mb-1 opacity-30 min-w-[12px]"
+                        className="flex-1 border-b border-dotted mx-1 mb-1 opacity-30 min-w-[6px]"
                         style={{ borderColor: colors.border }}
                       />
 
                       {/* Pricing Tag */}
-                      <div className="shrink-0 text-right">
+                      <div className="shrink-0 text-right whitespace-nowrap ml-auto">
                         {item.halfPrice || item.fullPrice ? (
-                          <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold">
+                          <div className="inline-flex items-center gap-1.5 text-[9.5px] sm:text-xs font-semibold">
                             {item.halfPrice && (
                               <span style={{ color: colors.priceHalfFull }}>
                                 H: ₹{item.halfPrice}

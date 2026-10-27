@@ -394,7 +394,7 @@ export default function OnboardingWizard() {
         </button>
       </header>
 
-      <main className="flex-1 max-w-[1100px] w-full mx-auto p-4 sm:p-6 flex flex-col justify-center my-auto">
+      <main className="flex-1 max-w-[1240px] w-full mx-auto p-4 sm:p-6 flex flex-col justify-center my-auto">
         {/* Progress Tracker Dots */}
         <div className="flex items-center justify-between mb-8 max-w-xl mx-auto w-full">
           {steps.map((step, idx) => (
@@ -862,7 +862,7 @@ export default function OnboardingWizard() {
                       </span>
                     </div>
 
-                    <div className="w-full max-w-[360px] min-h-[500px] max-h-[600px] overflow-y-auto rounded-3xl border-2 border-stone-800 shadow-2xl bg-black custom-scrollbar flex flex-col items-center p-2">
+                    <div className="w-full max-w-[360px] rounded-3xl border-4 border-stone-800 shadow-2xl bg-black flex flex-col items-center p-2 overflow-hidden ring-1 ring-white/10">
                       <MenuTemplateRenderer
                         templateId={restaurantData.templateId}
                         restaurant={{
@@ -993,7 +993,7 @@ export default function OnboardingWizard() {
                       </span>
                     </div>
 
-                    <div className="w-full max-w-[360px] min-h-[500px] max-h-[600px] overflow-y-auto rounded-3xl border-2 border-stone-800 shadow-2xl bg-black custom-scrollbar flex flex-col items-center p-2">
+                    <div className="w-full max-w-[360px] rounded-3xl border-4 border-stone-800 shadow-2xl bg-black flex flex-col items-center p-2 overflow-hidden ring-1 ring-white/10">
                       <MenuTemplateRenderer
                         templateId={restaurantData.templateId}
                         restaurant={{

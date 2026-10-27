@@ -166,13 +166,15 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
     return rawCategories.map((c, i) => ({ id: c.id, name: c.name, order: i }));
   }, [categories, rawCategories]);
 
+  const effectiveLayoutMode: 'single-column' | 'two-column' = compact ? 'single-column' : 'two-column';
+
   const artisanPages = useMemo(() => {
     if (!artisanTheme) return [];
     return paginateMenu(effectiveCategoriesForPagination, matchingItems as any, {
-      layoutMode: 'two-column',
+      layoutMode: effectiveLayoutMode,
       enableCoverPage: true,
     });
-  }, [artisanTheme, effectiveCategoriesForPagination, matchingItems]);
+  }, [artisanTheme, effectiveCategoriesForPagination, matchingItems, effectiveLayoutMode]);
 
   const TemplateComponent = getTemplateComponent(template.id);
   const textureKey = getTemplateTextureKey(template.id);
@@ -313,6 +315,7 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
                   <ArtisanGraphicTemplate
                     theme={artisanTheme}
                     page={currentPage}
+                    layoutMode={effectiveLayoutMode}
                     restaurant={{
                       name: restaurant.name,
                       tagline: restaurant.tagline,
@@ -361,6 +364,7 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
                     <ArtisanGraphicTemplate
                       theme={artisanTheme}
                       page={pg}
+                      layoutMode={effectiveLayoutMode}
                       restaurant={{
                         name: restaurant.name,
                         tagline: restaurant.tagline,
