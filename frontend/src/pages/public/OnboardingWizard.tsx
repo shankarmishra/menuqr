@@ -491,6 +491,66 @@ export default function OnboardingWizard() {
                         </div>
                       )}
                     </div>
+
+                    {/* Brand Logo Section in Preloaded View */}
+                    <div className="p-4 bg-[#1D2723]/90 rounded-xl border border-white/10 flex items-center justify-between gap-3 flex-wrap">
+                      <div className="flex items-center gap-3">
+                        {restaurantData.logoUrl ? (
+                          <img
+                            src={restaurantData.logoUrl}
+                            alt="Logo"
+                            className="w-14 h-14 rounded-xl object-contain bg-black/50 border-2 border-[#E8783C] shadow-md shrink-0"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-xl border-2 border-dashed border-white/20 bg-[#151C19] flex flex-col items-center justify-center text-[#AAB7B2] shrink-0">
+                            <ImageIcon size={22} className="text-[#E8783C] opacity-70" />
+                            <span className="text-[9px] mt-0.5 opacity-60">No logo</span>
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-xs font-bold text-white">Brand Logo / Crest</p>
+                          <p className="text-[11px] text-[#AAB7B2]">
+                            {restaurantData.logoUrl ? 'Active on menu cover & table standee.' : 'Upload your logo to print on the menu cover & permanent standee.'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="cursor-pointer bg-[#25322D] hover:bg-[#2A3832] border border-white/15 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
+                          <Upload size={13} className="text-[#E8783C]" />
+                          <span>{restaurantData.logoUrl ? 'Change Logo' : 'Upload Logo'}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  alert('File must be under 5MB');
+                                  return;
+                                }
+                                const r = new FileReader();
+                                r.onload = (ev) => {
+                                  if (ev.target?.result) {
+                                    setRestaurantData((prev) => ({ ...prev, logoUrl: ev.target?.result as string }));
+                                  }
+                                };
+                                r.readAsDataURL(file);
+                              }
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                        {restaurantData.logoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setRestaurantData((prev) => ({ ...prev, logoUrl: '' }))}
+                            className="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   /* Editable Form Inputs */
@@ -854,6 +914,55 @@ export default function OnboardingWizard() {
 
                   {/* Live Mobile Mockup Preview (5 cols) */}
                   <div className="lg:col-span-5 bg-[#151C19] p-3 rounded-3xl border border-white/10 shadow-2xl flex flex-col items-center">
+                    
+                    {/* Brand Logo Fast-Uploader Chip in Theme Step */}
+                    <div className="w-full mb-2.5 px-3 py-2 bg-[#1D2723] rounded-2xl border border-white/10 flex items-center justify-between gap-2 shadow-xs">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {restaurantData.logoUrl ? (
+                          <img
+                            src={restaurantData.logoUrl}
+                            alt="Logo"
+                            className="w-7 h-7 rounded-lg object-contain bg-black/40 border border-[#E8783C]/40 shrink-0"
+                          />
+                        ) : (
+                          <div className="w-7 h-7 rounded-lg border border-dashed border-white/20 flex items-center justify-center text-[#AAB7B2] shrink-0">
+                            <ImageIcon size={14} className="text-[#E8783C]" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-bold text-white truncate">Restaurant Logo</p>
+                          <p className="text-[9.5px] text-[#AAB7B2] truncate">
+                            {restaurantData.logoUrl ? 'Attached to menu cover' : 'Optional (Add brand logo)'}
+                          </p>
+                        </div>
+                      </div>
+                      <label className="cursor-pointer bg-[#25322D] hover:bg-[#2F3F39] text-[#E8783C] text-[10.5px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1 border border-white/10 shrink-0 transition-colors">
+                        <Upload size={12} />
+                        <span>{restaurantData.logoUrl ? 'Change' : 'Upload'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 5 * 1024 * 1024) {
+                                alert('File must be under 5MB');
+                                return;
+                              }
+                              const r = new FileReader();
+                              r.onload = (ev) => {
+                                if (ev.target?.result) {
+                                  setRestaurantData((prev) => ({ ...prev, logoUrl: ev.target?.result as string }));
+                                }
+                              };
+                              r.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
                     <div className="w-full flex items-center justify-between pb-2 px-1 text-[11px] font-mono text-[#AAB7B2]">
                       <span>LIVE PREVIEW</span>
                       <span className="text-[#E8783C] font-bold">

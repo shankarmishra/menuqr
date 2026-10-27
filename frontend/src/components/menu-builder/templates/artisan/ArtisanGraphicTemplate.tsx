@@ -77,6 +77,30 @@ export function ArtisanGraphicTemplate({
 
   const { colors, typography, safeZoneMargins } = theme;
 
+  // Dynamic Background Image Selection per Page (Cover vs Inner Page Rotation)
+  const pageBg = (() => {
+    if (page.pageType === 'cover') {
+      return theme.coverBgImage || theme.bgImage;
+    }
+    if (theme.pageBgImages && theme.pageBgImages.length > 0) {
+      const innerIdx = Math.max(0, page.pageNumber - 2);
+      return theme.pageBgImages[innerIdx % theme.pageBgImages.length];
+    }
+    return theme.bgImage;
+  })();
+
+  // Dynamic Safe-Zone calculation (mirrors left/right for flipped facing pages)
+  const isFacingPage = typeof pageBg === 'string' && pageBg.includes('-facing');
+  const isSidebarTheme = theme.id === 'tuscan-italian' || theme.id === 'asian-dimsum';
+  const activeSafeZone = isFacingPage && isSidebarTheme
+    ? {
+        top: safeZoneMargins.top,
+        bottom: safeZoneMargins.bottom,
+        left: safeZoneMargins.right,
+        right: safeZoneMargins.left,
+      }
+    : safeZoneMargins;
+
   // -------------------------------------------------------------
   // RENDER COVER PAGE (PAGE 1)
   // -------------------------------------------------------------
@@ -85,7 +109,7 @@ export function ArtisanGraphicTemplate({
       <div
         className={`relative w-full aspect-[1/1.414] overflow-hidden select-none bg-stone-900 ${isPrintPreview ? 'shadow-none' : 'shadow-2xl'} transition-all ${className}`}
         style={{
-          backgroundImage: `url(${theme.bgImage})`,
+          backgroundImage: `url(${pageBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           fontFamily: typography.bodyFont,
@@ -101,53 +125,53 @@ export function ArtisanGraphicTemplate({
         <div
           className="relative h-full flex flex-col justify-between items-center text-center z-10"
           style={{
-            paddingTop: safeZoneMargins.top,
-            paddingBottom: safeZoneMargins.bottom,
-            paddingLeft: safeZoneMargins.left,
-            paddingRight: safeZoneMargins.right,
+            paddingTop: activeSafeZone.top,
+            paddingBottom: activeSafeZone.bottom,
+            paddingLeft: activeSafeZone.left,
+            paddingRight: activeSafeZone.right,
           }}
         >
-          {/* Top Crest / Establishment Badge */}
-          <div className="flex flex-col items-center space-y-2">
+          {/* Top Crest & Brand Logo */}
+          <div className="flex flex-col items-center space-y-1 sm:space-y-2 shrink-0">
             <div
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-widest uppercase border backdrop-blur-xs"
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] sm:text-xs font-semibold tracking-widest uppercase border backdrop-blur-xs"
               style={{
                 color: colors.subheading,
                 borderColor: colors.border,
-                backgroundColor: 'rgba(255,255,255,0.1)',
+                backgroundColor: 'rgba(255,255,255,0.08)',
               }}
             >
-              <Sparkles size={12} style={{ color: colors.ornament }} />
+              <Sparkles size={11} style={{ color: colors.ornament }} />
               <span>Est. {restaurant.estYear || '2024'} • Culinary Collection</span>
             </div>
 
-            {/* Restaurant Logo / Monogram Circle */}
+            {/* Restaurant Brand Logo or Elegant Culinary Crest */}
             {restaurant.logo ? (
-              <img
-                src={restaurant.logo}
-                alt={restaurant.name}
-                className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-full border-2 shadow-md my-2"
-                style={{ borderColor: colors.subheading }}
-              />
+              <div className="my-1 sm:my-2 flex items-center justify-center max-w-[130px] max-h-[60px] sm:max-w-[170px] sm:max-h-[85px] px-2">
+                <img
+                  src={restaurant.logo}
+                  alt={restaurant.name}
+                  className="max-h-full max-w-full object-contain filter drop-shadow-md transition-transform"
+                />
+              </div>
             ) : (
               <div
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 flex items-center justify-center font-bold text-xl sm:text-2xl shadow-md my-2"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border flex items-center justify-center my-1 sm:my-2 shadow-xs"
                 style={{
-                  borderColor: colors.subheading,
-                  color: colors.heading,
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  fontFamily: typography.headingFont,
+                  borderColor: colors.border,
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  color: colors.subheading,
                 }}
               >
-                {restaurant.name?.charAt(0) || 'M'}
+                <Utensils size={16} style={{ color: colors.ornament }} />
               </div>
             )}
           </div>
 
           {/* Center Title & Aesthetic Menu Typography */}
-          <div className="my-auto py-4 flex flex-col items-center max-w-[85%]">
+          <div className="my-auto py-1 sm:py-2 flex flex-col items-center max-w-[90%]">
             <h1
-              className="text-2xl sm:text-4xl md:text-5xl font-extrabold uppercase tracking-wider leading-tight drop-shadow-xs"
+              className="text-lg sm:text-3xl md:text-4xl font-extrabold uppercase tracking-wider leading-tight drop-shadow-xs"
               style={{
                 color: colors.heading,
                 fontFamily: typography.headingFont,
@@ -157,21 +181,21 @@ export function ArtisanGraphicTemplate({
             </h1>
 
             {/* Subtle Divider Motif */}
-            <div className="flex items-center justify-center gap-3 w-48 my-3">
-              <span className="h-px flex-1" style={{ backgroundColor: colors.border }} />
-              <Utensils size={14} style={{ color: colors.ornament }} />
-              <span className="h-px flex-1" style={{ backgroundColor: colors.border }} />
+            <div className="flex items-center justify-center gap-2 w-32 sm:w-44 my-1.5 sm:my-2.5">
+              <span className="h-px flex-1 opacity-50" style={{ backgroundColor: colors.border }} />
+              <Utensils size={12} style={{ color: colors.ornament }} />
+              <span className="h-px flex-1 opacity-50" style={{ backgroundColor: colors.border }} />
             </div>
 
             <p
-              className="text-xs sm:text-sm md:text-base font-medium tracking-wide italic opacity-90 max-w-sm"
+              className="text-[9.5px] sm:text-xs md:text-sm font-medium tracking-wide italic opacity-90 max-w-xs line-clamp-2"
               style={{ color: colors.description }}
             >
               {restaurant.tagline || restaurant.cuisine || 'Fine Culinary Experience & Crafted Delights'}
             </p>
 
             <div
-              className="mt-6 px-6 py-1.5 border-y-2 text-sm sm:text-lg tracking-[0.25em] uppercase font-bold"
+              className="mt-2.5 sm:mt-4 px-4 sm:px-6 py-0.5 sm:py-1 border-y text-[11px] sm:text-base tracking-[0.25em] uppercase font-bold"
               style={{
                 borderColor: colors.subheading,
                 color: colors.subheading,
@@ -183,17 +207,17 @@ export function ArtisanGraphicTemplate({
           </div>
 
           {/* Bottom QR Code & Location Information */}
-          <div className="flex flex-col items-center space-y-3 w-full border-t pt-3" style={{ borderColor: colors.border }}>
+          <div className="flex flex-col items-center space-y-1.5 sm:space-y-2.5 w-full border-t pt-1.5 sm:pt-3 shrink-0" style={{ borderColor: colors.border }}>
             {qrCodeDataUrl && (
               <div className="flex flex-col items-center">
                 <div
-                  className="p-1.5 rounded-lg bg-white/90 shadow-sm border"
+                  className="p-1 rounded-md bg-white shadow-xs border"
                   style={{ borderColor: colors.border }}
                 >
-                  <img src={qrCodeDataUrl} alt="Menu QR" className="w-16 h-16 sm:w-20 sm:h-20" />
+                  <img src={qrCodeDataUrl} alt="Menu QR" className="w-12 h-12 sm:w-16 sm:h-16" />
                 </div>
                 <span
-                  className="text-[10px] sm:text-xs tracking-wider uppercase font-semibold mt-1 opacity-80"
+                  className="text-[8.5px] sm:text-[10px] tracking-wider uppercase font-semibold mt-0.5 opacity-80"
                   style={{ color: colors.text }}
                 >
                   Scan for Digital Menu
@@ -201,16 +225,16 @@ export function ArtisanGraphicTemplate({
               </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] sm:text-xs opacity-85" style={{ color: colors.text }}>
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 text-[9px] sm:text-[11px] opacity-85" style={{ color: colors.text }}>
               {restaurant.address && (
                 <span className="inline-flex items-center gap-1">
-                  <MapPin size={11} style={{ color: colors.ornament }} />
+                  <MapPin size={10} style={{ color: colors.ornament }} />
                   {restaurant.address}{restaurant.city ? `, ${restaurant.city}` : ''}
                 </span>
               )}
               {restaurant.phone && (
                 <span className="inline-flex items-center gap-1">
-                  <Phone size={11} style={{ color: colors.ornament }} />
+                  <Phone size={10} style={{ color: colors.ornament }} />
                   {restaurant.phone}
                 </span>
               )}
@@ -228,7 +252,7 @@ export function ArtisanGraphicTemplate({
     <div
       className={`relative w-full aspect-[1/1.414] overflow-hidden select-none bg-stone-900 ${isPrintPreview ? 'shadow-none' : 'shadow-2xl'} transition-all ${className}`}
       style={{
-        backgroundImage: `url(${theme.bgImage})`,
+        backgroundImage: `url(${pageBg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         fontFamily: typography.bodyFont,
@@ -244,10 +268,10 @@ export function ArtisanGraphicTemplate({
       <div
         className="relative h-full flex flex-col justify-between z-10"
         style={{
-          paddingTop: safeZoneMargins.top,
-          paddingBottom: safeZoneMargins.bottom,
-          paddingLeft: safeZoneMargins.left,
-          paddingRight: safeZoneMargins.right,
+          paddingTop: activeSafeZone.top,
+          paddingBottom: activeSafeZone.bottom,
+          paddingLeft: activeSafeZone.left,
+          paddingRight: activeSafeZone.right,
         }}
       >
         {/* Running Top Page Header */}
