@@ -58,8 +58,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#9E2A2B',
       priceHalfFull: '#78350F',
       border: 'rgba(139, 69, 19, 0.28)',
-      safeZoneBg: 'rgba(235, 218, 193, 0.88)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(240, 225, 203, 0.95) 0%, rgba(224, 202, 172, 0.9) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#A75D28',
       badgeVeg: '#166534',
       badgeNonVeg: '#991B1B'
@@ -71,12 +71,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: {
-      top: '13%',
-      bottom: '12%',
-      left: '12%',
-      right: '12%'
-    },
+    safeZoneMargins: { top: '10%', bottom: '9%', left: '11%', right: '11%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -97,8 +92,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#FF7A38',
       priceHalfFull: '#F59E0B',
       border: 'rgba(226, 88, 34, 0.35)',
-      safeZoneBg: 'rgba(24, 18, 15, 0.92)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(28, 20, 16, 0.94) 0%, rgba(18, 12, 10, 0.98) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#E25822',
       badgeVeg: '#22C55E',
       badgeNonVeg: '#EF4444'
@@ -110,12 +105,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Oswald', sans-serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: {
-      top: '11%',
-      bottom: '11%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -136,8 +126,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#991B1B',
       priceHalfFull: '#78350F',
       border: 'rgba(153, 27, 27, 0.25)',
-      safeZoneBg: 'rgba(253, 248, 240, 0.94)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(255, 252, 247, 0.97) 0%, rgba(246, 238, 226, 0.92) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#166534',
       badgeVeg: '#15803D',
       badgeNonVeg: '#B91C1C'
@@ -149,12 +139,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: {
-      top: '12%',
-      bottom: '11%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '8%', bottom: '8%', left: '24%', right: '7%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -175,8 +160,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#F59E0B',
       priceHalfFull: '#FBBF24',
       border: 'rgba(212, 175, 55, 0.35)',
-      safeZoneBg: 'rgba(30, 8, 18, 0.93)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(38, 10, 24, 0.95) 0%, rgba(20, 4, 12, 0.98) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#D4AF37',
       badgeVeg: '#22C55E',
       badgeNonVeg: '#EF4444'
@@ -188,12 +173,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: {
-      top: '12%',
-      bottom: '12%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
     ornamentStyle: 'vintage-flourish'
   },
 
@@ -214,8 +194,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#9C4221',
       priceHalfFull: '#7A3519',
       border: 'rgba(140, 90, 62, 0.22)',
-      safeZoneBg: 'rgba(255, 252, 248, 0.95)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(255, 253, 250, 0.98) 0%, rgba(247, 240, 232, 0.92) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#B47C57',
       badgeVeg: '#166534',
       badgeNonVeg: '#991B1B'
@@ -227,12 +207,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: {
-      top: '11%',
-      bottom: '10%',
-      left: '10%',
-      right: '10%'
-    },
+    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -253,8 +228,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#8B4513',
       priceHalfFull: '#6B3209',
       border: 'rgba(111, 78, 55, 0.3)',
-      safeZoneBg: 'rgba(244, 235, 222, 0.93)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(248, 240, 230, 0.96) 0%, rgba(236, 224, 206, 0.9) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#6F4E37',
       badgeVeg: '#15803D',
       badgeNonVeg: '#991B1B'
@@ -266,12 +241,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Oswald', sans-serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: {
-      top: '12%',
-      bottom: '11%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -292,8 +262,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#F59E0B',
       priceHalfFull: '#D97706',
       border: 'rgba(245, 158, 11, 0.28)',
-      safeZoneBg: 'rgba(15, 17, 23, 0.93)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(18, 21, 28, 0.96) 0%, rgba(9, 10, 14, 0.99) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#F59E0B',
       badgeVeg: '#10B981',
       badgeNonVeg: '#F43F5E'
@@ -305,12 +275,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: {
-      top: '12%',
-      bottom: '12%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
     ornamentStyle: 'solid-leader'
   },
 
@@ -331,8 +296,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#1E5A3E',
       priceHalfFull: '#2D6A4F',
       border: 'rgba(45, 106, 79, 0.25)',
-      safeZoneBg: 'rgba(255, 255, 255, 0.94)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.98) 0%, rgba(242, 247, 244, 0.92) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#2D6A4F',
       badgeVeg: '#15803D',
       badgeNonVeg: '#B91C1C'
@@ -344,12 +309,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: {
-      top: '11%',
-      bottom: '10%',
-      left: '10%',
-      right: '10%'
-    },
+    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -370,8 +330,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#9F1239',
       priceHalfFull: '#BE123C',
       border: 'rgba(159, 18, 57, 0.25)',
-      safeZoneBg: 'rgba(253, 246, 237, 0.94)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(255, 250, 242, 0.97) 0%, rgba(246, 234, 219, 0.91) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#881337',
       badgeVeg: '#15803D',
       badgeNonVeg: '#BE123C'
@@ -383,12 +343,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: {
-      top: '12%',
-      bottom: '11%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '12%', bottom: '8%', left: '24%', right: '7%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -409,8 +364,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#F43F5E',
       priceHalfFull: '#FB7185',
       border: 'rgba(244, 63, 94, 0.3)',
-      safeZoneBg: 'rgba(18, 20, 26, 0.94)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(22, 25, 32, 0.96) 0%, rgba(12, 14, 18, 0.99) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#F43F5E',
       badgeVeg: '#10B981',
       badgeNonVeg: '#F43F5E'
@@ -422,12 +377,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', sans-serif",
       fontCategory: 'sans'
     },
-    safeZoneMargins: {
-      top: '11%',
-      bottom: '11%',
-      left: '10%',
-      right: '10%'
-    },
+    safeZoneMargins: { top: '12%', bottom: '12%', left: '11%', right: '11%' },
     ornamentStyle: 'solid-leader'
   },
 
@@ -448,8 +398,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#C2410C',
       priceHalfFull: '#9A3412',
       border: 'rgba(194, 65, 12, 0.28)',
-      safeZoneBg: 'rgba(254, 249, 238, 0.95)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(255, 252, 244, 0.98) 0%, rgba(249, 239, 219, 0.92) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#D97706',
       badgeVeg: '#15803D',
       badgeNonVeg: '#DC2626'
@@ -461,12 +411,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Oswald', sans-serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: {
-      top: '11%',
-      bottom: '11%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -487,8 +432,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#991B1B',
       priceHalfFull: '#B45309',
       border: 'rgba(185, 28, 28, 0.25)',
-      safeZoneBg: 'rgba(255, 253, 248, 0.96)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(255, 254, 251, 0.98) 0%, rgba(250, 244, 233, 0.93) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#991B1B',
       badgeVeg: '#166534',
       badgeNonVeg: '#B91C1C'
@@ -500,12 +445,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Oswald', sans-serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: {
-      top: '11%',
-      bottom: '10%',
-      left: '10%',
-      right: '10%'
-    },
+    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -526,8 +466,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#C2410C',
       priceHalfFull: '#9A3412',
       border: 'rgba(194, 65, 12, 0.28)',
-      safeZoneBg: 'rgba(255, 250, 240, 0.94)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(255, 253, 246, 0.97) 0%, rgba(248, 238, 221, 0.91) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#0284C7',
       badgeVeg: '#15803D',
       badgeNonVeg: '#DC2626'
@@ -539,12 +479,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: {
-      top: '12%',
-      bottom: '11%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -565,8 +500,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#1E3A8A',
       priceHalfFull: '#2563EB',
       border: 'rgba(30, 58, 138, 0.22)',
-      safeZoneBg: 'rgba(255, 255, 255, 0.95)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.98) 0%, rgba(241, 245, 249, 0.92) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#166534',
       badgeVeg: '#166534',
       badgeNonVeg: '#B91C1C'
@@ -578,12 +513,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: {
-      top: '11%',
-      bottom: '10%',
-      left: '10%',
-      right: '10%'
-    },
+    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -604,8 +534,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#FDE047',
       priceHalfFull: '#EAB308',
       border: 'rgba(234, 179, 8, 0.35)',
-      safeZoneBg: 'rgba(15, 17, 23, 0.94)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(18, 20, 27, 0.96) 0%, rgba(10, 11, 15, 0.99) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#EAB308',
       badgeVeg: '#22C55E',
       badgeNonVeg: '#EF4444'
@@ -617,12 +547,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: {
-      top: '12%',
-      bottom: '12%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
     ornamentStyle: 'solid-leader'
   },
 
@@ -643,8 +568,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#FBBF24',
       priceHalfFull: '#F59E0B',
       border: 'rgba(251, 191, 36, 0.32)',
-      safeZoneBg: 'rgba(32, 10, 28, 0.94)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(39, 12, 34, 0.96) 0%, rgba(22, 6, 19, 0.99) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#CBD5E1',
       badgeVeg: '#22C55E',
       badgeNonVeg: '#EF4444'
@@ -656,12 +581,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: {
-      top: '12%',
-      bottom: '12%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '8%', bottom: '24%', left: '8%', right: '8%' },
     ornamentStyle: 'vintage-flourish'
   },
 
@@ -682,8 +602,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#BE185D',
       priceHalfFull: '#9D174D',
       border: 'rgba(190, 24, 93, 0.22)',
-      safeZoneBg: 'rgba(255, 251, 253, 0.95)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(255, 253, 254, 0.98) 0%, rgba(252, 238, 245, 0.92) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#DB2777',
       badgeVeg: '#15803D',
       badgeNonVeg: '#BE185D'
@@ -695,12 +615,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: {
-      top: '11%',
-      bottom: '10%',
-      left: '10%',
-      right: '10%'
-    },
+    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -721,8 +636,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#FEF08A',
       priceHalfFull: '#FDE047',
       border: 'rgba(254, 240, 138, 0.3)',
-      safeZoneBg: 'rgba(24, 26, 27, 0.94)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(28, 30, 32, 0.96) 0%, rgba(16, 17, 18, 0.99) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#FFFFFF',
       badgeVeg: '#4ADE80',
       badgeNonVeg: '#F87171'
@@ -734,12 +649,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Oswald', sans-serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: {
-      top: '11%',
-      bottom: '11%',
-      left: '10%',
-      right: '10%'
-    },
+    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -760,8 +670,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#78350F',
       priceHalfFull: '#5C3818',
       border: 'rgba(92, 56, 24, 0.28)',
-      safeZoneBg: 'rgba(237, 222, 201, 0.93)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(242, 229, 210, 0.96) 0%, rgba(228, 211, 188, 0.9) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#5C3818',
       badgeVeg: '#166534',
       badgeNonVeg: '#991B1B'
@@ -773,12 +683,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Courier Prime', monospace",
       fontCategory: 'display'
     },
-    safeZoneMargins: {
-      top: '12%',
-      bottom: '11%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -799,8 +704,8 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       price: '#FF4D4D',
       priceHalfFull: '#FFAA33',
       border: 'rgba(255, 77, 77, 0.35)',
-      safeZoneBg: 'rgba(20, 14, 14, 0.94)',
-      scrimOverlay: 'radial-gradient(ellipse at center, rgba(26, 18, 18, 0.96) 0%, rgba(14, 10, 10, 0.99) 100%)',
+      safeZoneBg: 'transparent',
+      scrimOverlay: 'rgba(0, 0, 0, 0)',
       ornament: '#FFAA33',
       badgeVeg: '#22C55E',
       badgeNonVeg: '#EF4444'
@@ -812,12 +717,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: {
-      top: '12%',
-      bottom: '12%',
-      left: '11%',
-      right: '11%'
-    },
+    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   }
 ];

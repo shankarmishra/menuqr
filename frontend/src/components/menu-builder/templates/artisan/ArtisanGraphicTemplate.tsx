@@ -76,9 +76,6 @@ export function ArtisanGraphicTemplate({
   }, [restaurant.slug, theme.colors.heading]);
 
   const { colors, typography, safeZoneMargins } = theme;
-  const isCompactLayout = layoutMode === 'single-column' || (typeof window !== 'undefined' && window.innerWidth < 640);
-  const marginH = isCompactLayout ? '4.5%' : safeZoneMargins.left;
-  const marginV = isCompactLayout ? '5%' : safeZoneMargins.top;
 
   // -------------------------------------------------------------
   // RENDER COVER PAGE (PAGE 1)
@@ -100,13 +97,14 @@ export function ArtisanGraphicTemplate({
           style={{ background: theme.colors.scrimOverlay }}
         />
 
-        {/* Center Safe-Zone Content Parchment Card */}
+        {/* Center Safe-Zone Content */}
         <div
-          className="relative h-full flex flex-col justify-between items-center text-center p-4 sm:p-8 z-10 rounded-2xl shadow-xl border backdrop-blur-[1px]"
+          className="relative h-full flex flex-col justify-between items-center text-center z-10"
           style={{
-            backgroundColor: colors.safeZoneBg || 'rgba(255, 255, 255, 0.90)',
-            borderColor: colors.border,
-            margin: `${marginV} ${marginH} ${marginV} ${marginH}`,
+            paddingTop: safeZoneMargins.top,
+            paddingBottom: safeZoneMargins.bottom,
+            paddingLeft: safeZoneMargins.left,
+            paddingRight: safeZoneMargins.right,
           }}
         >
           {/* Top Crest / Establishment Badge */}
@@ -242,13 +240,14 @@ export function ArtisanGraphicTemplate({
         style={{ background: theme.colors.scrimOverlay }}
       />
 
-      {/* Center Safe-Zone Content Card */}
+      {/* Center Safe-Zone Content Area */}
       <div
-        className="relative h-full flex flex-col justify-between p-3.5 sm:p-6 z-10 rounded-2xl shadow-xl border backdrop-blur-[1px]"
+        className="relative h-full flex flex-col justify-between z-10"
         style={{
-          backgroundColor: colors.safeZoneBg || 'rgba(255, 255, 255, 0.90)',
-          borderColor: colors.border,
-          margin: `${marginV} ${marginH} ${marginV} ${marginH}`,
+          paddingTop: safeZoneMargins.top,
+          paddingBottom: safeZoneMargins.bottom,
+          paddingLeft: safeZoneMargins.left,
+          paddingRight: safeZoneMargins.right,
         }}
       >
         {/* Running Top Page Header */}
