@@ -70,7 +70,7 @@ export function paginateMenu(
 
   // Virtual capacity per inner page (in weight units)
   // Calibrated for optimal luxury layout without clipping
-  const maxCapacityPerPage = layoutMode === 'two-column' ? 12 : 6;
+  const maxCapacityPerPage = layoutMode === 'two-column' ? 16 : 9;
 
   // Filter available items and group by category
   const activeItems = items.filter(it => it.available !== false);

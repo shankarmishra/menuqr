@@ -73,7 +73,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: { top: '10%', bottom: '9%', left: '11%', right: '11%' },
+    safeZoneMargins: { top: '16%', bottom: '18%', left: '18%', right: '18%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -88,16 +88,16 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
     pageBgImages: ["/assets/themes/rustic-bbq.jpg", "/assets/themes/variations/rustic-bbq-facing.jpg", "/assets/themes/variations/rustic-bbq-alt.jpg"],
     accentIcon: 'Flame',
     colors: {
-      heading: '#FAF0E6',
-      subheading: '#E25822',
-      text: '#F3E5D8',
-      description: '#D1B8A0',
-      price: '#FF7A38',
-      priceHalfFull: '#F59E0B',
-      border: 'rgba(226, 88, 34, 0.35)',
+      heading: '#FFFFFF',
+      subheading: '#FBBF24',
+      text: '#F8FAFC',
+      description: '#D1D5DB',
+      price: '#FDE047',
+      priceHalfFull: '#FBBF24',
+      border: 'rgba(251, 191, 36, 0.3)',
       safeZoneBg: 'transparent',
       scrimOverlay: 'rgba(0, 0, 0, 0)',
-      ornament: '#E25822',
+      ornament: '#FBBF24',
       badgeVeg: '#22C55E',
       badgeNonVeg: '#EF4444'
     },
@@ -108,7 +108,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Oswald', sans-serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '22%', bottom: '19%', left: '12%', right: '14%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -143,7 +143,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: { top: '8%', bottom: '8%', left: '24%', right: '7%' },
+    safeZoneMargins: { top: '8%', bottom: '18%', left: '25%', right: '8%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -178,7 +178,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '23%', bottom: '15%', left: '14%', right: '17%' },
     ornamentStyle: 'vintage-flourish'
   },
 
@@ -213,7 +213,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '14%', bottom: '15%', left: '12%', right: '12%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -248,7 +248,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Oswald', sans-serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '15%', bottom: '22%', left: '12%', right: '12%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -283,7 +283,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '12%', bottom: '12%', left: '10%', right: '10%' },
     ornamentStyle: 'solid-leader'
   },
 
@@ -318,7 +318,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '14%', bottom: '14%', left: '14%', right: '14%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -353,7 +353,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: { top: '12%', bottom: '8%', left: '24%', right: '7%' },
+    safeZoneMargins: { top: '8%', bottom: '10%', left: '28%', right: '8%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -388,7 +388,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', sans-serif",
       fontCategory: 'sans'
     },
-    safeZoneMargins: { top: '12%', bottom: '12%', left: '11%', right: '11%' },
+    safeZoneMargins: { top: '26%', bottom: '22%', left: '10%', right: '10%' },
     ornamentStyle: 'solid-leader'
   },
 
@@ -423,7 +423,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Oswald', sans-serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '21%', bottom: '21%', left: '18%', right: '16%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -458,7 +458,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Oswald', sans-serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '14%', bottom: '16%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -493,7 +493,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '18%', bottom: '20%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -528,7 +528,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '24%', bottom: '17%', left: '15%', right: '12%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -563,7 +563,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '12%', bottom: '12%', left: '10%', right: '10%' },
     ornamentStyle: 'solid-leader'
   },
 
@@ -598,7 +598,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'serif'
     },
-    safeZoneMargins: { top: '8%', bottom: '24%', left: '8%', right: '8%' },
+    safeZoneMargins: { top: '8%', bottom: '25%', left: '12%', right: '10%' },
     ornamentStyle: 'vintage-flourish'
   },
 
@@ -633,7 +633,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Playfair Display', serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '12%', bottom: '14%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -668,7 +668,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Oswald', sans-serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: { top: '10%', bottom: '10%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '12%', bottom: '12%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -703,7 +703,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Courier Prime', monospace",
       fontCategory: 'display'
     },
-    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '14%', bottom: '20%', left: '10%', right: '10%' },
     ornamentStyle: 'dotted-leader'
   },
 
@@ -738,7 +738,7 @@ export const artisanGraphicThemes: ArtisanGraphicTheme[] = [
       priceFont: "'Cinzel', serif",
       fontCategory: 'display'
     },
-    safeZoneMargins: { top: '11%', bottom: '11%', left: '10%', right: '10%' },
+    safeZoneMargins: { top: '26%', bottom: '24%', left: '14%', right: '14%' },
     ornamentStyle: 'dotted-leader'
   }
 ];

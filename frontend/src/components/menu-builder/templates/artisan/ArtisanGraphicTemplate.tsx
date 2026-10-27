@@ -269,6 +269,16 @@ export function ArtisanGraphicTemplate({
         style={{ background: theme.colors.scrimOverlay }}
       />
 
+      {/* Subtle Soft Focus Safe-Zone Contrast Backing (Zero harsh borders, 100% seamless feather) */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: isDarkTheme
+            ? 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0) 75%)'
+            : 'radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 75%)',
+        }}
+      />
+
       {/* Center Safe-Zone Content Area */}
       <div
         className="relative h-full flex flex-col justify-between z-10"
@@ -281,19 +291,19 @@ export function ArtisanGraphicTemplate({
       >
         {/* Running Top Page Header */}
         <div
-          className="flex items-center justify-between pb-2 border-b text-[10px] sm:text-xs tracking-wider uppercase font-semibold shrink-0 gap-2"
+          className="flex items-center justify-between pb-1.5 border-b text-[10px] sm:text-xs tracking-wider uppercase font-semibold shrink-0 gap-2"
           style={{ borderColor: colors.border, color: colors.subheading }}
         >
-          <span className="truncate max-w-[48%]" style={{ fontFamily: typography.headingFont }}>
+          <span className="truncate max-w-[48%]" style={{ fontFamily: typography.headingFont, textShadow: textShadowStyle }}>
             {restaurant.name}
           </span>
-          <span className="text-[9.5px] sm:text-[10px] tracking-widest opacity-80 truncate max-w-[50%] text-right">
+          <span className="text-[9.5px] sm:text-[10px] tracking-widest opacity-85 truncate max-w-[50%] text-right" style={{ textShadow: textShadowStyle }}>
             {page.runningTitle || 'Specialties'}
           </span>
         </div>
 
-        {/* Page Content: Categories & Dishes */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden my-2 flex flex-col justify-start space-y-2.5 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* Page Content: Categories & Dishes (Vertically centered when few items, natural flow when full) */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden my-auto py-1 flex flex-col justify-center space-y-2 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {page.sections.map((section, sIdx) => (
             <div key={`${section.categoryId}-${sIdx}`} className="space-y-1.5 min-w-0">
               {/* Category Header */}
