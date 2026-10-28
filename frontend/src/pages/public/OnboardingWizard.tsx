@@ -15,9 +15,7 @@ import {
   CheckCircle2, 
   FileSpreadsheet, 
   Download, 
-  RefreshCw, 
-  Layers, 
-  Flame
+  RefreshCw 
 } from 'lucide-react';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import QRCode from 'qrcode';
@@ -26,7 +24,6 @@ import { exportStickerToPng } from '../../utils/stickerExporter';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import QRGenerationSequence from '../../components/qr-studio/QRGenerationSequence';
 import { menuTemplates } from '../../data/menuTemplates';
-import { artisanGraphicThemes } from '../../data/artisanGraphicThemes';
 import { 
   parseExcelMenuFile, 
   downloadSampleMenuExcel, 
@@ -157,9 +154,6 @@ export default function OnboardingWizard() {
     dualPriceCount: number;
   } | null>(null);
 
-  // Theme selection tab state: 20 Artisan Graphic vs 15 Modern CSS
-  const [themeTab, setThemeTab] = useState<'artisan' | 'modern'>('artisan');
-
   // Luxury Table Plaque Sticker State
   const [stickerQrDataUrl, setStickerQrDataUrl] = useState<string>('');
   const stickerCardRef = useRef<HTMLDivElement>(null);
@@ -222,7 +216,7 @@ export default function OnboardingWizard() {
     city: '',
     address: '',
     logoUrl: '',
-    templateId: 'seafood-coastal', // Default to premier Artisan Graphic background theme
+    templateId: 'rajasthani-heritage', // Default to Heritage Parchment Atelier
     categories: [],
     items: [],
     orderingEnabled: false,
@@ -791,36 +785,10 @@ export default function OnboardingWizard() {
                     <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5">
                       <Sparkles size={14} /> Step 3
                     </span>
-                    <h2 className="text-2xl sm:text-3xl font-black text-white">Select Menu Theme (35 Themes)</h2>
+                    <h2 className="text-2xl sm:text-3xl font-black text-white">Select Menu Theme ({menuTemplates.length} Themes)</h2>
                     <p className="text-xs sm:text-sm text-[#AAB7B2]">
-                      Choose from 20 Artisan Graphic Background Themes or 15 Digital Dynamic CSS Themes.
+                      Choose from {menuTemplates.length} handcrafted mobile-first digital themes.
                     </p>
-                  </div>
-
-                  {/* Tabs: Artisan vs Modern */}
-                  <div className="flex items-center gap-1 p-1 bg-[#151C19] border border-white/10 rounded-2xl shrink-0 self-start">
-                    <button
-                      type="button"
-                      onClick={() => setThemeTab('artisan')}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                        themeTab === 'artisan'
-                          ? 'bg-[#E8783C] text-white shadow-md'
-                          : 'text-[#AAB7B2] hover:text-white'
-                      }`}
-                    >
-                      <Flame size={13} /> Artisan Graphic ({artisanGraphicThemes.length})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setThemeTab('modern')}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                        themeTab === 'modern'
-                          ? 'bg-[#E8783C] text-white shadow-md'
-                          : 'text-[#AAB7B2] hover:text-white'
-                      }`}
-                    >
-                      <Layers size={13} /> Modern CSS ({menuTemplates.length})
-                    </button>
                   </div>
                 </div>
 
@@ -829,87 +797,36 @@ export default function OnboardingWizard() {
                   
                   {/* Theme Cards Grid (8 cols) */}
                   <div className="lg:col-span-7 max-h-[460px] overflow-y-auto pr-1 space-y-3">
-                    
-                    {/* TAB 1: 20 ARTISAN GRAPHIC BACKGROUND THEMES */}
-                    {themeTab === 'artisan' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {artisanGraphicThemes.map((tpl) => {
-                          const isSelected = restaurantData.templateId === tpl.id;
-                          return (
-                            <button
-                              key={tpl.id}
-                              type="button"
-                              onClick={() => setRestaurantData({ ...restaurantData, templateId: tpl.id })}
-                              className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer ${
-                                isSelected
-                                  ? 'border-[#E8783C] bg-[#E8783C]/10 ring-2 ring-[#E8783C] shadow-xl'
-                                  : 'border-white/10 bg-[#151C19] hover:border-white/30 hover:bg-[#1a2320]'
-                              }`}
-                            >
-                              {/* Background Art Thumbnail Header */}
-                              <div
-                                className="h-20 w-full rounded-xl mb-2.5 overflow-hidden relative border border-white/10 bg-stone-900"
-                                style={{
-                                  backgroundImage: `url(${tpl.bgImage})`,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center',
-                                }}
-                              >
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                                <span className="absolute bottom-1.5 left-2 text-[9px] font-mono uppercase px-2 py-0.5 rounded-md bg-black/70 text-amber-300 font-bold border border-amber-400/30">
-                                  {tpl.badge}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {menuTemplates.map((tpl) => {
+                        const isSelected = restaurantData.templateId === tpl.id;
+                        return (
+                          <button
+                            key={tpl.id}
+                            type="button"
+                            onClick={() => setRestaurantData({ ...restaurantData, templateId: tpl.id })}
+                            className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer ${
+                              isSelected
+                                ? 'border-[#E8783C] bg-[#E8783C]/10 ring-2 ring-[#E8783C] shadow-xl'
+                                : 'border-white/10 bg-[#151C19] hover:border-white/30 hover:bg-[#1a2320]'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: tpl.colors.bg }} />
+                              <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: tpl.colors.accent }} />
+                              <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: tpl.colors.heading }} />
+                              {isSelected && (
+                                <span className="ml-auto w-5 h-5 rounded-full bg-[#E8783C] text-white flex items-center justify-center">
+                                  <Check size={12} />
                                 </span>
-                                {isSelected && (
-                                  <span className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-[#E8783C] text-white flex items-center justify-center shadow-md">
-                                    <Check size={13} />
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="space-y-0.5">
-                                <h4 className="text-xs font-bold text-white leading-tight truncate">{tpl.name}</h4>
-                                <p className="text-[10px] text-[#AAB7B2] truncate">{tpl.cuisine}</p>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* TAB 2: 15 MODERN CSS THEMES */}
-                    {themeTab === 'modern' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {menuTemplates.map((tpl) => {
-                          const isSelected = restaurantData.templateId === tpl.id;
-                          return (
-                            <button
-                              key={tpl.id}
-                              type="button"
-                              onClick={() => setRestaurantData({ ...restaurantData, templateId: tpl.id })}
-                              className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer ${
-                                isSelected
-                                  ? 'border-[#E8783C] bg-[#E8783C]/10 ring-2 ring-[#E8783C] shadow-xl'
-                                  : 'border-white/10 bg-[#151C19] hover:border-white/30 hover:bg-[#1a2320]'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: tpl.colors.bg }} />
-                                <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: tpl.colors.accent }} />
-                                <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: tpl.colors.heading }} />
-                                {isSelected && (
-                                  <span className="ml-auto w-5 h-5 rounded-full bg-[#E8783C] text-white flex items-center justify-center">
-                                    <Check size={12} />
-                                  </span>
-                                )}
-                              </div>
-                              <h4 className="text-xs font-bold text-white leading-tight truncate">{tpl.name}</h4>
-                              <p className="text-[10px] text-[#AAB7B2] truncate">{tpl.subtitle}</p>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
+                              )}
+                            </div>
+                            <h4 className="text-xs font-bold text-white leading-tight truncate">{tpl.name}</h4>
+                            <p className="text-[10px] text-[#AAB7B2] truncate">{tpl.subtitle}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Live Mobile Mockup Preview (5 cols) */}
@@ -966,8 +883,7 @@ export default function OnboardingWizard() {
                     <div className="w-full flex items-center justify-between pb-2 px-1 text-[11px] font-mono text-[#AAB7B2]">
                       <span>LIVE PREVIEW</span>
                       <span className="text-[#E8783C] font-bold">
-                        {artisanGraphicThemes.find(t => t.id === restaurantData.templateId)?.name || 
-                         menuTemplates.find(t => t.id === restaurantData.templateId)?.name || 'Custom Theme'}
+                        {menuTemplates.find(t => t.id === restaurantData.templateId)?.name || 'Custom Theme'}
                       </span>
                     </div>
 
@@ -1097,8 +1013,7 @@ export default function OnboardingWizard() {
                     <div className="w-full flex items-center justify-between px-1 text-xs font-mono text-[#AAB7B2]">
                       <span>LIVE CUSTOMER MENU</span>
                       <span className="text-[#E8783C] font-bold">
-                        {artisanGraphicThemes.find((t) => t.id === restaurantData.templateId)?.name ||
-                         menuTemplates.find((t) => t.id === restaurantData.templateId)?.name || 'Custom Theme'}
+                        {menuTemplates.find((t) => t.id === restaurantData.templateId)?.name || 'Custom Theme'}
                       </span>
                     </div>
 

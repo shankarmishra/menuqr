@@ -134,5 +134,96 @@ export const TEMPLATE_TEXTURES = {
     overlayPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0 h60 v60 h-60 z' fill='none' stroke='%23000000' stroke-opacity='0.03' stroke-width='1'/%3E%3C/svg%3E")`,
     textColor: `text-black`,
     accentColor: `#000000`,
-  }
+  },
+
+  // 16. Ember: Smouldering Charcoal & Amber Fire Glow
+  ember: {
+    bg: `bg-[#0D0A08]`,
+    gradient: `bg-gradient-to-b from-[#1A1209] via-[#0D0A08] to-[#070504]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='12' r='1' fill='%23F5A623' fill-opacity='0.08'/%3E%3C/svg%3E")`,
+    textColor: `text-[#F5ECD7]`,
+    accentColor: `#F5A623`,
+  },
+
+  // 17. Maison: Parisian Cream Linen & Champagne Hairlines
+  maison: {
+    bg: `bg-[#FAF8F4]`,
+    gradient: `bg-gradient-to-b from-[#FFFFFF] via-[#FAF8F4] to-[#F3EFE8]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='40' height='40' fill='none' stroke='%23B8944A' stroke-opacity='0.04' stroke-width='0.5'/%3E%3C/svg%3E")`,
+    textColor: `text-[#1C1A18]`,
+    accentColor: `#B8944A`,
+  },
+
+  // 18. Botanica: Sage Botanical Paper Grain
+  botanica: {
+    bg: `bg-[#F4F0E8]`,
+    gradient: `bg-gradient-to-b from-[#FDFCF8] via-[#F4F0E8] to-[#E9E4D8]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='5' cy='5' r='1' fill='%235C7A4E' fill-opacity='0.06'/%3E%3C/svg%3E")`,
+    textColor: `text-[#2D3B2D]`,
+    accentColor: `#5C7A4E`,
+  },
+
+  // 19. Smash Club: Obsidian Black & Red Stencil
+  smashClub: {
+    bg: `bg-[#0F0F0F]`,
+    gradient: `bg-gradient-to-b from-[#1C1C1C] via-[#0F0F0F] to-[#080808]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='20' fill='%23FF3B1A' fill-opacity='0.04'/%3E%3C/svg%3E")`,
+    textColor: `text-[#F5F5F5]`,
+    accentColor: `#FF3B1A`,
+  },
+
+  // 20. Tokyo Table: Clean Zen Ink & Offset Grid
+  tokyoTable: {
+    bg: `bg-[#FAFAFA]`,
+    gradient: `bg-gradient-to-b from-[#FFFFFF] via-[#FAFAFA] to-[#F0F0F0]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 50 L50 0' stroke='%23C0392B' stroke-opacity='0.03' stroke-width='0.5'/%3E%3C/svg%3E")`,
+    textColor: `text-[#1A1A1A]`,
+    accentColor: `#C0392B`,
+  },
+
+  // 21. Riviera: Azure Ocean & Gold Sparkle
+  riviera: {
+    bg: `bg-[#0A2A4A]`,
+    gradient: `bg-gradient-to-b from-[#0E3460] via-[#0A2A4A] to-[#071E36]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='%23F0C674' fill-opacity='0.08'/%3E%3C/svg%3E")`,
+    textColor: `text-[#F5EDD8]`,
+    accentColor: `#F0C674`,
+  },
+
+  // 22. Greenhouse: Living Plant Glass Pane
+  greenhouse: {
+    bg: `bg-[#E8F0E6]`,
+    gradient: `bg-gradient-to-b from-[#F2F7F0] via-[#E8F0E6] to-[#DCE6DA]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='32' height='32' fill='none' stroke='%233A6B3A' stroke-opacity='0.05' stroke-width='1'/%3E%3C/svg%3E")`,
+    textColor: `text-[#1C2D1C]`,
+    accentColor: `#3A6B3A`,
+  },
+
+  // 23. Gully: Dhaba Chalk Dust & Turmeric
+  gully: {
+    bg: `bg-[#1A1200]`,
+    gradient: `bg-gradient-to-b from-[#261A00] via-[#1A1200] to-[#120B00]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='6' cy='6' r='1.5' fill='%23FFD700' fill-opacity='0.07'/%3E%3C/svg%3E")`,
+    textColor: `text-[#FFF5CC]`,
+    accentColor: `#E84040`,
+  },
+
+  // 24. Patisserie: Blush Rose & Confectionery Macaron
+  patisserie: {
+    bg: `bg-[#FDF6F0]`,
+    gradient: `bg-gradient-to-b from-[#FFFFFF] via-[#FDF6F0] to-[#F7EDE4]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='1' fill='%23C4736A' fill-opacity='0.08'/%3E%3C/svg%3E")`,
+    textColor: `text-[#2A1A1A]`,
+    accentColor: `#C4736A`,
+  },
+
+  // 25. Studio 10: Editorial Off-Black & Technical Grid
+  studio10: {
+    bg: `bg-[#111111]`,
+    gradient: `bg-gradient-to-b from-[#1C1C1C] via-[#111111] to-[#0A0A0A]`,
+    overlayPattern: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='40' height='40' fill='none' stroke='%23E8D5B0' stroke-opacity='0.04' stroke-width='0.5'/%3E%3C/svg%3E")`,
+    textColor: `text-[#F0EDE8]`,
+    accentColor: `#E8D5B0`,
+  },
 };
+

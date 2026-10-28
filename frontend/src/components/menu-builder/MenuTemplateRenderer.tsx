@@ -1,10 +1,6 @@
 import React, { useState, useMemo, Suspense } from 'react';
 import clsx from 'clsx';
 import { menuTemplates, isTemplateDark } from '../../data/menuTemplates';
-import { artisanGraphicThemes } from '../../data/artisanGraphicThemes';
-import { paginateMenu } from '../../utils/menuPaginator';
-import { ArtisanGraphicTemplate } from './templates/artisan/ArtisanGraphicTemplate';
-import { ChevronLeft, ChevronRight, Layers, BookOpen } from 'lucide-react';
 import { getTemplateComponent, getTemplateTextureKey, TEMPLATE_TEXTURES, type CategoryGroup } from './templates';
 import { UniversalMenuSearch } from './templates/shared/UniversalMenuSearch';
 import { MenuCartContext } from './templates/shared/MenuCartContext';
@@ -150,32 +146,6 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
 
 
 
-  const artisanTheme = useMemo(() => {
-    return artisanGraphicThemes.find(
-      (t) => t.id === templateId || t.name.toLowerCase().replace(/\s+/g, '-') === templateId
-    );
-  }, [templateId]);
-
-  const [activeArtisanPageIdx, setActiveArtisanPageIdx] = useState(0);
-  const [artisanViewMode, setArtisanViewMode] = useState<'flip' | 'scroll'>('scroll');
-
-  const effectiveCategoriesForPagination = useMemo(() => {
-    if (categories && categories.length > 0) {
-      return categories;
-    }
-    return rawCategories.map((c, i) => ({ id: c.id, name: c.name, order: i }));
-  }, [categories, rawCategories]);
-
-  const effectiveLayoutMode: 'single-column' | 'two-column' = compact ? 'single-column' : 'two-column';
-
-  const artisanPages = useMemo(() => {
-    if (!artisanTheme) return [];
-    return paginateMenu(effectiveCategoriesForPagination, matchingItems as any, {
-      layoutMode: effectiveLayoutMode,
-      enableCoverPage: true,
-    });
-  }, [artisanTheme, effectiveCategoriesForPagination, matchingItems, effectiveLayoutMode]);
-
   const TemplateComponent = getTemplateComponent(template.id);
   const textureKey = getTemplateTextureKey(template.id);
   const textureObj = TEMPLATE_TEXTURES[textureKey];
@@ -238,157 +208,6 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
       )}
     </div>
   );
-
-  if (artisanTheme) {
-    const totalPages = Math.max(artisanPages.length, 1);
-    const safeIdx = Math.min(Math.max(activeArtisanPageIdx, 0), totalPages - 1);
-    const currentPage = artisanPages[safeIdx] || {
-      pageNumber: 1,
-      totalPages: 1,
-      pageType: 'cover' as const,
-      sections: [],
-    };
-
-    return (
-      <MenuCartContext.Provider value={{ onAddToCart, onRemoveFromCart, getItemQuantity }}>
-        <div
-          className={clsx(
-            'w-full transition-all duration-300 relative',
-            compact ? 'p-1 text-xs' : 'p-3 sm:p-8 min-h-screen text-sm bg-neutral-950 text-stone-200',
-            className
-          )}
-        >
-          <div className={clsx('mx-auto relative z-10', compact ? 'max-w-xl' : 'max-w-4xl')}>
-            {!compact && searchBar}
-
-            {!compact && totalPages > 1 && (
-              <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm text-xs text-stone-300">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-white">{artisanTheme.name}</span>
-                  <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
-                    {artisanTheme.badge}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setArtisanViewMode(artisanViewMode === 'flip' ? 'scroll' : 'flip')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium transition-colors cursor-pointer"
-                  >
-                    {artisanViewMode === 'flip' ? <Layers size={13} /> : <BookOpen size={13} />}
-                    <span>{artisanViewMode === 'flip' ? 'View All Pages' : 'Flip Page by Page'}</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {(compact || artisanViewMode === 'flip') ? (
-              <div className="flex flex-col items-center space-y-2 w-full">
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-between w-full max-w-sm px-3 py-1.5 bg-neutral-900/95 border border-white/10 rounded-xl shadow-lg backdrop-blur-md text-xs mb-1 sticky top-0 z-30">
-                    <button
-                      type="button"
-                      disabled={safeIdx <= 0}
-                      onClick={() => setActiveArtisanPageIdx((p) => Math.max(0, p - 1))}
-                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-white transition-all cursor-pointer flex items-center gap-1 font-semibold text-[11px]"
-                    >
-                      <ChevronLeft size={14} /> Prev
-                    </button>
-                    <span className="font-mono text-stone-200 font-bold text-center text-xs">
-                      Page {safeIdx + 1} of {totalPages}
-                      <span className="text-[9px] text-amber-400 font-normal block">
-                        {currentPage.pageType === 'cover' ? 'Front Cover' : currentPage.runningTitle || 'Menu Dishes'}
-                      </span>
-                    </span>
-                    <button
-                      type="button"
-                      disabled={safeIdx >= totalPages - 1}
-                      onClick={() => setActiveArtisanPageIdx((p) => Math.min(totalPages - 1, p + 1))}
-                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-white transition-all cursor-pointer flex items-center gap-1 font-semibold text-[11px]"
-                    >
-                      Next <ChevronRight size={14} />
-                    </button>
-                  </div>
-                )}
-
-                <div className="w-full rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-                  <ArtisanGraphicTemplate
-                    theme={artisanTheme}
-                    page={currentPage}
-                    layoutMode={effectiveLayoutMode}
-                    restaurant={{
-                      name: restaurant.name,
-                      tagline: restaurant.tagline,
-                      cuisine: restaurant.cuisine,
-                      phone: restaurant.phone,
-                      address: restaurant.address,
-                      city: restaurant.city,
-                      state: restaurant.state,
-                      openingHours: restaurant.openingHours,
-                      logo: restaurant.logo,
-                      slug: (restaurant as any).slug,
-                    }}
-                    onAddToCart={effectiveAddToCart}
-                    getItemQuantity={getItemQuantity}
-                  />
-                </div>
-
-                {!compact && totalPages > 1 && (
-                  <div className="flex items-center justify-between w-full max-w-sm px-4 py-2 bg-neutral-900/90 border border-white/10 rounded-2xl shadow-lg backdrop-blur-md text-xs mt-2">
-                    <button
-                      type="button"
-                      disabled={safeIdx <= 0}
-                      onClick={() => setActiveArtisanPageIdx((p) => Math.max(0, p - 1))}
-                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-white transition-all cursor-pointer flex items-center gap-1 font-semibold"
-                    >
-                      <ChevronLeft size={16} /> Prev
-                    </button>
-                    <span className="font-mono text-stone-300 font-bold text-center">
-                      Page {safeIdx + 1} of {totalPages}
-                    </span>
-                    <button
-                      type="button"
-                      disabled={safeIdx >= totalPages - 1}
-                      onClick={() => setActiveArtisanPageIdx((p) => Math.min(totalPages - 1, p + 1))}
-                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-white transition-all cursor-pointer flex items-center gap-1 font-semibold"
-                    >
-                      Next <ChevronRight size={16} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {artisanPages.map((pg, idx) => (
-                  <div key={idx} className="rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-                    <ArtisanGraphicTemplate
-                      theme={artisanTheme}
-                      page={pg}
-                      layoutMode={effectiveLayoutMode}
-                      restaurant={{
-                        name: restaurant.name,
-                        tagline: restaurant.tagline,
-                        cuisine: restaurant.cuisine,
-                        phone: restaurant.phone,
-                        address: restaurant.address,
-                        city: restaurant.city,
-                        state: restaurant.state,
-                        openingHours: restaurant.openingHours,
-                        logo: restaurant.logo,
-                        slug: (restaurant as any).slug,
-                      }}
-                      onAddToCart={effectiveAddToCart}
-                      getItemQuantity={getItemQuantity}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </MenuCartContext.Provider>
-    );
-  }
 
   return (
     <MenuCartContext.Provider value={{ onAddToCart, onRemoveFromCart, getItemQuantity }}>

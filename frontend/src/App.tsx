@@ -133,6 +133,7 @@ const PurchaseDetailsPage = lazyWithRetry(() => import('./pages/purchase/Purchas
 const PurchaseReviewPage = lazyWithRetry(() => import('./pages/purchase/PurchaseReviewPage'));
 const PurchaseSuccessPage = lazyWithRetry(() => import('./pages/purchase/PurchaseSuccessPage'));
 const TemplateAuditCanvas = lazyWithRetry(() => import('./pages/public/TemplateAuditCanvas'));
+const TemplateShowcasePage = lazyWithRetry(() => import('./pages/public/TemplateShowcasePage'));
 const MenuPage = lazyWithRetry(() => import('./pages/customer/MenuPage'));
 
 function ProtectedAdminLayout() {
@@ -344,6 +345,8 @@ function PublicAppRoutes() {
         <Route path="/menu/:slug" element={<ChunkErrorBoundary><Suspense fallback={null}><MenuPage key={menuSlug} /></Suspense></ChunkErrorBoundary>} />
         <Route path="/audit-preview/:templateId" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><TemplateAuditCanvas /></Suspense></ChunkErrorBoundary>} />
         <Route path="/audit-preview" element={<Navigate to="/audit-preview/royal-maharaja" replace />} />
+        <Route path="/template-showcase" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><TemplateShowcasePage /></Suspense></ChunkErrorBoundary>} />
+        <Route path="/showcase" element={<Navigate to="/template-showcase" replace />} />
 
         {/* Auth & Admin */}
         <Route path="/login" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><AdminLogin /></Suspense></ChunkErrorBoundary>} />

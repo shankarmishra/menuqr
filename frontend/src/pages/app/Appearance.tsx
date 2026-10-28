@@ -16,17 +16,13 @@ import {
   Upload, 
   Trash2, 
   Image as ImageIcon,
-  Sparkles,
-  FileSpreadsheet
+  Sparkles
 } from 'lucide-react';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
-import { MultiPageMenuStudio } from '../../components/menu-builder/MultiPageMenuStudio';
 import PremiumIPhoneMockup from '../../components/marketing/PremiumIPhoneMockup';
 import IsolatedMobileFrame from '../../components/menu-builder/IsolatedMobileFrame';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import { menuTemplates, isTemplateDark, isColorDark } from '../../data/menuTemplates';
-import { artisanGraphicThemes } from '../../data/artisanGraphicThemes';
-import { Flame, Layers } from 'lucide-react';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { 
   getAppearance, 
@@ -41,39 +37,30 @@ import {
 } from './appStore';
 
 const THEME_CATEGORIES = [
-  { id: 'all', label: 'All Themes', count: 15 },
-  { id: 'heritage', label: 'Royal & Heritage', count: 5 },
-  { id: 'fine-dining', label: 'Fine Dining & Luxury', count: 4 },
-  { id: 'cafe', label: 'Café & Bistro', count: 2 },
-  { id: 'street', label: 'Street Food', count: 2 },
-  { id: 'minimal', label: 'Modern & Minimal', count: 2 },
+  { id: 'all', label: 'All Themes', count: 2 },
+  { id: 'heritage', label: 'Heritage Masterpieces', count: 2 },
 ] as const;
 
 type ThemeCategoryFilter = typeof THEME_CATEGORIES[number]['id'];
 
-function getThemeGroup(id: string): 'heritage' | 'fine-dining' | 'cafe' | 'street' | 'minimal' {
-  if (['royal-maharaja', 'rajasthani-heritage', 'mughal-luxe', 'banarasi-gold', 'south-indian-heritage'].includes(id)) return 'heritage';
-  if (['modern-india', 'spice-house', 'maison-noir', 'grand-table'].includes(id)) return 'fine-dining';
-  if (['coffee-house', 'paper-cafe'].includes(id)) return 'cafe';
-  if (['indian-street-kitchen', 'bombay-street'].includes(id)) return 'street';
-  return 'minimal'; // ivory-dining, minimal-editorial
+function getThemeGroup(_id: string): 'heritage' {
+  return 'heritage';
 }
+
 
 export default function Appearance() {
   const [menu, setMenu] = useState<AppMenuData | null>(null);
   const [profile, setProfile] = useState<AppProfile | null>(null);
   const [sub, setSub] = useState<AppSubscriptionData | null>(null);
-  const [templateId, setTemplateId] = useState('royal-maharaja');
+  const [templateId, setTemplateId] = useState('rajasthani-heritage');
   const [brandLogo, setBrandLogo] = useState<string>('');
   const [displayName, setDisplayName] = useState<string>('');
   const [brandTagline, setBrandTagline] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<ThemeCategoryFilter>('all');
   const [previewMode, setPreviewMode] = useState<'phone' | 'desktop'>('phone');
-  const [themeFamily, setThemeFamily] = useState<'artisan' | 'dynamic'>('artisan');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [isMultiPageStudioOpen, setIsMultiPageStudioOpen] = useState(false);
   const [mockCart, setMockCart] = useState<Array<{ id: string; name: string; price: number; quantity: number }>>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const showToast = useToast();
@@ -84,7 +71,7 @@ export default function Appearance() {
       if (!current) return;
       setMenu(menuData);
       setProfile(profileData);
-      setTemplateId(appearance.templateId || 'royal-maharaja');
+      setTemplateId(appearance.templateId || 'rajasthani-heritage');
       setBrandLogo(appearance.logo || profileData.logoUrl || '');
       setDisplayName(appearance.restaurantDisplayName || profileData.businessName || '');
       setBrandTagline(appearance.tagline || profileData.tagline || '');
@@ -261,11 +248,10 @@ export default function Appearance() {
     );
   }
 
-  const selectedArtisanTheme = artisanGraphicThemes.find((t) => t.id === templateId);
   const selectedTemplate = menuTemplates.find((t) => t.id === templateId) || menuTemplates[0];
-  const activeThemeName = selectedArtisanTheme ? selectedArtisanTheme.name : selectedTemplate.name;
-  const activeBgColor = selectedArtisanTheme ? selectedArtisanTheme.colors.safeZoneBg : selectedTemplate.colors.bg;
-  const activeIsDark = selectedArtisanTheme ? true : isTemplateDark(selectedTemplate);
+  const activeThemeName = selectedTemplate.name;
+  const activeBgColor = selectedTemplate.colors.bg;
+  const activeIsDark = isTemplateDark(selectedTemplate);
 
   const filteredTemplates = menuTemplates.filter((t) => {
     if (categoryFilter === 'all') return true;
@@ -280,20 +266,11 @@ export default function Appearance() {
           <p className="text-xs font-bold uppercase tracking-wider text-[#e8783c]">{profile?.businessName || 'Restaurant'}</p>
           <h1 className="mt-1 text-3xl font-bold text-white">Menu Themes & Branding</h1>
           <p className="mt-2 text-sm text-[#849a90]">
-            Select from 35 handcrafted themes: 20 luxury artisan graphic backdrops & 15 modern dynamic digital designs. Your live QR menu updates instantly.
+            Select from 25 premium digital themes: 15 signature heritage styles & 10 global designs. Your live QR menu updates instantly.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={() => setIsMultiPageStudioOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-5 py-3 text-sm font-bold transition-all shrink-0 cursor-pointer"
-          >
-            <FileSpreadsheet size={18} />
-            <span>35 Themes Multi-Page Studio</span>
-          </button>
-
           <button 
             type="button" 
             onClick={saveTheme} 
@@ -414,114 +391,33 @@ export default function Appearance() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Palette size={18} className="text-[#e8783c]" />
-                <h2 className="text-lg font-bold text-white">Select Menu Theme (35 Themes)</h2>
+                <h2 className="text-lg font-bold text-white">Select Menu Theme ({menuTemplates.length} Themes)</h2>
               </div>
               <span className="text-xs text-[#849a90]">
                 Active: <strong className="text-white">{activeThemeName}</strong>
               </span>
             </div>
 
-            {/* Theme Family Switcher Tabs */}
-            <div className="flex items-center gap-2 p-1 bg-[#151c19] border border-[#2a3832] rounded-2xl w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => setThemeFamily('artisan')}
-                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  themeFamily === 'artisan'
-                    ? 'bg-[#e8783c] text-white shadow-md'
-                    : 'text-[#849a90] hover:text-white'
-                }`}
-              >
-                <Flame size={14} />
-                <span>Artisan Graphic Posters ({artisanGraphicThemes.length})</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setThemeFamily('dynamic')}
-                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  themeFamily === 'dynamic'
-                    ? 'bg-[#e8783c] text-white shadow-md'
-                    : 'text-[#849a90] hover:text-white'
-                }`}
-              >
-                <Layers size={14} />
-                <span>Dynamic Digital Themes ({menuTemplates.length})</span>
-              </button>
+            {/* Category Filter Pills */}
+            <div className="flex flex-wrap items-center gap-2 pb-1">
+              {THEME_CATEGORIES.map((cat) => {
+                const isActive = categoryFilter === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategoryFilter(cat.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-[#e8783c] text-white shadow-md shadow-[#e8783c]/20'
+                        : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
+                    }`}
+                  >
+                    {cat.label} ({cat.count})
+                  </button>
+                );
+              })}
             </div>
-
-            {/* ARTISAN GRAPHIC THEMES GRID (20 THEMES) */}
-            {themeFamily === 'artisan' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {artisanGraphicThemes.map((tpl) => {
-                  const isSelected = templateId === tpl.id;
-                  return (
-                    <button
-                      key={tpl.id}
-                      type="button"
-                      onClick={() => setTemplateId(tpl.id)}
-                      aria-pressed={isSelected}
-                      className={`flex flex-col items-start rounded-2xl border-2 text-left transition-all overflow-hidden cursor-pointer relative group ${
-                        isSelected
-                          ? 'border-[#e8783c] bg-[#1d2723] ring-4 ring-[#e8783c]/20 shadow-xl'
-                          : 'border-[#2a3832] bg-[#1d2723] hover:border-[#42574d] hover:bg-[#222e29]'
-                      }`}
-                    >
-                      {/* Background Artwork Banner Preview */}
-                      <div
-                        className="w-full h-24 relative overflow-hidden bg-stone-900 border-b border-[#2a3832]"
-                        style={{
-                          backgroundImage: `url(${tpl.bgImage})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                        }}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-                        <span className="absolute bottom-2 left-3 text-[10px] font-mono uppercase px-2 py-0.5 rounded-md bg-black/70 text-amber-300 font-bold border border-amber-400/30">
-                          {tpl.badge}
-                        </span>
-                        {isSelected && (
-                          <span className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#e8783c] text-white flex items-center justify-center shadow-lg">
-                            <Check size={14} />
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="p-4 w-full space-y-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-bold text-white group-hover:text-[#e8783c] transition-colors">{tpl.name}</h3>
-                        </div>
-                        <p className="text-xs text-[#e8783c] font-semibold">{tpl.cuisine}</p>
-                        <p className="text-[11px] text-[#849a90] line-clamp-2 leading-relaxed">{tpl.description}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* DYNAMIC DIGITAL THEMES GRID (15 THEMES) */}
-            {themeFamily === 'dynamic' && (
-              <>
-                {/* Category Filter Pills */}
-                <div className="flex flex-wrap items-center gap-2 pb-1">
-                  {THEME_CATEGORIES.map((cat) => {
-                    const isActive = categoryFilter === cat.id;
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => setCategoryFilter(cat.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                          isActive
-                            ? 'bg-[#e8783c] text-white shadow-md shadow-[#e8783c]/20'
-                            : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
-                        }`}
-                      >
-                        {cat.label} ({cat.count})
-                      </button>
-                    );
-                  })}
-                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {filteredTemplates.map((template) => {
@@ -602,8 +498,6 @@ export default function Appearance() {
                 );
               })}
                 </div>
-              </>
-            )}
           </div>
         </div>
 
@@ -759,24 +653,6 @@ export default function Appearance() {
           </div>
         </section>
       </div>
-
-      {/* Multi-Page Studio Modal for all 35 themes with Excel Ingestion */}
-      <MultiPageMenuStudio
-        isOpen={isMultiPageStudioOpen}
-        onClose={() => setIsMultiPageStudioOpen(false)}
-        restaurant={{
-          name: displayName.trim() || profile?.businessName || 'Your Restaurant',
-          tagline: brandTagline.trim() || profile?.tagline,
-          phone: profile?.phone,
-          address: profile?.address,
-          city: profile?.city,
-          state: profile?.state,
-          logo: brandLogo || profile?.logoUrl,
-          slug: profile?.menuSlug || 'demo',
-        }}
-        initialCategories={previewCategories}
-        initialItems={previewItems}
-      />
     </div>
   );
 }

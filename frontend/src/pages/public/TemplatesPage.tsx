@@ -10,10 +10,7 @@ import {
   Palette, 
   Type, 
   Layout, 
-  FileSpreadsheet, 
-  Layers, 
-  Printer, 
-  Maximize2 
+  QrCode
 } from 'lucide-react';
 import SiteHeader from '../../components/marketing/SiteHeader';
 import SiteFooter from '../../components/marketing/SiteFooter';
@@ -22,37 +19,28 @@ import BreadcrumbNav from '../../components/seo/BreadcrumbNav';
 import GeoFaqSection from '../../components/seo/GeoFaqSection';
 import { getBreadcrumbSchema, getOrganizationSchema } from '../../seo/structuredData';
 import { menuTemplates, isTemplateDark, type MenuTemplate } from '../../data/menuTemplates';
-import { artisanGraphicThemes } from '../../data/artisanGraphicThemes';
 import { getTemplateCardTheme } from '../../components/marketing/template-gallery/templateCardThemes';
 import { TemplatePhonePreview } from '../../components/marketing/template-gallery/TemplateCard';
 import PremiumIPhoneMockup from '../../components/marketing/PremiumIPhoneMockup';
-import { MultiPageMenuStudio } from '../../components/menu-builder/MultiPageMenuStudio';
 
-type MainTab = 'all' | 'artisan-posters' | 'dynamic-digital';
-type CategoryFilter = 'all' | 'luxury-heritage' | 'modern-cafe' | 'casual-street';
+type CategoryFilter = 'all' | 'booklet' | 'heritage' | 'italian' | 'burger' | 'indian';
 
 export default function TemplatesPage() {
   const breadcrumbs = [{ name: 'Templates', path: '/templates' }];
-  const [mainTab, setMainTab] = useState<MainTab>('all');
   const [selectedFilter, setSelectedFilter] = useState<CategoryFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Modals state
+  // Modal state
   const [previewTemplate, setPreviewTemplate] = useState<MenuTemplate | null>(null);
-  const [isMultiPageStudioOpen, setIsMultiPageStudioOpen] = useState(false);
-  const [selectedArtisanThemeId, setSelectedArtisanThemeId] = useState<string>('seafood-coastal');
 
-  // Grouping logic for filter tabs
-  const luxuryHeritageIds = ['royal-maharaja', 'rajasthani-heritage', 'mughal-luxe', 'banarasi-gold', 'south-indian-heritage'];
-  const modernCafeIds = ['maison-noir', 'ivory-dining', 'grand-table', 'coffee-house', 'minimal-editorial'];
-  const casualStreetIds = ['indian-street-kitchen', 'modern-india', 'spice-house', 'paper-cafe', 'bombay-street'];
-
-  // Filtered Dynamic CSS Templates
-  const filteredDynamicTemplates = useMemo(() => {
+  // Filtered Templates (All 12 templates: 2 Heritage Masterpieces + 10 Cover & Inside Page Themes)
+  const filteredTemplates = useMemo(() => {
     return menuTemplates.filter((t) => {
-      if (selectedFilter === 'luxury-heritage' && !luxuryHeritageIds.includes(t.id)) return false;
-      if (selectedFilter === 'modern-cafe' && !modernCafeIds.includes(t.id)) return false;
-      if (selectedFilter === 'casual-street' && !casualStreetIds.includes(t.id)) return false;
+      if (selectedFilter === 'heritage' && !['rajasthani-heritage', 'mughal-luxe'].includes(t.id)) return false;
+      if (selectedFilter === 'booklet' && ['rajasthani-heritage', 'mughal-luxe'].includes(t.id)) return false;
+      if (selectedFilter === 'italian' && t.id !== 'craft-trattoria') return false;
+      if (selectedFilter === 'burger' && !['midnight-burger', 'rustic-smokehouse', 'boho-taproom'].includes(t.id)) return false;
+      if (selectedFilter === 'indian' && !['rajasthani-heritage', 'mughal-luxe', 'awadhi-dastarkhwan', 'desi-dhaba'].includes(t.id)) return false;
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -67,33 +55,12 @@ export default function TemplatesPage() {
     });
   }, [selectedFilter, searchQuery]);
 
-  // Filtered Artisan Graphic Poster Themes
-  const filteredArtisanThemes = useMemo(() => {
-    return artisanGraphicThemes.filter((t) => {
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        return (
-          t.name.toLowerCase().includes(q) ||
-          t.cuisine.toLowerCase().includes(q) ||
-          t.badge.toLowerCase().includes(q) ||
-          t.description.toLowerCase().includes(q)
-        );
-      }
-      return true;
-    });
-  }, [searchQuery]);
-
-  const openStudioWithTheme = (themeId: string) => {
-    setSelectedArtisanThemeId(themeId);
-    setIsMultiPageStudioOpen(true);
-  };
-
   return (
     <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans relative overflow-x-clip selection:bg-[#E8783C] selection:text-white">
       <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0 opacity-40" />
       <SEO 
-        title="35 Restaurant Menu Templates & Graphic Posters | MenusQR"
-        description="Explore 35 mobile-first & print-ready menu templates: 15 dynamic responsive themes plus 20 artisan illustrated poster backgrounds with automated Excel import & multi-page A4 print export."
+        title="Heritage Restaurant Menu Templates | MenusQR"
+        description="Experience the finest hand-crafted royal heritage menu templates: Heritage Parchment Atelier & Mughal Luxe edition with gold foil accents, palace arches, and mobile QR speed."
         canonicalUrl="/templates"
         schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs)]}
       />
@@ -109,126 +76,98 @@ export default function TemplatesPage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E8783C]/10 border border-[#E8783C]/20 text-[#E8783C] text-xs font-bold uppercase tracking-widest mb-4">
               <Sparkles size={13} className="text-[#E8783C]" />
-              <span>35 Master Restaurant Themes • 15 Dynamic + 20 Graphic Posters</span>
+              <span>Royal Heritage Masterpiece Editions</span>
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#151C19] mb-4 tracking-tight leading-[1.12]">
-              Digital & Print Menus That Match Your Restaurant&apos;s Soul
+              Heritage Digital QR Menus Crafted for Exceptional Dining
             </h1>
             <p className="text-base sm:text-lg text-[#53615a] leading-relaxed font-medium">
-              Choose from interactive mobile menus or high-resolution illustrated graphic posters. Upload your Excel spreadsheet, auto-generate front covers & multi-page A4 menus, and print in 300 DPI.
+              Designed with museum-grade Indian palace arch motifs, antique parchment textures, emerald borders, and refined serif typography.
             </p>
           </div>
 
-          {/* Quick Action Button to Open Multi-Page Studio */}
           <div className="shrink-0 flex items-center gap-3">
-            <button
-              onClick={() => setIsMultiPageStudioOpen(true)}
+            <Link
+              to="/signup"
               className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-600 to-[#E8783C] hover:from-amber-500 hover:to-[#f18b50] text-white text-sm font-bold shadow-xl shadow-amber-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              <FileSpreadsheet size={18} />
-              <span>Open Multi-Page Studio (Excel Ingest)</span>
-            </button>
+              <QrCode size={18} />
+              <span>Create My Free Menu</span>
+            </Link>
           </div>
-        </div>
-
-        {/* Master Catalog Tabs: All (35) vs Artisan Posters (20) vs Dynamic (15) */}
-        <div className="flex items-center justify-start gap-2 mb-8 border-b border-stone-200 pb-4 overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setMainTab('all')}
-            className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 ${
-              mainTab === 'all'
-                ? 'bg-[#151C19] text-white shadow-md'
-                : 'bg-white text-stone-600 border border-stone-200 hover:text-black'
-            }`}
-          >
-            <Layers size={15} />
-            <span>All Templates (35)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setMainTab('artisan-posters')}
-            className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 ${
-              mainTab === 'artisan-posters'
-                ? 'bg-amber-600 text-white shadow-md'
-                : 'bg-white text-stone-600 border border-stone-200 hover:text-black'
-            }`}
-          >
-            <Printer size={15} />
-            <span>Artisan Graphic Posters ({artisanGraphicThemes.length})</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-400 text-stone-900 font-extrabold">NEW</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setMainTab('dynamic-digital')}
-            className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 ${
-              mainTab === 'dynamic-digital'
-                ? 'bg-[#151C19] text-white shadow-md'
-                : 'bg-white text-stone-600 border border-stone-200 hover:text-black'
-            }`}
-          >
-            <Sparkles size={15} />
-            <span>Dynamic Digital Themes ({menuTemplates.length})</span>
-          </button>
         </div>
 
         {/* Filter Controls & Search Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 pb-6 border-b border-stone-200/80">
-          {/* Sub Filters for Dynamic Themes */}
-          {mainTab !== 'artisan-posters' ? (
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
-              <button
-                type="button"
-                onClick={() => setSelectedFilter('all')}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 ${
-                  selectedFilter === 'all'
-                    ? 'bg-[#151C19] text-white shadow-md'
-                    : 'bg-white text-[#4A5550] border border-stone-200/90 hover:border-stone-300 hover:text-black'
-                }`}
-              >
-                All Digital Styles
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedFilter('luxury-heritage')}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 ${
-                  selectedFilter === 'luxury-heritage'
-                    ? 'bg-[#151C19] text-white shadow-md'
-                    : 'bg-white text-[#4A5550] border border-stone-200/90 hover:border-stone-300 hover:text-black'
-                }`}
-              >
-                Fine Dining & Heritage
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedFilter('modern-cafe')}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 ${
-                  selectedFilter === 'modern-cafe'
-                    ? 'bg-[#151C19] text-white shadow-md'
-                    : 'bg-white text-[#4A5550] border border-stone-200/90 hover:border-stone-300 hover:text-black'
-                }`}
-              >
-                Modern Café & Bistro
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedFilter('casual-street')}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 ${
-                  selectedFilter === 'casual-street'
-                    ? 'bg-[#151C19] text-white shadow-md'
-                    : 'bg-white text-[#4A5550] border border-stone-200/90 hover:border-stone-300 hover:text-black'
-                }`}
-              >
-                Dhaba & Street
-              </button>
-            </div>
-          ) : (
-            <p className="text-xs text-stone-500 font-medium">
-              Showing 20 high-resolution culinary poster themes featuring wood, parchment, slate, and marble backdrops.
-            </p>
-          )}
+          {/* Sub Filters */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
+            <button
+              type="button"
+              onClick={() => setSelectedFilter('all')}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 ${
+                selectedFilter === 'all'
+                  ? 'bg-[#151C19] text-white shadow-md'
+                  : 'bg-white text-[#4A5550] border border-stone-200/90 hover:border-stone-300 hover:text-black'
+              }`}
+            >
+              All Templates ({menuTemplates.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedFilter('booklet')}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
+                selectedFilter === 'booklet'
+                  ? 'bg-[#E8783C] text-white shadow-md'
+                  : 'bg-white text-[#E8783C] border border-stone-200 hover:border-[#E8783C]'
+              }`}
+            >
+              <span>📖 Cover & Inside Pages (10)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedFilter('heritage')}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
+                selectedFilter === 'heritage'
+                  ? 'bg-[#244740] text-amber-200 shadow-md'
+                  : 'bg-white text-[#244740] border border-stone-200 hover:border-[#244740]'
+              }`}
+            >
+              <span>🏛️ Heritage Masterpieces (2)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedFilter('italian')}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
+                selectedFilter === 'italian'
+                  ? 'bg-[#C62828] text-white shadow-md'
+                  : 'bg-white text-[#C62828] border border-stone-200 hover:border-[#C62828]'
+              }`}
+            >
+              <span>🍕 Italian Bistro</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedFilter('burger')}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
+                selectedFilter === 'burger'
+                  ? 'bg-[#FF9800] text-stone-900 shadow-md'
+                  : 'bg-white text-[#FF9800] border border-stone-200 hover:border-[#FF9800]'
+              }`}
+            >
+              <span>🍔 Fast Food & Grill</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedFilter('indian')}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
+                selectedFilter === 'indian'
+                  ? 'bg-[#8D1436] text-amber-300 shadow-md'
+                  : 'bg-white text-[#8D1436] border border-stone-200 hover:border-[#8D1436]'
+              }`}
+            >
+              <span>🍛 Royal Awadhi & Dhaba</span>
+            </button>
+          </div>
 
           {/* Search Field */}
           <div className="relative min-w-[260px] md:max-w-xs">
@@ -253,113 +192,114 @@ export default function TemplatesPage() {
         </div>
 
         {/* -------------------------------------------------------- */}
-        {/* SECTION 1: ARTISAN GRAPHIC POSTER THEMES (20 THEMES)     */}
+        {/* TEMPLATES GRID (ALL 25 DIGITAL TEMPLATES)                 */}
         {/* -------------------------------------------------------- */}
-        {(mainTab === 'all' || mainTab === 'artisan-posters') && (
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#151C19] flex items-center gap-2">
-                  <span>Artisan Graphic Poster Themes</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-600/10 text-amber-700 font-bold border border-amber-600/20">
-                    20 Backgrounds • Print & Web
-                  </span>
-                </h2>
-                <p className="text-xs sm:text-sm text-stone-500 mt-1">
-                  High-resolution photo & textured backdrops with safe-zone parchment centers, cover page generator, and auto A4 multi-page pagination.
-                </p>
-              </div>
-            </div>
+        <div className="mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredTemplates.map((template) => {
+              const theme = getTemplateCardTheme(template);
+              const isDark = isTemplateDark(template);
+              const isSignature = false;
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredArtisanThemes.map((theme) => (
+              return (
                 <div
-                  key={theme.id}
+                  key={template.id}
                   className="group relative bg-white rounded-3xl border border-stone-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 flex flex-col overflow-hidden"
                 >
-                  {/* Visual Background Card Thumbnail Preview */}
-                  <div
-                    onClick={() => openStudioWithTheme(theme.id)}
-                    className="relative aspect-[1/1.2] cursor-pointer overflow-hidden bg-cover bg-center border-b border-stone-100 flex flex-col justify-between p-4"
-                    style={{ backgroundImage: `url(${theme.bgImage})` }}
+                  {/* Visual Phone Mockup Stage */}
+                  <div 
+                    className="relative p-6 pt-8 pb-6 flex items-center justify-center overflow-hidden border-b border-stone-100"
+                    style={{
+                      background: isDark
+                        ? 'radial-gradient(ellipse at 50% 30%, #1c2621 0%, #0d1210 100%)'
+                        : 'radial-gradient(ellipse at 50% 30%, #F5F3EF 0%, #ECE8E1 100%)',
+                    }}
                   >
+                    {/* Subtle Ambience Glow */}
+                    <div 
+                      className="absolute w-44 h-44 rounded-full blur-2xl pointer-events-none opacity-40"
+                      style={{ backgroundColor: template.colors.accent || '#E8783C' }}
+                    />
+
                     {/* Top Badges */}
-                    <div className="flex items-center justify-between z-10">
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-black/75 text-white backdrop-blur-md shadow-xs">
-                        {theme.badge}
+                    <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10 pointer-events-none">
+                      <span className="text-[9px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/90 text-[#151C19] shadow-xs">
+                        {template.typography.style}
                       </span>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500 text-stone-900 shadow-xs">
-                        Multi-Page A4
-                      </span>
+                      {isSignature ? (
+                        <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500 text-stone-900 shadow-xs flex items-center gap-1">
+                          <Sparkles size={10} /> STUDIO 2026
+                        </span>
+                      ) : template.badge ? (
+                        <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#E8783C] text-white shadow-xs">
+                          ★ {template.badge}
+                        </span>
+                      ) : null}
                     </div>
 
-                    {/* Safe-zone Center Card Preview */}
-                    <div
-                      className="mx-auto w-[82%] h-[68%] rounded-xl shadow-lg border p-4 flex flex-col justify-between items-center text-center backdrop-blur-xs transition-transform duration-300 group-hover:scale-[1.03]"
-                      style={{
-                        backgroundColor: theme.colors.safeZoneBg,
-                        borderColor: theme.colors.border,
-                        fontFamily: theme.typography.headingFont,
-                      }}
-                    >
-                      <span
-                        className="text-[10px] font-bold uppercase tracking-widest"
-                        style={{ color: theme.colors.subheading }}
+                    {/* Phone Mockup Frame */}
+                    <div className="relative z-10 transform group-hover:scale-[1.02] transition-transform duration-300">
+                      <PremiumIPhoneMockup
+                        className="w-[195px] sm:w-[210px]"
+                        statusBarTheme={isDark ? 'light' : 'dark'}
+                        statusBarMode="overlay"
+                        badgeText="Table 12"
                       >
-                        {theme.cuisine}
-                      </span>
-                      <h4
-                        className="text-base sm:text-lg font-extrabold uppercase tracking-wide leading-tight my-auto"
-                        style={{ color: theme.colors.heading }}
-                      >
-                        {theme.name}
-                      </h4>
-                      <div className="w-full flex items-center justify-between text-[10px] font-semibold pt-1 border-t" style={{ borderColor: theme.colors.border }}>
-                        <span style={{ color: theme.colors.text }}>Cover + Body</span>
-                        <span style={{ color: theme.colors.price }}>₹ Price Line</span>
-                      </div>
-                    </div>
-
-                    {/* Hover Prompt */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                      <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-stone-900 text-xs font-bold shadow-xl">
-                        <Maximize2 size={13} />
-                        Launch Studio Preview
-                      </span>
+                        <TemplatePhonePreview template={template} theme={theme} isDark={isDark} />
+                      </PremiumIPhoneMockup>
                     </div>
                   </div>
 
-                  {/* Metadata & Actions */}
+                  {/* Editorial Metadata & Specs */}
                   <div className="p-6 flex-1 flex flex-col justify-between text-left">
                     <div>
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <h3 className="text-lg font-bold text-[#151C19] tracking-tight group-hover:text-amber-600 transition-colors">
-                          {theme.name}
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <h3 className="text-xl font-bold text-[#151C19] tracking-tight group-hover:text-[#E8783C] transition-colors">
+                          {template.name}
                         </h3>
-                        <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                          {theme.cuisine}
-                        </span>
+                        {/* Color Palette Indicators */}
+                        <div className="flex items-center gap-1 shrink-0" title="Color palette">
+                          <span className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: template.colors.bg }} />
+                          <span className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: template.colors.accent }} />
+                          <span className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: template.colors.heading }} />
+                        </div>
                       </div>
+                      
+                      <p className="text-xs text-[#E8783C] font-bold uppercase tracking-wider mb-2">
+                        {template.subtitle}
+                      </p>
 
                       <p className="text-xs text-[#5A6860] leading-relaxed line-clamp-2 mb-5 font-medium">
-                        {theme.description}
+                        {template.description}
                       </p>
+
+                      {/* Spec Badges Row */}
+                      <div className="grid grid-cols-2 gap-2 text-[10px] text-stone-600 bg-stone-50 p-2.5 rounded-xl border border-stone-200/60 mb-5">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <Type size={12} className="text-[#E8783C] shrink-0" />
+                          <span className="truncate">{template.typography.heading.split(',')[0]}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 truncate">
+                          <Layout size={12} className="text-emerald-600 shrink-0" />
+                          <span className="capitalize truncate">{template.layout.itemStyle} style</span>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Dual Action Buttons */}
                     <div className="flex items-center gap-2 pt-2 border-t border-stone-100">
                       <button
                         type="button"
-                        onClick={() => openStudioWithTheme(theme.id)}
+                        onClick={() => setPreviewTemplate(template)}
                         className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-stone-200 text-[#151C19] hover:bg-stone-50 text-xs font-bold transition-colors active:scale-95"
                       >
-                        <Eye size={13} className="text-amber-600" />
-                        <span>Inspect Pages</span>
+                        <Eye size={13} className="text-[#E8783C]" />
+                        <span>Live Demo</span>
                       </button>
                       
                       <Link
-                        to={`/signup?template=${theme.id}`}
-                        className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl bg-[#151C19] hover:bg-amber-600 text-white text-xs font-bold transition-colors shadow-xs active:scale-95"
+                        to={`/signup?template=${template.id}`}
+                        className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl bg-[#151C19] hover:bg-[#E8783C] text-white text-xs font-bold transition-colors shadow-xs active:scale-95"
                       >
                         <span>Select</span>
                         <ArrowRight size={13} />
@@ -367,142 +307,10 @@ export default function TemplatesPage() {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        )}
-
-        {/* -------------------------------------------------------- */}
-        {/* SECTION 2: DYNAMIC DIGITAL CSS THEMES (15 THEMES)        */}
-        {/* -------------------------------------------------------- */}
-        {(mainTab === 'all' || mainTab === 'dynamic-digital') && (
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#151C19] flex items-center gap-2">
-                  <span>Dynamic Digital Responsive Themes</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-600/10 text-emerald-700 font-bold border border-emerald-600/20">
-                    15 Core CSS Themes
-                  </span>
-                </h2>
-                <p className="text-xs sm:text-sm text-stone-500 mt-1">
-                  Fluid, interactive, code-rendered themes designed specifically for table QR scanning and live customer smartphone ordering.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredDynamicTemplates.map((template) => {
-                const theme = getTemplateCardTheme(template);
-                const isDark = isTemplateDark(template);
-
-                return (
-                  <div
-                    key={template.id}
-                    className="group relative bg-white rounded-3xl border border-stone-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 flex flex-col overflow-hidden"
-                  >
-                    {/* Visual Phone Mockup Stage */}
-                    <div 
-                      className="relative p-6 pt-8 pb-6 flex items-center justify-center overflow-hidden border-b border-stone-100"
-                      style={{
-                        background: isDark
-                          ? 'radial-gradient(ellipse at 50% 30%, #1c2621 0%, #0d1210 100%)'
-                          : 'radial-gradient(ellipse at 50% 30%, #F5F3EF 0%, #ECE8E1 100%)',
-                      }}
-                    >
-                      {/* Subtle Ambience Glow */}
-                      <div 
-                        className="absolute w-44 h-44 rounded-full blur-2xl pointer-events-none opacity-40"
-                        style={{ backgroundColor: template.colors.accent || '#E8783C' }}
-                      />
-
-                      {/* Top Badges */}
-                      <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10 pointer-events-none">
-                        <span className="text-[9px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/90 text-[#151C19] shadow-xs">
-                          {template.typography.style}
-                        </span>
-                        {template.badge && (
-                          <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#E8783C] text-white shadow-xs">
-                            ★ {template.badge}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Phone Mockup Frame */}
-                      <div className="relative z-10 transform group-hover:scale-[1.02] transition-transform duration-300">
-                        <PremiumIPhoneMockup
-                          className="w-[195px] sm:w-[210px]"
-                          statusBarTheme={isDark ? 'light' : 'dark'}
-                          statusBarMode="overlay"
-                          badgeText="Table 12"
-                        >
-                          <TemplatePhonePreview template={template} theme={theme} isDark={isDark} />
-                        </PremiumIPhoneMockup>
-                      </div>
-                    </div>
-
-                    {/* Editorial Metadata & Specs */}
-                    <div className="p-6 flex-1 flex flex-col justify-between text-left">
-                      <div>
-                        <div className="flex items-center justify-between gap-2 mb-1.5">
-                          <h3 className="text-xl font-bold text-[#151C19] tracking-tight group-hover:text-[#E8783C] transition-colors">
-                            {template.name}
-                          </h3>
-                          {/* Color Palette Indicators */}
-                          <div className="flex items-center gap-1 shrink-0" title="Color palette">
-                            <span className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: template.colors.bg }} />
-                            <span className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: template.colors.accent }} />
-                            <span className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: template.colors.heading }} />
-                          </div>
-                        </div>
-                        
-                        <p className="text-xs text-[#E8783C] font-bold uppercase tracking-wider mb-2">
-                          {template.subtitle}
-                        </p>
-
-                        <p className="text-xs text-[#5A6860] leading-relaxed line-clamp-2 mb-5 font-medium">
-                          {template.description}
-                        </p>
-
-                        {/* Spec Badges Row */}
-                        <div className="grid grid-cols-2 gap-2 text-[10px] text-stone-600 bg-stone-50 p-2.5 rounded-xl border border-stone-200/60 mb-5">
-                          <div className="flex items-center gap-1.5 truncate">
-                            <Type size={12} className="text-[#E8783C] shrink-0" />
-                            <span className="truncate">{template.typography.heading.split(',')[0]}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 truncate">
-                            <Layout size={12} className="text-emerald-600 shrink-0" />
-                            <span className="capitalize truncate">{template.layout.itemStyle} style</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Dual Action Buttons */}
-                      <div className="flex items-center gap-2 pt-2 border-t border-stone-100">
-                        <button
-                          type="button"
-                          onClick={() => setPreviewTemplate(template)}
-                          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-stone-200 text-[#151C19] hover:bg-stone-50 text-xs font-bold transition-colors active:scale-95"
-                        >
-                          <Eye size={13} className="text-[#E8783C]" />
-                          <span>Live Demo</span>
-                        </button>
-                        
-                        <Link
-                          to={`/signup?template=${template.id}`}
-                          className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl bg-[#151C19] hover:bg-[#E8783C] text-white text-xs font-bold transition-colors shadow-xs active:scale-95"
-                        >
-                          <span>Select</span>
-                          <ArrowRight size={13} />
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        </div>
 
         {/* Bottom Switch Reassurance Banner */}
         <div className="bg-gradient-to-r from-[#17211C] via-[#1F2C26] to-[#17211C] p-8 sm:p-12 rounded-3xl text-white text-center shadow-xl mb-16 relative overflow-hidden">
@@ -515,16 +323,16 @@ export default function TemplatesPage() {
               Switch Templates Anytime. Your Printed QR Never Changes.
             </h3>
             <p className="text-sm sm:text-base text-white/70 mb-8 leading-relaxed">
-              Every MenusQR tabletop code connects permanently to your restaurant link. Change your colors, upload new dishes from Excel, or switch your entire visual personality in one second from your portal.
+              Every MenusQR tabletop code connects permanently to your restaurant link. Change your colors, update your dishes, or switch your entire visual personality in one second from your portal.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <button
-                onClick={() => setIsMultiPageStudioOpen(true)}
+              <Link 
+                to="/signup" 
                 className="inline-flex items-center gap-2 bg-[#E8783C] hover:bg-[#f18b50] text-white text-sm font-bold px-8 py-4 rounded-full shadow-lg shadow-[#E8783C]/25 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
               >
-                <FileSpreadsheet size={16} />
-                <span>Launch Multi-Page Studio</span>
-              </button>
+                <span>Get Started For Free</span>
+                <ArrowRight size={16} />
+              </Link>
               <Link 
                 to="/plans" 
                 className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-bold px-8 py-4 rounded-full transition-all"
@@ -541,7 +349,7 @@ export default function TemplatesPage() {
       </main>
 
       {/* -------------------------------------------------------- */}
-      {/* MODAL 1: INTERACTIVE DYNAMIC DEMO MODAL                  */}
+      {/* INTERACTIVE DEMO MODAL                                   */}
       {/* -------------------------------------------------------- */}
       {previewTemplate && (
         <div 
@@ -672,25 +480,6 @@ export default function TemplatesPage() {
           </div>
         </div>
       )}
-
-      {/* -------------------------------------------------------- */}
-      {/* MODAL 2: FULL MULTI-PAGE VISUAL MENU STUDIO              */}
-      {/* -------------------------------------------------------- */}
-      <MultiPageMenuStudio
-        isOpen={isMultiPageStudioOpen}
-        onClose={() => setIsMultiPageStudioOpen(false)}
-        initialArtisanThemeId={selectedArtisanThemeId}
-        restaurant={{
-          name: "The Fisherman's Wharf",
-          tagline: 'Authentic Coastal Seafood & Grills',
-          cuisine: 'Coastal Seafood & Goan Delights',
-          phone: '+91 98765 43210',
-          address: 'Beach Road, Calangute',
-          city: 'Goa',
-          state: 'Goa',
-          slug: 'fishermans-wharf',
-        }}
-      />
 
       {/* Global Footer */}
       <SiteFooter />

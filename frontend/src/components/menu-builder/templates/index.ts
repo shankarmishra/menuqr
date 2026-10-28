@@ -76,9 +76,111 @@ const MinimalEditorialTemplate = lazyTemplate(
   () => import('./MinimalEditorial/MinimalEditorialTemplate'),
   'MinimalEditorialTemplate'
 );
+const EmberTemplate = lazyTemplate(
+  () => import('./Ember/EmberTemplate'),
+  'EmberTemplate'
+);
+const MaisonTemplate = lazyTemplate(
+  () => import('./Maison/MaisonTemplate'),
+  'MaisonTemplate'
+);
+const BotanicaTemplate = lazyTemplate(
+  () => import('./Botanica/BotanicaTemplate'),
+  'BotanicaTemplate'
+);
+const SmashClubTemplate = lazyTemplate(
+  () => import('./SmashClub/SmashClubTemplate'),
+  'SmashClubTemplate'
+);
+const TokyoTableTemplate = lazyTemplate(
+  () => import('./TokyoTable/TokyoTableTemplate'),
+  'TokyoTableTemplate'
+);
+const RivieraTemplate = lazyTemplate(
+  () => import('./Riviera/RivieraTemplate'),
+  'RivieraTemplate'
+);
+const GreenhouseTemplate = lazyTemplate(
+  () => import('./Greenhouse/GreenhouseTemplate'),
+  'GreenhouseTemplate'
+);
+const GullyTemplate = lazyTemplate(
+  () => import('./Gully/GullyTemplate'),
+  'GullyTemplate'
+);
+const PatisserieTemplate = lazyTemplate(
+  () => import('./Patisserie/PatisserieTemplate'),
+  'PatisserieTemplate'
+);
+const Studio10Template = lazyTemplate(
+  () => import('./Studio10/Studio10Template'),
+  'Studio10Template'
+);
+
+// 10 Independent Dedicated Masterpiece Templates
+const CraftTrattoriaTemplate = lazyTemplate(
+  () => import('./custom/CraftTrattoriaTemplate'),
+  'CraftTrattoriaTemplate'
+);
+const MidnightBurgerTemplate = lazyTemplate(
+  () => import('./custom/MidnightBurgerTemplate'),
+  'MidnightBurgerTemplate'
+);
+const AwadhiDastarkhwanTemplate = lazyTemplate(
+  () => import('./custom/AwadhiDastarkhwanTemplate'),
+  'AwadhiDastarkhwanTemplate'
+);
+const ArtisanPastryTemplate = lazyTemplate(
+  () => import('./custom/ArtisanPastryTemplate'),
+  'ArtisanPastryTemplate'
+);
+const TokyoIzakayaTemplate = lazyTemplate(
+  () => import('./custom/TokyoIzakayaTemplate'),
+  'TokyoIzakayaTemplate'
+);
+const CoastalSeafoodTemplate = lazyTemplate(
+  () => import('./custom/CoastalSeafoodTemplate'),
+  'CoastalSeafoodTemplate'
+);
+const RusticSmokehouseTemplate = lazyTemplate(
+  () => import('./custom/RusticSmokehouseTemplate'),
+  'RusticSmokehouseTemplate'
+);
+const GreenhouseBotanicTemplate = lazyTemplate(
+  () => import('./custom/GreenhouseBotanicTemplate'),
+  'GreenhouseBotanicTemplate'
+);
+const DesiDhabaTemplate = lazyTemplate(
+  () => import('./custom/DesiDhabaTemplate'),
+  'DesiDhabaTemplate'
+);
+const BohoTaproomTemplate = lazyTemplate(
+  () => import('./custom/BohoTaproomTemplate'),
+  'BohoTaproomTemplate'
+);
 
 export const getTemplateComponent = (id: string): TemplateComponentType => {
   switch (id) {
+    case 'craft-trattoria':
+      return CraftTrattoriaTemplate;
+    case 'midnight-burger':
+      return MidnightBurgerTemplate;
+    case 'awadhi-dastarkhwan':
+      return AwadhiDastarkhwanTemplate;
+    case 'artisan-pastry':
+      return ArtisanPastryTemplate;
+    case 'tokyo-izakaya':
+      return TokyoIzakayaTemplate;
+    case 'coastal-seafood':
+      return CoastalSeafoodTemplate;
+    case 'rustic-smokehouse':
+      return RusticSmokehouseTemplate;
+    case 'greenhouse-botanic':
+      return GreenhouseBotanicTemplate;
+    case 'desi-dhaba':
+      return DesiDhabaTemplate;
+    case 'boho-taproom':
+      return BohoTaproomTemplate;
     case '01':
     case 'royal-maharaja':
       return RoyalMaharajaTemplate;
@@ -125,8 +227,39 @@ export const getTemplateComponent = (id: string): TemplateComponentType => {
       return BombayStreetTemplate;
     case '15':
     case 'minimal-editorial':
-    default:
       return MinimalEditorialTemplate;
+    case '16':
+    case 'ember':
+      return EmberTemplate;
+    case '17':
+    case 'maison':
+      return MaisonTemplate;
+    case '18':
+    case 'botanica':
+      return BotanicaTemplate;
+    case '19':
+    case 'smash-club':
+      return SmashClubTemplate;
+    case '20':
+    case 'tokyo-table':
+      return TokyoTableTemplate;
+    case '21':
+    case 'riviera':
+      return RivieraTemplate;
+    case '22':
+    case 'greenhouse':
+      return GreenhouseTemplate;
+    case '23':
+    case 'gully':
+      return GullyTemplate;
+    case '24':
+    case 'patisserie':
+      return PatisserieTemplate;
+    case '25':
+    case 'studio-10':
+      return Studio10Template;
+    default:
+      return RajasthaniHeritageTemplate;
   }
 };
 
@@ -178,8 +311,39 @@ export const getTemplateTextureKey = (id: string): keyof typeof TEMPLATE_TEXTURE
       return 'bombayStreet';
     case '15':
     case 'minimal-editorial':
-    default:
       return 'minimalEditorial';
+    case '16':
+    case 'ember':
+      return 'ember';
+    case '17':
+    case 'maison':
+      return 'maison';
+    case '18':
+    case 'botanica':
+      return 'botanica';
+    case '19':
+    case 'smash-club':
+      return 'smashClub';
+    case '20':
+    case 'tokyo-table':
+      return 'tokyoTable';
+    case '21':
+    case 'riviera':
+      return 'riviera';
+    case '22':
+    case 'greenhouse':
+      return 'greenhouse';
+    case '23':
+    case 'gully':
+      return 'gully';
+    case '24':
+    case 'patisserie':
+      return 'patisserie';
+    case '25':
+    case 'studio-10':
+      return 'studio10';
+    default:
+      return 'rajasthaniHeritage';
   }
 };
 
