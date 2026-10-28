@@ -203,8 +203,9 @@ export default function TemplatesPage() {
 
               return (
                 <div
+                  id={template.id}
                   key={template.id}
-                  className="group relative bg-white rounded-3xl border border-stone-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 flex flex-col overflow-hidden"
+                  className="group relative bg-white rounded-3xl border border-stone-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 flex flex-col overflow-hidden scroll-mt-28"
                 >
                   {/* Visual Phone Mockup Stage */}
                   <div 

@@ -232,6 +232,9 @@ const ScrollStack = ({
           write(`dim${i}`, '0', (value) => {
             card.style.setProperty('--scroll-stack-dim', value);
           });
+          write(`zIndex${i}`, '', (value) => {
+            slot.style.zIndex = value;
+          });
         });
         return;
       }
@@ -283,6 +286,9 @@ const ScrollStack = ({
           write(`dim${i}`, '0', (value) => {
             card.style.setProperty('--scroll-stack-dim', value);
           });
+          write(`zIndex${i}`, '20', (value) => {
+            slot.style.zIndex = value;
+          });
           return;
         }
 
@@ -294,6 +300,7 @@ const ScrollStack = ({
         const opacity = Math.max(0.72, 1.0 - 0.28 * Math.min(1, dist));
 
         const transform = `translate3d(${tx.toFixed(1)}px, 0, 0) scale(${scale.toFixed(3)})`;
+        const z = Math.max(1, 50 - Math.round(dist * 4));
 
         write(`transform${i}`, transform, (value) => {
           card.style.transform = value;
@@ -306,6 +313,9 @@ const ScrollStack = ({
         });
         write(`dim${i}`, '0', (value) => {
           card.style.setProperty('--scroll-stack-dim', value);
+        });
+        write(`zIndex${i}`, z, (value) => {
+          slot.style.zIndex = String(value);
         });
       });
 

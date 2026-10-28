@@ -6,32 +6,49 @@ import ScrollStack, { ScrollStackItem } from '../ui/ScrollStack';
 
 // Featured signature templates for the "Menus with a point of view" showcase
 const SIGNATURE_TEMPLATE_IDS = [
-  'mughal-luxe',
-  'royal-maharaja',
   'rajasthani-heritage',
-  'banarasi-gold',
-  'south-indian-heritage',
-  'indian-street-kitchen',
-  'modern-india',
-  'bombay-street',
-  'coffee-house',
-  'minimal-editorial',
+  'mughal-luxe',
+  'craft-trattoria',
+  'midnight-burger',
+  'awadhi-dastarkhwan',
+  'artisan-pastry',
+  'tokyo-izakaya',
+  'coastal-seafood',
+  'rustic-smokehouse',
+  'greenhouse-botanic',
+  'desi-dhaba',
+  'boho-taproom',
 ];
 
 export default function TemplateGallerySection() {
-  // Curated signature templates showcase
+  // Curated signature templates showcase - includes all active menuTemplates
   const signatureTemplates = useMemo(() => {
-    return SIGNATURE_TEMPLATE_IDS.map((id) => menuTemplates.find((t) => t.id === id)).filter(
-      Boolean
-    ) as MenuTemplate[];
+    const ordered = SIGNATURE_TEMPLATE_IDS.map((id) =>
+      menuTemplates.find((t) => t.id === id)
+    ).filter(Boolean) as MenuTemplate[];
+
+    // Ensure any template in menuTemplates not explicitly listed is also appended
+    const remaining = menuTemplates.filter(
+      (t) => !ordered.some((o) => o.id === t.id)
+    );
+
+    return [...ordered, ...remaining];
   }, []);
 
-  // Unique categories derived from signature templates
+  // Curated high-impact category filter pills that match available templates
   const allCategories = useMemo(() => {
-    const cats = new Set<string>();
-    signatureTemplates.forEach((t) => t.categories?.forEach((c) => cats.add(c)));
-    return ['All', ...Array.from(cats)];
-  }, [signatureTemplates]);
+    return [
+      'All',
+      'Royal Heritage',
+      'Italian & Bistro',
+      'Burger & Grill',
+      'Asian & Japanese',
+      'Café & Desserts',
+      'Seafood & Raw Bar',
+      'Healthy & Vegan',
+      'Traditional',
+    ];
+  }, []);
 
   const [activeCategory, setActiveCategory] = useState('All');
 
@@ -85,7 +102,7 @@ export default function TemplateGallerySection() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-menusqr-emerald text-[12px] font-bold uppercase tracking-widest border border-menusqr-emerald/15 mb-6 shadow-xs">
               <Sparkles size={14} className="text-menusqr-orange" />
-              <span>Signature Heritage Collection</span>
+              <span>Signature Showcase Collection</span>
             </div>
             <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-menusqr-emerald tracking-tight leading-tight mb-5">
               Menus with a{' '}
@@ -100,7 +117,7 @@ export default function TemplateGallerySection() {
               </span>
             </h2>
             <p className="text-menusqr-neutral-sec text-lg sm:text-xl max-w-xl font-normal leading-relaxed">
-              10 signature templates. Each structurally re-renders your menu with unique typography, spacing, and layout logic.
+              {signatureTemplates.length} signature templates. Each structurally re-renders your menu with unique typography, spacing, and layout logic.
             </p>
           </div>
 
