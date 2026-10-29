@@ -12,6 +12,10 @@ if (!fs.existsSync(TEMPLATE_PATH)) {
 const template = fs.readFileSync(TEMPLATE_PATH, 'utf-8');
 const DOMAIN = 'https://menusqr.in';
 
+// Real server-rendered pages produced by scripts/ssr-render.mjs (route -> { head, body }).
+const SSR_PATH = path.join(DIST_DIR, '.ssr-pages.json');
+const ssrPages = fs.existsSync(SSR_PATH) ? JSON.parse(fs.readFileSync(SSR_PATH, 'utf-8')) : {};
+
 const routes = [
   {
     path: '/',
@@ -434,10 +438,39 @@ const routes = [
   }
 ];
 
+function writeRoute(routePath, html) {
+  if (routePath === '/') {
+    fs.writeFileSync(TEMPLATE_PATH, html, 'utf-8');
+    return;
+  }
+  const cleanPath = routePath.slice(1);
+  const targetDir = path.join(DIST_DIR, cleanPath);
+  fs.mkdirSync(targetDir, { recursive: true });
+  fs.writeFileSync(path.join(targetDir, 'index.html'), html, 'utf-8');
+
+  // Also write direct .html file for Vercel cleanUrls compatibility
+  const htmlFilePath = path.join(DIST_DIR, `${cleanPath}.html`);
+  fs.mkdirSync(path.dirname(htmlFilePath), { recursive: true });
+  fs.writeFileSync(htmlFilePath, html, 'utf-8');
+}
+
 // Process public routes
 routes.forEach((route) => {
   const canonicalUrl = `${DOMAIN}${route.path === '/' ? '' : route.path}`;
   let html = template;
+  const ssr = ssrPages[route.path];
+
+  if (ssr) {
+    // Use the real rendered page: its own <head> tags and full body content.
+    html = html
+      .replace(/<title>.*?<\/title>/gi, '')
+      .replace(/<meta name="description" content=".*?" \/>/gi, '')
+      .replace('</head>', () => `${ssr.head}
+</head>`)
+      .replace('<div id="root"></div>', () => `<div id="root">${ssr.body}</div>`);
+    writeRoute(route.path, html);
+    return;
+  }
 
   // Replace Title
   html = html.replace(/<title>.*?<\/title>/gi, `<title>${route.title}</title>`);
@@ -473,19 +506,7 @@ routes.forEach((route) => {
     html = html.replace('<div id="root"></div>', `<div id="root">${route.content}</div>`);
   }
 
-  if (route.path === '/') {
-    fs.writeFileSync(TEMPLATE_PATH, html, 'utf-8');
-  } else {
-    const cleanPath = route.path.slice(1);
-    const targetDir = path.join(DIST_DIR, cleanPath);
-    fs.mkdirSync(targetDir, { recursive: true });
-    fs.writeFileSync(path.join(targetDir, 'index.html'), html, 'utf-8');
-
-    // Also write direct .html file for Vercel cleanUrls compatibility
-    const htmlFilePath = path.join(DIST_DIR, `${cleanPath}.html`);
-    fs.mkdirSync(path.dirname(htmlFilePath), { recursive: true });
-    fs.writeFileSync(htmlFilePath, html, 'utf-8');
-  }
+  writeRoute(route.path, html);
 });
 
 // Also create static SPA fallback index.html shells for dynamic routes
@@ -529,6 +550,8 @@ if (fs.existsSync(sitemapPath)) {
   const sitemap = fs.readFileSync(sitemapPath, 'utf-8').replace(/<lastmod>[^<]*<\/lastmod>/g, `<lastmod>${today}</lastmod>`);
   fs.writeFileSync(sitemapPath, sitemap, 'utf-8');
 }
+
+if (fs.existsSync(SSR_PATH)) fs.unlinkSync(SSR_PATH);
 
 console.log(`Prerender complete: Generated static HTML for ${routes.length} marketing routes + ${spaRoutes.length} SPA shells + 404.html`);
 

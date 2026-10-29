@@ -14,6 +14,7 @@ let initialized = false;
 const isEnabled = () =>
   import.meta.env.PROD &&
   !!MEASUREMENT_ID &&
+  !['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname) &&
   !(ADMIN_HOSTNAME && window.location.hostname === ADMIN_HOSTNAME);
 
 export function initAnalytics() {

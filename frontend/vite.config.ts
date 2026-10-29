@@ -8,11 +8,13 @@ import fs from 'fs'
 function prerenderVitePlugin() {
   return {
     name: 'vite-plugin-menusqr-prerender',
+    apply: 'build' as const,
     closeBundle() {
       const baseDir = typeof import.meta !== 'undefined' && import.meta.dirname ? import.meta.dirname : __dirname;
       const distIndex = path.resolve(baseDir, 'dist/index.html');
       if (fs.existsSync(distIndex)) {
         console.log('[vite-plugin-menusqr-prerender] Running prerender script post-bundle...');
+        execSync(`node "${path.resolve(baseDir, 'scripts/ssr-render.mjs')}"`, { stdio: 'inherit' });
         const scriptPath = path.resolve(baseDir, 'scripts/prerender.cjs');
         execSync(`node "${scriptPath}"`, { stdio: 'inherit' });
       }
