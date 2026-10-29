@@ -17,6 +17,12 @@ function prerenderVitePlugin() {
         execSync(`node "${path.resolve(baseDir, 'scripts/ssr-render.mjs')}"`, { stdio: 'inherit' });
         const scriptPath = path.resolve(baseDir, 'scripts/prerender.cjs');
         execSync(`node "${scriptPath}"`, { stdio: 'inherit' });
+        // Shrink oversized rasters in dist/ (same paths and formats) to keep deployments small.
+        try {
+          execSync(`node "${path.resolve(baseDir, 'scripts/shrink-dist-rasters.mjs')}"`, { stdio: 'inherit' });
+        } catch (error) {
+          console.warn('[vite-plugin-menusqr-prerender] raster shrink skipped:', error instanceof Error ? error.message : error);
+        }
       }
     }
   }
