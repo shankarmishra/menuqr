@@ -17,8 +17,14 @@ import {
   Download, 
   RefreshCw,
   Palette,
-  Sliders,
-  Layers
+  Eye,
+  Layers,
+  Layout,
+  Type,
+  Sun,
+  Moon,
+  Camera,
+  Utensils
 } from 'lucide-react';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import QRCode from 'qrcode';
@@ -26,8 +32,18 @@ import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerC
 import { exportStickerToPng } from '../../utils/stickerExporter';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import QRGenerationSequence from '../../components/qr-studio/QRGenerationSequence';
-import { PRESETS, themeFromPresetId } from '../../design-system/presets';
-import { CURATED_SEEDS, derivePalette } from '../../design-system/palette';
+import { themeFromPresetId } from '../../design-system/presets';
+import type { 
+  CoverSlot, 
+  DishCardSlot, 
+  NavSlot, 
+  SectionSlot, 
+  TextureId, 
+  MenuTheme 
+} from '../../design-system/theme.types';
+import type { Density } from '../../design-system/scales';
+import type { FontPairingId } from '../../design-system/fonts';
+import { CURATED_SEEDS } from '../../design-system/palette';
 import { isValidHex } from '../../design-system/color';
 import { DEMO_RESTAURANT } from '../../data/menuTemplates';
 import PremiumIPhoneMockup from '../../components/marketing/PremiumIPhoneMockup';
@@ -44,6 +60,7 @@ import {
   getSubscription, 
   getProfile, 
   saveOnboarding, 
+  publishTheme,
   type AppQrData 
 } from '../app/appStore';
 import { useToast } from '../../components/feedback/ToastProvider';
@@ -142,6 +159,107 @@ function ImageSelector({
   );
 }
 
+// ──────────────────────────────── Design Studio Curated Presets & Assets ────────────────────────────────
+
+const CURATED_COVER_PHOTOS = [
+  {
+    id: 'royal-darbar',
+    title: 'Royal Darbar Feast',
+    cuisine: 'Mughlai & Heritage Indian',
+    url: '/assets/themes/variations/royal-darbar-facing.jpg',
+  },
+  {
+    id: 'dum-pukht',
+    title: 'Nawabi Dum Pukht',
+    cuisine: 'Royal Biryani & Kebabs',
+    url: '/assets/themes/variations/nawabi-dum-pukht-facing.jpg',
+  },
+  {
+    id: 'rustic-bbq',
+    title: 'Charcoal BBQ Grill',
+    cuisine: 'Steaks & Sizzlers',
+    url: '/assets/themes/variations/rustic-bbq-facing.jpg',
+  },
+  {
+    id: 'artisan-bakery',
+    title: 'Artisan Bakery & Cafe',
+    cuisine: 'Croissants & Specialty Coffee',
+    url: '/assets/themes/variations/artisan-bakery-facing.jpg',
+  },
+  {
+    id: 'asian-dimsum',
+    title: 'Asian Dimsum & Bowls',
+    cuisine: 'Ramen, Sushi & Dimsum',
+    url: '/assets/themes/variations/asian-dimsum-facing.jpg',
+  },
+  {
+    id: 'desi-street',
+    title: 'Desi Street Food & Chaat',
+    cuisine: 'Tandoor, Chaat & Rolls',
+    url: '/assets/themes/variations/desi-street-food-facing.jpg',
+  },
+  {
+    id: 'retro-burger',
+    title: 'Gourmet Smash Burger',
+    cuisine: 'Burgers, Wings & Shakes',
+    url: '/assets/themes/variations/retro-burger-diner-facing.jpg',
+  },
+  {
+    id: 'mediterranean',
+    title: 'Mediterranean Mezze',
+    cuisine: 'Hummus, Falafel & Fresh Salads',
+    url: '/assets/themes/variations/mediterranean-mezze-facing.jpg',
+  },
+];
+
+const COVER_STYLE_OPTIONS: Array<{ id: CoverSlot; label: string; desc: string; icon: string }> = [
+  { id: 'hero-photo', label: 'Cinematic Photo', desc: 'Full-bleed high-res food photo with darkened gradient scrim', icon: '📸' },
+  { id: 'heritage-arch', label: 'Royal Heritage Arch', desc: 'Classical scalloped arch frame with ornamental palace borders', icon: '🏛️' },
+  { id: 'bento-collage', label: 'Dish Bento Collage', desc: 'Dynamic grid collage showing off your signature dishes', icon: '🍱' },
+  { id: 'monogram', label: 'Luxury Monogram', desc: 'Minimalist typography with subtle embossed emblem', icon: '⚜️' },
+];
+
+const DISH_CARD_OPTIONS: Array<{ id: DishCardSlot; label: string; desc: string; icon: string }> = [
+  { id: 'magazine', label: 'Magazine Hero Cards', desc: 'Large photography cards with full descriptions and bestseller tags', icon: '📸' },
+  { id: 'bento-tile', label: 'Bento Grid Tiles', desc: 'Modern 2-column image tiles perfect for fast mobile browsing', icon: '🍱' },
+  { id: 'michelin-leader', label: 'Michelin Star Leader', desc: 'Elegant typography with fine-dining dotted price lines', icon: '⭐' },
+  { id: 'compact-row', label: 'Speed Compact Rows', desc: 'Clean, dense rows built for fast scrolling and quick ordering', icon: '⚡' },
+];
+
+const NAV_OPTIONS: Array<{ id: NavSlot; label: string; icon: string }> = [
+  { id: 'capsule-pills', label: 'Capsule Pills', icon: '💊' },
+  { id: 'underline-tabs', label: 'Underline Tabs', icon: '📑' },
+  { id: 'sidebar-index', label: 'Sidebar Index', icon: '📑' },
+];
+
+const SECTION_OPTIONS: Array<{ id: SectionSlot; label: string; icon: string }> = [
+  { id: 'arch-title', label: 'Royal Arch Title', icon: '🏛️' },
+  { id: 'ribbon', label: 'Bold Ribbon Bar', icon: '🎗️' },
+  { id: 'hairline-caps', label: 'Hairline Caps', icon: '🔤' },
+];
+
+const TEXTURE_OPTIONS: Array<{ id: TextureId; label: string; icon: string }> = [
+  { id: 'parchment', label: 'Warm Parchment', icon: '📜' },
+  { id: 'slate', label: 'Dark Slate', icon: '🪨' },
+  { id: 'grain', label: 'Artisan Grain', icon: '🌾' },
+  { id: 'dots', label: 'Polka Dots', icon: '⚪' },
+  { id: 'silk', label: 'Subtle Silk', icon: '🧣' },
+  { id: 'none', label: 'Clean Minimal', icon: '💎' },
+];
+
+const TYPOGRAPHY_OPTIONS: Array<{ id: FontPairingId; label: string; fontName: string }> = [
+  { id: 'royal-serif', label: 'Royal Serif', fontName: 'Playfair Display + Inter' },
+  { id: 'modern-sans', label: 'Modern Sans', fontName: 'Plus Jakarta Sans' },
+  { id: 'bold-street', label: 'Bold Street', fontName: 'Syne + Outfit' },
+  { id: 'devanagari-pro', label: 'Devanagari Pro', fontName: 'Rozha One + Mukta' },
+];
+
+const DENSITY_OPTIONS: Array<{ id: Density; label: string }> = [
+  { id: 'compact', label: 'Compact' },
+  { id: 'balanced', label: 'Balanced' },
+  { id: 'spacious', label: 'Spacious' },
+];
+
 export default function OnboardingWizard() {
   const navigate = useNavigate();
   const showToast = useToast();
@@ -234,41 +352,60 @@ export default function OnboardingWizard() {
     customSeedColor: '',
   });
 
-  const [studioSubTab, setStudioSubTab] = useState<'themes' | 'palette' | 'brand'>('themes');
-  const [themeCategoryFilter, setThemeCategoryFilter] = useState<'all' | 'signature' | 'heritage' | 'bistro' | 'casual' | 'bar'>('all');
+  const [studioSubTab, setStudioSubTab] = useState<'cover' | 'layout' | 'brand'>('cover');
   const [customHexInput, setCustomHexInput] = useState('');
 
-  const previewTheme = useMemo(() => {
-    const base = themeFromPresetId(restaurantData.templateId);
+  const [studioTheme, setStudioTheme] = useState<MenuTheme>(() => {
+    const base = themeFromPresetId('signature-heritage-booklet');
     return {
       ...base,
+      cover: {
+        imageUrl: '/assets/themes/variations/royal-darbar-facing.jpg',
+        focal: { x: 0.5, y: 0.5 },
+        overlayStrength: 0.55,
+        showCoverPage: true,
+      },
+      announcement: '✨ Welcome to our digital dining experience | Chef specials available',
+    };
+  });
+
+  // Sync logo when uploaded in Step 1 or Step 3
+  useEffect(() => {
+    setStudioTheme((prev) => ({
+      ...prev,
       brand: {
-        ...base.brand,
-        seedColor: restaurantData.customSeedColor && isValidHex(restaurantData.customSeedColor)
-          ? restaurantData.customSeedColor
-          : base.brand.seedColor,
+        ...prev.brand,
         logoUrl: restaurantData.logoUrl || null,
       },
-    };
-  }, [restaurantData.templateId, restaurantData.customSeedColor, restaurantData.logoUrl]);
+    }));
+  }, [restaurantData.logoUrl]);
+
+  const previewTheme = studioTheme;
 
   const previewCategories = restaurantData.categories.length > 0
     ? restaurantData.categories
     : DEMO_RESTAURANT.categories;
 
-  const previewItems = restaurantData.items.length > 0
-    ? (restaurantData.items as any)
-    : DEMO_RESTAURANT.items;
+  const previewItems = useMemo(() => {
+    const raw = restaurantData.items.length > 0
+      ? (restaurantData.items as any[])
+      : DEMO_RESTAURANT.items;
 
-  const filteredPresets = useMemo(() => {
-    if (themeCategoryFilter === 'all') return PRESETS;
-    if (themeCategoryFilter === 'signature') return PRESETS.filter((p) => p.category === 'signature');
-    if (themeCategoryFilter === 'heritage') return PRESETS.filter((p) => p.category === 'heritage');
-    if (themeCategoryFilter === 'bistro') return PRESETS.filter((p) => p.category === 'cafe' || p.category === 'contemporary');
-    if (themeCategoryFilter === 'casual') return PRESETS.filter((p) => p.category === 'street');
-    if (themeCategoryFilter === 'bar') return PRESETS.filter((p) => p.category === 'bar' || p.category === 'fine-dining');
-    return PRESETS;
-  }, [themeCategoryFilter]);
+    const CULINARY_PHOTOS = [
+      '/img/photos/photo-1567184109191-37a69f369f24-w500.webp', // Paneer Tikka
+      '/img/photos/photo-1599488615731-7e5c2823ff28-w500.webp', // Tandoori Chicken
+      '/img/photos/photo-1546833999-b9f581a1996d-w500.webp', // Dal Makhani
+      '/img/photos/photo-1563379091339-03b21ab4a4f8-w500.webp', // Dum Biryani
+      '/img/photos/photo-1626074353765-517a681e40be-w500.webp', // Garlic Naan
+      '/img/photos/photo-1601050690597-df0568f70950-w500.webp', // Saffron Gulab Jamun
+      '/img/photos/photo-1576092768241-dec231879fc3-w500.webp', // Masala Chai
+    ];
+
+    return raw.map((item, idx) => ({
+      ...item,
+      imageUrl: item.imageUrl || item.image || CULINARY_PHOTOS[idx % CULINARY_PHOTOS.length],
+    }));
+  }, [restaurantData.items]);
 
   const nextStep = () => {
     if (currentStep === 'identity' && !restaurantData.name.trim()) {
@@ -288,7 +425,7 @@ export default function OnboardingWizard() {
     switch(stepId) {
       case 'identity': return 'Restaurant Identity & Logo';
       case 'excel-upload': return 'Menu Spreadsheet Upload';
-      case 'templates': return `Menu Design Studio (${PRESETS.length} Themes)`;
+      case 'templates': return 'Menu Design Studio (Cover & Layout)';
       case 'preview': return 'Preview & Permanent QR';
       default: return '';
     }
@@ -403,6 +540,14 @@ export default function OnboardingWizard() {
       }
       if (!currentQr?.qrId) throw new Error('QR could not be created.');
       setQr(currentQr);
+
+      // Also publish the customized theme designed in Step 3!
+      try {
+        await publishTheme(studioTheme);
+      } catch (themeErr) {
+        console.warn('Theme publish notice:', themeErr);
+      }
+
       setIsPrinterOpen(true);
     } catch {
       showToast('error', 'We could not save your menu just now. Your details are still here; please try again.');
@@ -826,18 +971,18 @@ export default function OnboardingWizard() {
               </motion.div>
             )}
 
-            {/* STEP 3: INTERACTIVE MENU DESIGN STUDIO */}
+            {/* STEP 3: MENU DESIGN STUDIO */}
             {currentStep === 'templates' && (
               <motion.div key="step-templates" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
                 {/* STUDIO HEADER */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-1">
                     <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5 font-bold">
-                      <Sparkles size={14} /> Step 3 · Interactive Menu Design Studio
+                      <Sparkles size={14} /> Step 3 · Menu Design Studio
                     </span>
-                    <h2 className="text-2xl sm:text-3xl font-black text-white">Menu Design Studio & Live Mockup</h2>
+                    <h2 className="text-2xl sm:text-3xl font-black text-white">Design Your Cover & Menu Layout</h2>
                     <p className="text-xs sm:text-sm text-[#AAB7B2]">
-                      Choose from {PRESETS.length} handcrafted themes, customize your brand palette, and see instant live updates in the mobile viewport.
+                      Style your welcome cover page with chef photography, tailor dish cards, choose typography, and customize brand colors.
                     </p>
                   </div>
                 </div>
@@ -846,162 +991,458 @@ export default function OnboardingWizard() {
                 <div className="flex flex-wrap items-center gap-2 p-1.5 bg-[#151C19] border border-white/10 rounded-2xl w-fit shadow-md">
                   <button
                     type="button"
-                    onClick={() => setStudioSubTab('themes')}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-                      studioSubTab === 'themes'
+                    onClick={() => setStudioSubTab('cover')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                      studioSubTab === 'cover'
                         ? 'bg-[#E8783C] text-white shadow-lg'
                         : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    <Layers size={14} /> Themes & Layouts ({PRESETS.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStudioSubTab('palette')}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-                      studioSubTab === 'palette'
-                        ? 'bg-[#E8783C] text-white shadow-lg'
-                        : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <Palette size={14} /> Brand Colors
-                    {restaurantData.customSeedColor && (
-                      <span className="w-2.5 h-2.5 rounded-full border border-white/30" style={{ backgroundColor: restaurantData.customSeedColor }} />
+                    <Camera size={14} /> 1. Cover Page & Photos
+                    {studioTheme.cover.imageUrl && (
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
                     )}
                   </button>
                   <button
                     type="button"
+                    onClick={() => setStudioSubTab('layout')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                      studioSubTab === 'layout'
+                        ? 'bg-[#E8783C] text-white shadow-lg'
+                        : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Layout size={14} /> 2. Menu Layout & Cards
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setStudioSubTab('brand')}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                       studioSubTab === 'brand'
                         ? 'bg-[#E8783C] text-white shadow-lg'
                         : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    <Sliders size={14} /> Logo & Identity
-                    {restaurantData.logoUrl && (
-                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    )}
+                    <Palette size={14} /> 3. Brand Colors & Logo
+                    <span className="w-2.5 h-2.5 rounded-full border border-white/30" style={{ backgroundColor: studioTheme.brand.seedColor }} />
                   </button>
                 </div>
 
                 {/* STUDIO WORKSPACE: CONTROLS (7 COLS) + LIVE MOBILE MOCKUP (5 COLS) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                   {/* LEFT CONTROLS (7 COLS) */}
-                  <div className="lg:col-span-7 space-y-4">
-                    {/* TAB 1: THEMES & LAYOUTS */}
-                    {studioSubTab === 'themes' && (
-                      <div className="space-y-3">
-                        {/* CATEGORY FILTER PILLS */}
-                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-                          {[
-                            { id: 'all', label: `All (${PRESETS.length})` },
-                            { id: 'signature', label: '👑 Signature VIP (3)' },
-                            { id: 'heritage', label: 'Heritage & Royal (3)' },
-                            { id: 'bistro', label: 'Cafe & Bistro (4)' },
-                            { id: 'casual', label: 'Casual & Street (3)' },
-                            { id: 'bar', label: 'Bar & Grill (2)' },
-                          ].map((f) => (
-                            <button
-                              key={f.id}
-                              type="button"
-                              onClick={() => setThemeCategoryFilter(f.id as any)}
-                              className={`px-3 py-1.5 rounded-xl font-medium whitespace-nowrap transition-all cursor-pointer ${
-                                themeCategoryFilter === f.id
-                                  ? 'bg-white/20 text-white font-bold border border-white/30 shadow-xs'
-                                  : 'bg-[#151C19] text-[#AAB7B2] border border-white/5 hover:text-white hover:border-white/20'
+                  <div className="lg:col-span-7 space-y-5">
+                    
+                    {/* TAB 1: COVER PAGE & CHEF PHOTOGRAPHY */}
+                    {studioSubTab === 'cover' && (
+                      <div className="space-y-6">
+                        {/* Cover Page Enable Toggle */}
+                        <div className="p-4 rounded-2xl bg-[#1D2723] border border-white/10 flex items-center justify-between shadow-xs">
+                          <div>
+                            <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                              <Eye size={14} className="text-[#E8783C]" /> Show Dedicated Cover Screen
+                            </h4>
+                            <p className="text-[11px] text-[#AAB7B2] mt-0.5">
+                              Display an immersive full-screen welcome cover before opening the menu
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setStudioTheme((prev) => ({
+                              ...prev,
+                              cover: { ...prev.cover, showCoverPage: !prev.cover.showCoverPage }
+                            }))}
+                            className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                              studioTheme.cover.showCoverPage ? 'bg-[#E8783C]' : 'bg-[#2A3832]'
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all ${
+                                studioTheme.cover.showCoverPage ? 'left-[22px]' : 'left-0.5'
                               }`}
-                            >
-                              {f.label}
-                            </button>
-                          ))}
+                            />
+                          </button>
                         </div>
 
-                        {/* THEME CARDS SCROLLABLE GRID */}
-                        <div className="max-h-[500px] overflow-y-auto pr-1 space-y-2.5">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {filteredPresets.map((preset) => {
-                              const isSelected = restaurantData.templateId === preset.id;
-                              const palette = derivePalette(
-                                restaurantData.customSeedColor && isValidHex(restaurantData.customSeedColor)
-                                  ? restaurantData.customSeedColor
-                                  : preset.seedColor,
-                                preset.mode
-                              );
+                        {/* Cover Style Picker */}
+                        <div className="space-y-2.5">
+                          <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <Layers size={13} className="text-[#E8783C]" /> Select Cover Architecture
+                          </label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {COVER_STYLE_OPTIONS.map((opt) => {
+                              const active = studioTheme.slots.cover === opt.id;
                               return (
                                 <button
-                                  key={preset.id}
+                                  key={opt.id}
                                   type="button"
-                                  onClick={() => setRestaurantData({ ...restaurantData, templateId: preset.id })}
-                                  className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer ${
-                                    isSelected
-                                      ? 'border-[#E8783C] bg-[#E8783C]/12 ring-2 ring-[#E8783C] shadow-xl'
-                                      : 'border-white/10 bg-[#151C19] hover:border-white/30 hover:bg-[#1a2320]'
+                                  onClick={() => setStudioTheme((prev) => ({
+                                    ...prev,
+                                    slots: { ...prev.slots, cover: opt.id }
+                                  }))}
+                                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                                    active
+                                      ? 'border-[#E8783C] bg-[#E8783C]/12 ring-2 ring-[#E8783C] shadow-lg'
+                                      : 'border-white/10 bg-[#151C19] hover:border-white/25 hover:bg-[#1a2320]'
                                   }`}
                                 >
-                                  {/* Top header row of card */}
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <div className="flex items-center -space-x-1">
-                                      <span className="w-5 h-5 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: palette.bg }} title="Background" />
-                                      <span className="w-5 h-5 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: palette.accent }} title="Accent" />
-                                      <span className="w-5 h-5 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: palette.heading }} title="Heading" />
-                                    </div>
-                                    {preset.signatureId ? (
-                                      <span className="text-[9px] font-black uppercase tracking-wider text-amber-300 bg-amber-500/20 border border-amber-500/40 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-xs">
-                                        <Sparkles size={10} /> VIP Signature
-                                      </span>
-                                    ) : (
-                                      <span className="text-[9px] font-mono uppercase text-stone-400 bg-white/5 rounded px-1.5 py-0.5">
-                                        {preset.mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                                      </span>
-                                    )}
-                                    {isSelected && (
-                                      <span className="ml-auto w-5 h-5 rounded-full bg-[#E8783C] text-white flex items-center justify-center shadow-xs">
-                                        <Check size={12} />
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                                      <span>{opt.icon}</span> {opt.label}
+                                    </span>
+                                    {active && (
+                                      <span className="w-4 h-4 rounded-full bg-[#E8783C] text-white flex items-center justify-center text-[10px]">
+                                        <Check size={10} />
                                       </span>
                                     )}
                                   </div>
-
-                                  {/* Label & Audience */}
-                                  <h4 className="text-xs font-bold text-white leading-tight truncate">{preset.label}</h4>
-                                  <p className="text-[10px] text-[#AAB7B2] line-clamp-2 mt-0.5 leading-relaxed">{preset.description}</p>
-                                  
-                                  {/* Footer: Font pair and vibe */}
-                                  <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[9px] text-stone-400">
-                                    <span className="truncate max-w-[140px]">{preset.audience}</span>
-                                    <span className="font-mono text-stone-500 capitalize">{preset.category}</span>
-                                  </div>
+                                  <p className="text-[10px] text-[#AAB7B2] leading-relaxed">{opt.desc}</p>
                                 </button>
                               );
                             })}
                           </div>
                         </div>
+
+                        {/* Curated Ultra-HD Food Cover Photography */}
+                        <div className="space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                              <Camera size={13} className="text-[#E8783C]" /> Curated Chef Cover Photography (1-Click Apply)
+                            </label>
+                            <span className="text-[10px] font-mono text-[#E8783C] font-semibold">Ultra-HD Quality</span>
+                          </div>
+                          <p className="text-[11px] text-[#AAB7B2]">
+                            Select from our art-directed restaurant photography collection, or upload your own below.
+                          </p>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                            {CURATED_COVER_PHOTOS.map((photo) => {
+                              const active = studioTheme.cover.imageUrl === photo.url;
+                              return (
+                                <button
+                                  key={photo.id}
+                                  type="button"
+                                  onClick={() => setStudioTheme((prev) => ({
+                                    ...prev,
+                                    cover: { ...prev.cover, imageUrl: photo.url }
+                                  }))}
+                                  className={`group relative rounded-2xl overflow-hidden border text-left transition-all cursor-pointer aspect-[4/3] ${
+                                    active
+                                      ? 'border-[#E8783C] ring-2 ring-[#E8783C] shadow-xl scale-[1.02]'
+                                      : 'border-white/10 hover:border-white/30 hover:scale-[1.01]'
+                                  }`}
+                                >
+                                  <img
+                                    src={photo.url}
+                                    alt={photo.title}
+                                    className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
+                                    loading="lazy"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent p-2 flex flex-col justify-end">
+                                    <p className="text-[10.5px] font-bold text-white truncate drop-shadow-sm">{photo.title}</p>
+                                    <p className="text-[8.5px] text-stone-300 truncate">{photo.cuisine}</p>
+                                  </div>
+                                  {active && (
+                                    <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#E8783C] text-white flex items-center justify-center shadow-md">
+                                      <Check size={11} />
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          {/* Custom Cover Photo Uploader */}
+                          <div className="pt-2">
+                            <ImageSelector
+                              label="Or Upload Your Own Custom Restaurant Cover Photo"
+                              value={studioTheme.cover.imageUrl?.startsWith('/assets/') ? '' : (studioTheme.cover.imageUrl || '')}
+                              onChange={(val) => setStudioTheme((prev) => ({
+                                ...prev,
+                                cover: { ...prev.cover, imageUrl: val || '/assets/themes/variations/royal-darbar-facing.jpg' }
+                              }))}
+                              placeholder="https://example.com/restaurant-cover.jpg"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Scrim Overlay Slider & Announcement */}
+                        <div className="p-4 rounded-2xl bg-[#151C19] border border-white/10 space-y-4 shadow-sm">
+                          <div>
+                            <div className="flex items-center justify-between text-xs mb-1.5">
+                              <span className="font-semibold text-white">Cover Overlay Darkness</span>
+                              <span className="font-mono text-[#E8783C] font-bold">
+                                {Math.round(studioTheme.cover.overlayStrength * 100)}%
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min={10}
+                              max={90}
+                              value={Math.round(studioTheme.cover.overlayStrength * 100)}
+                              onChange={(e) => setStudioTheme((prev) => ({
+                                ...prev,
+                                cover: { ...prev.cover, overlayStrength: Number(e.target.value) / 100 }
+                              }))}
+                              className="w-full accent-[#E8783C] cursor-pointer"
+                            />
+                            <p className="text-[10px] text-stone-400 mt-1">
+                              Darkens the cover photo so your restaurant name and buttons stay crisp and easy to read.
+                            </p>
+                          </div>
+
+                          <div className="pt-3 border-t border-white/5 space-y-1.5">
+                            <label className="text-xs font-semibold text-white">Cover Announcement Banner (Optional)</label>
+                            <input
+                              type="text"
+                              value={studioTheme.announcement || ''}
+                              onChange={(e) => setStudioTheme((prev) => ({ ...prev, announcement: e.target.value || null }))}
+                              placeholder="e.g. ✨ Chef's Tasting Menu Live | Flat 15% Off on Dine-In"
+                              maxLength={120}
+                              className="w-full bg-[#1D2723] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E8783C]"
+                            />
+                          </div>
+                        </div>
                       </div>
                     )}
 
-                    {/* TAB 2: BRAND COLORS */}
-                    {studioSubTab === 'palette' && (
-                      <div className="p-5 rounded-3xl bg-[#151C19] border border-white/10 space-y-5 shadow-xl">
-                        <div>
-                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                            <Palette size={16} className="text-[#E8783C]" /> Curated Brand Accents
-                          </h3>
-                          <p className="text-xs text-[#AAB7B2] mt-1">
-                            Pick an art-directed luxury seed color or enter your exact brand hex code. Contrast and legibility are mathematically guaranteed.
-                          </p>
+                    {/* TAB 2: MENU LAYOUT & CARDS */}
+                    {studioSubTab === 'layout' && (
+                      <div className="space-y-6">
+                        {/* Dish Card Style */}
+                        <div className="space-y-2.5">
+                          <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <Utensils size={13} className="text-[#E8783C]" /> Dish Card Presentation Style
+                          </label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {DISH_CARD_OPTIONS.map((opt) => {
+                              const active = studioTheme.slots.dishCard === opt.id;
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() => setStudioTheme((prev) => ({
+                                    ...prev,
+                                    slots: { ...prev.slots, dishCard: opt.id }
+                                  }))}
+                                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                                    active
+                                      ? 'border-[#E8783C] bg-[#E8783C]/12 ring-2 ring-[#E8783C] shadow-lg'
+                                      : 'border-white/10 bg-[#151C19] hover:border-white/25 hover:bg-[#1a2320]'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                                      <span>{opt.icon}</span> {opt.label}
+                                    </span>
+                                    {active && (
+                                      <span className="w-4 h-4 rounded-full bg-[#E8783C] text-white flex items-center justify-center text-[10px]">
+                                        <Check size={10} />
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-[#AAB7B2] leading-relaxed">{opt.desc}</p>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
 
-                        {/* Quick pick curated seeds */}
-                        <div className="space-y-2">
-                          <label className="text-xs font-semibold text-stone-300">Designer Curated Swatches</label>
+                        {/* Navigation Style & Section Header Style */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {/* Navigation Bar */}
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-white uppercase tracking-wider">
+                              Category Navigation
+                            </label>
+                            <div className="space-y-1.5">
+                              {NAV_OPTIONS.map((opt) => (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() => setStudioTheme((prev) => ({
+                                    ...prev,
+                                    slots: { ...prev.slots, nav: opt.id }
+                                  }))}
+                                  className={`w-full p-2.5 rounded-xl border text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                                    studioTheme.slots.nav === opt.id
+                                      ? 'border-[#E8783C] bg-[#E8783C]/15 text-white'
+                                      : 'border-white/10 bg-[#151C19] text-[#AAB7B2] hover:text-white'
+                                  }`}
+                                >
+                                  <span>{opt.icon} {opt.label}</span>
+                                  {studioTheme.slots.nav === opt.id && <Check size={12} className="text-[#E8783C]" />}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Section Header */}
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-white uppercase tracking-wider">
+                              Section Header Style
+                            </label>
+                            <div className="space-y-1.5">
+                              {SECTION_OPTIONS.map((opt) => (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() => setStudioTheme((prev) => ({
+                                    ...prev,
+                                    slots: { ...prev.slots, section: opt.id }
+                                  }))}
+                                  className={`w-full p-2.5 rounded-xl border text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                                    studioTheme.slots.section === opt.id
+                                      ? 'border-[#E8783C] bg-[#E8783C]/15 text-white'
+                                      : 'border-white/10 bg-[#151C19] text-[#AAB7B2] hover:text-white'
+                                  }`}
+                                >
+                                  <span>{opt.icon} {opt.label}</span>
+                                  {studioTheme.slots.section === opt.id && <Check size={12} className="text-[#E8783C]" />}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Background Texture & Typography */}
+                        <div className="space-y-4 pt-2 border-t border-white/10">
+                          {/* Background Texture */}
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-white uppercase tracking-wider">
+                              Background Texture
+                            </label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {TEXTURE_OPTIONS.map((tex) => (
+                                <button
+                                  key={tex.id}
+                                  type="button"
+                                  onClick={() => setStudioTheme((prev) => ({ ...prev, texture: tex.id }))}
+                                  className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all flex items-center gap-2 cursor-pointer ${
+                                    studioTheme.texture === tex.id
+                                      ? 'border-[#E8783C] bg-[#E8783C]/15 text-white'
+                                      : 'border-white/10 bg-[#151C19] text-[#AAB7B2] hover:text-white'
+                                  }`}
+                                >
+                                  <span>{tex.icon}</span>
+                                  <span className="truncate">{tex.label}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Typography Pairing */}
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                              <Type size={13} className="text-[#E8783C]" /> Typography Pairings
+                            </label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              {TYPOGRAPHY_OPTIONS.map((font) => (
+                                <button
+                                  key={font.id}
+                                  type="button"
+                                  onClick={() => setStudioTheme((prev) => ({ ...prev, typePair: font.id }))}
+                                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                    studioTheme.typePair === font.id
+                                      ? 'border-[#E8783C] bg-[#E8783C]/12 text-white ring-1 ring-[#E8783C]'
+                                      : 'border-white/10 bg-[#151C19] text-[#AAB7B2] hover:text-white'
+                                  }`}
+                                >
+                                  <p className="text-xs font-bold text-white">{font.label}</p>
+                                  <p className="text-[10px] text-stone-400 font-mono mt-0.5">{font.fontName}</p>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Density */}
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-white uppercase tracking-wider">
+                              Layout Spacing & Density
+                            </label>
+                            <div className="flex items-center gap-2">
+                              {DENSITY_OPTIONS.map((d) => (
+                                <button
+                                  key={d.id}
+                                  type="button"
+                                  onClick={() => setStudioTheme((prev) => ({ ...prev, density: d.id }))}
+                                  className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                                    studioTheme.density === d.id
+                                      ? 'border-[#E8783C] bg-[#E8783C] text-white shadow-sm'
+                                      : 'border-white/10 bg-[#151C19] text-[#AAB7B2] hover:text-white'
+                                  }`}
+                                >
+                                  {d.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* TAB 3: BRAND COLORS & LOGO */}
+                    {studioSubTab === 'brand' && (
+                      <div className="p-5 rounded-3xl bg-[#151C19] border border-white/10 space-y-6 shadow-xl">
+                        {/* Page Mode: Light vs Dark */}
+                        <div>
+                          <label className="text-xs font-bold text-white uppercase tracking-wider block mb-2">
+                            Menu Color Theme Mode
+                          </label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setStudioTheme((prev) => ({ ...prev, mode: 'light' }))}
+                              className={`p-3 rounded-2xl border text-left transition-all flex items-center gap-2.5 cursor-pointer ${
+                                studioTheme.mode === 'light'
+                                  ? 'border-[#E8783C] bg-white/15 text-white ring-2 ring-[#E8783C]'
+                                  : 'border-white/10 bg-[#1D2723] text-[#AAB7B2] hover:border-white/30'
+                              }`}
+                            >
+                              <Sun size={16} className="text-amber-400" />
+                              <div>
+                                <p className="text-xs font-bold text-white">Light Luxury</p>
+                                <p className="text-[10px] text-stone-400">Warm ivory & parchment</p>
+                              </div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setStudioTheme((prev) => ({ ...prev, mode: 'dark' }))}
+                              className={`p-3 rounded-2xl border text-left transition-all flex items-center gap-2.5 cursor-pointer ${
+                                studioTheme.mode === 'dark'
+                                  ? 'border-[#E8783C] bg-white/15 text-white ring-2 ring-[#E8783C]'
+                                  : 'border-white/10 bg-[#1D2723] text-[#AAB7B2] hover:border-white/30'
+                              }`}
+                            >
+                              <Moon size={16} className="text-indigo-400" />
+                              <div>
+                                <p className="text-xs font-bold text-white">Dark Obsidian</p>
+                                <p className="text-[10px] text-stone-400">Deep luxury noir & slate</p>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Curated Seeds */}
+                        <div className="space-y-2.5 pt-2 border-t border-white/10">
+                          <label className="text-xs font-bold text-white uppercase tracking-wider block">
+                            Curated Designer Brand Accents
+                          </label>
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                             {CURATED_SEEDS.map((seed) => {
-                              const active = (restaurantData.customSeedColor || '').toLowerCase() === seed.seed.toLowerCase();
+                              const active = (studioTheme.brand.seedColor || '').toLowerCase() === seed.seed.toLowerCase();
                               return (
                                 <button
                                   key={seed.id}
                                   type="button"
-                                  onClick={() => setRestaurantData((prev) => ({ ...prev, customSeedColor: seed.seed }))}
+                                  onClick={() => {
+                                    setStudioTheme((prev) => ({
+                                      ...prev,
+                                      brand: { ...prev.brand, seedColor: seed.seed },
+                                      mode: seed.mode,
+                                    }));
+                                    setRestaurantData((prev) => ({ ...prev, customSeedColor: seed.seed }));
+                                  }}
                                   className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
                                     active
                                       ? 'border-[#E8783C] bg-white/10 ring-2 ring-[#E8783C]'
@@ -1020,15 +1461,16 @@ export default function OnboardingWizard() {
                         </div>
 
                         {/* Custom Hex / Color Input */}
-                        <div className="pt-3 border-t border-white/10 space-y-3">
-                          <label className="text-xs font-semibold text-stone-300">Custom Brand Hex Picker</label>
+                        <div className="pt-2 border-t border-white/10 space-y-2">
+                          <label className="text-xs font-semibold text-stone-300">Custom Brand Color Hex</label>
                           <div className="flex items-center gap-3">
                             <input
                               type="color"
-                              value={restaurantData.customSeedColor || previewTheme.brand.seedColor}
+                              value={isValidHex(studioTheme.brand.seedColor) ? studioTheme.brand.seedColor : '#D4AF37'}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setCustomHexInput(val);
+                                setStudioTheme((prev) => ({ ...prev, brand: { ...prev.brand, seedColor: val } }));
                                 setRestaurantData((prev) => ({ ...prev, customSeedColor: val }));
                               }}
                               className="w-10 h-10 rounded-xl cursor-pointer bg-transparent border-0 p-0"
@@ -1037,71 +1479,69 @@ export default function OnboardingWizard() {
                             <div className="flex-1 flex items-center gap-2">
                               <input
                                 type="text"
-                                placeholder={previewTheme.brand.seedColor}
-                                value={customHexInput || restaurantData.customSeedColor || ''}
+                                placeholder="#D4AF37"
+                                value={customHexInput || studioTheme.brand.seedColor}
                                 onChange={(e) => {
                                   const val = e.target.value.trim();
                                   setCustomHexInput(val);
                                   if (isValidHex(val)) {
+                                    setStudioTheme((prev) => ({ ...prev, brand: { ...prev.brand, seedColor: val } }));
                                     setRestaurantData((prev) => ({ ...prev, customSeedColor: val }));
                                   }
                                 }}
                                 className="w-36 bg-[#1D2723] border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E8783C]"
                               />
-                              {restaurantData.customSeedColor && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setCustomHexInput('');
-                                    setRestaurantData((prev) => ({ ...prev, customSeedColor: '' }));
-                                  }}
-                                  className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-stone-300 flex items-center gap-1.5 transition-colors cursor-pointer"
-                                >
-                                  <RefreshCw size={12} /> Reset to Preset Default
-                                </button>
-                              )}
+                              <span className="text-[11px] text-stone-400 flex items-center gap-1">
+                                <CheckCircle2 size={13} className="text-emerald-400" /> Auto WCAG AAA Contrast
+                              </span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Derived Palette Preview Info */}
-                        <div className="p-3 bg-[#1D2723] rounded-2xl border border-white/10 flex items-center justify-between text-xs text-stone-400">
-                          <span>Active Seed: <strong className="text-white font-mono">{restaurantData.customSeedColor || previewTheme.brand.seedColor}</strong></span>
-                          <span className="flex items-center gap-1.5">
-                            Auto WCAG AAA contrast
-                            <CheckCircle2 size={13} className="text-emerald-400" />
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* TAB 3: LOGO & IDENTITY */}
-                    {studioSubTab === 'brand' && (
-                      <div className="p-5 rounded-3xl bg-[#151C19] border border-white/10 space-y-5 shadow-xl">
-                        <div>
-                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                            <Store size={16} className="text-[#E8783C]" /> Restaurant Brand Identity
-                          </h3>
-                          <p className="text-xs text-[#AAB7B2] mt-1">
-                            Upload your restaurant logo to crown your digital menu and table stands.
-                          </p>
-                        </div>
-
-                        <div className="space-y-4">
+                        {/* Brand Logo & Shape */}
+                        <div className="pt-3 border-t border-white/10 space-y-4">
                           <ImageSelector
-                            label="Restaurant Logo (Appears on cover & stickers)"
+                            label="Restaurant Logo (Cover & Header)"
                             value={restaurantData.logoUrl}
-                            onChange={(val) => setRestaurantData((prev) => ({ ...prev, logoUrl: val }))}
+                            onChange={(val) => {
+                              setRestaurantData((prev) => ({ ...prev, logoUrl: val }));
+                              setStudioTheme((prev) => ({ ...prev, brand: { ...prev.brand, logoUrl: val || null } }));
+                            }}
                             placeholder="https://example.com/logo.png"
                           />
 
-                          <div className="pt-3 border-t border-white/10 space-y-2">
-                            <label className="text-xs font-semibold text-[#AAB7B2]">Menu Tagline / Subtitle</label>
+                          {/* Logo Shape */}
+                          <div>
+                            <label className="text-xs font-semibold text-stone-300 block mb-1.5">Logo Frame Shape</label>
+                            <div className="flex items-center gap-2">
+                              {(['circle', 'square', 'wordmark'] as const).map((shape) => (
+                                <button
+                                  key={shape}
+                                  type="button"
+                                  onClick={() => setStudioTheme((prev) => ({
+                                    ...prev,
+                                    brand: { ...prev.brand, logoShape: shape }
+                                  }))}
+                                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer ${
+                                    studioTheme.brand.logoShape === shape
+                                      ? 'bg-[#E8783C] text-white shadow-xs'
+                                      : 'bg-[#1D2723] text-[#AAB7B2] border border-white/10 hover:text-white'
+                                  }`}
+                                >
+                                  {shape}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Tagline */}
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-stone-300">Menu Tagline</label>
                             <input
                               type="text"
                               value={restaurantData.tagline}
                               onChange={(e) => setRestaurantData((prev) => ({ ...prev, tagline: e.target.value }))}
-                              placeholder="e.g. Artisanal Dining & Craft Mocktails"
+                              placeholder="e.g. Authentic Royal Mughlai & Artisanal Flavours"
                               className="w-full bg-[#1D2723] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E8783C]"
                             />
                           </div>
@@ -1116,24 +1556,30 @@ export default function OnboardingWizard() {
                       <span className="flex items-center gap-1.5 font-bold tracking-wider text-white">
                         <Smartphone size={13} className="text-[#E8783C]" /> LIVE PHONE VIEW
                       </span>
-                      <span className="text-[#E8783C] font-bold truncate max-w-[180px]">
-                        {PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'Theme Preview'}
-                      </span>
+                      <div className="flex items-center gap-2 text-[10px]">
+                        <span className="text-[#E8783C] font-bold uppercase">
+                          {COVER_STYLE_OPTIONS.find((o) => o.id === studioTheme.slots.cover)?.label || 'Cover'}
+                        </span>
+                        <span className="text-stone-600">·</span>
+                        <span className="text-stone-300 uppercase">
+                          {DISH_CARD_OPTIONS.find((o) => o.id === studioTheme.slots.dishCard)?.label || 'Cards'}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Premium Realistic iPhone Mockup */}
                     <div className="w-full flex justify-center py-2">
                       <PremiumIPhoneMockup
                         className="w-[270px] sm:w-[300px]"
-                        statusBarTheme={previewTheme.mode === 'dark' ? 'light' : 'dark'}
+                        statusBarTheme={studioTheme.mode === 'dark' ? 'light' : 'dark'}
                       >
                         <div className="w-full h-full overflow-y-auto">
                           <MenuTemplateRenderer
                             templateId={restaurantData.templateId}
-                            theme={previewTheme}
+                            theme={studioTheme}
                             restaurant={{
                               name: restaurantData.name || 'Your Restaurant',
-                              tagline: restaurantData.tagline || 'Exquisite Culinary Experience',
+                              tagline: restaurantData.tagline || 'Exquisite Culinary Dining',
                               cuisine: (restaurantData as any).cuisine || 'Multi-Cuisine',
                               phone: restaurantData.phone || '+91 98765 43210',
                               address: restaurantData.address || 'Connaught Place, New Delhi',
@@ -1150,10 +1596,7 @@ export default function OnboardingWizard() {
 
                     {/* Preview status info */}
                     <div className="mt-2 text-center text-[10px] text-stone-400">
-                      Previewing with{' '}
-                      <span className="text-white font-medium">
-                        {restaurantData.items.length > 0 ? `${restaurantData.items.length} items from your menu` : 'sample demo dishes'}
-                      </span>
+                      ✨ <span className="text-white font-medium">Chef Photography Active</span> · Changes reflect live in viewport
                     </div>
                   </div>
                 </div>
@@ -1264,7 +1707,7 @@ export default function OnboardingWizard() {
                     <div className="w-full flex items-center justify-between px-1 text-xs font-mono text-[#AAB7B2]">
                       <span>LIVE CUSTOMER MENU</span>
                       <span className="text-[#E8783C] font-bold">
-                        {PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'Custom Theme'}
+                        {COVER_STYLE_OPTIONS.find((o) => o.id === studioTheme.slots.cover)?.label || 'Studio Design'}
                       </span>
                     </div>
 
