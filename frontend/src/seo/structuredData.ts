@@ -18,11 +18,8 @@ export const getOrganizationSchema = () => {
       "areaServed": "IN",
       "availableLanguage": ["English", "Hindi"]
     }],
-    "sameAs": [
-      "https://twitter.com/menusqr",
-      "https://www.linkedin.com/company/menusqr",
-      "https://www.instagram.com/menusqr"
-    ]
+    // Add "sameAs" with the brand's real social/profile URLs once confirmed (unverified links hurt entity trust).
+    "alternateName": ["Menus QR", "MenusQR.in"]
   };
 };
 
@@ -31,6 +28,7 @@ export const getWebSiteSchema = () => {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "MenusQR",
+    "alternateName": ["Menus QR", "MenusQR.in"],
     "url": DOMAIN,
     "description": "Digital QR menus for restaurants with instant updates and a permanent QR code.",
     "inLanguage": "en-IN"
