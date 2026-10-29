@@ -48,7 +48,7 @@ export default function HeroCopy() {
         }}
         className="text-lg sm:text-xl text-[#626776] max-w-[480px] leading-[1.6] mb-8 font-medium"
       >
-        Create your digital menu once, print your QR once, and update everything behind it anytime.
+        MenusQR is a digital QR menu platform for restaurants, cafés and dhabas in India. Create your digital menu once, print your QR once, and update everything behind it anytime.
       </motion.p>
 
       {/* 4. Action CTAs */}

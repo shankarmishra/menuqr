@@ -39,7 +39,7 @@ export default function HeroSectionV2() {
             transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="text-sm sm:text-lg text-[#626776] max-w-md leading-relaxed mb-6 lg:mb-8 font-normal"
           >
-            MenusQR is a digital QR menu platform for restaurants, cafés and dhabas in India. Create your digital menu once, print your QR once, and update everything behind it anytime.
+            Create your digital menu once, print your QR once, and update everything behind it anytime.
           </motion.p>
 
           {/* Action CTAs */}
