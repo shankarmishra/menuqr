@@ -211,6 +211,14 @@ export async function executeImportTransaction(client, tenantId, menuId, parsedC
   let addonsCreated = 0;
   let skippedCount = 0;
   
+  // If replace mode, cleanly wipe existing categories, items and variants for a fresh slate
+  if (mode === 'replace') {
+    await queryPortable(client,
+      'DELETE FROM menu_categories WHERE menu_id = ? AND tenant_id = ?',
+      [menuId, tenantId]
+    );
+  }
+
   // 1. Fetch existing categories and items for this tenant
   const existingCatRes = await queryPortable(client,
     'SELECT id, name FROM menu_categories WHERE menu_id = ? AND tenant_id = ?',

@@ -1517,7 +1517,7 @@ export default async function appRoutes(request, response, url) {
       throw apiError(400, 'No menu categories or items provided for import.');
     }
 
-    const validModes = ['add', 'update', 'skip'];
+    const validModes = ['add', 'update', 'skip', 'replace'];
     const importMode = validModes.includes(mode) ? mode : 'add';
 
     const menuResult = await queryPortable(pool, 'SELECT id FROM menus WHERE tenant_id = ? LIMIT 1', [user.tenantId]);

@@ -22,7 +22,7 @@ interface SmartImportWizardProps {
 }
 
 type Step = 'upload' | 'mapping' | 'preview' | 'importing' | 'results';
-type ImportMode = 'add' | 'update' | 'skip';
+type ImportMode = 'add' | 'update' | 'skip' | 'replace';
 
 const TARGET_FIELDS = [
   { key: 'category', label: 'Category / Section', required: true, description: 'E.g. Main Course, Starters' },
@@ -475,7 +475,7 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
                 <label className="text-xs font-semibold uppercase tracking-wider text-[#aab7b2]">
                   Select Import Behavior
                 </label>
-                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <button
                     type="button"
                     onClick={() => setImportMode('add')}
@@ -513,6 +513,19 @@ export function SmartImportWizard({ isOpen, onClose, onSuccess }: SmartImportWiz
                   >
                     <span className="text-xs font-bold text-white">Skip Duplicates</span>
                     <span className="mt-1 text-[11px]">Only imports dishes that don't exist yet</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setImportMode('replace')}
+                    className={`flex flex-col rounded-xl border p-3 text-left transition-all ${
+                      importMode === 'replace'
+                        ? 'border-red-500 bg-red-500/15 text-white ring-1 ring-red-500'
+                        : 'border-[#384841] bg-[#1d2723] text-[#aab7b2] hover:border-red-400/50'
+                    }`}
+                  >
+                    <span className="text-xs font-bold text-red-400">Replace Entire Menu</span>
+                    <span className="mt-1 text-[11px]">Wipes all old categories & dishes; fresh import</span>
                   </button>
                 </div>
               </div>
