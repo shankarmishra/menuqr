@@ -185,7 +185,7 @@ const MENU_DISHES: DishItem[] = [
     isVeg: false,
     badge: 'Bestseller',
     desc: 'Aged long-grain basmati, saffron-marinated tender chicken, caramelized onions & rose kewra essence.',
-    image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&auto=format&fit=crop&q=80',
+    image: '/img/photos/photo-1563379091339-03b21ab4a4f8-w500.webp',
     icon: '🍗',
   },
   {
@@ -197,7 +197,7 @@ const MENU_DISHES: DishItem[] = [
     isVeg: true,
     badge: 'Signature',
     desc: 'Overnight clay-pot simmered black lentils, cultured white butter, fresh cream & toasted fenugreek.',
-    image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500&auto=format&fit=crop&q=80',
+    image: '/img/photos/photo-1546833999-b9f581a1996d-w500.webp',
     icon: '🍲',
   },
   {
@@ -209,7 +209,7 @@ const MENU_DISHES: DishItem[] = [
     isVeg: true,
     badge: "Chef's Pick",
     desc: 'Cottage cheese marinated in rich malai, crushed cardamom & spices, clay-oven roasted with mint glaze.',
-    image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=500&auto=format&fit=crop&q=80',
+    image: '/img/photos/photo-1567188040759-fb8a883dc6d8-w500.webp',
     icon: '🍢',
   },
   {
@@ -221,7 +221,7 @@ const MENU_DISHES: DishItem[] = [
     isVeg: false,
     badge: 'Must Try',
     desc: 'Boneless clay-charred chicken simmered in satin velvet tomato gravy with fresh cream & honey butter.',
-    image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=500&auto=format&fit=crop&q=80',
+    image: '/img/photos/photo-1588166524941-3bf61a9c41db-w500.webp',
     icon: '🥘',
   },
   {
@@ -232,7 +232,7 @@ const MENU_DISHES: DishItem[] = [
     category: 'Breads',
     isVeg: true,
     desc: 'Artisanal sourdough flatbread baked against blistering tandoor clay, brushed with roasted garlic butter.',
-    image: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?w=500&auto=format&fit=crop&q=80',
+    image: '/img/photos/photo-1626074353765-517a681e40be-w500.webp',
     icon: '🫓',
   },
   {
@@ -244,7 +244,7 @@ const MENU_DISHES: DishItem[] = [
     isVeg: true,
     badge: 'Heritage',
     desc: 'Warm golden mawa dumplings steeped in saffron-cardamom syrup with silver leaf & pistachios.',
-    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=500&auto=format&fit=crop&q=80',
+    image: '/img/photos/photo-1601050690597-df0568f70950-w500.webp',
     icon: '🍮',
   },
 ];
@@ -581,6 +581,7 @@ export const SameMenuDifferentPersonality = () => {
                                   e.currentTarget.style.display = 'none';
                                 }}
                                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                decoding="async"
                               />
 
                               {/* Bestseller Badge */}

@@ -507,6 +507,8 @@ export const AIDesignStudio: React.FC<AIDesignStudioProps> = ({
                 src={referenceImage} 
                 alt="Reference" 
                 className="w-14 h-14 object-cover rounded-md border border-[#2a3832]"
+                decoding="async"
+                loading="lazy"
               />
               <div>
                 <p className="text-xs font-semibold text-white truncate max-w-[200px] sm:max-w-xs">

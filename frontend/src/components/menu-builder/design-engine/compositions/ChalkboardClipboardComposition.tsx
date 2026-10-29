@@ -25,7 +25,7 @@ export const ChalkboardClipboardComposition: React.FC<CompositionProps> = ({
   const regularCategories = categories.filter((c) => !/favourite|special|chef|signature/i.test(c.name));
 
   // Default fallback plate if client logo is not a dish
-  const heroPlateImage = '/uploads/dishes/crop_dish_plate.png';
+  const heroPlateImage = '/uploads/dishes/crop_dish_plate.webp';
 
   const headingFont = typography.headingFont || "'Bebas Neue', 'Oswald', sans-serif";
   const bodyFont = typography.bodyFont || "'Plus Jakarta Sans', sans-serif";
@@ -152,8 +152,10 @@ export const ChalkboardClipboardComposition: React.FC<CompositionProps> = ({
                     onError={(e) => {
                       // Fallback to high res steak platter
                       (e.target as HTMLImageElement).src =
-                        'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80';
+                        '/img/photos/photo-1544025162-d76694265947-w600.webp';
                     }}
+                    decoding="async"
+                    loading="lazy"
                   />
                   {/* Subtle rim highlight */}
                   <div className="absolute inset-0 rounded-full border border-white/10 pointer-events-none" />
@@ -377,6 +379,8 @@ export const ChalkboardClipboardComposition: React.FC<CompositionProps> = ({
                 src={selectedItemImage.image}
                 alt={selectedItemImage.name}
                 className="w-full h-full object-cover"
+                decoding="async"
+                loading="lazy"
               />
             </div>
             <div className="flex items-center justify-between">

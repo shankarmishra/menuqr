@@ -498,6 +498,8 @@ export default function Settings() {
                 alt="Logo preview"
                 className="w-12 h-12 rounded-xl object-contain bg-white/5 border border-[#2a3832] p-1 shrink-0"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                decoding="async"
+                loading="lazy"
               />
             )}
             <input

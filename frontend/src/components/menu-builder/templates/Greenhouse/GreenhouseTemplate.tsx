@@ -77,6 +77,8 @@ export const GreenhouseTemplate: React.FC<LayoutProps> = ({
                 className={clsx('rounded-full object-cover border-2 shadow-sm', compact ? 'w-11 h-11' : 'w-15 h-15')}
                 style={{ borderColor: `${greenColor}50` }}
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                decoding="async"
+                loading="lazy"
               />
             </div>
           )}
@@ -178,6 +180,7 @@ export const GreenhouseTemplate: React.FC<LayoutProps> = ({
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
                           onError={(e) => { (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none'); }}
+                          decoding="async"
                         />
                       </div>
                     )}

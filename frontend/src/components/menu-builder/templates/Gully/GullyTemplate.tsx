@@ -67,6 +67,8 @@ export const GullyTemplate: React.FC<LayoutProps> = ({
               className={clsx('rounded-xl object-cover border-2 shadow-lg', compact ? 'w-12 h-12' : 'w-16 h-16')}
               style={{ borderColor: yellowColor }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              decoding="async"
+              loading="lazy"
             />
           </div>
         )}
@@ -180,6 +182,7 @@ export const GullyTemplate: React.FC<LayoutProps> = ({
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
                           onError={(e) => { (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none'); }}
+                          decoding="async"
                         />
                       </div>
                     )}

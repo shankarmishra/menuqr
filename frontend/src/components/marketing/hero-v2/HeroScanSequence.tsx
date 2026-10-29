@@ -37,6 +37,10 @@ export default function HeroScanSequence({ stage }: HeroScanSequenceProps) {
               src="/marketing/hero/hero-restaurant-poster.webp" 
               alt="" 
               className="w-full h-full object-cover blur-sm scale-110"
+              decoding="async"
+              loading="lazy"
+              width={1376}
+              height={768}
             />
           </div>
 

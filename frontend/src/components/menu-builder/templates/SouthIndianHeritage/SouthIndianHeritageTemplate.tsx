@@ -37,7 +37,7 @@ export const SouthIndianHeritageTemplate: React.FC<LayoutProps> = ({
             <span className="h-0.5 w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#C28838]" />
             {restaurant.logo ? (
               <div className="w-12 h-12 rounded-full p-1 border-2 border-[#C28838] bg-[#FFFDF7] overflow-hidden flex items-center justify-center shadow-lg">
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" decoding="async" loading="lazy" />
               </div>
             ) : (
               <TempleGopuramCrest size={compact ? 36 : 46} maroon="#6E1B1B" brass={brassColor} />
@@ -211,6 +211,7 @@ export const SouthIndianHeritageTemplate: React.FC<LayoutProps> = ({
                             onError={(e) => {
                               (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
                             }}
+                            decoding="async"
                           />
                         </div>
                       )}

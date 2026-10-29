@@ -36,7 +36,7 @@ export function TemplatePhonePreview({
       price: 280,
       dietType: 'veg' as const,
       description: 'Charcoal-smoked organic cottage cheese, hung yogurt, roasted cumin.',
-      image: '/uploads/mannat/hero_chaap.png',
+      image: '/uploads/mannat/hero_chaap.webp',
       badge: 'Bestseller',
     },
     {
@@ -45,7 +45,7 @@ export function TemplatePhonePreview({
       price: 380,
       dietType: 'non-veg' as const,
       description: 'Velvety slow-simmered tomato reduction with pulled tandoori chicken.',
-      image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1588166524941-3bf61a9c41db-w300.webp',
       badge: 'Chef Special',
     },
   ];
@@ -179,8 +179,9 @@ export function TemplatePhonePreview({
                 loading="lazy"
                 onError={(e) => {
                   e.currentTarget.src =
-                    'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=200&auto=format&fit=crop&q=80';
+                    '/img/photos/photo-1567188040759-fb8a883dc6d8-w200.webp';
                 }}
+                decoding="async"
               />
             </div>
           </div>

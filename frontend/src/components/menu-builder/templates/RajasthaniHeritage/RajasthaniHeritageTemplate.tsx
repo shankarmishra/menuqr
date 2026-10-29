@@ -10,31 +10,31 @@ const DEFAULT_HERITAGE_PHOTOS = [
   {
     num: '01',
     name: 'Butter Chicken Royale',
-    url: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=600&auto=format&fit=crop&q=80',
+    url: '/img/photos/photo-1588166524941-3bf61a9c41db-w600.webp',
     alt: 'Velvet Butter Chicken in copper handi',
   },
   {
     num: '02',
     name: 'Crispy Samosa Platter',
-    url: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&auto=format&fit=crop&q=80',
+    url: '/img/photos/photo-1601050690597-df0568f70950-w600.webp',
     alt: 'Golden crisp samosas with mint chutney',
   },
   {
     num: '03',
     name: 'Charcoal Tandoori Chicken',
-    url: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=600&auto=format&fit=crop&q=80',
+    url: '/img/photos/photo-1599487488170-d11ec9c172f0-w600.webp',
     alt: 'Charred tandoori chicken tikka skewers',
   },
   {
     num: '04',
     name: 'Paneer Tikka Masala',
-    url: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&auto=format&fit=crop&q=80',
+    url: '/img/photos/photo-1567188040759-fb8a883dc6d8-w600.webp',
     alt: 'Cottage cheese tikka with peppers',
   },
   {
     num: '05',
     name: 'Awadhi Dum Biryani',
-    url: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80',
+    url: '/img/photos/photo-1563379091339-03b21ab4a4f8-w600.webp',
     alt: 'Fragrant dum biryani in clay pot',
   },
 ];
@@ -795,7 +795,7 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
                     <span className="h-px w-8 sm:w-14 bg-gradient-to-r from-transparent to-[#D4AE68]" />
                     {restaurant.logo ? (
                       <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#FCF5E9] p-1 border-2 border-[#D4AE68] shadow-md flex items-center justify-center overflow-hidden">
-                        <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+                        <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" decoding="async" loading="lazy" />
                       </div>
                     ) : (
                       <BloomingLotusEmblem size={compact ? 36 : 46} />
@@ -1129,6 +1129,7 @@ const PhotoCardStack: React.FC<{
               onError={(e) => {
                 (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
               }}
+              decoding="async"
             />
             <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-[#D97036] text-white font-mono text-[8.5px] font-bold shadow-xs">
               {photo.num}
@@ -1157,6 +1158,7 @@ const PhotoCardStack: React.FC<{
                 onError={(e) => {
                   (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
                 }}
+                decoding="async"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
               <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-[#D97036] text-white font-mono text-[9px] font-bold shadow-xs border border-white/40">

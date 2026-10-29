@@ -70,7 +70,7 @@ export default function IndianHeritageMenuDisplay({
       price: highlightItemPrice,
       isDynamic: true,
       icon: '🥘',
-      image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=400&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1588166524941-3bf61a9c41db-w400.webp',
     },
     {
       id: 'item-2',
@@ -82,7 +82,7 @@ export default function IndianHeritageMenuDisplay({
       price: 340,
       isDynamic: false,
       icon: '🍲',
-      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1546833999-b9f581a1996d-w400.webp',
     },
     {
       id: 'item-3',
@@ -94,7 +94,7 @@ export default function IndianHeritageMenuDisplay({
       price: 360,
       isDynamic: false,
       icon: '🍢',
-      image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1567188040759-fb8a883dc6d8-w400.webp',
     },
     {
       id: 'item-4',
@@ -106,7 +106,7 @@ export default function IndianHeritageMenuDisplay({
       price: 480,
       isDynamic: false,
       icon: '🍛',
-      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1563379091339-03b21ab4a4f8-w400.webp',
     },
     {
       id: 'item-5',
@@ -118,7 +118,7 @@ export default function IndianHeritageMenuDisplay({
       price: 220,
       isDynamic: false,
       icon: '🍮',
-      image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1517248135467-4c7edcad34c4-w400.webp',
     },
   ];
 
@@ -275,6 +275,8 @@ export default function IndianHeritageMenuDisplay({
                     onError={(e) => {
                       e.currentTarget.style.opacity = '0';
                     }}
+                    decoding="async"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                 </div>

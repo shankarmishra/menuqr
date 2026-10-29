@@ -15,8 +15,8 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
     || categories.flatMap(c => c.items)[0];
   const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
 
-  const heroSeafoodPhoto = featuredItem?.image || 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=600&auto=format&fit=crop&q=80'; // seafood platter
-  const oysterPhoto = 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&auto=format&fit=crop&q=80'; // grilled fish
+  const heroSeafoodPhoto = featuredItem?.image || '/img/photos/photo-1534422298391-e4f8c172dddb-w600.webp'; // seafood platter
+  const oysterPhoto = '/img/photos/photo-1559847844-5315695dadae-w600.webp'; // grilled fish
 
   return (
     <div 
@@ -68,7 +68,7 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
             </span>
             {restaurant.logo ? (
               <div className="w-12 h-12 rounded-full bg-white p-1 border border-[#0D47A1]/30 shadow-sm flex items-center justify-center overflow-hidden">
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" decoding="async" loading="lazy" />
               </div>
             ) : (
               <div className="px-2.5 py-1 rounded-full bg-[#0D47A1]/10 text-[#0D47A1] text-[10px] font-black tracking-wider uppercase border border-[#0D47A1]/20">
@@ -100,7 +100,9 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
                 <img 
                   src={heroSeafoodPhoto} 
                   alt={featuredItem?.name || 'Seafood Platter'} 
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
+                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                  decoding="async"
+                  loading="lazy"
                 />
               </div>
 
@@ -176,7 +178,7 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
           {/* Header */}
           <div className="text-center pb-2 border-b-2 border-[#0D47A1]/20 flex flex-col items-center">
             {restaurant.logo && (
-              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-cyan-200" />
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-cyan-200" decoding="async" loading="lazy" />
             )}
             <span className="text-[10px] font-mono text-[#00838F] uppercase tracking-widest font-black">
               {restaurant.tagline || 'Daily Coastal Catch'}
@@ -237,7 +239,9 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
                           <img 
                             src={item.image} 
                             alt={item.name} 
-                            className="w-12 h-12 rounded-lg object-cover border border-[#C8D5DB] shadow-xs" 
+                            className="w-12 h-12 rounded-lg object-cover border border-[#C8D5DB] shadow-xs"
+                            decoding="async"
+                            loading="lazy"
                           />
                         )}
 
@@ -261,7 +265,7 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
 
           {/* Spotlight Catch Card */}
           <div className="p-3 rounded-2xl bg-gradient-to-r from-[#0B2545] to-[#0D47A1] text-white flex items-center justify-between gap-3 shadow-md">
-            <img src={oysterPhoto} alt="Grilled Catch" className="w-14 h-14 rounded-xl object-cover border border-cyan-400/40" />
+            <img src={oysterPhoto} alt="Grilled Catch" className="w-14 h-14 rounded-xl object-cover border border-cyan-400/40" decoding="async" loading="lazy" />
             <div className="flex-1 min-w-0">
               <span className="text-[9px] font-mono uppercase tracking-widest text-cyan-300 font-bold">Chef Catch</span>
               <div className="text-xs font-bold truncate">Wood-Grilled Mediterranean Seabass</div>

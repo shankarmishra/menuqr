@@ -257,7 +257,7 @@ export default function MenuItemsEditor({ items, onChange }: { items: MenuItemRe
           ) : items.map((item) => (
             <article key={item.id} className="flex gap-3 rounded-xl border border-white/[0.08] bg-white/[0.025] p-3 sm:gap-4 sm:p-4">
               <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-[#17211e] sm:h-24 sm:w-24">
-                {item.image ? <img src={item.image} alt={item.name} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-[#77857f]"><ImagePlus size={20} /></div>}
+                {item.image ? <img src={item.image} alt={item.name} className="h-full w-full object-cover" decoding="async" loading="lazy" /> : <div className="flex h-full items-center justify-center text-[#77857f]"><ImagePlus size={20} /></div>}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -296,7 +296,7 @@ export default function MenuItemsEditor({ items, onChange }: { items: MenuItemRe
         <aside className="rounded-xl border border-white/[0.08] bg-[#19231f] p-4">
           <div className="mb-4 flex items-center justify-between gap-2"><h3 className="text-sm font-bold text-white">{editingId ? 'Edit item' : 'New item'}</h3>{editingId && <button type="button" onClick={cancelEdit} aria-label="Cancel edit" className="rounded-md p-1.5 text-[#94a39d] hover:bg-white/10 hover:text-white"><X size={16} /></button>}</div>
           <label className="group relative mb-4 flex h-32 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-dashed border-white/15 bg-[#121a17] transition hover:border-[#e8783c]/60">
-            {draft.image ? <img src={draft.image} alt="Menu item preview" className="h-full w-full object-cover" /> : <span className="flex flex-col items-center gap-2 text-xs font-semibold text-[#aab7b2]"><ImagePlus size={22} className="text-[#f29a66]" />{isCompressing ? 'Processing image…' : 'Choose item photo'}</span>}
+            {draft.image ? <img src={draft.image} alt="Menu item preview" className="h-full w-full object-cover" decoding="async" loading="lazy" /> : <span className="flex flex-col items-center gap-2 text-xs font-semibold text-[#aab7b2]"><ImagePlus size={22} className="text-[#f29a66]" />{isCompressing ? 'Processing image…' : 'Choose item photo'}</span>}
             <input type="file" accept="image/*" className="sr-only" onChange={(event) => void chooseImage(event.currentTarget.files?.[0])} />
           </label>
           <label className={labelClass}>Item name<input className={inputClass} value={draft.name} maxLength={70} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} placeholder="e.g. Paneer tikka" /></label>

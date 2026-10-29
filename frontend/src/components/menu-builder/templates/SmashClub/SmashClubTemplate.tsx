@@ -71,6 +71,8 @@ export const SmashClubTemplate: React.FC<LayoutProps> = ({
               className={clsx('rounded-xl object-cover border-2 shrink-0', compact ? 'w-12 h-12' : 'w-16 h-16 sm:w-20 sm:h-20')}
               style={{ borderColor: redColor }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              decoding="async"
+              loading="lazy"
             />
           ) : (
             <div
@@ -181,6 +183,7 @@ export const SmashClubTemplate: React.FC<LayoutProps> = ({
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
                           onError={(e) => { (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none'); }}
+                          decoding="async"
                         />
                         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(15,15,15,0.8) 0%, transparent 60%)' }} />
                       </div>

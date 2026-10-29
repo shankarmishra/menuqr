@@ -59,6 +59,8 @@ export const MaisonTemplate: React.FC<LayoutProps> = ({
               className={clsx('rounded-full object-cover border', compact ? 'w-9 h-9' : 'w-12 h-12')}
               style={{ borderColor: `${goldColor}50` }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              decoding="async"
+              loading="lazy"
             />
           ) : (
             <div
@@ -218,6 +220,7 @@ export const MaisonTemplate: React.FC<LayoutProps> = ({
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 hover:opacity-100"
                             loading="lazy"
                             onError={(e) => { (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none'); }}
+                            decoding="async"
                           />
                         </div>
                       </div>

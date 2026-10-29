@@ -35,7 +35,7 @@ export const IndianStreetKitchenTemplate: React.FC<LayoutProps> = ({
           {/* Logo or Marquee Flashes */}
           {restaurant.logo && (
             <div className="w-14 h-14 rounded-full p-1 bg-[#18181B] border-2 border-[#FACC15] shadow-lg flex items-center justify-center overflow-hidden mb-1">
-              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" decoding="async" loading="lazy" />
             </div>
           )}
           <div className="inline-flex items-center gap-2 bg-[#DC2626] text-white px-3 py-0.5 rounded text-[10px] font-black tracking-widest uppercase shadow-md">
@@ -206,6 +206,7 @@ export const IndianStreetKitchenTemplate: React.FC<LayoutProps> = ({
                             onError={(e) => {
                               (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
                             }}
+                            decoding="async"
                           />
                         </div>
                       )}

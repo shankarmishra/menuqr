@@ -84,6 +84,8 @@ function ImageSelector({
               src={value}
               alt="Selected preview"
               className={`${compact ? 'w-14 h-14' : 'w-20 h-20'} rounded-xl object-cover border-2 border-[#E8783C] bg-black shadow-md`}
+              decoding="async"
+              loading="lazy"
             />
             <button
               type="button"
@@ -494,6 +496,8 @@ export default function OnboardingWizard() {
                             src={restaurantData.logoUrl}
                             alt="Logo"
                             className="w-14 h-14 rounded-xl object-contain bg-black/50 border-2 border-[#E8783C] shadow-md shrink-0"
+                            decoding="async"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-14 h-14 rounded-xl border-2 border-dashed border-white/20 bg-[#151C19] flex flex-col items-center justify-center text-[#AAB7B2] shrink-0">
@@ -840,6 +844,8 @@ export default function OnboardingWizard() {
                             src={restaurantData.logoUrl}
                             alt="Logo"
                             className="w-7 h-7 rounded-lg object-contain bg-black/40 border border-[#E8783C]/40 shrink-0"
+                            decoding="async"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-7 h-7 rounded-lg border border-dashed border-white/20 flex items-center justify-center text-[#AAB7B2] shrink-0">

@@ -921,7 +921,7 @@ export default function Menu() {
                 <div className="mt-1.5 flex items-center gap-3">
                   {itemForm.imageUrl ? (
                     <div className="relative h-14 w-14 shrink-0 rounded-xl overflow-hidden border border-[#384841] bg-black/40">
-                      <img src={itemForm.imageUrl} alt="Dish" className="h-full w-full object-cover" />
+                      <img src={itemForm.imageUrl} alt="Dish" className="h-full w-full object-cover" decoding="async" loading="lazy" />
                       <button
                         type="button"
                         onClick={() => setItemForm({ ...itemForm, imageUrl: '' })}

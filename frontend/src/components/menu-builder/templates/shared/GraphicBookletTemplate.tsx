@@ -171,7 +171,7 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
                 style={{ borderColor: config.colors.accent, backgroundColor: config.colors.surface }}
               >
                 {restaurant.logo ? (
-                  <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover rounded-full" />
+                  <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover rounded-full" decoding="async" loading="lazy" />
                 ) : (
                   <div className="flex flex-col items-center justify-center p-1">
                     <span 
@@ -348,7 +348,9 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
                   src={restaurant.logo} 
                   alt={restaurant.name} 
                   className="w-12 h-12 object-contain rounded-2xl border p-1 shrink-0" 
-                  style={{ borderColor: config.colors.border, backgroundColor: config.colors.cardBg }} 
+                  style={{ borderColor: config.colors.border, backgroundColor: config.colors.cardBg }}
+                  decoding="async"
+                  loading="lazy"
                 />
               )}
               <div>
@@ -400,7 +402,9 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
                 <img 
                   src={featureDish1.image || config.featuredPhotos[0]} 
                   alt={featureDish1.name} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  decoding="async"
+                  loading="lazy"
                 />
                 <span 
                   className="absolute bottom-0 inset-x-0 text-[10px] font-black text-center py-0.5 text-white"
@@ -442,7 +446,9 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
                 <img 
                   src={featureDish2.image || config.featuredPhotos[1]} 
                   alt={featureDish2.name} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  decoding="async"
+                  loading="lazy"
                 />
                 <span 
                   className="absolute bottom-0 inset-x-0 text-[10px] font-black text-center py-0.5 text-white"
@@ -553,7 +559,9 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
                             <img 
                               src={item.image} 
                               alt={item.name} 
-                              className="w-12 h-12 rounded-xl object-cover shrink-0 border border-current/10 shadow-xs" 
+                              className="w-12 h-12 rounded-xl object-cover shrink-0 border border-current/10 shadow-xs"
+                              decoding="async"
+                              loading="lazy"
                             />
                           )}
                         </div>

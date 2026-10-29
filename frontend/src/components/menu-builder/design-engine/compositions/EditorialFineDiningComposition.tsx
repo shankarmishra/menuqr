@@ -60,7 +60,7 @@ export const EditorialFineDiningComposition: React.FC<CompositionProps> = ({
           {/* Restaurant Logo OR Thematic Crest */}
           {restaurant.logo && header.showLogo ? (
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 p-1 bg-black/20 shadow-md mb-1" style={{ borderColor: colors.accent }}>
-              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover rounded-full" />
+              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover rounded-full" decoding="async" loading="lazy" />
             </div>
           ) : header.decorativeElement !== 'none' ? (
             <div className="flex items-center gap-3">
@@ -288,7 +288,7 @@ export const EditorialFineDiningComposition: React.FC<CompositionProps> = ({
 
                         {item.image && (
                           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden shrink-0 border shadow-sm" style={{ borderColor: colors.border }}>
-                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" decoding="async" loading="lazy" />
                           </div>
                         )}
                       </div>

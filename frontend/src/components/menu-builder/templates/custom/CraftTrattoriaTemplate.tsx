@@ -19,9 +19,9 @@ export const CraftTrattoriaTemplate: React.FC<LayoutProps> = ({
 
   // Featured Italian photography
   const trattoriaPhotos: [string, string, string] = [
-    'https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=600&auto=format&fit=crop&q=80', // pasta
-    'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80', // burger
-    'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&auto=format&fit=crop&q=80', // spaghetti
+    '/img/photos/photo-1546549032-9571cd6b27df-w600.webp', // pasta
+    '/img/photos/photo-1568901346375-23c9450c58cd-w600.webp', // burger
+    '/img/photos/photo-1551183053-bf91a1d81141-w600.webp', // spaghetti
   ];
 
   return (
@@ -78,7 +78,7 @@ export const CraftTrattoriaTemplate: React.FC<LayoutProps> = ({
             {/* Circular Stamp Badge with Client Logo */}
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-dashed border-[#C62828] bg-[#FFF9EE] p-1 flex flex-col items-center justify-center text-center shadow-md rotate-[6deg] overflow-hidden">
               {restaurant.logo ? (
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover rounded-full" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover rounded-full" decoding="async" loading="lazy" />
               ) : (
                 <>
                   <span className="text-[9px] font-black uppercase text-[#C62828] leading-tight truncate max-w-full px-0.5">
@@ -212,7 +212,7 @@ export const CraftTrattoriaTemplate: React.FC<LayoutProps> = ({
           {/* Header Banner */}
           <div className="text-center pb-2 border-b-2 border-[#C62828]/20 flex flex-col items-center">
             {restaurant.logo && (
-              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-cover rounded-full mb-1 border border-[#C62828]/30 shadow-xs" />
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-cover rounded-full mb-1 border border-[#C62828]/30 shadow-xs" decoding="async" loading="lazy" />
             )}
             <span className="text-[10px] font-black uppercase tracking-widest text-[#2E7D32]">
               {restaurant.tagline || 'Menu Del Giorno'}
@@ -277,7 +277,9 @@ export const CraftTrattoriaTemplate: React.FC<LayoutProps> = ({
                           <img 
                             src={item.image} 
                             alt={item.name} 
-                            className="w-12 h-12 rounded-lg object-cover border border-stone-200 shadow-xs" 
+                            className="w-12 h-12 rounded-lg object-cover border border-stone-200 shadow-xs"
+                            decoding="async"
+                            loading="lazy"
                           />
                         )}
 

@@ -89,6 +89,8 @@ export const PatisserieTemplate: React.FC<LayoutProps> = ({
                 className={clsx('rounded-full object-cover border-2 shadow-sm', compact ? 'w-12 h-12' : 'w-16 h-16')}
                 style={{ borderColor: `${roseColor}40` }}
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                decoding="async"
+                loading="lazy"
               />
             </div>
           )}
@@ -200,6 +202,7 @@ export const PatisserieTemplate: React.FC<LayoutProps> = ({
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             loading="lazy"
                             onError={(e) => { (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none'); }}
+                            decoding="async"
                           />
                         </div>
                       )}

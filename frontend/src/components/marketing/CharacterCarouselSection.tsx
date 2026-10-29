@@ -60,7 +60,7 @@ const SUPERPOWERS: SuperpowerItem[] = [
     metric: '+24% RevPASH',
     metricLabel: 'Weekend Revenue Per Seat',
     accentColor: '#FF5E4D',
-    image: '/marketing/carousel/dynamic_surge.jpg',
+    image: '/marketing/carousel/dynamic_surge.webp',
     icon: <Flame className="w-4 h-4 text-[#FF5E4D]" />,
     oldWay: 'Locked into fixed paper menu prices for 6 months despite packed Friday night queues.',
     newWay: 'MenusQR automatically shifts evening prices at 8:00 PM without printing a single paper sheet.',
@@ -77,7 +77,7 @@ const SUPERPOWERS: SuperpowerItem[] = [
     metric: '0 Apologies',
     metricLabel: 'Table Frustration Eliminated',
     accentColor: '#34B56A',
-    image: '/marketing/carousel/chef_kitchen.jpg',
+    image: '/marketing/carousel/chef_kitchen.webp',
     icon: <ShieldCheck className="w-4 h-4 text-[#34B56A]" />,
     oldWay: 'Waiters take orders, then return 15 minutes later to tell guests the kitchen ran out of ingredients.',
     newWay: 'Chef taps toggle on their smartphone — out-of-stock items instantly vanish across all 40 tables in real-time.',
@@ -94,7 +94,7 @@ const SUPERPOWERS: SuperpowerItem[] = [
     metric: '+34% AOV',
     metricLabel: 'Average Order Value Increase',
     accentColor: '#FFC928',
-    image: '/marketing/carousel/smart_upsell.jpg',
+    image: '/marketing/carousel/smart_upsell.webp',
     icon: <TrendingUp className="w-4 h-4 text-[#FFC928]" />,
     oldWay: 'Rush-hour staff is too overwhelmed to remember recommending sides, mocktails, and desserts.',
     newWay: 'Guests selecting a main are offered visual pairing chips (Truffle Fries, Nitro Cold Brew) right at the decision point.',
@@ -111,7 +111,7 @@ const SUPERPOWERS: SuperpowerItem[] = [
     metric: '₹48,000 Saved / Yr',
     metricLabel: 'Zero Recurring Print Waste',
     accentColor: '#E8783C',
-    image: '/marketing/carousel/walnut_standee.jpg',
+    image: '/marketing/carousel/walnut_standee.webp',
     icon: <QrCode className="w-4 h-4 text-[#E8783C]" />,
     oldWay: 'Spending ₹12,000 every quarter to reprint grease-stained, torn, outdated paper menus.',
     newWay: 'Mount high-grade solid walnut or acrylic table QR standees once. Update dishes, prices, and specials behind the code forever.',
@@ -128,7 +128,7 @@ const SUPERPOWERS: SuperpowerItem[] = [
     metric: '45s Dispatch',
     metricLabel: 'Order-To-Stove Acceleration',
     accentColor: '#10B981',
-    image: '/marketing/carousel/whatsapp_kot.jpg',
+    image: '/marketing/carousel/whatsapp_kot.webp',
     icon: <MessageSquare className="w-4 h-4 text-[#10B981]" />,
     oldWay: 'Waiters scribble notes on paper slips, walk back and forth, losing precious table turn minutes.',
     newWay: 'Guest orders fire directly to the kitchen chef’s WhatsApp or thermal printer with exact table number and notes.',
@@ -145,7 +145,7 @@ const SUPERPOWERS: SuperpowerItem[] = [
     metric: '100% Clarity',
     metricLabel: 'Global Guest Satisfaction',
     accentColor: '#60A5FA',
-    image: '/marketing/carousel/multilingual_tourist.jpg',
+    image: '/marketing/carousel/multilingual_tourist.webp',
     icon: <Globe2 className="w-4 h-4 text-[#60A5FA]" />,
     oldWay: 'Tourists struggle to decipher regional spice names, leaving waitstaff stuck trying to translate ingredients.',
     newWay: 'Camera scan detects phone language and translates descriptions, ingredients, and allergy notes seamlessly.',
@@ -162,7 +162,7 @@ const SUPERPOWERS: SuperpowerItem[] = [
     metric: '99.8% Scan Rate',
     metricLabel: 'Instant Menu Accessibility',
     accentColor: '#C084FC',
-    image: '/marketing/carousel/zero_app_scan.jpg',
+    image: '/marketing/carousel/zero_app_scan.webp',
     icon: <Zap className="w-4 h-4 text-[#C084FC]" />,
     oldWay: 'Apps demanding 60MB downloads or mandatory mobile number OTPs cause 65% of diners to abandon.',
     newWay: 'Camera scan immediately opens a high-speed web app in Safari or Chrome in under 400 milliseconds.',
@@ -179,7 +179,7 @@ const SUPERPOWERS: SuperpowerItem[] = [
     metric: '4.2x Server Tips',
     metricLabel: 'Direct Digital Waiter Rewards',
     accentColor: '#F43F5E',
-    image: '/marketing/carousel/split_bill.jpg',
+    image: '/marketing/carousel/split_bill.webp',
     icon: <Coins className="w-4 h-4 text-[#F43F5E]" />,
     oldWay: 'Groups spend 15 awkward minutes dividing bills; waiters walk back and forth with card machines.',
     newWay: 'Friends split checks on their phones and pay via GPay / PhonePe / Paytm, with 1-tap waiter tip prompts.',
@@ -689,6 +689,7 @@ export default function CharacterCarouselSection() {
                     style={{
                       filter: 'contrast(1.04) saturate(1.06)'
                     }}
+                    decoding="async"
                   />
 
                   {/* Gradient shadow over photo */}

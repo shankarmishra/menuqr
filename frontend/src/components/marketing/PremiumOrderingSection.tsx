@@ -57,12 +57,16 @@ export default function PremiumOrderingSection() {
                       </div>
                       <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-stone-100 border border-stone-200 relative">
                         <img
-                          src="/uploads/mannat/burger.png"
+                          src="/uploads/mannat/burger.webp"
                           alt="Truffle Smash Burger"
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&auto=format&fit=crop&q=80';
+                            e.currentTarget.src = '/img/photos/photo-1568901346375-23c9450c58cd-w200.webp';
                           }}
+                          decoding="async"
+                          loading="lazy"
+                          width={1040}
+                          height={980}
                         />
                       </div>
                     </div>
@@ -88,12 +92,16 @@ export default function PremiumOrderingSection() {
                       </div>
                       <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-stone-100 border border-stone-200 relative">
                         <img
-                          src="/uploads/mannat/fries.png"
+                          src="/uploads/mannat/fries.webp"
                           alt="Parmesan Truffle Fries"
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=200&auto=format&fit=crop&q=80';
+                            e.currentTarget.src = '/uploads/mannat/fries.webp';
                           }}
+                          decoding="async"
+                          loading="lazy"
+                          width={895}
+                          height={1180}
                         />
                       </div>
                     </div>

@@ -508,6 +508,7 @@ export default function RoyalHeritageSketchbook() {
                           alt={PAGES[idx].title}
                           draggable={false}
                           loading="eager"
+                          decoding="async"
                         />
                       </div>
                     ) : (
@@ -519,6 +520,8 @@ export default function RoyalHeritageSketchbook() {
                             src={turn.dir === 'next' ? PAGES[turn.from].url : PAGES[turn.to].url}
                             alt=""
                             draggable={false}
+                            decoding="async"
+                            loading="lazy"
                           />
                           <div className="gutter-shade left" />
                         </div>
@@ -528,6 +531,8 @@ export default function RoyalHeritageSketchbook() {
                             src={turn.dir === 'next' ? PAGES[turn.to].url : PAGES[turn.from].url}
                             alt=""
                             draggable={false}
+                            decoding="async"
+                            loading="lazy"
                           />
                           <div className="gutter-shade right" />
                         </div>
@@ -756,6 +761,7 @@ export default function RoyalHeritageSketchbook() {
                 alt={page.title}
                 loading="lazy"
                 draggable={false}
+                decoding="async"
               />
             </div>
           ))}

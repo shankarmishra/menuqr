@@ -34,7 +34,7 @@ export const SpiceHouseTemplate: React.FC<LayoutProps> = ({
         <div className="flex flex-col items-center justify-center space-y-2 py-2">
           {restaurant.logo && (
             <div className="w-14 h-14 rounded-full p-1 bg-[#1E1613] border-2 border-[#E07A5F] shadow-lg flex items-center justify-center overflow-hidden mb-1">
-              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" decoding="async" loading="lazy" />
             </div>
           )}
           <span className="text-[9.5px] uppercase tracking-[0.45em] font-bold text-[#E07A5F] font-mono">
@@ -201,6 +201,7 @@ export const SpiceHouseTemplate: React.FC<LayoutProps> = ({
                             onError={(e) => {
                               (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
                             }}
+                            decoding="async"
                           />
                         </div>
                       )}

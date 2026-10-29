@@ -35,7 +35,7 @@ export default function HeroMenuPreview({ stage, price }: HeroMenuPreviewProps) 
 
       {/* Hero Banner Image */}
       <div className="relative w-full h-[140px] shrink-0 bg-slate-200">
-        <img src="/marketing/hero/hero-restaurant-poster.webp" className="w-full h-full object-cover" alt="Restaurant Cover" />
+        <img src="/marketing/hero/hero-restaurant-poster.webp" className="w-full h-full object-cover" alt="Restaurant Cover" decoding="async" loading="lazy" width={1376} height={768} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/40" />
         <div className="absolute bottom-4 left-5 text-white">
           <h3 className="font-black text-2xl tracking-tight leading-none mb-1 shadow-sm">The Garden</h3>
@@ -105,7 +105,7 @@ export default function HeroMenuPreview({ stage, price }: HeroMenuPreviewProps) 
               
               {/* Dish Image Thumbnail */}
               <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 shadow-sm border border-slate-100 bg-slate-100 relative">
-                 <img src="/marketing/hero/hero-restaurant-poster.webp" className="w-full h-full object-cover scale-150 brightness-110" alt="Paneer Tikka" />
+                 <img src="/marketing/hero/hero-restaurant-poster.webp" className="w-full h-full object-cover scale-150 brightness-110" alt="Paneer Tikka" decoding="async" loading="lazy" width={1376} height={768} />
                  <div className="absolute inset-0 bg-black/5" />
               </div>
             </div>

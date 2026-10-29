@@ -79,6 +79,8 @@ export const RivieraTemplate: React.FC<LayoutProps> = ({
               className={clsx('rounded-full object-cover border-2 shadow-lg mb-4', compact ? 'w-10 h-10' : 'w-14 h-14')}
               style={{ borderColor: `${goldColor}60` }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              decoding="async"
+              loading="lazy"
             />
           )}
 
@@ -205,6 +207,7 @@ export const RivieraTemplate: React.FC<LayoutProps> = ({
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             loading="lazy"
                             onError={(e) => { (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none'); }}
+                            decoding="async"
                           />
                         </div>
                       )}

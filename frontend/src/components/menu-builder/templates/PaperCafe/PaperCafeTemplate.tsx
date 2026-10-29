@@ -36,7 +36,7 @@ export const PaperCafeTemplate: React.FC<LayoutProps> = ({
             <span className="h-px w-10 sm:w-16 border-b border-dashed border-[#8C6D53]" />
             {restaurant.logo ? (
               <div className="w-12 h-12 rounded-full p-1 border border-dashed border-[#8C6D53] bg-white overflow-hidden flex items-center justify-center shadow-sm">
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" decoding="async" loading="lazy" />
               </div>
             ) : (
               <WheatStalkEmblem size={compact ? 36 : 44} color="#DDA15E" />
@@ -208,6 +208,7 @@ export const PaperCafeTemplate: React.FC<LayoutProps> = ({
                             onError={(e) => {
                               (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
                             }}
+                            decoding="async"
                           />
                         </div>
                       )}

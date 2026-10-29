@@ -84,6 +84,8 @@ export const TokyoTableTemplate: React.FC<LayoutProps> = ({
                 className={clsx('object-cover rounded border', compact ? 'w-12 h-12' : 'w-16 h-16')}
                 style={{ borderColor: `${redColor}30` }}
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                decoding="async"
+                loading="lazy"
               />
             ) : (
               <TokyoSeal color={redColor} size={compact ? 36 : 48} />
@@ -177,6 +179,7 @@ export const TokyoTableTemplate: React.FC<LayoutProps> = ({
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 grayscale-[15%]"
                           loading="lazy"
                           onError={(e) => { (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none'); }}
+                          decoding="async"
                         />
                       </div>
                     )}

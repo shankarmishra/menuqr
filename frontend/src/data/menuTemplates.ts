@@ -546,7 +546,7 @@ export const DEMO_RESTAURANT = {
   cuisine: 'North Indian • Mughlai • Tandoor',
   phone: '+91 11 2611 2233',
   address: 'Diplomatic Enclave, Chanakyapuri, New Delhi, Delhi 110021',
-  logo: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=120&auto=format&fit=crop&q=80',
+  logo: '/img/photos/photo-1517248135467-4c7edcad34c4-w120.webp',
   categories: [
     { id: 'cat-1', name: 'Tandoori Starters', order: 0 },
     { id: 'cat-2', name: 'Heritage Curries', order: 1 },
@@ -563,7 +563,7 @@ export const DEMO_RESTAURANT = {
       dietType: 'veg' as const,
       available: true,
       isBestseller: true,
-      image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=500&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1567188040759-fb8a883dc6d8-w500.webp',
     },
     {
       id: 'demo-2',
@@ -573,7 +573,7 @@ export const DEMO_RESTAURANT = {
       category: 'cat-1',
       dietType: 'non-veg' as const,
       available: true,
-      image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=500&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1599487488170-d11ec9c172f0-w500.webp',
     },
     {
       id: 'demo-3',
@@ -593,7 +593,7 @@ export const DEMO_RESTAURANT = {
       dietType: 'non-veg' as const,
       available: true,
       isBestseller: true,
-      image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=500&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1588166524941-3bf61a9c41db-w500.webp',
     },
     {
       id: 'demo-5',
@@ -604,7 +604,7 @@ export const DEMO_RESTAURANT = {
       dietType: 'veg' as const,
       available: true,
       isBestseller: true,
-      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1546833999-b9f581a1996d-w500.webp',
     },
     {
       id: 'demo-6',
@@ -624,7 +624,7 @@ export const DEMO_RESTAURANT = {
       dietType: 'non-veg' as const,
       available: true,
       isBestseller: true,
-      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1563379091339-03b21ab4a4f8-w500.webp',
     },
     {
       id: 'demo-8',
@@ -634,7 +634,7 @@ export const DEMO_RESTAURANT = {
       category: 'cat-3',
       dietType: 'veg' as const,
       available: true,
-      image: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?w=500&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1626074353765-517a681e40be-w500.webp',
     },
     {
       id: 'demo-9',
@@ -644,7 +644,7 @@ export const DEMO_RESTAURANT = {
       category: 'cat-4',
       dietType: 'veg' as const,
       available: true,
-      image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=500&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1601050690597-df0568f70950-w500.webp',
     },
     {
       id: 'demo-10',
@@ -654,7 +654,7 @@ export const DEMO_RESTAURANT = {
       category: 'cat-4',
       dietType: 'veg' as const,
       available: true,
-      image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500&auto=format&fit=crop&q=80',
+      image: '/img/photos/photo-1576092768241-dec231879fc3-w500.webp',
     },
   ],
 };

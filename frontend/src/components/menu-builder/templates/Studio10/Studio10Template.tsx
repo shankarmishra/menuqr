@@ -95,6 +95,8 @@ export const Studio10Template: React.FC<LayoutProps> = ({
                 className={clsx('object-cover border shrink-0 grayscale hover:grayscale-0 transition-all duration-500', compact ? 'w-14 h-14' : 'w-20 h-20')}
                 style={{ borderColor: 'rgba(240, 237, 232, 0.2)' }}
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                decoding="async"
+                loading="lazy"
               />
             ) : (
               <div
@@ -231,6 +233,7 @@ export const Studio10Template: React.FC<LayoutProps> = ({
                           className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
                           loading="lazy"
                           onError={(e) => { (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none'); }}
+                          decoding="async"
                         />
                       </div>
                     )}

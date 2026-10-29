@@ -15,9 +15,9 @@ export const ArtisanPastryTemplate: React.FC<LayoutProps> = ({
     || categories.flatMap(c => c.items)[0];
   const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
 
-  const heroPastryPhoto = featuredItem?.image || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80'; // croissant
-  const cakePhoto = 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=600&auto=format&fit=crop&q=80'; // cake
-  const macaronPhoto = 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=600&auto=format&fit=crop&q=80'; // macarons
+  const heroPastryPhoto = featuredItem?.image || '/img/photos/photo-1509440159596-0249088772ff-w600.webp'; // croissant
+  const cakePhoto = '/img/photos/photo-1563729784474-d77dbb933a9e-w600.webp'; // cake
+  const macaronPhoto = '/img/photos/photo-1569864358642-9d1684040f43-w600.webp'; // macarons
 
   return (
     <div 
@@ -66,7 +66,7 @@ export const ArtisanPastryTemplate: React.FC<LayoutProps> = ({
           <div className="flex flex-col items-center mb-2">
             {restaurant.logo ? (
               <div className="w-16 h-16 rounded-full p-1 bg-white border-2 border-[#D81B60]/30 shadow-md flex items-center justify-center overflow-hidden mb-1">
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" decoding="async" loading="lazy" />
               </div>
             ) : (
               <div className="w-10 h-6 border-b-2 border-dashed border-[#D81B60]/40 flex items-center justify-center">
@@ -98,17 +98,19 @@ export const ArtisanPastryTemplate: React.FC<LayoutProps> = ({
                 <img 
                   src={heroPastryPhoto} 
                   alt={featuredItem?.name || 'French Croissant'} 
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
+                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                  decoding="async"
+                  loading="lazy"
                 />
               </div>
 
               {/* Floating Mini Pastry Badge */}
               <div className="absolute -top-2 -right-2 w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-md">
-                <img src={macaronPhoto} alt="Macaron" className="w-full h-full object-cover" />
+                <img src={macaronPhoto} alt="Macaron" className="w-full h-full object-cover" decoding="async" loading="lazy" />
               </div>
 
               <div className="absolute -bottom-2 -left-2 w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-md">
-                <img src={cakePhoto} alt="Gateau" className="w-full h-full object-cover" />
+                <img src={cakePhoto} alt="Gateau" className="w-full h-full object-cover" decoding="async" loading="lazy" />
               </div>
             </div>
 
@@ -180,7 +182,7 @@ export const ArtisanPastryTemplate: React.FC<LayoutProps> = ({
           {/* Header */}
           <div className="text-center pb-2 border-b border-[#F3D5DE] flex flex-col items-center">
             {restaurant.logo && (
-              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-pink-200" />
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-pink-200" decoding="async" loading="lazy" />
             )}
             <span className="text-[10px] font-serif italic text-[#880E4F] tracking-widest uppercase">
               {restaurant.tagline || 'La Carte des Gourmandises'}
@@ -240,7 +242,9 @@ export const ArtisanPastryTemplate: React.FC<LayoutProps> = ({
                           <img 
                             src={item.image} 
                             alt={item.name} 
-                            className="w-12 h-12 rounded-xl object-cover border border-[#F3D5DE] shadow-xs" 
+                            className="w-12 h-12 rounded-xl object-cover border border-[#F3D5DE] shadow-xs"
+                            decoding="async"
+                            loading="lazy"
                           />
                         )}
 

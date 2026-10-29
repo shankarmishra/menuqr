@@ -92,6 +92,8 @@ export const EmberTemplate: React.FC<LayoutProps> = ({
               className={clsx('rounded-full object-cover border-2 mb-3 shadow-lg', compact ? 'w-10 h-10' : 'w-14 h-14')}
               style={{ borderColor: `${amberColor}50` }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              decoding="async"
+              loading="lazy"
             />
           )}
 
@@ -206,6 +208,7 @@ export const EmberTemplate: React.FC<LayoutProps> = ({
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           loading="lazy"
                           onError={(e) => { (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none'); }}
+                          decoding="async"
                         />
                         <div
                           className="absolute inset-0"

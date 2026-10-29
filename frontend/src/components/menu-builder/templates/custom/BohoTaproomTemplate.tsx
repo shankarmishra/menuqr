@@ -17,9 +17,9 @@ export const BohoTaproomTemplate: React.FC<LayoutProps> = ({
 
   const itemPhotos = categories.flatMap(c => c.items).map(i => i.image).filter(Boolean) as string[];
   const taproomPhotos: [string, string, string] = [
-    itemPhotos[0] || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80', // sliders
-    itemPhotos[1] || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80', // pizza
-    itemPhotos[2] || 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&auto=format&fit=crop&q=80', // pasta
+    itemPhotos[0] || '/img/photos/photo-1568901346375-23c9450c58cd-w600.webp', // sliders
+    itemPhotos[1] || '/img/photos/photo-1513104890138-7c749659a591-w600.webp', // pizza
+    itemPhotos[2] || '/img/photos/photo-1551183053-bf91a1d81141-w600.webp', // pasta
   ];
 
   return (
@@ -72,7 +72,7 @@ export const BohoTaproomTemplate: React.FC<LayoutProps> = ({
             </span>
             {restaurant.logo ? (
               <div className="w-12 h-12 rounded-xl bg-[#1E2228] p-1 border border-amber-400/40 shadow-md flex items-center justify-center overflow-hidden">
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" decoding="async" loading="lazy" />
               </div>
             ) : (
               <div className="px-2.5 py-0.5 rounded-md bg-[#FF8F00]/20 text-[#FFB300] border border-[#FF8F00]/40 text-[10px] font-mono font-bold">
@@ -165,7 +165,7 @@ export const BohoTaproomTemplate: React.FC<LayoutProps> = ({
           <div className="flex items-center justify-between pb-2 border-b border-[#343B47]">
             <div className="flex items-center gap-2.5">
               {restaurant.logo && (
-                <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-xl border border-amber-400/40 bg-[#1E2228]" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-xl border border-amber-400/40 bg-[#1E2228]" decoding="async" loading="lazy" />
               )}
               <div>
                 <span className="text-[10px] font-mono text-[#FFB300] uppercase tracking-widest font-bold">
@@ -233,7 +233,9 @@ export const BohoTaproomTemplate: React.FC<LayoutProps> = ({
                           <img 
                             src={item.image} 
                             alt={item.name} 
-                            className="w-12 h-12 rounded-lg object-cover border border-[#343B47] shadow-xs" 
+                            className="w-12 h-12 rounded-lg object-cover border border-[#343B47] shadow-xs"
+                            decoding="async"
+                            loading="lazy"
                           />
                         )}
 

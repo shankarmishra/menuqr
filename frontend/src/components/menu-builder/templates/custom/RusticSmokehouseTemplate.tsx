@@ -15,8 +15,8 @@ export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
     || categories.flatMap(c => c.items)[0];
   const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
 
-  const heroRibsPhoto = featuredItem?.image || 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80'; // ribs
-  const brisketPhoto = 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=600&auto=format&fit=crop&q=80'; // brisket
+  const heroRibsPhoto = featuredItem?.image || '/img/photos/photo-1544025162-d76694265947-w600.webp'; // ribs
+  const brisketPhoto = '/img/photos/photo-1529193591184-b1d58069ecdd-w600.webp'; // brisket
 
   return (
     <div 
@@ -68,7 +68,7 @@ export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
             </span>
             {restaurant.logo ? (
               <div className="w-12 h-12 rounded-xl bg-[#2C1F1A] p-1 border border-orange-500/40 shadow-md flex items-center justify-center overflow-hidden">
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" decoding="async" loading="lazy" />
               </div>
             ) : (
               <div className="px-2.5 py-0.5 rounded-md bg-[#E65100]/20 text-[#FFA726] border border-[#E65100]/40 text-[10px] font-mono font-bold">
@@ -97,7 +97,9 @@ export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
                 <img 
                   src={heroRibsPhoto} 
                   alt={featuredItem?.name || 'Smoked St. Louis Ribs'} 
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
+                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                  decoding="async"
+                  loading="lazy"
                 />
               </div>
 
@@ -174,7 +176,7 @@ export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
           <div className="flex items-center justify-between pb-2 border-b border-[#42332C]">
             <div className="flex items-center gap-2.5">
               {restaurant.logo && (
-                <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-xl border border-orange-500/40 bg-[#261E1A]" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-xl border border-orange-500/40 bg-[#261E1A]" decoding="async" loading="lazy" />
               )}
               <div>
                 <span className="text-[10px] font-mono text-[#FFA726] uppercase tracking-widest font-bold">
@@ -239,7 +241,9 @@ export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
                           <img 
                             src={item.image} 
                             alt={item.name} 
-                            className="w-12 h-12 rounded-lg object-cover border border-[#42332C] shadow-xs" 
+                            className="w-12 h-12 rounded-lg object-cover border border-[#42332C] shadow-xs"
+                            decoding="async"
+                            loading="lazy"
                           />
                         )}
 
@@ -263,7 +267,7 @@ export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
 
           {/* Brisket Platter Spotlight Card */}
           <div className="p-3 rounded-2xl bg-[#2C211C] border border-[#FFA726]/30 text-white flex items-center justify-between gap-3 shadow-lg">
-            <img src={brisketPhoto} alt="14hr Smoked Brisket" className="w-14 h-14 rounded-xl object-cover border border-[#FFA726]/40" />
+            <img src={brisketPhoto} alt="14hr Smoked Brisket" className="w-14 h-14 rounded-xl object-cover border border-[#FFA726]/40" decoding="async" loading="lazy" />
             <div className="flex-1 min-w-0">
               <span className="text-[9px] font-mono uppercase tracking-widest text-[#FFA726] font-bold">Pitmaster Special</span>
               <div className="text-xs font-bold truncate">14-Hour Prime Beef Brisket</div>

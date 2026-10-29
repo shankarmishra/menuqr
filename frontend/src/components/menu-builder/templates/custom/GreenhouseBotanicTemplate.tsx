@@ -15,8 +15,8 @@ export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
     || categories.flatMap(c => c.items)[0];
   const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
 
-  const heroBowlPhoto = featuredItem?.image || 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop&q=80'; // salad
-  const pokeBowlPhoto = 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&auto=format&fit=crop&q=80'; // healthy bowl
+  const heroBowlPhoto = featuredItem?.image || '/img/photos/photo-1540420773420-3366772f4999-w600.webp'; // salad
+  const pokeBowlPhoto = '/img/photos/photo-1512621776951-a57141f2eefd-w600.webp'; // healthy bowl
 
   return (
     <div 
@@ -68,7 +68,7 @@ export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
             </span>
             {restaurant.logo ? (
               <div className="w-12 h-12 rounded-full bg-white p-1 border border-green-600/30 shadow-md flex items-center justify-center overflow-hidden">
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" decoding="async" loading="lazy" />
               </div>
             ) : (
               <div className="w-10 h-10 rounded-full bg-[#2E7D32] text-white flex items-center justify-center shadow-md">
@@ -97,7 +97,9 @@ export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
                 <img 
                   src={heroBowlPhoto} 
                   alt={featuredItem?.name || 'Superfood Bowl'} 
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
+                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                  decoding="async"
+                  loading="lazy"
                 />
               </div>
 
@@ -173,7 +175,7 @@ export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
           {/* Header */}
           <div className="text-center pb-2 border-b-2 border-[#2E7D32]/20 flex flex-col items-center">
             {restaurant.logo && (
-              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-green-200" />
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-green-200" decoding="async" loading="lazy" />
             )}
             <span className="text-[10px] font-mono text-[#558B2F] uppercase tracking-widest font-black">
               {restaurant.tagline || 'Pure Nutritional Craft'}
@@ -237,7 +239,9 @@ export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
                           <img 
                             src={item.image} 
                             alt={item.name} 
-                            className="w-12 h-12 rounded-lg object-cover border border-[#D2E2D3] shadow-xs" 
+                            className="w-12 h-12 rounded-lg object-cover border border-[#D2E2D3] shadow-xs"
+                            decoding="async"
+                            loading="lazy"
                           />
                         )}
 
@@ -261,7 +265,7 @@ export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
 
           {/* Poke Bowl Spotlight Card */}
           <div className="p-3 rounded-2xl bg-gradient-to-r from-[#1C2C1E] to-[#2E7D32] text-white flex items-center justify-between gap-3 shadow-md">
-            <img src={pokeBowlPhoto} alt="Poke Bowl" className="w-14 h-14 rounded-xl object-cover border border-green-300/40" />
+            <img src={pokeBowlPhoto} alt="Poke Bowl" className="w-14 h-14 rounded-xl object-cover border border-green-300/40" decoding="async" loading="lazy" />
             <div className="flex-1 min-w-0">
               <span className="text-[9px] font-mono uppercase tracking-widest text-green-300 font-bold">House Signature</span>
               <div className="text-xs font-bold truncate">Organic Rainbow Poke Bowl</div>

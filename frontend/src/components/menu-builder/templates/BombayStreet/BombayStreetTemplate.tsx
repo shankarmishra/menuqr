@@ -37,7 +37,7 @@ export const BombayStreetTemplate: React.FC<LayoutProps> = ({
             <span className="h-0.5 w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#F26522]" />
             {restaurant.logo ? (
               <div className="w-12 h-12 rounded-full p-1 border-2 border-[#F26522] bg-[#1A0D0D] overflow-hidden flex items-center justify-center shadow-lg">
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" decoding="async" loading="lazy" />
               </div>
             ) : (
               <ChaiGlassEmblem size={compact ? 36 : 46} primary={redColor} accent={amberColor} />
@@ -210,6 +210,7 @@ export const BombayStreetTemplate: React.FC<LayoutProps> = ({
                             onError={(e) => {
                               (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
                             }}
+                            decoding="async"
                           />
                         </div>
                       )}

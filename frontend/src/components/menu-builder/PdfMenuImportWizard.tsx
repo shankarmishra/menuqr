@@ -896,7 +896,7 @@ export function PdfMenuImportWizard({
                     <div className="p-3 bg-[#101513] border border-[#2a3832] rounded-xl flex flex-col sm:flex-row items-center gap-4">
                       {restaurantInfo.logo ? (
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/5 border border-[#2a3832] flex items-center justify-center shrink-0 p-1">
-                          <img src={restaurantInfo.logo} alt="Logo" className="w-full h-full object-contain" />
+                          <img src={restaurantInfo.logo} alt="Logo" className="w-full h-full object-contain" decoding="async" loading="lazy" />
                         </div>
                       ) : (
                         <div className="w-16 h-16 rounded-xl bg-white/5 border border-[#2a3832] flex items-center justify-center shrink-0 font-bold text-lg text-[#e8783c]">
@@ -921,7 +921,7 @@ export function PdfMenuImportWizard({
                                   restaurantInfo.logo === cand.url ? 'border-[#e8783c] ring-1 ring-[#e8783c]' : 'border-[#2a3832] opacity-70 hover:opacity-100'
                                 )}
                               >
-                                <img src={cand.url} alt={`Candidate ${idx + 1}`} className="w-full h-full object-contain" />
+                                <img src={cand.url} alt={`Candidate ${idx + 1}`} className="w-full h-full object-contain" decoding="async" loading="lazy" />
                               </button>
                             ))}
                           </div>

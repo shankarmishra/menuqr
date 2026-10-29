@@ -15,9 +15,9 @@ export const TokyoIzakayaTemplate: React.FC<LayoutProps> = ({
     || categories.flatMap(c => c.items)[0];
   const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
 
-  const ramenHeroPhoto = featuredItem?.image || 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&auto=format&fit=crop&q=80';
-  const gyozaCallout = 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?w=600&auto=format&fit=crop&q=80';
-  const sushiCallout = 'https://images.unsplash.com/photo-1526318896980-cf78c088247c?w=600&auto=format&fit=crop&q=80';
+  const ramenHeroPhoto = featuredItem?.image || '/img/photos/photo-1569718212165-3a8278d5f624-w600.webp';
+  const gyozaCallout = '/img/photos/photo-1541696432-82c6da8ce7bf-w600.webp';
+  const sushiCallout = '/img/photos/photo-1526318896980-cf78c088247c-w600.webp';
 
   return (
     <div 
@@ -74,7 +74,7 @@ export const TokyoIzakayaTemplate: React.FC<LayoutProps> = ({
             <div className="flex items-center gap-2">
               {restaurant.logo ? (
                 <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-2xl border border-red-500/50 p-1 shadow-lg shadow-red-500/30 flex items-center justify-center overflow-hidden">
-                  <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+                  <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" decoding="async" loading="lazy" />
                 </div>
               ) : (
                 <div className="w-12 h-14 bg-gradient-to-b from-[#FF5252] to-[#C62828] rounded-xl border border-amber-300/60 shadow-lg shadow-red-500/20 flex flex-col items-center justify-center p-1 text-center">
@@ -106,7 +106,9 @@ export const TokyoIzakayaTemplate: React.FC<LayoutProps> = ({
                 <img 
                   src={ramenHeroPhoto} 
                   alt={featuredItem?.name || 'Tonkotsu Ramen'} 
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
+                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                  decoding="async"
+                  loading="lazy"
                 />
               </div>
 
@@ -183,7 +185,7 @@ export const TokyoIzakayaTemplate: React.FC<LayoutProps> = ({
           <div className="flex items-center justify-between pb-2 border-b border-red-500/30">
             <div className="flex items-center gap-2.5">
               {restaurant.logo && (
-                <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-xl border border-red-500/40 bg-[#1A1B22]" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-xl border border-red-500/40 bg-[#1A1B22]" decoding="async" loading="lazy" />
               )}
               <div>
                 <span className="text-[10px] font-mono text-[#FFB300] uppercase tracking-widest font-bold">
@@ -248,7 +250,9 @@ export const TokyoIzakayaTemplate: React.FC<LayoutProps> = ({
                           <img 
                             src={item.image} 
                             alt={item.name} 
-                            className="w-12 h-12 rounded-lg object-cover border border-stone-700 shadow-xs" 
+                            className="w-12 h-12 rounded-lg object-cover border border-stone-700 shadow-xs"
+                            decoding="async"
+                            loading="lazy"
                           />
                         )}
 
@@ -277,7 +281,7 @@ export const TokyoIzakayaTemplate: React.FC<LayoutProps> = ({
             </span>
             <div className="grid grid-cols-2 gap-2.5">
               <div className="p-2 rounded-xl bg-[#1A1B22] border border-stone-800 flex items-center gap-2">
-                <img src={gyozaCallout} alt="Gyoza" className="w-10 h-10 rounded-lg object-cover" />
+                <img src={gyozaCallout} alt="Gyoza" className="w-10 h-10 rounded-lg object-cover" decoding="async" loading="lazy" />
                 <div>
                   <div className="text-[10px] font-bold text-stone-200">Kurobuta Gyoza</div>
                   <div className="text-[10px] font-mono text-[#FFB300] font-black">$6.50</div>
@@ -285,7 +289,7 @@ export const TokyoIzakayaTemplate: React.FC<LayoutProps> = ({
               </div>
 
               <div className="p-2 rounded-xl bg-[#1A1B22] border border-stone-800 flex items-center gap-2">
-                <img src={sushiCallout} alt="Sushi" className="w-10 h-10 rounded-lg object-cover" />
+                <img src={sushiCallout} alt="Sushi" className="w-10 h-10 rounded-lg object-cover" decoding="async" loading="lazy" />
                 <div>
                   <div className="text-[10px] font-bold text-stone-200">Salmon Nigiri</div>
                   <div className="text-[10px] font-mono text-[#FFB300] font-black">$8.00</div>

@@ -32,7 +32,7 @@ export const CoffeeHouseTemplate: React.FC<LayoutProps> = ({
             <span className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#D4A373]" />
             {restaurant.logo ? (
               <div className="w-12 h-12 rounded-full p-1 border border-[#D4A373] bg-[#160E0B] overflow-hidden flex items-center justify-center shadow-lg">
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" decoding="async" loading="lazy" />
               </div>
             ) : (
               <CoffeeBranchEmblem size={compact ? 36 : 44} woodColor={caramelColor} leafColor="#4A6B5D" />
@@ -204,6 +204,7 @@ export const CoffeeHouseTemplate: React.FC<LayoutProps> = ({
                             onError={(e) => {
                               (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
                             }}
+                            decoding="async"
                           />
                         </div>
                       )}

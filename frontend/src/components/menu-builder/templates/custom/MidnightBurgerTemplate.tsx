@@ -16,9 +16,9 @@ export const MidnightBurgerTemplate: React.FC<LayoutProps> = ({
   const [page, setPage] = useState<'cover' | 'menu'>('cover');
 
   // Hero burger photo from Image 2
-  const heroBurgerPhoto = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80';
-  const calloutPhoto1 = 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=600&auto=format&fit=crop&q=80'; // spicy chicken
-  const calloutPhoto2 = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80'; // 13" pizza
+  const heroBurgerPhoto = '/img/photos/photo-1568901346375-23c9450c58cd-w600.webp';
+  const calloutPhoto1 = '/img/photos/photo-1626082927389-6cd097cdc6ec-w600.webp'; // spicy chicken
+  const calloutPhoto2 = '/img/photos/photo-1513104890138-7c749659a591-w600.webp'; // 13" pizza
 
   return (
     <div 
@@ -67,7 +67,7 @@ export const MidnightBurgerTemplate: React.FC<LayoutProps> = ({
           <div className="relative mb-3 flex flex-col items-center">
             <div className="w-20 h-16 bg-gradient-to-b from-[#FFA726] to-[#F57C00] rounded-b-2xl shadow-xl flex flex-col items-center justify-center p-2 border-t-2 border-white/40">
               {restaurant.logo ? (
-                <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-cover rounded-full border border-white/70 shadow-sm" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-cover rounded-full border border-white/70 shadow-sm" decoding="async" loading="lazy" />
               ) : (
                 <div className="w-10 h-10 rounded-full border border-white/50 flex flex-col items-center justify-center text-center">
                   <span className="text-[8px] font-black tracking-tighter text-stone-950 uppercase leading-none truncate max-w-[36px]">
@@ -164,7 +164,7 @@ export const MidnightBurgerTemplate: React.FC<LayoutProps> = ({
           <div className="flex items-center justify-between pb-2 border-b border-stone-800">
             <div className="flex items-center gap-2">
               {restaurant.logo && (
-                <img src={restaurant.logo} alt={restaurant.name} className="w-7 h-7 object-cover rounded-full border border-[#FFA726]/40" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-7 h-7 object-cover rounded-full border border-[#FFA726]/40" decoding="async" loading="lazy" />
               )}
               <span className="text-xs font-black tracking-wider text-[#FFA726] uppercase">
                 {restaurant.name}
@@ -248,7 +248,9 @@ export const MidnightBurgerTemplate: React.FC<LayoutProps> = ({
                 <img 
                   src={calloutPhoto1} 
                   alt="Spicy Chicken" 
-                  className="w-full h-24 object-cover transform group-hover:scale-105 transition-transform duration-300" 
+                  className="w-full h-24 object-cover transform group-hover:scale-105 transition-transform duration-300"
+                  decoding="async"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
@@ -266,7 +268,9 @@ export const MidnightBurgerTemplate: React.FC<LayoutProps> = ({
                 <img 
                   src={calloutPhoto2} 
                   alt="13' Pizza" 
-                  className="w-full h-24 object-cover transform group-hover:scale-105 transition-transform duration-300" 
+                  className="w-full h-24 object-cover transform group-hover:scale-105 transition-transform duration-300"
+                  decoding="async"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">

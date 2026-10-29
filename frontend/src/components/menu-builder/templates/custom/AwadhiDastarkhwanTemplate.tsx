@@ -11,8 +11,8 @@ export const AwadhiDastarkhwanTemplate: React.FC<LayoutProps> = ({
 }) => {
   const [page, setPage] = useState<'cover' | 'menu'>('cover');
 
-  const heroAwadhiPhoto = 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=600&auto=format&fit=crop&q=80'; // dum biryani
-  const kababPhoto = 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=600&auto=format&fit=crop&q=80'; // galawati kabab
+  const heroAwadhiPhoto = '/img/photos/photo-1589302168068-964664d93dc0-w600.webp'; // dum biryani
+  const kababPhoto = '/img/photos/photo-1599488615731-7e5c2823ff28-w600.webp'; // galawati kabab
 
   return (
     <div 
@@ -64,7 +64,7 @@ export const AwadhiDastarkhwanTemplate: React.FC<LayoutProps> = ({
             </span>
             <div className="w-10 h-10 rounded-full border-2 border-[#C99700] bg-[#FFFDF9] flex items-center justify-center overflow-hidden shadow-sm">
               {restaurant.logo ? (
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover" decoding="async" loading="lazy" />
               ) : (
                 <span className="text-[10px] font-serif font-black text-[#8D1436]">{restaurant.name.slice(0, 2).toUpperCase()}</span>
               )}
@@ -99,7 +99,9 @@ export const AwadhiDastarkhwanTemplate: React.FC<LayoutProps> = ({
                 <img 
                   src={heroAwadhiPhoto} 
                   alt={restaurant.name} 
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
+                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                  decoding="async"
+                  loading="lazy"
                 />
               </div>
 
@@ -179,7 +181,7 @@ export const AwadhiDastarkhwanTemplate: React.FC<LayoutProps> = ({
           {/* Header with Client Logo */}
           <div className="text-center pb-2 border-b-2 border-[#8D1436]/20 flex flex-col items-center">
             {restaurant.logo && (
-              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-cover rounded-full mb-1 border border-[#C99700] shadow-xs" />
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-cover rounded-full mb-1 border border-[#C99700] shadow-xs" decoding="async" loading="lazy" />
             )}
             <span className="text-[10px] font-mono text-[#C99700] uppercase tracking-widest font-black">
               {restaurant.tagline || 'Nawabi Zaika'}
@@ -240,7 +242,9 @@ export const AwadhiDastarkhwanTemplate: React.FC<LayoutProps> = ({
                           <img 
                             src={item.image} 
                             alt={item.name} 
-                            className="w-12 h-12 rounded-lg object-cover border border-[#E4CF9F] shadow-xs" 
+                            className="w-12 h-12 rounded-lg object-cover border border-[#E4CF9F] shadow-xs"
+                            decoding="async"
+                            loading="lazy"
                           />
                         )}
 
@@ -264,7 +268,7 @@ export const AwadhiDastarkhwanTemplate: React.FC<LayoutProps> = ({
 
           {/* Galawati Kabab Spotlight Card */}
           <div className="p-3 rounded-2xl bg-gradient-to-r from-[#420A19] to-[#8D1436] text-amber-100 flex items-center justify-between gap-3 shadow-md border border-[#C99700]/30">
-            <img src={kababPhoto} alt="Galawati Kabab" className="w-14 h-14 rounded-xl object-cover border border-[#C99700]/60" />
+            <img src={kababPhoto} alt="Galawati Kabab" className="w-14 h-14 rounded-xl object-cover border border-[#C99700]/60" decoding="async" loading="lazy" />
             <div className="flex-1 min-w-0">
               <span className="text-[9px] font-mono uppercase tracking-widest text-[#C99700] font-bold">Chef Shahi Nazrana</span>
               <div className="text-xs font-bold truncate">Melt-in-Mouth Galawati Kabab</div>

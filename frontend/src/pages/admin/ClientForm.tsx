@@ -154,7 +154,7 @@ export default function ClientForm() {
             <div className="sm:col-span-2">
               <span className={labelClass}>Cover/Hero Image (optional)</span>
               <label className="group relative mt-2 flex h-32 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-dashed border-white/15 bg-[#17211e] transition hover:border-[#e8783c]/60">
-                {form.heroImage ? <img src={form.heroImage} alt="Cover preview" className="h-full w-full object-cover" /> : <span className="flex flex-col items-center gap-2 text-xs font-semibold text-[#aab7b2]"><ImagePlus size={22} className="text-[#f29a66]" />Choose cover photo</span>}
+                {form.heroImage ? <img src={form.heroImage} alt="Cover preview" className="h-full w-full object-cover" decoding="async" loading="lazy" /> : <span className="flex flex-col items-center gap-2 text-xs font-semibold text-[#aab7b2]"><ImagePlus size={22} className="text-[#f29a66]" />Choose cover photo</span>}
                 <input type="file" accept="image/*" className="sr-only" onChange={(event) => void chooseHeroImage(event.currentTarget.files?.[0])} />
               </label>
             </div>

@@ -633,13 +633,16 @@ export default function PhysicalQrSection() {
                             🍟
                           </span>
                           <img
-                            src="https://images.unsplash.com/photo-1576107232684-1279f3908594?w=200&auto=format&fit=crop"
+                            src="/uploads/mannat/fries.webp"
                             alt="Truffle Fries"
                             loading="lazy"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                             }}
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            decoding="async"
+                            width={895}
+                            height={1180}
                           />
                           {simState.isPeakPrice && (
                             <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded-sm text-[7px] font-sans font-black uppercase tracking-wider bg-[#E8783C] text-white shadow-sm z-10">
@@ -726,13 +729,16 @@ export default function PhysicalQrSection() {
                             🍗
                           </span>
                           <img
-                            src="https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=200&auto=format&fit=crop"
+                            src="/img/photos/photo-1567620832903-9fc6debc209f-w200.webp"
                             alt="Spicy Wings"
                             loading="lazy"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                             }}
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            decoding="async"
+                            width={200}
+                            height={242}
                           />
                           {simState.isWingsSoldOut && (
                             <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-10">
@@ -814,13 +820,16 @@ export default function PhysicalQrSection() {
                             🍄
                           </span>
                           <img
-                            src="https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?w=200&auto=format&fit=crop"
+                            src="/img/photos/photo-1633964913295-ceb43826e7c9-w200.webp"
                             alt="Mushroom Risotto"
                             loading="lazy"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                             }}
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            decoding="async"
+                            width={200}
+                            height={133}
                           />
                           {simState.isChefSpecial && (
                             <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded-sm text-[7px] font-sans font-black uppercase tracking-wider bg-[#F59E0B] text-white shadow-sm z-10 flex items-center gap-0.5">

@@ -15,8 +15,8 @@ export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
     || categories.flatMap(c => c.items)[0];
   const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
 
-  const heroThaliPhoto = featuredItem?.image || 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=600&auto=format&fit=crop&q=80'; // tandoori paneer
-  const biryaniPhoto = 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=600&auto=format&fit=crop&q=80'; // biryani
+  const heroThaliPhoto = featuredItem?.image || '/img/photos/photo-1626777552726-4a6b54c97e46-w600.webp'; // tandoori paneer
+  const biryaniPhoto = '/img/photos/photo-1589302168068-964664d93dc0-w600.webp'; // biryani
 
   return (
     <div 
@@ -68,7 +68,7 @@ export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
             </span>
             {restaurant.logo ? (
               <div className="w-12 h-12 rounded-full bg-white p-1 border border-amber-500/40 shadow-md flex items-center justify-center overflow-hidden">
-                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" decoding="async" loading="lazy" />
               </div>
             ) : (
               <div className="px-2.5 py-0.5 rounded-md bg-[#BF360C] text-white text-[10px] font-black uppercase shadow-xs">
@@ -100,7 +100,9 @@ export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
                 <img 
                   src={heroThaliPhoto} 
                   alt={featuredItem?.name || 'Tandoori Paneer Tikka'} 
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
+                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                  decoding="async"
+                  loading="lazy"
                 />
               </div>
 
@@ -176,7 +178,7 @@ export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
           {/* Header */}
           <div className="text-center pb-2 border-b-2 border-[#B71C1C]/20 flex flex-col items-center">
             {restaurant.logo && (
-              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-amber-300" />
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-amber-300" decoding="async" loading="lazy" />
             )}
             <span className="text-[10px] font-mono text-[#E65100] uppercase tracking-widest font-black">
               {restaurant.tagline || 'Shuddh Desi Swad'}
@@ -237,7 +239,9 @@ export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
                           <img 
                             src={item.image} 
                             alt={item.name} 
-                            className="w-12 h-12 rounded-lg object-cover border border-[#EFD4B2] shadow-xs" 
+                            className="w-12 h-12 rounded-lg object-cover border border-[#EFD4B2] shadow-xs"
+                            decoding="async"
+                            loading="lazy"
                           />
                         )}
 
@@ -261,7 +265,7 @@ export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
 
           {/* Thali Spotlight Card */}
           <div className="p-3 rounded-2xl bg-gradient-to-r from-[#4E1708] to-[#BF360C] text-white flex items-center justify-between gap-3 shadow-md">
-            <img src={biryaniPhoto} alt="Dum Biryani Handi" className="w-14 h-14 rounded-xl object-cover border border-amber-400/40" />
+            <img src={biryaniPhoto} alt="Dum Biryani Handi" className="w-14 h-14 rounded-xl object-cover border border-amber-400/40" decoding="async" loading="lazy" />
             <div className="flex-1 min-w-0">
               <span className="text-[9px] font-mono uppercase tracking-widest text-amber-300 font-bold">Dhaba Special</span>
               <div className="text-xs font-bold truncate">Dum Matka Biryani Thali</div>

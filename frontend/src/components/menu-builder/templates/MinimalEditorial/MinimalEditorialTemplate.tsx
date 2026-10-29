@@ -28,7 +28,7 @@ export const MinimalEditorialTemplate: React.FC<LayoutProps> = ({
         <div className="flex flex-col items-center justify-center space-y-2 py-3">
           {restaurant.logo && (
             <div className="w-12 h-12 rounded-full p-1 border border-black/20 shadow-xs flex items-center justify-center overflow-hidden mb-1">
-              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" decoding="async" loading="lazy" />
             </div>
           )}
           <div className="flex items-center gap-2">
@@ -212,6 +212,7 @@ export const MinimalEditorialTemplate: React.FC<LayoutProps> = ({
                               onError={(e) => {
                                 (e.currentTarget.parentElement as HTMLElement)?.style.setProperty('display', 'none');
                               }}
+                              decoding="async"
                             />
                           </div>
                         )}

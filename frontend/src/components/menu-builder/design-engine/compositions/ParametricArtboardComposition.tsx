@@ -55,7 +55,7 @@ export const ParametricArtboardComposition: React.FC<CompositionProps> = ({
 
   const headingFont = typography.headingFont || "'Bebas Neue', 'Oswald', sans-serif";
   const bodyFont = typography.bodyFont || "'Plus Jakarta Sans', sans-serif";
-  const heroPlateImage = '/uploads/dishes/crop_dish_plate.png';
+  const heroPlateImage = '/uploads/dishes/crop_dish_plate.webp';
 
   return (
     <div
@@ -229,8 +229,10 @@ export const ParametricArtboardComposition: React.FC<CompositionProps> = ({
                       className="w-full h-full object-cover rounded-full shadow-inner hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
-                          'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80';
+                          '/img/photos/photo-1544025162-d76694265947-w600.webp';
                       }}
+                      decoding="async"
+                      loading="lazy"
                     />
                   </div>
 
@@ -517,6 +519,8 @@ export const ParametricArtboardComposition: React.FC<CompositionProps> = ({
                 src={selectedItemImage.image}
                 alt={selectedItemImage.name}
                 className="w-full h-full object-cover"
+                decoding="async"
+                loading="lazy"
               />
             </div>
             <div className="flex items-center justify-between">

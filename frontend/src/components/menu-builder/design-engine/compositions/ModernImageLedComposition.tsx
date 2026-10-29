@@ -47,7 +47,7 @@ export const ModernImageLedComposition: React.FC<CompositionProps> = ({
                 borderColor: colors.border,
               }}
             >
-              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover rounded-xl" />
+              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover rounded-xl" decoding="async" loading="lazy" />
             </div>
           ) : (
             <div
@@ -220,6 +220,7 @@ export const ModernImageLedComposition: React.FC<CompositionProps> = ({
                           alt={item.name}
                           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                           loading="lazy"
+                          decoding="async"
                         />
                         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg">
                           <DietIndicator type={item.dietType} compact color="#FFFFFF" />

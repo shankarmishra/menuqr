@@ -7,14 +7,14 @@ import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/Ren
 // High quality Unsplash imagery for Indian luxury cuisine
 const DEFAULT_HERITAGE_IMAGES = {
   curries: [
-    'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=600&auto=format&fit=crop&q=80', // Velvet Butter Chicken / Curry
-    'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80', // Dal Makhani Clay Pot
-    'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&auto=format&fit=crop&q=80', // Paneer Tikka Masala
+    '/img/photos/photo-1588166524941-3bf61a9c41db-w600.webp', // Velvet Butter Chicken / Curry
+    '/img/photos/photo-1546833999-b9f581a1996d-w600.webp', // Dal Makhani Clay Pot
+    '/img/photos/photo-1567188040759-fb8a883dc6d8-w600.webp', // Paneer Tikka Masala
   ],
   mains: [
-    'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80', // Royal Dum Biryani
-    'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=600&auto=format&fit=crop&q=80', // Seekh Kebab Platter
-    'https://images.unsplash.com/photo-1626074353765-517a681e40be?w=600&auto=format&fit=crop&q=80', // Tandoori Naan Roti
+    '/img/photos/photo-1563379091339-03b21ab4a4f8-w600.webp', // Royal Dum Biryani
+    '/img/photos/photo-1599487488170-d11ec9c172f0-w600.webp', // Seekh Kebab Platter
+    '/img/photos/photo-1626074353765-517a681e40be-w600.webp', // Tandoori Naan Roti
   ],
 };
 
@@ -474,6 +474,8 @@ export const BrandPlaque: React.FC<{
           onError={(e) => {
             e.currentTarget.style.display = 'none';
           }}
+          decoding="async"
+          loading="lazy"
         />
       ) : (
         <span
@@ -590,6 +592,7 @@ export const EditorialCollage: React.FC<{
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
         <span className="absolute bottom-1.5 left-2.5 text-[9px] font-serif uppercase tracking-widest text-[#F6EAD1] font-bold">
@@ -608,6 +611,7 @@ export const EditorialCollage: React.FC<{
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
         <span className="absolute bottom-2 left-3 text-[10px] font-serif uppercase tracking-[0.2em] text-[#F6EAD1] font-bold">
@@ -622,6 +626,7 @@ export const EditorialCollage: React.FC<{
           alt={`${title} detail 1`}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
+          decoding="async"
         />
       </div>
 
@@ -632,6 +637,7 @@ export const EditorialCollage: React.FC<{
           alt={`${title} detail 2`}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
+          decoding="async"
         />
       </div>
     </div>
@@ -784,7 +790,7 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
                 {/* Golden Blooming Lotus Crest Emblem or Restaurant Logo */}
                 {restaurant.logo && !restaurant.logo.includes('unsplash.com') ? (
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FFFDF7] p-1.5 border-2 border-[#D7B66D] shadow-lg flex items-center justify-center overflow-hidden mb-2">
-                    <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+                    <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" decoding="async" loading="lazy" />
                   </div>
                 ) : (
                   <GoldenLotusCrestSVG size={compact ? 44 : 70} className="mb-1" />
@@ -960,6 +966,7 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
                     alt="Royal Heritage Signature"
                     className="w-full h-full object-cover"
                     loading="eager"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#042821]/80 via-black/20 to-transparent flex items-end p-2.5">
                     <span className="text-[9px] font-serif uppercase tracking-[0.2em] text-[#F6EAD1] font-bold">

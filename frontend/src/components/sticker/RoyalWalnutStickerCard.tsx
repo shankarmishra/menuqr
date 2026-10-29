@@ -826,6 +826,8 @@ function VaultQrContainer({
                 alt={`Permanent QR code for ${restaurantName}`}
                 className="h-full w-full object-contain"
                 style={{ imageRendering: 'pixelated' }}
+                decoding="async"
+                loading="lazy"
               />
               {/* Centered 3D Minted Gold MenusQR Medallion */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

@@ -272,7 +272,9 @@ export const Image1WheelCollage: React.FC<{
         <img 
           src={photos[0]} 
           alt="Featured food dish 1"
-          className="w-full h-full object-cover transform scale-110 hover:scale-115 transition-transform duration-500" 
+          className="w-full h-full object-cover transform scale-110 hover:scale-115 transition-transform duration-500"
+          decoding="async"
+          loading="lazy"
         />
       </div>
 
@@ -286,7 +288,9 @@ export const Image1WheelCollage: React.FC<{
         <img 
           src={photos[1]} 
           alt="Featured food dish 2"
-          className="w-full h-full object-cover transform scale-110 hover:scale-115 transition-transform duration-500" 
+          className="w-full h-full object-cover transform scale-110 hover:scale-115 transition-transform duration-500"
+          decoding="async"
+          loading="lazy"
         />
       </div>
 
@@ -300,7 +304,9 @@ export const Image1WheelCollage: React.FC<{
         <img 
           src={photos[2]} 
           alt="Featured food dish 3"
-          className="w-full h-full object-cover transform scale-110 hover:scale-115 transition-transform duration-500" 
+          className="w-full h-full object-cover transform scale-110 hover:scale-115 transition-transform duration-500"
+          decoding="async"
+          loading="lazy"
         />
       </div>
 
@@ -361,7 +367,9 @@ export const Image2ApertureRing: React.FC<{
           <img 
             src={photo} 
             alt="Hero Dish"
-            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
+            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+            decoding="async"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
         </div>

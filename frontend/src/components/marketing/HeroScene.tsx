@@ -71,6 +71,7 @@ export default function HeroScene() {
           src={heroRestaurantPoster}
           alt="Restaurant background"
           className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.1] scale-105"
+          decoding="async"
         />
       </motion.div>
 
@@ -132,7 +133,7 @@ export default function HeroScene() {
                 >
                   {/* Blurred Camera Feed Background */}
                   <div className="absolute inset-0 opacity-30">
-                    <img src={heroRestaurantPoster} alt="" className="w-full h-full object-cover blur-sm scale-110" />
+                    <img src={heroRestaurantPoster} alt="" className="w-full h-full object-cover blur-sm scale-110" decoding="async" />
                   </div>
 
                   {/* Viewfinder Center */}
@@ -273,12 +274,15 @@ export default function HeroScene() {
                       </div>
                       <div className="w-[48px] h-[48px] sm:w-[52px] sm:h-[52px] rounded-lg overflow-hidden shrink-0 bg-stone-100 border border-stone-200/80 shadow-xs relative">
                         <img
-                          src="/uploads/mannat/hero_chaap.png"
+                          src="/uploads/mannat/hero_chaap.webp"
                           alt="Tandoori Malai Chaap"
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=200&auto=format&fit=crop&q=80';
+                            e.currentTarget.src = '/img/photos/photo-1567188040759-fb8a883dc6d8-w200.webp';
                           }}
+                          decoding="async"
+                          width={755}
+                          height={480}
                         />
                       </div>
                     </div>
@@ -309,9 +313,12 @@ export default function HeroScene() {
                       </div>
                       <div className="w-[48px] h-[48px] sm:w-[52px] sm:h-[52px] rounded-lg overflow-hidden shrink-0 bg-stone-100 border border-stone-200/80 shadow-xs relative">
                         <img
-                          src="https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=200&auto=format&fit=crop&q=80"
+                          src="/img/photos/photo-1588166524941-3bf61a9c41db-w200.webp"
                           alt="Murgh Makhani Royale"
                           className="w-full h-full object-cover"
+                          decoding="async"
+                          width={200}
+                          height={302}
                         />
                       </div>
                     </div>
@@ -342,9 +349,12 @@ export default function HeroScene() {
                       </div>
                       <div className="w-[48px] h-[48px] sm:w-[52px] sm:h-[52px] rounded-lg overflow-hidden shrink-0 bg-stone-100 border border-stone-200/80 shadow-xs relative">
                         <img
-                          src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=200&auto=format&fit=crop&q=80"
+                          src="/img/photos/photo-1546833999-b9f581a1996d-w200.webp"
                           alt="Dal Makhani"
                           className="w-full h-full object-cover"
+                          decoding="async"
+                          width={200}
+                          height={133}
                         />
                       </div>
                     </div>

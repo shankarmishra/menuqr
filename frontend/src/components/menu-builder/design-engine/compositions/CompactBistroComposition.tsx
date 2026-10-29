@@ -44,6 +44,8 @@ export const CompactBistroComposition: React.FC<CompositionProps> = ({
               alt={restaurant.name}
               className="w-12 h-12 rounded-lg object-cover shrink-0 border"
               style={{ borderColor: colors.border }}
+              decoding="async"
+              loading="lazy"
             />
           ) : (
             <div
@@ -205,6 +207,7 @@ export const CompactBistroComposition: React.FC<CompositionProps> = ({
                             className="w-7 h-7 sm:w-8 sm:h-8 rounded object-cover shrink-0 border"
                             style={{ borderColor: colors.border }}
                             loading="lazy"
+                            decoding="async"
                           />
                         )}
                         <h3

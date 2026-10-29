@@ -307,7 +307,9 @@ export default function Appearance() {
                     <img 
                       src={brandLogo} 
                       alt="Brand Logo" 
-                      className="w-full h-full object-contain p-2" 
+                      className="w-full h-full object-contain p-2"
+                      decoding="async"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="flex flex-col items-center text-center p-2 text-[#849a90]">
