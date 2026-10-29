@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import clsx from 'clsx';
 import type { LayoutProps, MenuItem } from '../types';
 import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
+import { ShobharamBespokeCover } from '../bespoke/ShobharamBespokeCover';
 
 // --- AUTHENTIC HERITAGE CURATED PHOTOGRAPHY ---
 // High quality Unsplash imagery for Indian luxury cuisine
@@ -721,6 +722,16 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
       {/* PAGE ONE: THE FRONT COVER (EMERALD HERITAGE PALACE ARCH & IVORY FIELD) */}
       {/* ========================================================================= */}
       {(activeViewTab === 'both' || activeViewTab === 'cover') && (
+        restaurant.name?.toLowerCase().includes('shobharam') ? (
+          <div className="w-full flex justify-center py-2 sm:py-4">
+            <ShobharamBespokeCover
+              restaurant={restaurant}
+              categories={categories}
+              onExploreMenu={() => setActiveViewTab('menu')}
+              compact={compact}
+            />
+          </div>
+        ) : (
         <section
           aria-label="Menu Front Cover"
           className={clsx(
@@ -887,6 +898,7 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
             )}
           </div>
         </section>
+        )
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════

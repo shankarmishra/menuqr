@@ -400,6 +400,44 @@ export default function TemplateAuditCanvas() {
       };
     }
 
+    if (edgeCase === 'shobharam') {
+      const shobharamCategories = [
+        { id: 'cat-specials', name: 'Specials & Signatures', order: 0 },
+        { id: 'cat-thali', name: 'Royal Thalis & Meals', order: 1 },
+        { id: 'cat-starters', name: 'Crispy Starters & Tandoor', order: 2 },
+        { id: 'cat-main', name: 'Main Course Curries', order: 3 },
+        { id: 'cat-breads', name: 'Clay Oven Breads', order: 4 },
+        { id: 'cat-south', name: 'South Indian & Crispy Dosas', order: 5 },
+        { id: 'cat-chinese', name: 'Indo-Chinese Wok', order: 6 },
+        { id: 'cat-chaat', name: 'Street Chaat & Snacks', order: 7 },
+        { id: 'cat-sweets', name: 'Traditional Desi Ghee Sweets', order: 8 },
+      ];
+
+      const shobharamItems = [
+        { id: 'sh-1', name: 'Special Paneer Tikka Masala', description: 'Charcoal charred cottage cheese simmered in royal creamy cashew gravy', price: 280, category: 'cat-specials', dietType: 'veg' as const, available: true, isBestseller: true, image: '/uploads/shobharam/cover_hero_dish_extracted.webp' },
+        { id: 'sh-2', name: 'Dal Makhani Bukhara', description: 'Overnight slow-simmered black lentils with rich churned white butter and cream', price: 240, category: 'cat-main', dietType: 'veg' as const, available: true, isBestseller: true },
+        { id: 'sh-3', name: 'Royal Maharaja Thali', description: 'Paneer butter masala, dal makhani, seasonal sabzi, 2 butter naan, jeera rice, raita & gulab jamun', price: 320, category: 'cat-thali', dietType: 'veg' as const, available: true, isBestseller: true, image: '/uploads/shobharam/cover_hero_dish_extracted.webp' },
+        { id: 'sh-4', name: 'Masala Dosa Crispy', description: 'Golden crepe stuffed with tempered spiced potato masala, served with sambar & coconut chutneys', price: 160, category: 'cat-south', dietType: 'veg' as const, available: true },
+        { id: 'sh-5', name: 'Amritsari Kulcha with Chole', description: 'Stuffed spiced potato onion tandoor kulcha served with tangy pindi chana and mint pickle', price: 180, category: 'cat-starters', dietType: 'veg' as const, available: true },
+        { id: 'sh-6', name: 'Butter Tandoori Roti', description: 'Freshly baked whole wheat bread brushed with desi ghee', price: 25, category: 'cat-breads', dietType: 'veg' as const, available: true },
+        { id: 'sh-7', name: 'Gulab Jamun Desi Ghee (2 Pcs)', description: 'Mawa dumplings soaked in cardamom and saffron infused warm sugar syrup', price: 90, category: 'cat-sweets', dietType: 'veg' as const, available: true, isBestseller: true },
+      ];
+
+      return {
+        restaurant: {
+          name: "Shobharam's",
+          tagline: 'Traditional Recipes • 100% Pure Veg',
+          cuisine: 'Pure Veg North Indian • Traditional Sweets',
+          phone: '+91 98765 43210',
+          address: 'Main Market Road, City Center',
+          city: 'Jaipur',
+          logo: '/uploads/shobharam/shobharam_logo_transparent.webp',
+        },
+        categories: shobharamCategories,
+        items: shobharamItems,
+      };
+    }
+
     return {
       restaurant: DEMO_RESTAURANT,
       categories: DEMO_RESTAURANT.categories,
@@ -517,6 +555,17 @@ export default function TemplateAuditCanvas() {
               }`}
             >
               ✦ Mannat PDF 1:1 Artboard
+            </Link>
+
+            <Link
+              to={`/audit-preview/${currentTemplate.id}?edge=shobharam${isCompact ? '&compact=true' : ''}`}
+              className={`px-2.5 py-1 rounded font-mono text-[11px] border font-bold ${
+                edgeCase === 'shobharam'
+                  ? 'border-emerald-400 bg-emerald-950/60 text-emerald-300'
+                  : 'border-emerald-400/40 text-emerald-400 hover:bg-emerald-950/20'
+              }`}
+            >
+              ✦ Shobharam Bespoke Cover
             </Link>
 
             <Link

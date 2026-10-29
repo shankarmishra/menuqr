@@ -76,3 +76,6 @@ uploads/
 ~$*
 menusqr.in-audit/
 
+
+temp_otp_session.json
+!frontend/public/uploads/shobharam/

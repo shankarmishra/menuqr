@@ -15,6 +15,7 @@ import {
   Minus, 
   Utensils 
 } from 'lucide-react';
+import { ShobharamBespokeCover } from '../../templates/bespoke/ShobharamBespokeCover';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 12 Authentic PDF Chapters (Mirroring Art Board 3.pdf Structure)
@@ -281,6 +282,13 @@ export const HeritageArtboardComposition: React.FC<CompositionProps> = ({
                 height={2339}
               />
             </picture>
+          </div>
+        ) : restaurant.name?.toLowerCase().includes('shobharam') ? (
+          <div className="relative w-full flex justify-center bg-[#0B0E0D] p-2 sm:p-4">
+            <ShobharamBespokeCover
+              restaurant={restaurant}
+              categories={categories}
+            />
           </div>
         ) : (
           <div

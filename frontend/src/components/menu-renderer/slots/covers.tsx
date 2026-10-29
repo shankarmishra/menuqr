@@ -11,9 +11,12 @@
 import React from 'react';
 import { useMenuTheme } from '../MenuThemeProvider.tsx';
 import { SmartImage } from '../primitives/SmartImage.tsx';
+import { ShobharamBespokeCover } from '../../menu-builder/templates/bespoke/ShobharamBespokeCover.tsx';
 import type { SlotProps } from '../types.ts';
 
 type CoverProps = SlotProps;
+
+const isShobharam = (name?: string) => Boolean(name && name.toLowerCase().includes('shobharam'));
 
 /** Logo, sized by role and shaped per the owner's choice. */
 const BrandLogo: React.FC<{ size: number; onCover?: boolean }> = ({ size, onCover }) => {
@@ -63,7 +66,10 @@ const RestaurantMeta: React.FC<{ restaurant: CoverProps['restaurant'] }> = ({ re
  * field rather than a constant because an owner's photo may be anything from a bright daylight
  * courtyard to a dark interior, and fixed overlay opacity fails at both ends.
  */
-export const HeroPhotoCover: React.FC<CoverProps> = ({ restaurant, compact }) => {
+export const HeroPhotoCover: React.FC<CoverProps> = ({ restaurant, categories, compact }) => {
+  if (isShobharam(restaurant.name)) {
+    return <ShobharamBespokeCover restaurant={restaurant} categories={categories} compact={compact} />;
+  }
   const { cover } = useMenuTheme();
   const hasPhoto = Boolean(cover.imageUrl);
 
@@ -116,7 +122,10 @@ export const HeroPhotoCover: React.FC<CoverProps> = ({ restaurant, compact }) =>
  * for a brand-new client who has not uploaded anything yet: an empty monogram cover looks
  * deliberate, whereas an empty photo cover looks broken.
  */
-export const MonogramCover: React.FC<CoverProps> = ({ restaurant, compact }) => {
+export const MonogramCover: React.FC<CoverProps> = ({ restaurant, categories, compact }) => {
+  if (isShobharam(restaurant.name)) {
+    return <ShobharamBespokeCover restaurant={restaurant} categories={categories} compact={compact} />;
+  }
   const { brand } = useMenuTheme();
   const initials = restaurant.name
     .split(/\s+/)
@@ -165,8 +174,12 @@ export const MonogramCover: React.FC<CoverProps> = ({ restaurant, compact }) => 
  * crisp at any density. The motif is the one piece of the old Rajasthani and Mughal templates
  * genuinely worth keeping; here it responds to the palette instead of being frozen in gold.
  */
-export const HeritageArchCover: React.FC<CoverProps> = ({ restaurant, categories, compact }) => (
-  <header className="mq-cover" style={{ paddingBlock: compact ? 'var(--mq-space-6)' : 'var(--mq-space-12)' }}>
+export const HeritageArchCover: React.FC<CoverProps> = ({ restaurant, categories, compact }) => {
+  if (isShobharam(restaurant.name)) {
+    return <ShobharamBespokeCover restaurant={restaurant} categories={categories} compact={compact} />;
+  }
+  return (
+    <header className="mq-cover" style={{ paddingBlock: compact ? 'var(--mq-space-6)' : 'var(--mq-space-12)' }}>
     <div className="mq-cover-content" style={{ alignItems: 'center', textAlign: 'center' }}>
       <svg
         viewBox="0 0 200 120"
@@ -203,7 +216,8 @@ export const HeritageArchCover: React.FC<CoverProps> = ({ restaurant, categories
       <RestaurantMeta restaurant={restaurant} />
     </div>
   </header>
-);
+  );
+};
 
 /**
  * Style D — Bento collage.
@@ -213,6 +227,9 @@ export const HeritageArchCover: React.FC<CoverProps> = ({ restaurant, categories
  * with no photos falls back to the brand block alone rather than to empty frames.
  */
 export const BentoCollageCover: React.FC<CoverProps> = ({ restaurant, categories, compact }) => {
+  if (isShobharam(restaurant.name)) {
+    return <ShobharamBespokeCover restaurant={restaurant} categories={categories} compact={compact} />;
+  }
   const photographed = categories
     .flatMap((category) => category.items)
     .filter((item) => Boolean(item.imageUrl));

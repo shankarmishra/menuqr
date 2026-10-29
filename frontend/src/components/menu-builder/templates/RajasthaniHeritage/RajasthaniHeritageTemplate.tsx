@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import clsx from 'clsx';
 import type { LayoutProps, MenuItem } from '../types';
 import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
+import { ShobharamBespokeCover } from '../bespoke/ShobharamBespokeCover';
 
 // ============================================================================
 // HERITAGE PARCHMENT ATELIER — CURATED CUISINE PHOTOGRAPHY
@@ -730,6 +731,8 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
     ? rawCategories.find((c) => c.id === activeCategory || c.name === activeCategory)
     : null;
 
+  const isShobharam = restaurant.name?.toLowerCase().includes('shobharam');
+
   return (
     <div
       className={clsx(
@@ -785,90 +788,103 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
           PAGE ONE: FRONT COVER PAGE (THE ORNATE SCALLOPED ARCH OF ROYAL HAVELI)
           ═══════════════════════════════════════════════════════════════════════ */}
       {(activeViewTab === 'both' || activeViewTab === 'cover') && (
-        <section aria-label="Menu Front Cover" className="w-full flex justify-center">
-          <div className="w-full max-w-md sm:max-w-lg">
-            <HeritageParchmentFrame compact={compact} hasBackgroundLace={true} className="text-center relative">
-              <ScallopedArchFrame compact={compact}>
-                <div className="flex flex-col items-center justify-center space-y-2 sm:space-y-3 relative w-full">
-                  {/* Top Blooming Lotus Crest or Client Logo with Symmetrical Gold Connector Lines */}
-                  <div className="flex items-center justify-center gap-2.5">
-                    <span className="h-px w-8 sm:w-14 bg-gradient-to-r from-transparent to-[#D4AE68]" />
-                    {restaurant.logo ? (
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#FCF5E9] p-1 border-2 border-[#D4AE68] shadow-md flex items-center justify-center overflow-hidden">
-                        <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" decoding="async" loading="lazy" />
-                      </div>
-                    ) : (
-                      <BloomingLotusEmblem size={compact ? 36 : 46} />
-                    )}
-                    <span className="h-px w-8 sm:w-14 bg-gradient-to-l from-transparent to-[#D4AE68]" />
-                  </div>
-
-                  {/* Subtitle / Edition */}
-                  <p className="font-serif uppercase tracking-[0.25em] text-[9px] sm:text-[10.5px] text-[#D97036] font-bold">
-                    {restaurant.cuisine ? `${restaurant.cuisine.split(' ')[0].toUpperCase()} CUISINE MENU` : 'INDIAN CUISINE MENU'}
-                  </p>
-
-                  {/* Restaurant Title in Elegant Signature Calligraphy */}
-                  <div className="space-y-0.5 px-2 max-w-[92%] mx-auto">
-                    <h1
-                      className={clsx(
-                        'font-bold tracking-wide leading-tight text-[#1B4942] drop-shadow-xs whitespace-normal break-normal text-balance',
-                        "font-['Caveat',cursive]",
-                        compact
-                          ? 'text-2xl sm:text-3xl'
-                          : restaurant.name.length > 24
-                          ? 'text-2xl sm:text-3xl md:text-4xl'
-                          : 'text-3xl sm:text-4xl lg:text-4xl'
+        isShobharam ? (
+          <section aria-label="Menu Front Cover" className="w-full flex justify-center mb-8">
+            <div className="w-full max-w-3xl">
+              <ShobharamBespokeCover
+                restaurant={restaurant}
+                categories={categories}
+                onExploreMenu={() => setActiveViewTab('menu')}
+                compact={compact}
+              />
+            </div>
+          </section>
+        ) : (
+          <section aria-label="Menu Front Cover" className="w-full flex justify-center">
+            <div className="w-full max-w-md sm:max-w-lg">
+              <HeritageParchmentFrame compact={compact} hasBackgroundLace={true} className="text-center relative">
+                <ScallopedArchFrame compact={compact}>
+                  <div className="flex flex-col items-center justify-center space-y-2 sm:space-y-3 relative w-full">
+                    {/* Top Blooming Lotus Crest or Client Logo with Symmetrical Gold Connector Lines */}
+                    <div className="flex items-center justify-center gap-2.5">
+                      <span className="h-px w-8 sm:w-14 bg-gradient-to-r from-transparent to-[#D4AE68]" />
+                      {restaurant.logo ? (
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#FCF5E9] p-1 border-2 border-[#D4AE68] shadow-md flex items-center justify-center overflow-hidden">
+                          <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" decoding="async" loading="lazy" />
+                        </div>
+                      ) : (
+                        <BloomingLotusEmblem size={compact ? 36 : 46} />
                       )}
-                    >
-                      {toTitleCase(restaurant.name)}
-                    </h1>
+                      <span className="h-px w-8 sm:w-14 bg-gradient-to-l from-transparent to-[#D4AE68]" />
+                    </div>
 
-                    {/* Tagline / Subtitle */}
-                    {restaurant.tagline && (
-                      <p
+                    {/* Subtitle / Edition */}
+                    <p className="font-serif uppercase tracking-[0.25em] text-[9px] sm:text-[10.5px] text-[#D97036] font-bold">
+                      {restaurant.cuisine ? `${restaurant.cuisine.split(' ')[0].toUpperCase()} CUISINE MENU` : 'INDIAN CUISINE MENU'}
+                    </p>
+
+                    {/* Restaurant Title in Elegant Signature Calligraphy */}
+                    <div className="space-y-0.5 px-2 max-w-[92%] mx-auto">
+                      <h1
                         className={clsx(
-                          'font-serif italic tracking-wide text-[#D97036] font-medium',
-                          compact ? 'text-[10px]' : 'text-xs sm:text-sm'
+                          'font-bold tracking-wide leading-tight text-[#1B4942] drop-shadow-xs whitespace-normal break-normal text-balance',
+                          "font-['Caveat',cursive]",
+                          compact
+                            ? 'text-2xl sm:text-3xl'
+                            : restaurant.name.length > 24
+                            ? 'text-2xl sm:text-3xl md:text-4xl'
+                            : 'text-3xl sm:text-4xl lg:text-4xl'
                         )}
                       >
-                        {restaurant.tagline}
-                      </p>
-                    )}
-                  </div>
+                        {toTitleCase(restaurant.name)}
+                      </h1>
 
-                  {/* Decorative Plaque Cartouche (Orange Pill with Tabs) */}
-                  <PlaqueCartouche
-                    text={restaurant.tagline ? 'EXECUTIVE CHEF SELECTION' : 'AUTHENTIC RECIPES'}
-                    compact={compact}
-                  />
+                      {/* Tagline / Subtitle */}
+                      {restaurant.tagline && (
+                        <p
+                          className={clsx(
+                            'font-serif italic tracking-wide text-[#D97036] font-medium',
+                            compact ? 'text-[10px]' : 'text-xs sm:text-sm'
+                          )}
+                        >
+                          {restaurant.tagline}
+                        </p>
+                      )}
+                    </div>
 
-                  {/* Address & Contact Metadata */}
-                  <div className="text-center text-[#6E6657] pt-1 space-y-0.5">
-                    {(restaurant.address || restaurant.city) && (
-                      <p className="font-sans text-[8px] sm:text-[9.5px] tracking-wider uppercase font-semibold text-[#1B4942]">
-                        {[restaurant.address, restaurant.city].filter(Boolean).join(', ')}
-                      </p>
-                    )}
-                    {restaurant.phone && (
-                      <p className="font-sans text-[7.5px] sm:text-[8.5px] tracking-wider text-[#6E6657] font-medium">
-                        Order & Table Booking: {restaurant.phone}
-                      </p>
-                    )}
+                    {/* Decorative Plaque Cartouche (Orange Pill with Tabs) */}
+                    <PlaqueCartouche
+                      text={restaurant.tagline ? 'EXECUTIVE CHEF SELECTION' : 'AUTHENTIC RECIPES'}
+                      compact={compact}
+                    />
+
+                    {/* Address & Contact Metadata */}
+                    <div className="text-center text-[#6E6657] pt-1 space-y-0.5">
+                      {(restaurant.address || restaurant.city) && (
+                        <p className="font-sans text-[8px] sm:text-[9.5px] tracking-wider uppercase font-semibold text-[#1B4942]">
+                          {[restaurant.address, restaurant.city].filter(Boolean).join(', ')}
+                        </p>
+                      )}
+                      {restaurant.phone && (
+                        <p className="font-sans text-[7.5px] sm:text-[8.5px] tracking-wider text-[#6E6657] font-medium">
+                          Order & Table Booking: {restaurant.phone}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                </ScallopedArchFrame>
+
+                {/* Symmetrical Botanical Flowering Shrubs in Bottom Corners outside the Arch */}
+                <div className="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 pointer-events-none opacity-85 z-20">
+                  <BotanicalShrub size={compact ? 28 : 38} />
                 </div>
-              </ScallopedArchFrame>
-
-              {/* Symmetrical Botanical Flowering Shrubs in Bottom Corners outside the Arch */}
-              <div className="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 pointer-events-none opacity-85 z-20">
-                <BotanicalShrub size={compact ? 28 : 38} />
-              </div>
-              <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 pointer-events-none opacity-85 z-20">
-                <BotanicalShrub size={compact ? 28 : 38} flip />
-              </div>
-            </HeritageParchmentFrame>
-          </div>
-        </section>
+                <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 pointer-events-none opacity-85 z-20">
+                  <BotanicalShrub size={compact ? 28 : 38} flip />
+                </div>
+              </HeritageParchmentFrame>
+            </div>
+          </section>
+        )
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════

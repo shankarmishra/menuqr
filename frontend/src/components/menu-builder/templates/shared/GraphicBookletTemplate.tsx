@@ -12,6 +12,7 @@ import {
   Image2ApertureRing 
 } from '../artwork/FoodDoodleBackgrounds';
 import { Phone, MapPin, Globe, Sparkles, BookOpen, UtensilsCrossed, Plus } from 'lucide-react';
+import { ShobharamBespokeCover } from '../bespoke/ShobharamBespokeCover';
 
 export interface GraphicThemeConfig {
   id: string;
@@ -155,6 +156,15 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
       {/* PAGE 1: FRONT COVER PAGE (Inspired by Image 1 & Image 2)              */}
       {/* ==================================================================== */}
       {currentPage === 'cover' && (
+        restaurant.name?.toLowerCase().includes('shobharam') ? (
+          <div className="relative z-10 max-w-3xl mx-auto px-2 sm:px-6 py-6 animate-in fade-in duration-300">
+            <ShobharamBespokeCover
+              restaurant={restaurant}
+              categories={categories}
+              onExploreMenu={() => setCurrentPage('menu')}
+            />
+          </div>
+        ) : (
         <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-8 py-6 flex flex-col justify-between min-h-[820px] animate-in fade-in duration-300">
           {/* Top Row: Floating Cutout + Logo Medallion */}
           <div className="flex items-start justify-between relative mb-6">
@@ -333,6 +343,7 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
             </div>
           </div>
         </div>
+        )
       )}
 
       {/* ==================================================================== */}

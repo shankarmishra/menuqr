@@ -519,7 +519,7 @@ export function previewMenuImport(headers: string[], rawRows: any[]): Promise<{ 
   });
 }
 
-export function executeMenuImport(categories: any[], mode: 'add' | 'update' | 'skip' = 'add', filename: string = 'menu.xlsx'): Promise<any> {
+export function executeMenuImport(categories: any[], mode: 'add' | 'update' | 'skip' | 'replace' = 'add', filename: string = 'menu.xlsx'): Promise<any> {
   return request('/menu/import/execute', {
     method: 'POST',
     body: JSON.stringify({ categories, mode, filename })
