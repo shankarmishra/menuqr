@@ -2,7 +2,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePlan } from '../lib/usePlan';
-import { Menu, LayoutDashboard, UtensilsCrossed, Palette, QrCode, CreditCard, Settings, LogOut, User, Bell, ChevronRight, Store, ShoppingBag } from 'lucide-react';
+import { Menu, LayoutDashboard, UtensilsCrossed, Palette, QrCode, CreditCard, Settings, LogOut, User, Bell, ChevronRight, Store, ShoppingBag, BarChart3 } from 'lucide-react';
 import { getProfile } from '../pages/app/appStore';
 import { MenusQRBrand } from '../components/brand/MenusQRBrand';
 import clsx from 'clsx';
@@ -35,6 +35,7 @@ export default function AppLayout() {
         { to: '/app/menu', icon: UtensilsCrossed, label: 'Menu' },
         { to: '/app/appearance', icon: Palette, label: 'Appearance' },
         { to: '/app/qr', icon: QrCode, label: 'QR Code' },
+        { to: '/app/analytics', icon: BarChart3, label: 'Analytics' },
       ]
     },
     ...(can('reception_orders') ? [{

@@ -28,6 +28,7 @@ import {
   publishMenu,
   getMenu,
   setMenuItemAvailability,
+  setMenuItemSoldOut,
   updateMenuCategory,
   updateMenuItem,
   type AppMenuData,
@@ -36,6 +37,14 @@ import {
   type AppAddonGroup
 } from './appStore';
 import { SmartImportWizard } from '../../components/menu-builder/SmartImportWizard';
+import type { ItemTags } from '../../components/menu-renderer/types';
+
+const EMPTY_TAGS: ItemTags = { allergens: [], badges: [], spice: 0, jain: false, eggless: false };
+const TAG_BADGES: Array<[string, string]> = [['bestseller', 'Bestseller'], ['special', "Chef's Special"], ['new', 'New']];
+const TAG_ALLERGENS = ['nuts', 'peanuts', 'dairy', 'gluten', 'soy', 'egg', 'fish', 'shellfish', 'sesame'];
+/** Today's date in IST (YYYY-MM-DD); a dish is "sold out" only while its marker equals this. */
+const istToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+const toggleInList = (list: string[], value: string) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
 type SortOption = 'recent' | 'az' | 'za' | 'price_asc' | 'price_desc';
 type StatusFilter = 'all' | 'live' | 'hidden';
@@ -116,6 +125,7 @@ export default function Menu() {
     pricingType: 'single' | 'variants';
     variants: AppVariant[];
     addonGroups: AppAddonGroup[];
+    tags: ItemTags;
   }>({
     name: '',
     description: '',
@@ -126,7 +136,8 @@ export default function Menu() {
     isAvailable: true,
     pricingType: 'single',
     variants: [],
-    addonGroups: []
+    addonGroups: [],
+    tags: { ...EMPTY_TAGS }
   });
 
   // Form States (Category)
@@ -250,7 +261,8 @@ export default function Menu() {
         isAvailable: item.is_available ?? true,
         pricingType: item.pricing_type || (item.variants && item.variants.length > 0 ? 'variants' : 'single'),
         variants: item.variants || [],
-        addonGroups: item.addon_groups || []
+        addonGroups: item.addon_groups || [],
+        tags: { ...EMPTY_TAGS, ...(item.metadata?.tags ?? {}) }
       });
     } else {
       setEditingItem(null);
@@ -267,7 +279,8 @@ export default function Menu() {
           { name: 'Half', price: 0 },
           { name: 'Full', price: 0 }
         ],
-        addonGroups: []
+        addonGroups: [],
+        tags: { ...EMPTY_TAGS }
       });
     }
     setIsItemDrawerOpen(true);
@@ -293,7 +306,8 @@ export default function Menu() {
       isAvailable: itemForm.isAvailable,
       pricingType: itemForm.pricingType,
       variants: itemForm.pricingType === 'variants' ? itemForm.variants : [],
-      addonGroups: itemForm.addonGroups
+      addonGroups: itemForm.addonGroups,
+      tags: itemForm.tags
     };
 
     let success = false;
@@ -331,6 +345,14 @@ export default function Menu() {
     await runMutation(
       () => setMenuItemAvailability(item.id, !item.is_available),
       item.is_available ? 'Item hidden.' : 'Item is live.'
+    );
+  };
+
+  const handleToggleSoldOut = async (item: AppMenuItem) => {
+    const soldOutNow = item.metadata?.soldOutOn === istToday();
+    await runMutation(
+      () => setMenuItemSoldOut(item.id, !soldOutNow),
+      soldOutNow ? 'Back in stock.' : 'Marked sold out for today.'
     );
   };
 
@@ -804,6 +826,20 @@ export default function Menu() {
                           {item.is_available ? 'Live' : 'Hidden'}
                         </button>
 
+                        {/* Sold out today (auto-resets at IST midnight) */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSoldOut(item)}
+                          title="Sold out today. Resets automatically tomorrow."
+                          className={`rounded-full px-2.5 py-1 text-[11px] font-bold transition-all ${
+                            item.metadata?.soldOutOn === istToday()
+                              ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30'
+                              : 'bg-[#25322c] text-[#aab7b2] hover:text-white'
+                          }`}
+                        >
+                          {item.metadata?.soldOutOn === istToday() ? 'Sold out' : 'Mark sold out'}
+                        </button>
+
                         {/* Quick Row Actions */}
                         <div className="flex items-center gap-1">
                           <button
@@ -1080,6 +1116,71 @@ export default function Menu() {
                     <span>🌱</span>
                     Vegan
                   </button>
+                </div>
+              </div>
+
+              {/* Dish tags: spice, Jain/eggless, allergens, badges */}
+              <div className="space-y-3 rounded-xl border border-[#2d3a34] bg-[#151c19] p-4">
+                <p className="text-xs font-bold text-white">Dish Tags <span className="font-normal text-[#aab7b2]">(optional)</span></p>
+                <div>
+                  <p className="mb-1.5 text-[11px] text-[#aab7b2]">Spice level</p>
+                  <div className="flex gap-2">
+                    {[0, 1, 2, 3].map((level) => (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => setItemForm({ ...itemForm, tags: { ...itemForm.tags, spice: level } })}
+                        className={`flex-1 rounded-lg border py-1.5 text-[11px] font-bold ${
+                          itemForm.tags.spice === level ? 'border-[#e8783c] bg-[#e8783c]/20 text-[#f4b48f]' : 'border-[#384841] text-[#aab7b2]'
+                        }`}
+                      >
+                        {level === 0 ? 'None' : '🌶️'.repeat(level)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {([['jain', 'Jain'], ['eggless', 'Eggless']] as const).map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setItemForm({ ...itemForm, tags: { ...itemForm.tags, [key]: !itemForm.tags[key] } })}
+                      className={`rounded-full border px-3 py-1 text-[11px] font-bold ${
+                        itemForm.tags[key] ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300' : 'border-[#384841] text-[#aab7b2]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                  {TAG_BADGES.map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setItemForm({ ...itemForm, tags: { ...itemForm.tags, badges: toggleInList(itemForm.tags.badges, key) } })}
+                      className={`rounded-full border px-3 py-1 text-[11px] font-bold ${
+                        itemForm.tags.badges.includes(key) ? 'border-amber-500 bg-amber-500/20 text-amber-300' : 'border-[#384841] text-[#aab7b2]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <div>
+                  <p className="mb-1.5 text-[11px] text-[#aab7b2]">Contains (allergens)</p>
+                  <div className="flex flex-wrap gap-2">
+                    {TAG_ALLERGENS.map((allergen) => (
+                      <button
+                        key={allergen}
+                        type="button"
+                        onClick={() => setItemForm({ ...itemForm, tags: { ...itemForm.tags, allergens: toggleInList(itemForm.tags.allergens, allergen) } })}
+                        className={`rounded-full border px-3 py-1 text-[11px] font-semibold capitalize ${
+                          itemForm.tags.allergens.includes(allergen) ? 'border-rose-500 bg-rose-500/20 text-rose-300' : 'border-[#384841] text-[#aab7b2]'
+                        }`}
+                      >
+                        {allergen}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 

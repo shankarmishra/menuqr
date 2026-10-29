@@ -23,9 +23,11 @@ import {
   LOGO_SHAPES,
   NAV_SLOTS,
   SECTION_SLOTS,
+  SIGNATURE_COMPOSITION_IDS,
   TEXTURE_IDS,
   THEME_VERSION,
   type MenuTheme,
+  type SignatureCompositionId,
 } from './theme.types.ts';
 
 const MODES = ['light', 'dark'] as const;
@@ -111,6 +113,17 @@ function pickPresetId(value: unknown, fallback: string): string {
   return /^[a-z0-9][a-z0-9-]{0,63}$/.test(cleaned) ? cleaned.slice(0, MAX_PRESET_ID_LENGTH) : fallback;
 }
 
+function pickSignatureId(
+  value: unknown,
+  fallback: SignatureCompositionId | null
+): SignatureCompositionId | null {
+  if (value === null) return null;
+  return typeof value === 'string' &&
+    (SIGNATURE_COMPOSITION_IDS as readonly string[]).includes(value)
+    ? (value as SignatureCompositionId)
+    : fallback;
+}
+
 export const FALLBACK_THEME: MenuTheme = {
   version: THEME_VERSION,
   presetId: 'the-reserve',
@@ -123,6 +136,7 @@ export const FALLBACK_THEME: MenuTheme = {
     section: 'hairline-caps',
     footer: 'contact-block',
   },
+  signatureId: null,
   typePair: DEFAULT_FONT_PAIRING,
   texture: 'none',
   density: 'balanced',
@@ -162,6 +176,7 @@ export function coerceTheme(input: unknown, base: MenuTheme = FALLBACK_THEME): M
       section: pick(slots.section, SECTION_SLOTS, base.slots.section),
       footer: pick(slots.footer, FOOTER_SLOTS, base.slots.footer),
     },
+    signatureId: pickSignatureId(raw.signatureId, base.signatureId),
     typePair: pick(raw.typePair, FONT_PAIRING_IDS as readonly FontPairingId[], base.typePair),
     texture: pick(raw.texture, TEXTURE_IDS, base.texture),
     density: pick(raw.density, DENSITIES, base.density),
@@ -216,6 +231,15 @@ export function validateTheme(input: unknown): ThemeValidationResult {
   const cover = (raw.cover ?? {}) as Record<string, unknown>;
   if (cover.imageUrl != null && sanitizeImageUrl(cover.imageUrl) === null) {
     errors.push('cover.imageUrl must be a same-origin path or an http(s) URL');
+  }
+
+  if (
+    raw.signatureId != null &&
+    !(SIGNATURE_COMPOSITION_IDS as readonly string[]).includes(String(raw.signatureId))
+  ) {
+    errors.push(
+      `signatureId must be null or one of [${SIGNATURE_COMPOSITION_IDS.join(', ')}], received ${JSON.stringify(raw.signatureId)}`
+    );
   }
 
   const enumChecks: Array<[string, unknown, readonly string[]]> = [

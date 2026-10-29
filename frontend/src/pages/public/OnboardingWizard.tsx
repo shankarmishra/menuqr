@@ -23,7 +23,8 @@ import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerC
 import { exportStickerToPng } from '../../utils/stickerExporter';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import QRGenerationSequence from '../../components/qr-studio/QRGenerationSequence';
-import { menuTemplates } from '../../data/menuTemplates';
+import { PRESETS } from '../../design-system/presets';
+import { derivePalette } from '../../design-system/palette';
 import { 
   parseExcelMenuFile, 
   downloadSampleMenuExcel, 
@@ -243,7 +244,7 @@ export default function OnboardingWizard() {
     switch(stepId) {
       case 'identity': return 'Restaurant Identity & Logo';
       case 'excel-upload': return 'Menu Spreadsheet Upload';
-      case 'templates': return 'Select Theme (35 Themes)';
+      case 'templates': return `Select Theme (${PRESETS.length} Themes)`;
       case 'preview': return 'Preview & Permanent QR';
       default: return '';
     }
@@ -781,7 +782,7 @@ export default function OnboardingWizard() {
               </motion.div>
             )}
 
-            {/* STEP 3: SELECT MENU THEME (ALL 35 THEMES) */}
+            {/* STEP 3: SELECT MENU THEME (composable presets + Signature compositions) */}
             {currentStep === 'templates' && (
               <motion.div key="step-templates" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -789,26 +790,27 @@ export default function OnboardingWizard() {
                     <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5">
                       <Sparkles size={14} /> Step 3
                     </span>
-                    <h2 className="text-2xl sm:text-3xl font-black text-white">Select Menu Theme ({menuTemplates.length} Themes)</h2>
+                    <h2 className="text-2xl sm:text-3xl font-black text-white">Select Menu Theme ({PRESETS.length} Themes)</h2>
                     <p className="text-xs sm:text-sm text-[#AAB7B2]">
-                      Choose from {menuTemplates.length} handcrafted mobile-first digital themes.
+                      Choose from {PRESETS.length} handcrafted mobile-first digital themes, including 3 art-directed Signature layouts.
                     </p>
                   </div>
                 </div>
 
                 {/* THEME PICKER GRID & LIVE PREVIEW SPLIT */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  
+
                   {/* Theme Cards Grid (8 cols) */}
                   <div className="lg:col-span-7 max-h-[460px] overflow-y-auto pr-1 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {menuTemplates.map((tpl) => {
-                        const isSelected = restaurantData.templateId === tpl.id;
+                      {PRESETS.map((preset) => {
+                        const isSelected = restaurantData.templateId === preset.id;
+                        const palette = derivePalette(preset.seedColor, preset.mode);
                         return (
                           <button
-                            key={tpl.id}
+                            key={preset.id}
                             type="button"
-                            onClick={() => setRestaurantData({ ...restaurantData, templateId: tpl.id })}
+                            onClick={() => setRestaurantData({ ...restaurantData, templateId: preset.id })}
                             className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer ${
                               isSelected
                                 ? 'border-[#E8783C] bg-[#E8783C]/10 ring-2 ring-[#E8783C] shadow-xl'
@@ -816,17 +818,22 @@ export default function OnboardingWizard() {
                             }`}
                           >
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: tpl.colors.bg }} />
-                              <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: tpl.colors.accent }} />
-                              <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: tpl.colors.heading }} />
+                              <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: palette.bg }} />
+                              <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: palette.accent }} />
+                              <span className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: palette.heading }} />
+                              {preset.signatureId && (
+                                <span className="text-[8px] font-bold uppercase tracking-wider text-[#E8783C] bg-[#E8783C]/10 border border-[#E8783C]/30 rounded px-1 py-0.5">
+                                  Signature
+                                </span>
+                              )}
                               {isSelected && (
                                 <span className="ml-auto w-5 h-5 rounded-full bg-[#E8783C] text-white flex items-center justify-center">
                                   <Check size={12} />
                                 </span>
                               )}
                             </div>
-                            <h4 className="text-xs font-bold text-white leading-tight truncate">{tpl.name}</h4>
-                            <p className="text-[10px] text-[#AAB7B2] truncate">{tpl.subtitle}</p>
+                            <h4 className="text-xs font-bold text-white leading-tight truncate">{preset.label}</h4>
+                            <p className="text-[10px] text-[#AAB7B2] truncate">{preset.audience}</p>
                           </button>
                         );
                       })}
@@ -889,7 +896,7 @@ export default function OnboardingWizard() {
                     <div className="w-full flex items-center justify-between pb-2 px-1 text-[11px] font-mono text-[#AAB7B2]">
                       <span>LIVE PREVIEW</span>
                       <span className="text-[#E8783C] font-bold">
-                        {menuTemplates.find(t => t.id === restaurantData.templateId)?.name || 'Custom Theme'}
+                        {PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'Custom Theme'}
                       </span>
                     </div>
 
@@ -1020,7 +1027,7 @@ export default function OnboardingWizard() {
                     <div className="w-full flex items-center justify-between px-1 text-xs font-mono text-[#AAB7B2]">
                       <span>LIVE CUSTOMER MENU</span>
                       <span className="text-[#E8783C] font-bold">
-                        {menuTemplates.find((t) => t.id === restaurantData.templateId)?.name || 'Custom Theme'}
+                        {PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'Custom Theme'}
                       </span>
                     </div>
 

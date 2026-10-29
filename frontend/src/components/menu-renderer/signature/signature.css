@@ -1,0 +1,442 @@
+/*
+ * MENUQR Menu Renderer — Signature Composition Styles
+ *
+ * Shared by the three Signature compositions (Heritage Booklet, Graphic Booklet, Chalkboard
+ * Clipboard). Every colour and spacing value is a `var(--mq-*)` token, same rule as
+ * `menu-renderer.css` — a Signature composition owns its layout, never its palette.
+ *
+ * Kept in its own file, imported only by the signature/ components, so it never ships on a
+ * composable-preset menu that has no use for it.
+ */
+
+/* ---------------------------------- shared decoration ---------------------------------- */
+
+/*
+ * A single-colour corner flourish, recoloured to the seed-derived accent via a CSS mask rather
+ * than baked-in artwork — this is what lets a decorative flourish "visibly respond to a changed
+ * seed colour", same as every other token-driven surface.
+ */
+.mq-sig-flourish {
+  position: absolute;
+  width: 2.75rem;
+  height: 2.75rem;
+  background-color: var(--mq-color-accent);
+  -webkit-mask-image: url('/menuqr/generated/corner-flourish-gold.svg');
+  mask-image: url('/menuqr/generated/corner-flourish-gold.svg');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.mq-sig-flourish-tl { top: var(--mq-space-3); left: var(--mq-space-3); }
+.mq-sig-flourish-tr { top: var(--mq-space-3); right: var(--mq-space-3); transform: scaleX(-1); }
+.mq-sig-flourish-bl { bottom: var(--mq-space-3); left: var(--mq-space-3); transform: scaleY(-1); }
+.mq-sig-flourish-br { bottom: var(--mq-space-3); right: var(--mq-space-3); transform: scale(-1, -1); }
+
+.mq-sig-leader {
+  flex: 1 1 auto;
+  align-self: center;
+  height: 1px;
+  min-width: var(--mq-space-3);
+  border-bottom: 1px dotted var(--mq-color-border-strong);
+}
+
+/* Cover/menu page switcher, shared by Chalkboard and Graphic Booklet. */
+.mq-sig-board-toggle {
+  display: flex;
+  gap: var(--mq-space-1);
+  padding: var(--mq-space-1);
+  border-radius: var(--mq-radius-pill);
+  background-color: var(--mq-color-surface-alt);
+  border: 1px solid var(--mq-color-border);
+  margin-bottom: var(--mq-space-5);
+  max-width: 24rem;
+  margin-inline: auto;
+}
+.mq-sig-board-tab {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-1);
+  padding-block: var(--mq-space-2);
+  padding-inline: var(--mq-space-3);
+  border-radius: var(--mq-radius-pill);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  color: var(--mq-color-text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.mq-sig-board-tab.is-active {
+  background-color: var(--mq-color-accent);
+  color: var(--mq-color-accent-contrast);
+}
+
+/* Only the Chalkboard composition shows both boards side by side above the breakpoint; the
+ * toggle is meaningless there. Graphic Booklet's toggle stays visible at every width — it is a
+ * front-cover/inside-pages book metaphor, not a space-constrained layout choice. */
+@media (min-width: 64rem) {
+  .mq-sig-chalkboard-page .mq-sig-board-toggle { display: none; }
+}
+
+/* ------------------------------------- Chalkboard ------------------------------------- */
+
+.mq-sig-boards {
+  display: grid;
+  gap: var(--mq-space-6);
+  justify-content: center;
+}
+@media (min-width: 64rem) {
+  .mq-sig-boards { grid-template-columns: repeat(2, minmax(0, 32rem)); }
+}
+
+/* Below the two-column breakpoint, only the board picked by the toggle is shown. */
+@media (max-width: 63.9375rem) {
+  .mq-sig-board-mobile-hidden { display: none; }
+}
+
+.mq-sig-clipboard {
+  position: relative;
+  padding-top: var(--mq-space-4);
+  max-width: 34rem;
+  margin-inline: auto;
+}
+
+.mq-sig-clamp {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+.mq-sig-clamp-loop {
+  width: 3rem;
+  height: 0.9rem;
+  border: 3px solid var(--mq-color-border-strong);
+  border-bottom: none;
+  border-radius: var(--mq-radius-sm) var(--mq-radius-sm) 0 0;
+}
+.mq-sig-clamp-body {
+  width: 6rem;
+  height: 1.1rem;
+  background-color: var(--mq-color-surface-alt);
+  border: 1px solid var(--mq-color-border-strong);
+  border-radius: var(--mq-radius-sm);
+  margin-top: -2px;
+}
+
+.mq-sig-chalkboard {
+  background-color: var(--mq-color-surface);
+  border: 1px solid var(--mq-color-border-strong);
+  border-radius: var(--mq-radius-lg);
+  box-shadow: var(--mq-shadow-lg);
+  padding: var(--mq-space-6) var(--mq-space-5);
+}
+
+.mq-sig-chalk-eyebrow {
+  text-align: center;
+  font-size: var(--mq-text-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mq-color-text-muted);
+}
+.mq-sig-chalk-title {
+  text-align: center;
+  margin-top: var(--mq-space-2);
+}
+
+.mq-sig-hero-plate {
+  width: 60%;
+  margin-inline: auto;
+  margin-top: var(--mq-space-5);
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid var(--mq-color-border);
+}
+.mq-sig-hero-plate-empty {
+  aspect-ratio: 1;
+  background-color: var(--mq-color-surface-sunken);
+}
+
+.mq-sig-chalk-contact {
+  margin-top: var(--mq-space-5);
+  padding-top: var(--mq-space-3);
+  border-top: 1px solid var(--mq-color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-1);
+  text-align: center;
+  font-size: var(--mq-text-xs);
+  color: var(--mq-color-text-muted);
+}
+.mq-sig-chalk-contact .mq-row { gap: var(--mq-space-1); }
+.mq-sig-chalk-website {
+  font-weight: 700;
+  color: var(--mq-color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.mq-sig-chalk-masthead {
+  text-align: center;
+  padding-bottom: var(--mq-space-3);
+  border-bottom: 1px solid var(--mq-color-border);
+  margin-bottom: var(--mq-space-4);
+}
+
+/*
+ * One column always. The board is at most ~32rem wide even on desktop (it sits beside the cover
+ * board), which is too narrow for two columns of dish rows with half/full pricing — a viewport
+ * media query got this wrong because it measures the screen, not the board.
+ */
+.mq-sig-chalk-columns {
+  display: grid;
+  gap: var(--mq-space-5);
+}
+
+.mq-sig-chalk-banner {
+  display: inline-block;
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--mq-color-accent-contrast);
+  background-color: var(--mq-color-accent);
+  padding: var(--mq-space-1) var(--mq-space-3);
+  border-radius: var(--mq-radius-sm);
+}
+
+.mq-sig-chalk-row { padding-block: var(--mq-space-1); }
+.mq-sig-chalk-name {
+  font-weight: 700;
+  font-size: var(--mq-text-sm);
+}
+.mq-sig-chalk-desc {
+  font-size: var(--mq-text-xs);
+  color: var(--mq-color-text-muted);
+  margin-top: 2px;
+}
+.mq-sig-chalk-footnote {
+  text-align: center;
+  margin-top: var(--mq-space-6);
+  font-size: var(--mq-text-xs);
+  color: var(--mq-color-text-muted);
+  min-height: 1em;
+}
+
+/* ----------------------------------- Graphic Booklet ----------------------------------- */
+
+.mq-sig-graphic-cover { position: relative; }
+.mq-sig-graphic-logo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  border: 2px dashed var(--mq-color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(6deg);
+  background-color: var(--mq-color-surface);
+}
+.mq-sig-graphic-logo-mark {
+  font-weight: 800;
+  font-size: var(--mq-text-lg);
+  color: var(--mq-color-accent);
+}
+
+.mq-sig-graphic-hero {
+  display: grid;
+  gap: var(--mq-space-6);
+  align-items: center;
+  margin-top: var(--mq-space-8);
+}
+@media (min-width: 48rem) {
+  .mq-sig-graphic-hero { grid-template-columns: 1fr 1fr; }
+}
+
+.mq-sig-graphic-title { font-size: var(--mq-display-3xl); }
+
+.mq-sig-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-1);
+  border-top: 1px solid var(--mq-color-border);
+  padding-top: var(--mq-space-2);
+}
+.mq-sig-bullets li {
+  font-size: var(--mq-text-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.mq-sig-bullets li::before {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: var(--mq-space-2);
+  background-color: var(--mq-color-accent);
+}
+
+.mq-sig-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  margin-top: var(--mq-space-2);
+}
+
+.mq-sig-collage { position: relative; display: flex; justify-content: center; }
+.mq-sig-cutout { position: absolute; z-index: 2; }
+.mq-sig-cutout-chili { bottom: -1rem; left: -0.5rem; }
+.mq-sig-cutout-basil { top: -0.5rem; right: 1.5rem; }
+.mq-sig-cutout-lime { bottom: -0.5rem; right: -0.5rem; }
+
+.mq-sig-graphic-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mq-space-4);
+  justify-content: center;
+  margin-top: var(--mq-space-8);
+  padding-top: var(--mq-space-4);
+  border-top: 1px solid var(--mq-color-border);
+  font-size: var(--mq-text-xs);
+  color: var(--mq-color-text-muted);
+}
+.mq-sig-graphic-contact .mq-row { gap: var(--mq-space-1); align-items: center; }
+
+.mq-sig-feature-row {
+  display: grid;
+  gap: var(--mq-space-4);
+  margin-bottom: var(--mq-space-6);
+}
+@media (min-width: 36rem) {
+  .mq-sig-feature-row { grid-template-columns: 1fr 1fr; }
+}
+.mq-sig-feature-card {
+  display: flex;
+  gap: var(--mq-space-3);
+  align-items: center;
+  padding: var(--mq-space-3);
+  border-radius: var(--mq-radius-lg);
+  border: 1px solid var(--mq-color-border);
+  background-color: var(--mq-color-surface);
+}
+.mq-sig-feature-photo { width: 4.5rem; flex-shrink: 0; border-radius: var(--mq-radius-md); overflow: hidden; }
+
+.mq-sig-graphic-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: var(--mq-text-sm);
+  color: var(--mq-color-heading);
+}
+.mq-sig-graphic-count {
+  font-size: var(--mq-text-xs);
+  font-family: monospace;
+  color: var(--mq-color-text-muted);
+}
+
+.mq-sig-graphic-grid {
+  display: grid;
+  gap: var(--mq-space-3);
+  margin-top: var(--mq-space-3);
+}
+@media (min-width: 40rem) {
+  .mq-sig-graphic-grid { grid-template-columns: 1fr 1fr; }
+}
+.mq-sig-graphic-item { padding: var(--mq-space-3); }
+.mq-sig-graphic-index {
+  font-family: monospace;
+  font-size: var(--mq-text-xs);
+  color: var(--mq-color-text-muted);
+  margin-top: 2px;
+}
+
+/* ------------------------------------ Heritage Booklet ------------------------------------ */
+
+.mq-sig-heritage-cover {
+  position: relative;
+  text-align: center;
+  padding: var(--mq-space-8) var(--mq-space-4);
+  border-radius: var(--mq-radius-lg);
+  background-color: var(--mq-color-surface);
+  border: 1px solid var(--mq-color-border);
+  margin-bottom: var(--mq-space-6);
+}
+.mq-sig-heritage-logo {
+  width: 4rem;
+  height: 4rem;
+  margin-inline: auto;
+  margin-bottom: var(--mq-space-3);
+  border: 2px solid var(--mq-color-border);
+}
+.mq-sig-heritage-title { font-size: var(--mq-display-3xl); }
+
+.mq-sig-chapter {
+  display: grid;
+  border-radius: var(--mq-radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--mq-color-border);
+  box-shadow: var(--mq-shadow-md);
+}
+@media (min-width: 48rem) {
+  .mq-sig-chapter { grid-template-columns: 5fr 7fr; }
+  .mq-sig-chapter-flip { grid-template-columns: 7fr 5fr; }
+  .mq-sig-chapter-flip .mq-sig-chapter-panel { order: 2; }
+  .mq-sig-chapter-flip .mq-sig-chapter-list { order: 1; }
+}
+
+.mq-sig-chapter-panel {
+  position: relative;
+  background-color: var(--mq-color-accent);
+  color: var(--mq-color-accent-contrast);
+  padding: var(--mq-space-6) var(--mq-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+}
+.mq-sig-chapter-number {
+  font-size: var(--mq-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  opacity: 0.85;
+}
+.mq-sig-chapter-title { color: var(--mq-color-accent-contrast); }
+.mq-sig-chapter-desc { font-size: var(--mq-text-sm); opacity: 0.9; }
+
+.mq-sig-chapter-photo {
+  margin-top: var(--mq-space-4);
+  border-radius: var(--mq-radius-md);
+  overflow: hidden;
+}
+.mq-sig-chapter-photo-empty {
+  aspect-ratio: var(--mq-aspect-hero);
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.mq-sig-chapter-list {
+  background-color: var(--mq-color-surface);
+  padding: var(--mq-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-4);
+}
+.mq-sig-chapter-row { padding-block: var(--mq-space-1); border-bottom: 1px solid var(--mq-color-border); }
+.mq-sig-chapter-row:last-child { border-bottom: none; }

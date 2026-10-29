@@ -1,11 +1,13 @@
 import { pool, queryPortable } from '../db.js';
+import { istDateString } from '../istTime.js';
+import { getTenantAnalytics, ALLOWED_RANGES } from '../analytics.js';
+import { getFeedbackSummary } from '../feedback.js';
 import { enforceTenant } from '../auth.js';
 import { apiError, sendJson, readJson } from '../utils.js';
 import { randomUUID } from 'node:crypto';
 import { resolveTenantAuthorization, requireEntitlement, withContentChange, getContentUsage } from '../authorization.js';
 import { detectColumnMappings, validateAndPreviewImport, executeImportTransaction } from '../menuImporter.js';
 import { invalidatePublicMenuCache } from './public.js';
-import { generateAiMenuDesign, isGeminiAvailable } from '../aiDesignService.js';
 import { extractMenuFromPdf, refinePdfDesign } from '../pdfMenuService.js';
 import { validateDesignSpecification } from '../designSpecValidator.js';
 import { coerceTheme, validateTheme } from '../themeValidator.js';
@@ -39,6 +41,49 @@ export function mergeItemMetadata(existingMetadata, focal) {
     return rest;
   }
   return { ...base, focal };
+}
+
+export const ITEM_ALLERGENS = ['nuts', 'peanuts', 'dairy', 'gluten', 'soy', 'egg', 'fish', 'shellfish', 'sesame'];
+export const ITEM_BADGES = ['bestseller', 'special', 'new'];
+
+/**
+ * Normalises owner-set dish tags to a fixed, whitelisted shape (or null when nothing is set).
+ * Stored in `menu_items.metadata.tags`; every value is checked against an enum so free text
+ * can never reach the public menu.
+ */
+export function inputItemTags(value) {
+  if (!value || typeof value !== 'object') return null;
+  const allergens = Array.isArray(value.allergens)
+    ? [...new Set(value.allergens.map((a) => String(a).toLowerCase()).filter((a) => ITEM_ALLERGENS.includes(a)))]
+    : [];
+  const badges = Array.isArray(value.badges)
+    ? [...new Set(value.badges.map((b) => String(b).toLowerCase()).filter((b) => ITEM_BADGES.includes(b)))]
+    : [];
+  const spice = Math.min(3, Math.max(0, Math.trunc(Number(value.spice)) || 0));
+  const jain = value.jain === true;
+  const eggless = value.eggless === true;
+  if (!allergens.length && !badges.length && !spice && !jain && !eggless) return null;
+  return { allergens, badges, spice, jain, eggless };
+}
+
+/** Merges (or clears, when `tags` is null) dish tags without discarding other metadata fields. */
+export function mergeItemTags(existingMetadata, tags) {
+  const base = existingMetadata && typeof existingMetadata === 'object' ? existingMetadata : {};
+  if (tags === null) {
+    const { tags: _omit, ...rest } = base;
+    return rest;
+  }
+  return { ...base, tags };
+}
+
+/** Sets (IST date string) or clears (null) the "sold out today" marker, keeping other metadata. */
+export function mergeItemSoldOut(existingMetadata, istDate) {
+  const base = existingMetadata && typeof existingMetadata === 'object' ? existingMetadata : {};
+  if (istDate === null) {
+    const { soldOutOn: _omit, ...rest } = base;
+    return rest;
+  }
+  return { ...base, soldOutOn: istDate };
 }
 
 function requireBasicContentAccess(authorization) {
@@ -248,61 +293,6 @@ export default async function appRoutes(request, response, url) {
     invalidatePublicMenuCache(user.tenantId);
     sendJson(response, 200, res.rows[0]);
     return true;
-  }
-
-  if (request.method === 'GET' && url.pathname === '/api/app/ai/status') {
-    requireEntitlement(authorization, 'templates', 'AI design features require an Intermediate or Premium plan.');
-    sendJson(response, 200, {
-      available: isGeminiAvailable(),
-      provider: isGeminiAvailable() ? 'gemini' : 'deterministic-fallback',
-      model: isGeminiAvailable() ? 'gemini-3.5-flash-lite' : null,
-      capabilities: {
-        multimodalReference: isGeminiAvailable(),
-        designGeneration: true,
-        revisions: true,
-      },
-    });
-    return true;
-  }
-
-  if (request.method === 'POST' && url.pathname === '/api/app/ai/generate-menu-design') {
-    requireEntitlement(authorization, 'templates', 'AI design features require an Intermediate or Premium plan.');
-    const body = await readJson(request);
-    const { profile, brief, referenceImage, previousSpec, isRevision } = body || {};
-
-    if (!profile || typeof profile !== 'object') {
-      throw apiError(400, 'A valid restaurant profile is required for AI design generation.');
-    }
-
-    if (!profile.businessName || !profile.cuisine) {
-      throw apiError(400, 'Restaurant name and cuisine are required.');
-    }
-
-    try {
-      const result = await generateAiMenuDesign({
-        tenantId: user.tenantId,
-        profile,
-        brief: inputText(brief, 2000),
-        referenceImage: typeof referenceImage === 'string' ? referenceImage : null,
-        previousSpec,
-        isRevision: Boolean(isRevision),
-      });
-
-      sendJson(response, 200, {
-        success: true,
-        spec: result.spec,
-        provider: result.provider,
-        model: result.model || null,
-        warning: result.warning || null,
-        message: result.message || null,
-      });
-      return true;
-    } catch (err) {
-      if (err.message && err.message.includes('Rate limit')) {
-        throw apiError(429, err.message);
-      }
-      throw apiError(500, err.message || 'Failed to generate AI menu design.');
-    }
   }
 
   if (request.method === 'POST' && url.pathname === '/api/app/pdf/extract') {
@@ -1314,10 +1304,12 @@ export default async function appRoutes(request, response, url) {
       const itemId = randomUUID();
       const actualPricingType = pricingType || (Array.isArray(variants) && variants.length > 0 ? 'variants' : 'single');
       const focal = inputFocalPoint(input.focal);
+      const tags = inputItemTags(input.tags);
+      const newMetadata = { ...(focal ? { focal } : {}), ...(tags ? { tags } : {}) };
 
       await queryPortable(client,
         'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, half_price, full_price, image_url, diet_type, is_available, sort_order, pricing_type, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [itemId, menuId, user.tenantId, categoryId, name, inputText(description, 2000) || null, numericPrice, halfPrice ?? null, fullPrice ?? null, inputText(input.imageUrl, 2048) || null, dietType || 'veg', isAvailable !== false, sort.rows[0].next_order, actualPricingType, focal ? JSON.stringify({ focal }) : null]
+        [itemId, menuId, user.tenantId, categoryId, name, inputText(description, 2000) || null, numericPrice, halfPrice ?? null, fullPrice ?? null, inputText(input.imageUrl, 2048) || null, dietType || 'veg', isAvailable !== false, sort.rows[0].next_order, actualPricingType, Object.keys(newMetadata).length ? JSON.stringify(newMetadata) : null]
       );
 
       if (Array.isArray(variants) && variants.length > 0) {
@@ -1417,6 +1409,41 @@ export default async function appRoutes(request, response, url) {
     });
 
     sendJson(response, 200, result.rows[0]);
+    return true;
+  }
+
+  // Private guest feedback for the owner (every plan with a live menu).
+  if (request.method === 'GET' && url.pathname === '/api/app/feedback') {
+    requireEntitlement(authorization, 'digital_menu');
+    sendJson(response, 200, await getFeedbackSummary(pool, user.tenantId, Number(url.searchParams.get('limit'))));
+    return true;
+  }
+
+  // Owner analytics: scans/views for Intermediate+, order metrics only where ordering exists.
+  if (request.method === 'GET' && url.pathname === '/api/app/analytics') {
+    requireEntitlement(authorization, 'analytics', 'Analytics requires an Intermediate or Premium plan.');
+    const requested = Number(url.searchParams.get('range'));
+    const range = ALLOWED_RANGES.includes(requested) ? requested : 7;
+    const data = await getTenantAnalytics(pool, user.tenantId, range, {
+      includeOrders: authorization.entitlements.includes('reception_orders'),
+    });
+    sendJson(response, 200, data);
+    return true;
+  }
+
+  // Operational toggle (not a content edit): deliberately skips `withContentChange` so marking a
+  // dish sold out never consumes a Basic plan's edit allowance.
+  const soldOutMatch = url.pathname.match(/^\/api\/app\/items\/([^/]+)\/sold-out$/);
+  if (request.method === 'POST' && soldOutMatch) {
+    requireEntitlement(authorization, 'digital_menu');
+    const input = await readJson(request);
+    const soldOut = input.soldOut === true;
+    const existing = await queryPortable(pool, 'SELECT metadata FROM menu_items WHERE id = ? AND tenant_id = ?', [soldOutMatch[1], user.tenantId]);
+    if (!existing.rows[0]) throw apiError(404, 'Menu item could not be found.');
+    const nextMetadata = mergeItemSoldOut(existing.rows[0].metadata, soldOut ? istDateString() : null);
+    await queryPortable(pool, 'UPDATE menu_items SET metadata = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?', [JSON.stringify(nextMetadata), soldOutMatch[1], user.tenantId]);
+    invalidatePublicMenuCache(user.tenantId);
+    sendJson(response, 200, { id: soldOutMatch[1], soldOut, soldOutOn: soldOut ? nextMetadata.soldOutOn : null });
     return true;
   }
 
@@ -1575,10 +1602,10 @@ export default async function appRoutes(request, response, url) {
         // 'focal' absent from the request leaves metadata untouched; present (even as null,
         // which clears it) updates it. This mirrors the COALESCE semantics already used for
         // every other optional field on this endpoint.
-        const metadataJson =
-          'focal' in input
-            ? JSON.stringify(mergeItemMetadata(existing.rows[0].metadata, inputFocalPoint(input.focal)))
-            : null;
+        let nextMetadata = existing.rows[0].metadata;
+        if ('focal' in input) nextMetadata = mergeItemMetadata(nextMetadata, inputFocalPoint(input.focal));
+        if ('tags' in input) nextMetadata = mergeItemTags(nextMetadata, inputItemTags(input.tags));
+        const metadataJson = 'focal' in input || 'tags' in input ? JSON.stringify(nextMetadata ?? {}) : null;
         const ownedCategory = await queryPortable(client,
           'SELECT id FROM menu_categories WHERE id = ? AND menu_id = ? AND tenant_id = ?',
           [categoryId, existing.rows[0].menu_id, user.tenantId]

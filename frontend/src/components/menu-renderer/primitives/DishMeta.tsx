@@ -44,11 +44,30 @@ export const Badge: React.FC<{ children: React.ReactNode; quiet?: boolean }> = (
 
 /** Bestseller and chef-special flags, rendered consistently across every card layout. */
 export const DishFlags: React.FC<{ item: RenderMenuItem }> = ({ item }) => {
-  if (!item.isBestseller && !item.isSpecial) return null;
+  const tags = item.tags;
+  const spice = Math.max(item.spicyLevel ?? 0, tags?.spice ?? 0);
+  const allergens = tags?.allergens ?? [];
+  const isNew = Boolean(tags?.badges?.includes('new'));
+  const hasAny =
+    item.isBestseller || item.isSpecial || isNew || spice > 0 || tags?.jain || tags?.eggless || allergens.length > 0;
+  if (!hasAny) return null;
   return (
     <>
       {item.isBestseller && <Badge>Bestseller</Badge>}
       {item.isSpecial && !item.isBestseller && <Badge quiet>Chef&rsquo;s Special</Badge>}
+      {isNew && <Badge quiet>New</Badge>}
+      {tags?.jain && <Badge quiet>Jain</Badge>}
+      {tags?.eggless && <Badge quiet>Eggless</Badge>}
+      {spice > 0 && (
+        <span className="mq-badge mq-badge-quiet" title={`Spice level ${spice} of 3`} aria-label={`Spice level ${spice} of 3`}>
+          {'🌶️'.repeat(spice)}
+        </span>
+      )}
+      {allergens.length > 0 && (
+        <span className="mq-badge mq-badge-quiet" title={`Contains: ${allergens.join(', ')}`}>
+          Contains {allergens.join(', ')}
+        </span>
+      )}
     </>
   );
 };
@@ -69,6 +88,10 @@ export type DishPriceProps = {
  */
 export const DishPrice: React.FC<DishPriceProps> = ({ item, readOnly = false }) => {
   const cart = useMenuCart();
+
+  if (item.soldOut) {
+    return <span className="mq-unavailable">Sold out today</span>;
+  }
 
   if (item.available === false) {
     return <span className="mq-unavailable">Currently unavailable</span>;

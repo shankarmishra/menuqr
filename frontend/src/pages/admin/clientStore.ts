@@ -18,6 +18,8 @@ export interface MenuItemRecord {
   /** Owner-set photo crop anchor, 0-1 coordinates. Absent means "use the centre". */
   focalX?: number | null;
   focalY?: number | null;
+  tags?: ItemTags | null;
+  soldOut?: boolean;
   available: boolean;
   variants?: Array<{ id?: string; name: string; price: number; variantGroup?: string }>;
 }
@@ -109,6 +111,7 @@ const storageKey = 'menusqr.clients';
 import { ensureCsrfToken, setCsrfToken } from '../../utils/csrf';
 import { parseApiResponse } from '../../utils/api';
 import { getApiBaseUrl } from '../../utils/apiBaseUrl';
+import type { ItemTags } from '../../components/menu-renderer/types';
 
 const draftStorageKey = 'menusqr.clientDrafts';
 const migrationStorageKey = 'menusqr.apiMigration.v1';
@@ -404,6 +407,8 @@ interface RawPublicMenuApiResponse {
     image?: string;
     focalX?: number | null;
     focalY?: number | null;
+    tags?: ItemTags | null;
+    soldOut?: boolean;
     variants?: Array<{ id?: string; name: string; price: number; variantGroup?: string }>;
   }>;
 }
@@ -425,6 +430,8 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     image: item.image ?? '',
     focalX: item.focalX ?? null,
     focalY: item.focalY ?? null,
+    tags: item.tags ?? null,
+    soldOut: item.soldOut ?? false,
     available: item.available,
     variants: item.variants,
   }));

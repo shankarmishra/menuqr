@@ -106,6 +106,7 @@ class ChunkErrorBoundary extends Component<
 }
 
 // Lazy Authenticated App Routes (Restaurant Owner Portal)
+const AppAnalytics = lazyWithRetry(() => import('./pages/app/Analytics'));
 const AppLayout = lazyWithRetry(() => import('./layouts/AppLayout'));
 const AppDashboard = lazyWithRetry(() => import('./pages/app/Dashboard'));
 const AppMenu = lazyWithRetry(() => import('./pages/app/Menu'));
@@ -133,7 +134,6 @@ const OnboardingWizard = lazyWithRetry(() => import('./pages/public/OnboardingWi
 const PurchaseDetailsPage = lazyWithRetry(() => import('./pages/purchase/PurchaseDetailsPage'));
 const PurchaseReviewPage = lazyWithRetry(() => import('./pages/purchase/PurchaseReviewPage'));
 const PurchaseSuccessPage = lazyWithRetry(() => import('./pages/purchase/PurchaseSuccessPage'));
-const TemplateAuditCanvas = lazyWithRetry(() => import('./pages/public/TemplateAuditCanvas'));
 const TemplateShowcasePage = lazyWithRetry(() => import('./pages/public/TemplateShowcasePage'));
 const MenuPage = lazyWithRetry(() => import('./pages/customer/MenuPage'));
 
@@ -261,10 +261,8 @@ function AdminDomainRedirect({ destination }: { destination: string }) {
 function PublicAppRoutes() {
   const menuMatch = useMatch('/menu/:slug');
   const qrMatch = useMatch('/qr/:qrId');
-  const auditMatch = useMatch('/audit-preview/:templateId');
-  const auditBaseMatch = useMatch('/audit-preview');
   const menuSlug = menuMatch?.params.slug;
-  const isCustomerMenuRoute = Boolean(menuSlug || qrMatch || auditMatch || auditBaseMatch);
+  const isCustomerMenuRoute = Boolean(menuSlug || qrMatch);
   const routeKey = menuSlug ? `menu:${menuSlug}` : 'app';
   const [menuName, setMenuName] = useState<{ slug: string; name: string }>();
   const [loadedRoute, setLoadedRoute] = useState(routeKey);
@@ -348,8 +346,6 @@ function PublicAppRoutes() {
         {/* Customer Menu Route */}
         <Route path="/qr/:qrId" element={<QrLandingPage />} />
         <Route path="/menu/:slug" element={<ChunkErrorBoundary><Suspense fallback={null}><MenuPage key={menuSlug} /></Suspense></ChunkErrorBoundary>} />
-        <Route path="/audit-preview/:templateId" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><TemplateAuditCanvas /></Suspense></ChunkErrorBoundary>} />
-        <Route path="/audit-preview" element={<Navigate to="/audit-preview/royal-maharaja" replace />} />
         <Route path="/template-showcase" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><TemplateShowcasePage /></Suspense></ChunkErrorBoundary>} />
         <Route path="/showcase" element={<Navigate to="/template-showcase" replace />} />
 
@@ -362,6 +358,7 @@ function PublicAppRoutes() {
           <Route path="dashboard" element={<AppDashboard />} />
           <Route path="menu" element={<AppMenu />} />
           <Route path="appearance" element={<FeatureGate capability="menu_management"><AppAppearance /></FeatureGate>} />
+          <Route path="analytics" element={<FeatureGate capability="analytics"><AppAnalytics /></FeatureGate>} />
           <Route path="qr" element={<AppQrCenter />} />
           <Route path="subscription" element={<AppSubscription />} />
           <Route path="settings" element={<AppSettings />} />

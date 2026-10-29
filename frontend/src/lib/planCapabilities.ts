@@ -26,6 +26,7 @@ const INTERMEDIATE_CAPABILITIES = [
   'edit_item',
   'delete_item',
   'menu_management',
+  'analytics',
 ] as const;
 
 const PREMIUM_CAPABILITIES = [

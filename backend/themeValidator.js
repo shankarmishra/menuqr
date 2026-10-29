@@ -23,6 +23,7 @@ const FOOTER_SLOTS = ['contact-block', 'minimal-mark'];
 const TEXTURE_IDS = ['none', 'grain', 'parchment', 'slate', 'silk', 'dots'];
 const LOGO_SHAPES = ['circle', 'square', 'wordmark'];
 const FONT_PAIRING_IDS = ['royal-serif', 'modern-sans', 'warm-editorial', 'bold-street', 'devanagari-pro'];
+const SIGNATURE_COMPOSITION_IDS = ['heritage-booklet', 'graphic-booklet', 'chalkboard-clipboard'];
 
 export const MAX_ANNOUNCEMENT_LENGTH = 120;
 export const MAX_URL_LENGTH = 2048;
@@ -109,6 +110,11 @@ function pickPresetId(value, fallback) {
   return /^[a-z0-9][a-z0-9-]{0,63}$/.test(cleaned) ? cleaned.slice(0, MAX_PRESET_ID_LENGTH) : fallback;
 }
 
+function pickSignatureId(value, fallback) {
+  if (value === null) return null;
+  return typeof value === 'string' && SIGNATURE_COMPOSITION_IDS.includes(value) ? value : fallback;
+}
+
 export const FALLBACK_THEME = {
   version: THEME_VERSION,
   presetId: 'the-reserve',
@@ -121,6 +127,7 @@ export const FALLBACK_THEME = {
     section: 'hairline-caps',
     footer: 'contact-block',
   },
+  signatureId: null,
   typePair: 'warm-editorial',
   texture: 'none',
   density: 'balanced',
@@ -157,6 +164,7 @@ export function coerceTheme(input, base = FALLBACK_THEME) {
       section: pick(slots.section, SECTION_SLOTS, base.slots.section),
       footer: pick(slots.footer, FOOTER_SLOTS, base.slots.footer),
     },
+    signatureId: pickSignatureId(raw.signatureId, base.signatureId),
     typePair: pick(raw.typePair, FONT_PAIRING_IDS, base.typePair),
     texture: pick(raw.texture, TEXTURE_IDS, base.texture),
     density: pick(raw.density, DENSITIES, base.density),
@@ -206,6 +214,12 @@ export function validateTheme(input) {
   const cover = input.cover && typeof input.cover === 'object' ? input.cover : {};
   if (cover.imageUrl != null && sanitizeImageUrl(cover.imageUrl) === null) {
     errors.push('cover.imageUrl must be a same-origin path or an http(s) URL');
+  }
+
+  if (input.signatureId != null && !SIGNATURE_COMPOSITION_IDS.includes(String(input.signatureId))) {
+    errors.push(
+      `signatureId must be null or one of [${SIGNATURE_COMPOSITION_IDS.join(', ')}], received ${JSON.stringify(input.signatureId)}`
+    );
   }
 
   const slots = input.slots && typeof input.slots === 'object' ? input.slots : {};

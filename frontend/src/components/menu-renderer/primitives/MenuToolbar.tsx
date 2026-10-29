@@ -9,14 +9,14 @@
 
 import React from 'react';
 
-export type DietFilter = 'all' | 'veg' | 'non-veg';
+export type DietFilter = 'all' | 'veg' | 'non-veg' | 'jain';
 
 export type MenuToolbarProps = {
   query: string;
   onQueryChange: (value: string) => void;
   dietFilter: DietFilter;
   onDietFilterChange: (value: DietFilter) => void;
-  counts: { all: number; veg: number; nonVeg: number };
+  counts: { all: number; veg: number; nonVeg: number; jain?: number };
 };
 
 export const MenuToolbar: React.FC<MenuToolbarProps> = ({
@@ -33,6 +33,7 @@ export const MenuToolbar: React.FC<MenuToolbarProps> = ({
     { id: 'all', label: 'All', count: counts.all },
     { id: 'veg', label: 'Pure Veg', count: counts.veg },
     { id: 'non-veg', label: 'Non-Veg', count: counts.nonVeg },
+    { id: 'jain', label: 'Jain', count: counts.jain ?? 0 },
   ];
 
   return (

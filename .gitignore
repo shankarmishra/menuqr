@@ -47,6 +47,8 @@ frontend/homepage_dom.html
 frontend/techtext*.json
 frontend/test-results/
 test-results/
+playwright-report/
+frontend/playwright-report/
 visual-audit/
 /scripts/
 .env.development

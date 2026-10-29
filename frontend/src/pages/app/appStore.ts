@@ -37,6 +37,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return parseApiResponse<T>(response);
 }
 
+import type { ItemTags } from '../../components/menu-renderer/types';
 export interface AppProfile {
   id: string;
   businessName: string;
@@ -186,7 +187,7 @@ export interface AppMenuItem {
   variants?: AppVariant[];
   addon_groups?: AppAddonGroup[];
   /** Stored in the backend's `menu_items.metadata` JSONB column; currently only ever holds `focal`. */
-  metadata?: { focal?: FocalPoint } | null;
+  metadata?: { focal?: FocalPoint; tags?: ItemTags | null; soldOutOn?: string } | null;
 }
 
 export interface AppMenuImportHistory {
@@ -300,147 +301,6 @@ export function uploadImage(
   });
 }
 
-export interface AiDesignStatus {
-  available: boolean;
-  provider: string;
-  model: string | null;
-  capabilities: {
-    multimodalReference: boolean;
-    designGeneration: boolean;
-    revisions: boolean;
-  };
-}
-
-export interface GenerateAiMenuDesignPayload {
-  profile: {
-    businessName: string;
-    cuisine: string;
-    positioning?: string;
-    mood?: string;
-    hasPhotography?: boolean;
-    menuDensity?: string;
-    tagline?: string;
-    logoUrl?: string;
-    brandColors?: {
-      primary?: string;
-      accent?: string;
-      bg?: string;
-    };
-  };
-  brief?: string;
-  referenceImage?: string | null;
-  previousSpec?: unknown;
-  isRevision?: boolean;
-}
-
-export interface GenerateAiMenuDesignResponse {
-  success: boolean;
-  spec: any;
-  provider: 'gemini' | 'deterministic-fallback';
-  model?: string | null;
-  warning?: string | null;
-  message?: string | null;
-}
-
-export function getAiDesignStatus(): Promise<AiDesignStatus> {
-  return request<AiDesignStatus>('/ai/status');
-}
-
-export function generateAiMenuDesign(data: GenerateAiMenuDesignPayload): Promise<GenerateAiMenuDesignResponse> {
-  return request<GenerateAiMenuDesignResponse>('/ai/generate-menu-design', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-export interface ExtractedPdfItem {
-  id?: string;
-  name: string;
-  description: string;
-  price: number | null;
-  halfPrice?: number | null;
-  fullPrice?: number | null;
-  pricingType: 'single' | 'portion' | 'variants';
-  variants?: Array<{ name: string; price: number }>;
-  addonGroups?: Array<{ name: string; isRequired?: boolean; minSelect?: number; maxSelect?: number; options: Array<{ name: string; price: number }> }>;
-  dietType: 'veg' | 'non-veg' | 'vegan' | 'egg';
-  confidence: number;
-  imageUrl?: string;
-  image?: string;
-  warnings?: string[];
-}
-
-export interface ExtractedPdfCategory {
-  id?: string;
-  name: string;
-  description?: string;
-  items: ExtractedPdfItem[];
-}
-
-export interface ExtractedPdfRestaurantInfo {
-  name: string;
-  cuisine: string;
-  tagline?: string;
-  description?: string;
-  address?: string;
-  phone?: string;
-  openingHours?: string;
-  logo?: string;
-}
-
-export interface PdfExtractionResponse {
-  success: boolean;
-  importId: string;
-  pageCount: number;
-  isScanned: boolean;
-  restaurant: ExtractedPdfRestaurantInfo;
-  candidateLogos?: Array<{ url: string; score: number; width: number; height: number; aspectRatio: number; page: number }>;
-  categories: ExtractedPdfCategory[];
-  designSpec: any;
-  warnings: string[];
-  provider: 'gemini' | 'deterministic-fallback';
-  model?: string | null;
-}
-
-export function extractPdfMenu(pdfBase64: string, filename: string): Promise<PdfExtractionResponse> {
-  return request<PdfExtractionResponse>('/pdf/extract', {
-    method: 'POST',
-    body: JSON.stringify({ pdfBase64, filename }),
-  });
-}
-
-export function refinePdfDesign(importId: string | undefined, prompt: string, currentSpec: any): Promise<{ success: boolean; spec: any; provider: string; model?: string; warning?: string }> {
-  return request<{ success: boolean; spec: any; provider: string; model?: string; warning?: string }>('/pdf/refine-design', {
-    method: 'POST',
-    body: JSON.stringify({ importId, prompt, currentSpec }),
-  });
-}
-
-export function savePdfDraft(data: { importId: string; restaurant?: any; categories: any[]; designSpec?: any }): Promise<{ success: boolean }> {
-  return request<{ success: boolean }>('/pdf/save-draft', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-export function getPdfDraft(importId: string): Promise<any> {
-  return request<any>(`/pdf/draft/${encodeURIComponent(importId)}`);
-}
-
-export function approveAndPublishPdfMenu(data: {
-  importId: string;
-  restaurant?: any;
-  categories: any[];
-  designSpec?: any;
-  approveContent?: boolean;
-  approveDesign?: boolean;
-}): Promise<{ success: boolean; menuId: string; menuSlug: string; publicUrl: string }> {
-  return request<{ success: boolean; menuId: string; menuSlug: string; publicUrl: string }>('/pdf/approve-and-publish', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
 export function getMenu(): Promise<AppMenuData> {
   return request<AppMenuData>('/menu');
 }
@@ -459,7 +319,7 @@ export function saveOnboarding(data: OnboardingPayload): Promise<{ success: bool
   });
 }
 
-export function updateMenuItem(itemId: string, data: Partial<AppMenuItem> & { categoryId?: string; imageUrl?: string; dietType?: string; isAvailable?: boolean; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[]; focal?: FocalPoint | null }): Promise<AppMenuItem> {
+export function updateMenuItem(itemId: string, data: Partial<AppMenuItem> & { categoryId?: string; imageUrl?: string; dietType?: string; isAvailable?: boolean; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[]; focal?: FocalPoint | null; tags?: ItemTags | null }): Promise<AppMenuItem> {
   return request<AppMenuItem>(`/items/${encodeURIComponent(itemId)}`, {
     method: 'PUT',
     body: JSON.stringify(data),
@@ -500,12 +360,61 @@ export function deleteMenuCategory(categoryId: string): Promise<void> {
   return request<void>(`/categories/${encodeURIComponent(categoryId)}`, { method: 'DELETE', body: '{}' });
 }
 
-export function createMenuItem(data: { menuId: string; categoryId: string; name: string; description?: string; price: number; imageUrl?: string; dietType?: string; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[]; focal?: FocalPoint | null }): Promise<AppMenuItem> {
+export function createMenuItem(data: { menuId: string; categoryId: string; name: string; description?: string; price: number; imageUrl?: string; dietType?: string; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[]; focal?: FocalPoint | null; tags?: ItemTags | null }): Promise<AppMenuItem> {
   return request<AppMenuItem>('/items', { method: 'POST', body: JSON.stringify(data) });
 }
 
 export function deleteMenuItem(itemId: string): Promise<void> {
   return request<void>(`/items/${encodeURIComponent(itemId)}`, { method: 'DELETE', body: '{}' });
+}
+
+export interface AppAnalytics {
+  range: number;
+  from: string;
+  to: string;
+  traffic: {
+    days: Array<{ day: string; scans: number; views: number }>;
+    totals: { scans: number; views: number };
+    previous: { scans: number; views: number };
+    change: { scans: number | null; views: number | null };
+    hours: number[];
+  };
+  /** Null on plans without ordering. */
+  orders: null | {
+    days: Array<{ day: string; orders: number; revenue: number }>;
+    totals: { orders: number; revenue: number; averageOrderValue: number };
+    previous: { orders: number; revenue: number };
+    change: { orders: number | null; revenue: number | null };
+    hours: number[];
+    byType: Array<{ type: string; orders: number; revenue: number }>;
+    topItems: Array<{ name: string; quantity: number; revenue: number }>;
+  };
+}
+
+export type FeedbackSummary = {
+  count: number;
+  average: number;
+  distribution: [number, number, number, number, number];
+  recent: Array<{
+    id: string;
+    rating: number;
+    comment: string | null;
+    contact: string | null;
+    tableNumber: string | null;
+    createdAt: string;
+  }>;
+};
+
+export function getFeedback(limit = 50): Promise<FeedbackSummary> {
+  return request<FeedbackSummary>(`/feedback?limit=${limit}`);
+}
+
+export function getAnalytics(range: 7 | 30): Promise<AppAnalytics> {
+  return request<AppAnalytics>(`/analytics?range=${range}`);
+}
+
+export function setMenuItemSoldOut(itemId: string, soldOut: boolean): Promise<{ id: string; soldOut: boolean; soldOutOn: string | null }> {
+  return request(`/items/${encodeURIComponent(itemId)}/sold-out`, { method: 'POST', body: JSON.stringify({ soldOut }) });
 }
 
 export function setMenuItemAvailability(itemId: string, isAvailable: boolean): Promise<AppMenuItem> {

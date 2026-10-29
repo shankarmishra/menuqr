@@ -19,6 +19,7 @@ import {
   FOOTER_SLOTS,
   NAV_SLOTS,
   SECTION_SLOTS,
+  SIGNATURE_COMPOSITION_IDS,
   TEXTURE_IDS,
   THEME_VERSION,
 } from './theme.types.ts';
@@ -40,12 +41,43 @@ const LIVE_TEMPLATE_IDS = [
   'boho-taproom',
 ];
 
+/** The three Tier-2 presets, each pointing at a Signature composition rather than slots alone. */
+const SIGNATURE_PRESET_IDS = [
+  'signature-heritage-booklet',
+  'signature-graphic-booklet',
+  'signature-chalkboard-clipboard',
+];
+
 test('presets: catalogue integrity', async (t) => {
   await t.test('covers every currently live template id', () => {
     for (const id of LIVE_TEMPLATE_IDS) {
       assert.ok(PRESET_IDS.includes(id), `no preset for live template "${id}"`);
     }
-    assert.equal(PRESETS.length, LIVE_TEMPLATE_IDS.length);
+    assert.equal(PRESETS.length, LIVE_TEMPLATE_IDS.length + SIGNATURE_PRESET_IDS.length);
+  });
+
+  await t.test('exactly the three Signature presets carry a signatureId, one each', () => {
+    const withSignature = PRESETS.filter((p) => p.signatureId != null);
+    assert.equal(withSignature.length, SIGNATURE_PRESET_IDS.length);
+
+    for (const id of SIGNATURE_PRESET_IDS) {
+      const preset = PRESETS.find((p) => p.id === id);
+      assert.ok(preset, `missing signature preset "${id}"`);
+      assert.ok(
+        SIGNATURE_COMPOSITION_IDS.includes(preset!.signatureId!),
+        `${id}: signatureId "${preset!.signatureId}" is not a known composition`
+      );
+    }
+
+    // Every composition id is used by exactly one preset — no silent duplicate or gap.
+    const usedCompositionIds = withSignature.map((p) => p.signatureId);
+    assert.equal(new Set(usedCompositionIds).size, SIGNATURE_COMPOSITION_IDS.length);
+
+    for (const preset of PRESETS) {
+      if (!SIGNATURE_PRESET_IDS.includes(preset.id)) {
+        assert.equal(preset.signatureId, undefined, `${preset.id}: composable preset must not set signatureId`);
+      }
+    }
   });
 
   await t.test('ids are unique, slug-shaped and lowercase', () => {

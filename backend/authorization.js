@@ -13,11 +13,11 @@ export const PLAN_CAPABILITIES = {
   BASIC: ['digital_menu', 'restaurant_setup', 'qr_code', 'login', 'initial_menu_setup', 'one_time_edit'],
   INTERMEDIATE: [
     'digital_menu', 'restaurant_setup', 'qr_code', 'login', 'initial_menu_setup', 'one_time_edit',
-    'templates', 'add_item', 'edit_item', 'delete_item', 'menu_management',
+    'templates', 'add_item', 'edit_item', 'delete_item', 'menu_management', 'analytics',
   ],
   PREMIUM: [
     'digital_menu', 'restaurant_setup', 'qr_code', 'login', 'initial_menu_setup', 'one_time_edit',
-    'templates', 'add_item', 'edit_item', 'delete_item', 'menu_management',
+    'templates', 'add_item', 'edit_item', 'delete_item', 'menu_management', 'analytics',
     'customer_ordering', 'reception_orders', 'order_acceptance', 'order_management',
   ],
 };

@@ -290,6 +290,32 @@ test('validateTheme: untrusted input', async (t) => {
     assert.equal(coerceTheme({ announcement: '20% off! Call: 98-765 (today)' }).announcement, '20% off! Call: 98-765 (today)');
   });
 
+  await t.test('signatureId accepts a known composition, null, or falls back from garbage', () => {
+    assert.equal(coerceTheme({ signatureId: 'chalkboard-clipboard' }).signatureId, 'chalkboard-clipboard');
+    assert.equal(coerceTheme({ signatureId: null }).signatureId, null);
+    assert.equal(coerceTheme({ signatureId: 'does-not-exist' }).signatureId, FALLBACK_THEME.signatureId);
+    assert.equal(coerceTheme({ signatureId: 42 }).signatureId, FALLBACK_THEME.signatureId);
+
+    // A theme already carrying a signature composition keeps it when the override is garbage.
+    const base = { ...FALLBACK_THEME, signatureId: 'graphic-booklet' as const };
+    assert.equal(coerceTheme({ signatureId: 'nonsense' }, base).signatureId, 'graphic-booklet');
+    assert.equal(coerceTheme({ signatureId: null }, base).signatureId, null);
+  });
+
+  await t.test('validateTheme rejects an unknown signatureId but accepts null and every real one', () => {
+    const okNull = validateTheme({ ...FALLBACK_THEME, signatureId: null });
+    assert.equal(okNull.ok, true);
+
+    for (const id of ['heritage-booklet', 'graphic-booklet', 'chalkboard-clipboard']) {
+      const result = validateTheme({ ...FALLBACK_THEME, signatureId: id });
+      assert.equal(result.ok, true, `${id} should validate`);
+    }
+
+    const bad = validateTheme({ ...FALLBACK_THEME, signatureId: 'not-a-real-composition' });
+    assert.equal(bad.ok, false);
+    assert.ok(bad.errors.some((e) => e.includes('signatureId')));
+  });
+
   await t.test('preset ids are restricted to a slug shape', () => {
     assert.equal(coerceTheme({ presetId: 'grand-haveli' }).presetId, 'grand-haveli');
     assert.equal(coerceTheme({ presetId: 'The Reserve' }).presetId, FALLBACK_THEME.presetId);

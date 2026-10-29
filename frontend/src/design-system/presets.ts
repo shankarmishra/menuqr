@@ -22,11 +22,12 @@ import {
   CENTRE_FOCAL,
   THEME_VERSION,
   type MenuTheme,
+  type SignatureCompositionId,
   type SlotSelection,
   type TextureId,
 } from './theme.types.ts';
 
-export type PresetCategory = 'heritage' | 'fine-dining' | 'cafe' | 'street' | 'bar' | 'contemporary';
+export type PresetCategory = 'heritage' | 'fine-dining' | 'cafe' | 'street' | 'bar' | 'contemporary' | 'signature';
 
 export type Preset = {
   id: string;
@@ -39,6 +40,8 @@ export type Preset = {
   seedColor: string;
   mode: PaletteMode;
   slots: SlotSelection;
+  /** Set only on the three Signature presets, which render their own full-page composition. */
+  signatureId?: SignatureCompositionId;
   typePair: FontPairingId;
   texture: TextureId;
   density: Density;
@@ -300,6 +303,77 @@ export const PRESETS: readonly Preset[] = [
     radius: 'md',
     shadow: 'subtle',
   },
+
+  // ------------------------------- Signature (Tier 2) -------------------------------
+  // These three render a full-page art-directed composition instead of assembling slots. The
+  // `slots` selection below is still a real, coherent fallback for "switch to a composable
+  // preset" — not a dummy value.
+  {
+    id: 'signature-heritage-booklet',
+    label: 'Heritage Booklet',
+    description: 'An asymmetric chapter-by-chapter artboard with a bold colour panel per category.',
+    audience: 'Heritage dining rooms wanting a printed-booklet feel, digitally',
+    category: 'signature',
+    seedColor: '#b3261e',
+    mode: 'light',
+    slots: {
+      cover: 'heritage-arch',
+      nav: 'underline-tabs',
+      dishCard: 'magazine',
+      section: 'arch-title',
+      footer: 'contact-block',
+    },
+    signatureId: 'heritage-booklet',
+    typePair: 'royal-serif',
+    texture: 'parchment',
+    density: 'spacious',
+    radius: 'sm',
+    shadow: 'elevated',
+  },
+  {
+    id: 'signature-graphic-booklet',
+    label: 'Graphic Booklet',
+    description: 'A poster-style cover with a photo collage, then a numbered two-column menu.',
+    audience: 'Casual dining wanting a playful, illustrated menu with real photography',
+    category: 'signature',
+    seedColor: '#e8783c',
+    mode: 'light',
+    slots: {
+      cover: 'bento-collage',
+      nav: 'capsule-pills',
+      dishCard: 'bento-tile',
+      section: 'ribbon',
+      footer: 'contact-block',
+    },
+    signatureId: 'graphic-booklet',
+    typePair: 'bold-street',
+    texture: 'dots',
+    density: 'balanced',
+    radius: 'lg',
+    shadow: 'subtle',
+  },
+  {
+    id: 'signature-chalkboard-clipboard',
+    label: 'Chalkboard Clipboard',
+    description: 'Twin chalkboard clipboards: a cover board and a dotted-leader menu board.',
+    audience: 'Steakhouses, bistros and grills wanting a rustic, hand-lettered feel',
+    category: 'signature',
+    seedColor: '#c27038',
+    mode: 'dark',
+    slots: {
+      cover: 'monogram',
+      nav: 'capsule-pills',
+      dishCard: 'compact-row',
+      section: 'hairline-caps',
+      footer: 'minimal-mark',
+    },
+    signatureId: 'chalkboard-clipboard',
+    typePair: 'bold-street',
+    texture: 'slate',
+    density: 'compact',
+    radius: 'sm',
+    shadow: 'elevated',
+  },
 ];
 
 export const PRESET_IDS = PRESETS.map((preset) => preset.id);
@@ -365,6 +439,7 @@ export function themeFromPreset(preset: Preset, overrides: Partial<MenuTheme> = 
     mode: preset.mode,
     brand: { seedColor: preset.seedColor, logoUrl: null, logoShape: 'circle' },
     slots: { ...preset.slots },
+    signatureId: preset.signatureId ?? null,
     typePair: preset.typePair,
     texture: preset.texture,
     density: preset.density,

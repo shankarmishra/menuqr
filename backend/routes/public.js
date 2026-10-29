@@ -1,4 +1,7 @@
 import { pool } from '../db.js';
+import { istDateString } from '../istTime.js';
+import { allowHit, isBotAgent, recordMenuHit } from '../menuStats.js';
+import { saveFeedback, validateFeedback } from '../feedback.js';
 import { apiError, sendJson, readJson, getClientIp } from '../utils.js';
 import { resolveTenantAuthorization, requireEntitlement } from '../authorization.js';
 import { getCachedMenu, setCachedMenu, invalidateMenuCache } from '../redisClient.js';
@@ -6,6 +9,8 @@ import { broadcastOrderEvent } from '../orderStream.js';
 import { randomUUID } from 'node:crypto';
 
 const contactRateLimits = new Map();
+const menuHitRateLimits = new Map();
+const feedbackRateLimits = new Map();
 const publicMenuCache = new Map();
 const PUBLIC_MENU_CACHE_TTL_MS = 60 * 1000;
 
@@ -144,12 +149,17 @@ export async function getFullPublicMenuData(tenantId) {
         category: cat ? cat.name : 'Other',
         dietType: i.diet_type || 'veg',
         available: i.is_available,
+        // "Sold out today" is separate from hidden: the dish stays visible but cannot be ordered,
+        // and the flag lapses on its own at the next IST midnight.
+        soldOut: i.metadata?.soldOutOn === istDateString(),
         image: i.image_url || '',
         // Owner-set photo focal point, stored in the previously-unused `metadata` JSONB column
         // (no migration needed). Absent for the common case of no focal point set, in which
         // case the renderer defaults to a centred crop.
         focalX: i.metadata?.focal?.x ?? null,
         focalY: i.metadata?.focal?.y ?? null,
+        // Owner-set dish tags (allergens, spice, Jain/eggless, badges); null when none are set.
+        tags: i.metadata?.tags ?? null,
         variants: itemVariants,
         addonGroups: itemAddonGroups,
       };
@@ -499,8 +509,8 @@ export default async function publicRoutes(request, response, url) {
     
     // Fetch real prices, variants, and addon options from database
     const menuItemsRes = await pool.query(
-      'SELECT id, price, half_price, full_price, name FROM menu_items WHERE tenant_id = $1 AND is_available = true',
-      [client.id]
+      "SELECT id, price, half_price, full_price, name FROM menu_items WHERE tenant_id = $1 AND is_available = true AND COALESCE(metadata->>'soldOutOn', '') <> $2",
+      [client.id, istDateString()]
     );
     const variantsRes = await pool.query(
       'SELECT id, menu_item_id, name, price FROM menu_item_variants WHERE tenant_id = $1 AND is_available = true',
@@ -834,6 +844,42 @@ export default async function publicRoutes(request, response, url) {
   }
 
   // Dine-In Table Service Request (Call Waiter, Request Water, Request Bill)
+  // Anonymous traffic counter: one aggregated row per tenant per IST hour, nothing per-visitor.
+  const menuHitMatch = url.pathname.match(/^\/api\/public\/menu\/([^/]+)\/hit$/);
+  if (request.method === 'POST' && menuHitMatch) {
+    // Always answer 204 so the beacon never surfaces an error to a diner; drop bots and floods silently.
+    if (isBotAgent(request.headers['user-agent']) || !allowHit(menuHitRateLimits, getClientIp(request))) {
+      response.writeHead(204);
+      response.end();
+      return true;
+    }
+    const slug = decodeURIComponent(menuHitMatch[1]);
+    const input = await readJson(request).catch(() => ({}));
+    const clientRes = await pool.query("SELECT id FROM clients WHERE menu_slug = $1 AND LOWER(status) = 'active'", [slug]);
+    if (clientRes.rows[0]) {
+      await recordMenuHit(pool, clientRes.rows[0].id, input?.source === 'qr' ? 'qr' : 'direct');
+    }
+    response.writeHead(204);
+    response.end();
+    return true;
+  }
+
+  // Private guest feedback: rating + optional comment, visible only to the restaurant.
+  const feedbackMatch = url.pathname.match(/^\/api\/public\/menu\/([^/]+)\/feedback$/);
+  if (request.method === 'POST' && feedbackMatch) {
+    if (!allowHit(feedbackRateLimits, getClientIp(request), Date.now(), 10)) {
+      throw apiError(429, 'Too many feedback submissions. Please try again later.');
+    }
+    const slug = decodeURIComponent(feedbackMatch[1]);
+    const clientRes = await pool.query("SELECT id FROM clients WHERE menu_slug = $1 AND LOWER(status) = 'active'", [slug]);
+    if (!clientRes.rows[0]) throw apiError(404, 'Restaurant menu not found.');
+    const feedback = validateFeedback(await readJson(request));
+    if (feedback.error) throw apiError(400, feedback.error);
+    await saveFeedback(pool, clientRes.rows[0].id, feedback);
+    sendJson(response, 201, { success: true });
+    return true;
+  }
+
   const serviceReqMatch = url.pathname.match(/^\/api\/public\/menu\/([^/]+)\/service-request$/);
   if (request.method === 'POST' && serviceReqMatch) {
     const slug = decodeURIComponent(serviceReqMatch[1]);

@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import { getClientByQrId } from '../admin/clientStore';
 
 export default function QrLandingPage() {
   const { qrId = '' } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Table-wise QR codes append ?table=N; carry it through the redirect so orders know the table.
+  const table = (searchParams.get('table') || '').trim().slice(0, 20);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let current = true;
     void getClientByQrId(qrId).then(({ menuSlug, client }) => {
       if (!current) return;
-      navigate(`/menu/${encodeURIComponent(menuSlug)}?qr=${encodeURIComponent(qrId)}`, {
+      navigate(`/menu/${encodeURIComponent(menuSlug)}?qr=${encodeURIComponent(qrId)}${table ? `&table=${encodeURIComponent(table)}` : ''}`, {
         replace: true,
         state: { publicMenu: client },
       });
@@ -23,7 +26,7 @@ export default function QrLandingPage() {
         : 'We could not open this menu right now. Please try scanning again.');
     });
     return () => { current = false; };
-  }, [navigate, qrId]);
+  }, [navigate, qrId, table]);
 
   return (
     <main className="grid min-h-dvh place-items-center bg-[#f7f5ee] px-5 text-[#18231f]">

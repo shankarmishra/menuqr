@@ -8,7 +8,7 @@
  * structural difference was which pieces they assembled and in what colours.
  */
 
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { MenuThemeProvider, useMenuTheme } from './MenuThemeProvider.tsx';
 import {
   COVER_COMPONENTS,
@@ -18,12 +18,12 @@ import {
   NAV_COMPONENTS,
   SECTION_COMPONENTS,
 } from './slots/registry.ts';
-import { EmptyResults, MenuToolbar, type DietFilter } from './primitives/MenuToolbar.tsx';
+import { SIGNATURE_COMPONENTS } from './signature/registry.ts';
+import { EmptyResults, MenuToolbar } from './primitives/MenuToolbar.tsx';
+import { useMenuFilters } from './useMenuFilters.ts';
 import type { MenuTheme } from '../../design-system/theme.types.ts';
 import type { RenderCategory, RenderRestaurant, SlotProps } from './types.ts';
 import './menu-renderer.css';
-
-const ALL = 'all';
 
 export type MenuRendererProps = {
   theme: MenuTheme;
@@ -44,59 +44,24 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const [activeCategoryId, setActiveCategoryId] = useState<string>(ALL);
-  const [query, setQuery] = useState('');
-  const [dietFilter, setDietFilter] = useState<DietFilter>('all');
-
-  const counts = useMemo(() => {
-    const items = categories.flatMap((category) => category.items);
-    return {
-      all: items.length,
-      veg: items.filter((item) => item.dietType === 'veg' || item.dietType === 'vegan').length,
-      nonVeg: items.filter((item) => item.dietType === 'non-veg').length,
-    };
-  }, [categories]);
-
-  // Search and diet filtering are applied to items, then empty categories are dropped, so a
-  // category heading never appears above zero results.
-  const filtered = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-
-    return categories
-      .map((category) => ({
-        ...category,
-        items: category.items.filter((item) => {
-          if (dietFilter === 'veg' && item.dietType !== 'veg' && item.dietType !== 'vegan') return false;
-          if (dietFilter === 'non-veg' && item.dietType !== 'non-veg') return false;
-          if (!needle) return true;
-          return (
-            item.name.toLowerCase().includes(needle) ||
-            (item.description ?? '').toLowerCase().includes(needle)
-          );
-        }),
-      }))
-      .filter((category) => category.items.length > 0);
-  }, [categories, query, dietFilter]);
-
-  const visible = useMemo(
-    () => (activeCategoryId === ALL ? filtered : filtered.filter((c) => c.id === activeCategoryId)),
-    [filtered, activeCategoryId]
-  );
-
-  const hasQuery = query.trim().length > 0;
+  const {
+    activeCategoryId,
+    setActiveCategoryId,
+    query,
+    setQuery,
+    dietFilter,
+    setDietFilter,
+    counts,
+    visible,
+    navigableCategories,
+    hasQuery,
+  } = useMenuFilters(categories);
 
   const Cover = COVER_COMPONENTS[tokens.slots.cover];
   const Nav = NAV_COMPONENTS[tokens.slots.nav];
   const SectionHeading = SECTION_COMPONENTS[tokens.slots.section];
   const DishCard = DISH_CARD_COMPONENTS[tokens.slots.dishCard];
   const Footer = FOOTER_COMPONENTS[tokens.slots.footer];
-
-  // Navigation lists every category that has items, not just the ones surviving the current
-  // filter, so a diner can always move out of an empty result.
-  const navigableCategories = useMemo(
-    () => categories.filter((category) => category.items.length > 0),
-    [categories]
-  );
 
   const slotProps: SlotProps = {
     restaurant,
@@ -172,9 +137,17 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
   );
 };
 
+/** A Signature composition owns its whole page; it still mounts inside the same token provider. */
+const SignatureBody: React.FC<
+  Omit<MenuRendererProps, 'theme' | 'className'> & { signatureId: keyof typeof SIGNATURE_COMPONENTS }
+> = ({ signatureId, ...rest }) => {
+  const Composition = SIGNATURE_COMPONENTS[signatureId];
+  return <Composition {...rest} />;
+};
+
 export const MenuRenderer: React.FC<MenuRendererProps> = ({ theme, className, ...rest }) => (
   <MenuThemeProvider theme={theme} className={className}>
-    <MenuBody {...rest} />
+    {theme.signatureId ? <SignatureBody signatureId={theme.signatureId} {...rest} /> : <MenuBody {...rest} />}
   </MenuThemeProvider>
 );
 

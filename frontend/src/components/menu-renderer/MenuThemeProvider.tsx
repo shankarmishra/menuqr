@@ -10,9 +10,29 @@
  * props: props would force a re-render of every card on every colour tweak.
  */
 
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
+import { fontPreloadsFor } from '../../design-system/fonts.ts';
 import { resolveTheme } from '../../design-system/resolveTheme.ts';
 import type { MenuTheme, ThemeTokens } from '../../design-system/theme.types.ts';
+
+/**
+ * Preloads exactly the active pairing's two critical faces. Idempotent by href, so mounting the
+ * provider twice (Studio preview + customer menu, or a route remount) never duplicates a link.
+ */
+function usePreloadActiveFontPairing(typePair: MenuTheme['typePair']) {
+  useEffect(() => {
+    for (const asset of fontPreloadsFor(typePair)) {
+      if (document.head.querySelector(`link[rel="preload"][href="${asset.href}"]`)) continue;
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'font';
+      link.type = 'font/woff2';
+      link.crossOrigin = 'anonymous';
+      link.href = asset.href;
+      document.head.appendChild(link);
+    }
+  }, [typePair]);
+}
 
 const ThemeContext = createContext<ThemeTokens | null>(null);
 
@@ -42,6 +62,7 @@ export const MenuThemeProvider: React.FC<MenuThemeProviderProps> = ({
   // Resolution is pure and cheap, but memoising keeps the token object identity stable so slots
   // reading context do not re-render when an unrelated parent does.
   const tokens = useMemo(() => resolveTheme(theme), [theme]);
+  usePreloadActiveFontPairing(theme.typePair);
 
   return (
     <ThemeContext.Provider value={tokens}>

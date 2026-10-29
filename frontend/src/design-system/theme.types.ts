@@ -40,6 +40,20 @@ export type TextureId = 'none' | 'grain' | 'parchment' | 'slate' | 'silk' | 'dot
 
 export type LogoShape = 'circle' | 'square' | 'wordmark';
 
+/**
+ * A Signature composition owns its entire layout — cover through footer — rather than assembling
+ * slots. It still reads nothing but `var(--mq-*)`, so it responds to brand colour, logo and
+ * photos exactly like a composable preset; what differs is that one hand-art-directed component
+ * renders the whole page instead of five independently-chosen pieces.
+ */
+export type SignatureCompositionId = 'heritage-booklet' | 'graphic-booklet' | 'chalkboard-clipboard';
+
+export const SIGNATURE_COMPOSITION_IDS: readonly SignatureCompositionId[] = [
+  'heritage-booklet',
+  'graphic-booklet',
+  'chalkboard-clipboard',
+];
+
 export const COVER_SLOTS: readonly CoverSlot[] = ['hero-photo', 'monogram', 'heritage-arch', 'bento-collage'];
 export const NAV_SLOTS: readonly NavSlot[] = ['capsule-pills', 'underline-tabs', 'sidebar-index'];
 export const DISH_CARD_SLOTS: readonly DishCardSlot[] = ['magazine', 'michelin-leader', 'compact-row', 'bento-tile'];
@@ -85,6 +99,13 @@ export type MenuTheme = {
   };
 
   slots: SlotSelection;
+
+  /**
+   * When set, the renderer mounts this Signature composition instead of assembling `slots`.
+   * `slots` is still populated and kept in sync with the preset's underlying skeleton, so
+   * "switch to a composable preset" has a sane layout to switch to.
+   */
+  signatureId: SignatureCompositionId | null;
 
   typePair: FontPairingId;
   texture: TextureId;

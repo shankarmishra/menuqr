@@ -4,7 +4,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { PDFParse } from 'pdf-parse';
 import { validateDesignSpecification } from './designSpecValidator.js';
-import { isGeminiAvailable } from './aiDesignService.js';
 import { extractImagesFromPdf, generateMonogramLogo } from './pdfImageExtractor.js';
 import { resolveDishImage } from './culinaryImageService.js';
 
@@ -17,6 +16,10 @@ const CANDIDATE_MODELS = [
   'gemini-3.8-flash',
   'gemini-flash-latest',
 ];
+
+function isGeminiAvailable() {
+  return Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim().length > 0);
+}
 
 /**
  * Validates PDF binary signature (magic bytes: %PDF-)

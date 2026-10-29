@@ -1,0 +1,89 @@
+name: CI
+
+# Required-check gate for the frontend design system: typecheck, the pure/deterministic unit
+# suites (frontend + the DB-independent backend tests), a production build, and the Playwright
+# render quality gate (contrast, 12px floor, image attributes, tap targets, overflow) that
+# previously only ran by hand. This is what makes "a template that looks bad" fail the build,
+# per the MENUQR design-system plan's Phase 6.
+#
+# Scope note: this does NOT run the ~50 backend integration tests that need a live Postgres
+# database and third-party credentials (payments, email, auth). Those still require a separate,
+# larger CI setup (a Postgres service container plus secret provisioning) and are not yet wired
+# in here.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npx tsc -b
+
+      - name: Frontend unit tests
+        working-directory: frontend
+        run: npm run test:unit
+
+      # pdf_digital_twin_11_out_of_10.test.js is deliberately excluded: one of its cases reads
+      # backend/test-fixtures/pdf-menus/01_designed_cafe_multicolumn.pdf, a binary fixture that
+      # was never committed to the repo, so that file cannot pass from a fresh checkout anywhere
+      # (verified: the fixture is absent, not gitignored). Pre-existing, unrelated to this gate.
+      - name: Backend unit tests (pure logic, no database required)
+        working-directory: backend
+        run: >
+          node --test
+          test/storage.test.js
+          test/theme_validator.test.js
+          test/image_optimizer.test.js
+          test/image_optimizer_variants.test.js
+          test/culinary_image_service.test.js
+          test/focal_point.test.js
+          test/menu_importer.test.js
+          test/pdf_menu_reconstruction.test.js
+          test/item_sold_out.test.js
+          test/item_tags.test.js
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Menu renderer quality gate
+        working-directory: frontend
+        env:
+          CI: true
+        run: npx playwright test --config=playwright.render.config.ts
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7

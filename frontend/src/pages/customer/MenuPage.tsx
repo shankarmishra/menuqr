@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
+import { reportMenuVisit } from '../../utils/menuHit';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MapPin, 
@@ -54,9 +55,12 @@ import {
   type CreateCustomerOrderPayload
 } from '../admin/clientStore';
 import { useToast } from '../../components/feedback/ToastProvider';
-import { menuTemplates } from '../../data/menuTemplates';
+import { themeFromPresetId } from '../../design-system/presets';
+import { coerceTheme } from '../../design-system/validateTheme';
+import { resolveTheme } from '../../design-system/resolveTheme';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import { SEO } from '../../seo/SEO';
+import GuestFeedbackCard from '../../components/customer/GuestFeedbackCard';
 import './MenuPage.css';
 
 export interface DiningSessionOrder {
@@ -88,7 +92,12 @@ export default function MenuPage() {
   const qrId = searchParams.get('qr');
   const tableParam = searchParams.get('table') || searchParams.get('t') || searchParams.get('tableNumber') || '';
   const showToast = useToast();
-  
+
+  // Anonymous once-a-day visit counter for the owner's analytics (QR scan vs direct link).
+  useEffect(() => {
+    if (slug) reportMenuVisit(slug, qrId ? 'qr' : 'direct');
+  }, [slug, qrId]);
+
   const [menuResult, setMenuResult] = useState<{ slug: string; client?: PublicMenuRecord; error?: string }>();
   
   // Ordering State
@@ -131,8 +140,15 @@ export default function MenuPage() {
   const currentMenuResult = menuResult?.slug === slug ? menuResult : undefined;
   const client = currentMenuResult?.client;
 
-  const template = menuTemplates.find((option) => option.id === client?.templateId) ?? menuTemplates[0];
-  
+  // Mirrors MenuTemplateRenderer's own theme resolution, so the page background behind the menu
+  // never disagrees with the menu it is wrapping — including for presets the old static template
+  // list never knew about (every new composable preset and all 3 Signature compositions).
+  const pagePalette = useMemo(() => {
+    const base = themeFromPresetId(client?.templateId);
+    const theme = client?.theme ? coerceTheme(client.theme, base) : base;
+    return resolveTheme(theme).palette;
+  }, [client?.templateId, client?.theme]);
+
   // Strict plan gating: Customer ordering is exclusive to highest plan (Premium)
   const isPremium = Boolean(client?.orderingEnabled ?? (client?.plan?.toUpperCase() === 'PREMIUM'));
   const loadError = currentMenuResult?.error ?? '';
@@ -565,6 +581,7 @@ export default function MenuPage() {
             <p>This menu is currently offline. Please check back later or contact the restaurant staff.</p>
           </motion.div>
         </main>
+
       </div>
     );
   }
@@ -601,6 +618,10 @@ export default function MenuPage() {
     image: item.image,
     focalX: item.focalX ?? undefined,
     focalY: item.focalY ?? undefined,
+    tags: item.tags ?? null,
+    soldOut: item.soldOut ?? false,
+    isBestseller: Boolean(item.tags?.badges?.includes('bestseller')),
+    isSpecial: Boolean(item.tags?.badges?.includes('special')),
   }));
 
   const cartTotalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -660,8 +681,8 @@ export default function MenuPage() {
 
   const isShobharam = Boolean(client?.businessName?.toLowerCase().includes('shobharam'));
   const bespokeColors = (client?.accentConfiguration as { colors?: { bg?: string; text?: string } } | undefined)?.colors;
-  const effectiveBg = isShobharam ? '#090C0B' : (bespokeColors?.bg || template.colors.bg);
-  const effectiveText = isShobharam ? '#F3F4F6' : (bespokeColors?.text || template.colors.text);
+  const effectiveBg = isShobharam ? '#090C0B' : (bespokeColors?.bg || pagePalette.bg);
+  const effectiveText = isShobharam ? '#F3F4F6' : (bespokeColors?.text || pagePalette.text);
 
   return (
     <div className="min-h-screen flex flex-col font-sans transition-colors duration-300" style={{ backgroundColor: effectiveBg, color: effectiveText }}>
@@ -755,6 +776,15 @@ export default function MenuPage() {
           accentConfiguration={client.accentConfiguration}
         />
       </main>
+
+      {/* Private Guest Feedback Section */}
+      {slug && (
+        <GuestFeedbackCard
+          slug={slug}
+          restaurantName={client.businessName || 'the restaurant'}
+          initialTableNumber={tableParam || diningSession?.tableNumber || ''}
+        />
+      )}
 
       {/* Google Reviews Add-on Section */}
       {client.googleReviews?.enabled && client.googleReviews?.reviewUrl && (
