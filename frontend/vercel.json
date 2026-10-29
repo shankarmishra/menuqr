@@ -5,49 +5,89 @@
       "source": "/admin/login",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin/login",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "www.menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "www.menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin/",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin/",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "www.menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin/:path*",
       "destination": "https://admin.menusqr.in/admin/:path*",
       "permanent": true,
-      "has": [{ "type": "host", "value": "menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin/:path*",
       "destination": "https://admin.menusqr.in/admin/:path*",
       "permanent": true,
-      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "www.menusqr.in"
+        }
+      ]
     },
     {
       "source": "/digital-menu-pricing",
@@ -67,8 +107,35 @@
   ],
   "rewrites": [
     {
-      "source": "/:path*",
+      "source": "/:section(app|admin|menu|qr|audit-preview|purchase)/:path*",
       "destination": "/index"
+    },
+    {
+      "source": "/:page(app|admin|template-showcase|showcase|audit-preview)",
+      "destination": "/index"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=()"
+        }
+      ]
     }
   ]
 }
