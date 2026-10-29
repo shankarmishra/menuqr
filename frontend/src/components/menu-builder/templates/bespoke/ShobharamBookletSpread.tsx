@@ -247,7 +247,10 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
 
   const phone = restaurant.phone || '+91 98765 43210';
   const address = [restaurant.address, restaurant.city].filter(Boolean).join(', ') || 'Main Market Road, City Center, Jaipur';
-  const website = (restaurant as any).website || 'WWW.MENUSQR.IN';
+  const website =
+    (restaurant as any).website && !(restaurant as any).website.toLowerCase().includes('menusqr')
+      ? (restaurant as any).website
+      : undefined;
 
   // Render a Single Category Section with Alternating Circular Food Plate
   const renderCategorySection = (cat: CategoryGroup, index: number) => {
@@ -714,10 +717,22 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
                   {address}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-amber-200/80">
-                <Globe size={11} className="text-[#F5C542]" />
-                <span>{website}</span>
-              </div>
+              {website ? (
+                <a
+                  href={website.startsWith('http') ? website : `https://${website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-[11px] text-amber-200/80 hover:text-amber-100 transition-colors"
+                >
+                  <Globe size={11} className="text-[#F5C542]" />
+                  <span>{website}</span>
+                </a>
+              ) : (
+                <div className="flex items-center gap-1.5 text-[11px] text-emerald-300/80">
+                  <ShieldCheck size={11} className="text-emerald-400" />
+                  <span>100% Pure Vegetarian</span>
+                </div>
+              )}
             </div>
           </div>
         </footer>

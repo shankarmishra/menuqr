@@ -666,15 +666,28 @@ export default function MenuPage() {
   return (
     <div className="min-h-screen flex flex-col font-sans transition-colors duration-300" style={{ backgroundColor: effectiveBg, color: effectiveText }}>
       <SEO 
-        title={`${client?.businessName || 'Restaurant Menu'} | MenusQR`} 
+        title={isShobharam ? (client?.businessName || "Shobharam's Pure Veg") : `${client?.businessName || 'Restaurant Menu'} | MenusQR`} 
         description={`Digital QR menu for ${client?.businessName || 'this restaurant'}.`} 
         canonicalUrl={`/menu/${slug}`} 
         index={false} 
       />
       <header className="px-4 py-3 border-b border-white/10 flex items-center justify-between backdrop-blur-md sticky top-0 z-40 bg-black/40">
-        <Link className="menu-wordmark flex items-center gap-2" to={`/menu/${slug}`} aria-label="MenusQR menu">
-          <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
-        </Link>
+        {isShobharam ? (
+          <div className="flex items-center gap-2.5">
+            <img
+              src={client?.logoUrl || '/uploads/shobharam/shobharam_logo_transparent.webp'}
+              alt={client?.businessName || "Shobharam's"}
+              className="h-8 w-auto max-h-8 object-contain filter drop-shadow"
+            />
+            <span className="font-serif font-black tracking-wider text-amber-300 text-sm sm:text-base">
+              {client?.businessName || "Shobharam's"}
+            </span>
+          </div>
+        ) : (
+          <Link className="menu-wordmark flex items-center gap-2" to={`/menu/${slug}`} aria-label="MenusQR menu">
+            <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
+          </Link>
+        )}
         <div className="flex items-center gap-3">
           {(client?.instagram || client?.facebook || client?.website) && (
             <div className="flex items-center gap-1.5 mr-1">
