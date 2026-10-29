@@ -8,49 +8,89 @@
       "source": "/admin/login",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin/login",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "www.menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "www.menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin/",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin/",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
-      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "www.menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin/:path*",
       "destination": "https://admin.menusqr.in/admin/:path*",
       "permanent": true,
-      "has": [{ "type": "host", "value": "menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "menusqr.in"
+        }
+      ]
     },
     {
       "source": "/admin/:path*",
       "destination": "https://admin.menusqr.in/admin/:path*",
       "permanent": true,
-      "has": [{ "type": "host", "value": "www.menusqr.in" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "www.menusqr.in"
+        }
+      ]
     },
     {
       "source": "/digital-menu-pricing",
@@ -72,10 +112,26 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "geolocation=(), microphone=()" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=()"
+        },
+        {
+          "key": "Content-Security-Policy-Report-Only",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://checkout.razorpay.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.firebaseapp.com https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+        }
       ]
     }
   ],

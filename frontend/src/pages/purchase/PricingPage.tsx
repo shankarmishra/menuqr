@@ -6,7 +6,7 @@ import { Check, Sparkles } from 'lucide-react';
 import { SEO } from '../../seo/SEO';
 import BreadcrumbNav from '../../components/seo/BreadcrumbNav';
 import GeoFaqSection from '../../components/seo/GeoFaqSection';
-import { getBreadcrumbSchema, getOrganizationSchema } from '../../seo/structuredData';
+import { getBreadcrumbSchema, getOrganizationSchema, getSoftwareApplicationSchema } from '../../seo/structuredData';
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<'yearly' | 'monthly'>('yearly');
@@ -81,11 +81,20 @@ export default function PricingPage() {
         title="MenusQR Pricing | Digital Menu Plans for Restaurants"
         description="View MenusQR pricing plans. Basic from ₹559/mo (₹1,999/yr), Intermediate from ₹959/mo (₹3,199/yr), and Premium from ₹1,119/mo (₹6,799/yr). Create your digital restaurant QR menu today."
         canonicalUrl="/plans"
-        schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs)]}
+        schema={[
+          getOrganizationSchema(),
+          getBreadcrumbSchema(breadcrumbs),
+          getSoftwareApplicationSchema(
+            plans.map((plan) => ({
+              name: plan.name.charAt(0) + plan.name.slice(1).toLowerCase(),
+              price: Number(plan.yearlyPrice.replace(/[^\d]/g, '')),
+            })),
+          ),
+        ]}
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10">
+      <main id="main-content" className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <div className="text-center mb-10 max-w-3xl mx-auto">

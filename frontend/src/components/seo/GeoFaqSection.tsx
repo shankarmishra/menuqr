@@ -1,3 +1,5 @@
+import { faqs as homeFaqs } from '../marketing/FaqSection';
+
 export interface GeoFaqItem {
   question: string;
   answer: string;
@@ -53,6 +55,59 @@ export const DEFAULT_GEO_FAQS: GeoFaqItem[] = [
     answer: "Yes. An optional Google Reviews add-on (₹499/year) allows you to display a direct 'Write a Google Review' link button on your live QR menu. (Direct link button CTA; does not sync live star ratings or reviews)."
   }
 ];
+
+const homeFaq = (question: string): GeoFaqItem => {
+  const hit = homeFaqs.find((f) => f.q === question);
+  if (!hit) throw new Error(`Unknown home FAQ: ${question}`);
+  return { question: hit.q, answer: hit.a };
+};
+const geoFaq = (question: string): GeoFaqItem => {
+  const hit = DEFAULT_GEO_FAQS.find((f) => f.question === question);
+  if (!hit) throw new Error(`Unknown GEO FAQ: ${question}`);
+  return hit;
+};
+
+// Each service page gets its own FAQ set so the pages do not repeat the same answers.
+export const PAGE_FAQS = {
+  digitalQrMenu: [
+    geoFaq('What is MenusQR?'),
+    geoFaq('How does a QR menu work?'),
+    geoFaq('Does the QR code change after menu edits?'),
+    geoFaq('What happens when a subscription expires?'),
+  ],
+  restaurantQrMenu: [
+    geoFaq('Does the restaurant need to reprint the QR?'),
+    homeFaq('Do I need special paper to print the QR codes?'),
+    geoFaq('Which plan supports ordering?'),
+    geoFaq('Is Google Reviews integration available?'),
+  ],
+  digitalMenuForRestaurants: [
+    geoFaq('Can restaurant owners update prices?'),
+    geoFaq('How many menu changes are included?'),
+    geoFaq('Can restaurants show Half and Full prices or different portion sizes?'),
+    homeFaq('Is there a limit to how many items I can add?'),
+  ],
+  qrMenuForRestaurants: [
+    geoFaq('How does a QR menu work?'),
+    homeFaq('Can I update the menu without changing the QR?'),
+    homeFaq('Do I need special paper to print the QR codes?'),
+    homeFaq('What happens if I cancel my subscription?'),
+  ],
+  restaurantDigitalMenu: [
+    geoFaq('What is MenusQR?'),
+    homeFaq('Is there a limit to how many items I can add?'),
+    geoFaq('Can restaurants show Half and Full prices or different portion sizes?'),
+    geoFaq('Is Google Reviews integration available?'),
+  ],
+  qrOrderingForRestaurants: [
+    geoFaq('Which plan supports ordering?'),
+    geoFaq('Can customers order from the QR menu?'),
+    geoFaq('How does restaurant reception receive orders?'),
+    geoFaq('What happens when a subscription expires?'),
+  ],
+} satisfies Record<string, GeoFaqItem[]>;
+
+export const toFaqSchemaItems = (items: GeoFaqItem[]) => items.map((f) => ({ q: f.question, a: f.answer }));
 
 interface GeoFaqSectionProps {
   faqs?: GeoFaqItem[];

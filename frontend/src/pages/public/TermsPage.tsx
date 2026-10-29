@@ -12,13 +12,13 @@ export default function TermsPage() {
       <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="Terms of Service | MenusQR"
-        description="Review the MenusQR terms of service for restaurant owners and platform users."
+        description="Read the MenusQR terms of service: account rules, subscriptions, acceptable use and responsibilities for restaurant owners and platform users."
         canonicalUrl="/terms"
         schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs)]}
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-4xl mx-auto relative z-10">
+      <main id="main-content" className="pt-32 pb-24 px-6 md:px-12 max-w-4xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl font-extrabold text-[#151C19] mb-8">MenusQR Terms of Service</h1>

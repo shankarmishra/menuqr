@@ -16,7 +16,7 @@ import CharacterCarouselSection from '../../components/marketing/CharacterCarous
 import FaqSection, { faqs } from '../../components/marketing/FaqSection';
 import FinalCtaSection from '../../components/marketing/FinalCtaSection';
 import { SEO } from '../../seo/SEO';
-import { getOrganizationSchema, getWebSiteSchema, getFaqSchema } from '../../seo/structuredData';
+import { getOrganizationSchema, getWebSiteSchema, getFaqSchema, getWebPageSchema } from '../../seo/structuredData';
 import './PublicHomePage.css';
 
 export default function PublicHomePage() {
@@ -27,13 +27,13 @@ export default function PublicHomePage() {
         description="Create a professional digital QR menu for your restaurant. Update dishes, prices and availability without reprinting your QR code."
         canonicalUrl="/"
         type="website"
-        schema={[getOrganizationSchema(), getWebSiteSchema(), getFaqSchema(faqs)]}
+        schema={[getOrganizationSchema(), getWebSiteSchema(), getFaqSchema(faqs), getWebPageSchema('/', 'MenusQR | Digital QR Menu for Restaurants', ['h1', '#faq h3'])]}
       />
       {/* Header */}
       <SiteHeader />
 
       {/* Main Narrative Chapters */}
-      <main className="relative z-10">
+      <main id="main-content" className="relative z-10">
         <HeroSection />
         <OneQrSection />
         <PhysicalQrSection />

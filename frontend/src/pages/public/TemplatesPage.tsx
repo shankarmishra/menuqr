@@ -68,7 +68,7 @@ export default function TemplatesPage() {
       {/* Global Floating Header */}
       <SiteHeader />
       
-      <main className="pt-32 sm:pt-36 pb-24 px-4 sm:px-6 md:px-12 max-w-[1440px] mx-auto relative z-10">
+      <main id="main-content" className="pt-32 sm:pt-36 pb-24 px-4 sm:px-6 md:px-12 max-w-[1440px] mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         {/* Editorial Masthead with Action CTA */}

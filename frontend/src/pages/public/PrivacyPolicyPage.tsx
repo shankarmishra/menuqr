@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-4xl mx-auto relative z-10">
+      <main id="main-content" className="pt-32 pb-24 px-6 md:px-12 max-w-4xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl font-extrabold text-[#151C19] mb-8">MenusQR Privacy Policy</h1>

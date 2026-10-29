@@ -14,7 +14,7 @@ export default function NotFoundPage() {
       />
       <SiteHeader />
 
-      <main className="pt-36 pb-20 px-6 max-w-4xl mx-auto relative z-10 flex-1 flex flex-col items-center justify-center text-center">
+      <main id="main-content" className="pt-36 pb-20 px-6 max-w-4xl mx-auto relative z-10 flex-1 flex flex-col items-center justify-center text-center">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 border border-orange-200/60 text-[#E8783C] text-xs font-bold uppercase tracking-wider mb-6">
           <span className="w-1.5 h-1.5 rounded-full bg-[#E8783C] animate-pulse" />
           Error 404 • Page Not Found

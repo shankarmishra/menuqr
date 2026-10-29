@@ -2,8 +2,8 @@ import SiteHeader from '../../../components/marketing/SiteHeader';
 import SiteFooter from '../../../components/marketing/SiteFooter';
 import { SEO } from '../../../seo/SEO';
 import BreadcrumbNav from '../../../components/seo/BreadcrumbNav';
-import GeoFaqSection from '../../../components/seo/GeoFaqSection';
-import { getBreadcrumbSchema, getOrganizationSchema } from '../../../seo/structuredData';
+import GeoFaqSection, { PAGE_FAQS, toFaqSchemaItems } from '../../../components/seo/GeoFaqSection';
+import { getBreadcrumbSchema, getFaqSchema, getOrganizationSchema } from '../../../seo/structuredData';
 import { Link } from 'react-router-dom';
 
 export default function DigitalQrMenu() {
@@ -16,11 +16,11 @@ export default function DigitalQrMenu() {
         title="Digital QR Menu for Restaurants | MenusQR"
         description="Transform your restaurant with a seamless digital QR menu. Update prices, categories, and items instantly while keeping your table QR codes unchanged."
         canonicalUrl="/digital-qr-menu"
-        schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs)]}
+        schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs), getFaqSchema(toFaqSchemaItems(PAGE_FAQS.digitalQrMenu))]}
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto relative z-10">
+      <main id="main-content" className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl md:text-5xl font-extrabold text-[#151C19] mb-6 tracking-tight">
@@ -70,7 +70,7 @@ export default function DigitalQrMenu() {
           </div>
         </div>
 
-        <GeoFaqSection title="Digital QR Menu Questions & Answers" />
+        <GeoFaqSection faqs={PAGE_FAQS.digitalQrMenu} title="Digital QR Menu Questions & Answers" />
       </main>
 
       <SiteFooter />

@@ -3,7 +3,7 @@ import SiteFooter from '../../components/marketing/SiteFooter';
 import { SEO } from '../../seo/SEO';
 import BreadcrumbNav from '../../components/seo/BreadcrumbNav';
 import GeoFaqSection from '../../components/seo/GeoFaqSection';
-import { getBreadcrumbSchema, getOrganizationSchema } from '../../seo/structuredData';
+import { getBreadcrumbSchema, getHowToSchema, getOrganizationSchema } from '../../seo/structuredData';
 import { Link } from 'react-router-dom';
 
 export default function HowItWorksPage() {
@@ -16,11 +16,11 @@ export default function HowItWorksPage() {
         title="How MenusQR Works | Permanent QR Restaurant Menu"
         description="Learn how MenusQR connects permanent physical QR code stands with real-time digital menu management for your restaurant in 3 easy steps."
         canonicalUrl="/how-it-works"
-        schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs)]}
+        schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs), getHowToSchema('How to launch a MenusQR digital menu', 'Create a digital QR menu, print a permanent QR code and update the menu live without reprinting.', [{ name: 'Create your menu', text: 'Log into your MenusQR dashboard and add dish categories, prices, ingredients, dietary indicators (Veg/Non-Veg) and food photos.' }, { name: 'Download your permanent QR', text: 'Generate a high-resolution SVG or PNG table QR code and print it on acrylic table stands, wooden blocks or table stickers.' }, { name: 'Update live anytime', text: 'Change prices or mark an item sold out in your dashboard. The physical table QR code stays unchanged forever.' }])]}
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto relative z-10">
+      <main id="main-content" className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl md:text-5xl font-extrabold text-[#151C19] mb-6 tracking-tight">

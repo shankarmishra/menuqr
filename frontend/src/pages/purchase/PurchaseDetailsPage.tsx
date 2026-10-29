@@ -391,7 +391,7 @@ export default function PurchaseDetailsPage() {
     <div className="min-h-screen bg-[#FAFAF7] flex flex-col">
       <SiteHeader />
       
-      <main className="flex-1 pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto w-full">
+      <main id="main-content" className="flex-1 pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto w-full">
         <div className="mb-8">
           <Link to="/plans" className="text-[#E8783C] hover:underline text-sm font-medium mb-4 flex items-center gap-1 w-fit">
             &larr; Back to Plans

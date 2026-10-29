@@ -64,3 +64,60 @@ export const getBreadcrumbSchema = (items: BreadcrumbItem[]) => {
     }))
   };
 };
+
+export interface PlanOffer {
+  name: string;
+  price: number;
+  description?: string;
+}
+
+// SoftwareApplication with one yearly Offer per plan (prices in INR).
+export const getSoftwareApplicationSchema = (plans: PlanOffer[]) => ({
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "MenusQR",
+  "url": DOMAIN,
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "description": "Digital QR menu software for restaurants: update dishes, prices and availability instantly while the printed table QR code never changes.",
+  "offers": plans.map((plan) => ({
+    "@type": "Offer",
+    "name": plan.name,
+    "price": plan.price,
+    "priceCurrency": "INR",
+    "priceSpecification": {
+      "@type": "UnitPriceSpecification",
+      "price": plan.price,
+      "priceCurrency": "INR",
+      "billingDuration": "P1Y",
+      "unitText": "YEAR"
+    },
+    "availability": "https://schema.org/InStock",
+    "url": `${DOMAIN}/plans`,
+    ...(plan.description ? { "description": plan.description } : {})
+  }))
+});
+
+export const getHowToSchema = (name: string, description: string, steps: { name: string; text: string }[]) => ({
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": name,
+  "description": description,
+  "step": steps.map((step, i) => ({
+    "@type": "HowToStep",
+    "position": i + 1,
+    "name": step.name,
+    "text": step.text
+  }))
+});
+
+// WebPage with speakable sections so voice assistants know which text to read out.
+export const getWebPageSchema = (path: string, name: string, speakableSelectors: string[]) => ({
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": name,
+  "url": `${DOMAIN}${path === '/' ? '' : path}`,
+  "inLanguage": "en-IN",
+  "isPartOf": { "@type": "WebSite", "name": "MenusQR", "url": DOMAIN },
+  "speakable": { "@type": "SpeakableSpecification", "cssSelector": speakableSelectors }
+});

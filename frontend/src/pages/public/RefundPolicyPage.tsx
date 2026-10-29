@@ -12,13 +12,13 @@ export default function RefundPolicyPage() {
       <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="Refund & Cancellation Policy | MenusQR"
-        description="Official refund and cancellation policy for MenusQR subscription plans."
+        description="MenusQR refund and cancellation policy: how to cancel a subscription, when refunds apply and how long they take for restaurant plans."
         canonicalUrl="/refund-cancellation"
         schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs)]}
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-4xl mx-auto relative z-10">
+      <main id="main-content" className="pt-32 pb-24 px-6 md:px-12 max-w-4xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl font-extrabold text-[#151C19] mb-8">Refund & Cancellation Policy</h1>

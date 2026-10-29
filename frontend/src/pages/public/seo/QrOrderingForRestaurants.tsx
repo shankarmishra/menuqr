@@ -2,8 +2,8 @@ import SiteHeader from '../../../components/marketing/SiteHeader';
 import SiteFooter from '../../../components/marketing/SiteFooter';
 import { SEO } from '../../../seo/SEO';
 import BreadcrumbNav from '../../../components/seo/BreadcrumbNav';
-import GeoFaqSection from '../../../components/seo/GeoFaqSection';
-import { getBreadcrumbSchema, getOrganizationSchema } from '../../../seo/structuredData';
+import GeoFaqSection, { PAGE_FAQS, toFaqSchemaItems } from '../../../components/seo/GeoFaqSection';
+import { getBreadcrumbSchema, getFaqSchema, getOrganizationSchema } from '../../../seo/structuredData';
 import { Link } from 'react-router-dom';
 
 export default function QrOrderingForRestaurants() {
@@ -16,11 +16,11 @@ export default function QrOrderingForRestaurants() {
         title="QR Ordering for Restaurants | Table Ordering System | MenusQR"
         description="Let guests order directly from their table using MenusQR Premium. Streamline kitchen reception, speed up service, and boost table turnover."
         canonicalUrl="/qr-ordering-for-restaurants"
-        schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs)]}
+        schema={[getOrganizationSchema(), getBreadcrumbSchema(breadcrumbs), getFaqSchema(toFaqSchemaItems(PAGE_FAQS.qrOrderingForRestaurants))]}
       />
       <SiteHeader />
       
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto relative z-10">
+      <main id="main-content" className="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto relative z-10">
         <BreadcrumbNav items={breadcrumbs} />
         
         <h1 className="text-4xl md:text-5xl font-extrabold text-[#151C19] mb-6 tracking-tight">
@@ -62,7 +62,7 @@ export default function QrOrderingForRestaurants() {
           </div>
         </div>
 
-        <GeoFaqSection title="QR Ordering System FAQs" />
+        <GeoFaqSection faqs={PAGE_FAQS.qrOrderingForRestaurants} title="QR Ordering System FAQs" />
       </main>
 
       <SiteFooter />
