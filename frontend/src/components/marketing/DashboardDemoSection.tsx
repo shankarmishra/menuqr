@@ -106,7 +106,7 @@ export default function DashboardDemoSection() {
             <div className="lg:pr-[360px]">
               <div className="flex justify-between items-center mb-8">
                 <div>
-                  <h1 className="text-2xl font-black text-menusqr-emerald tracking-tight">Menu Items</h1>
+                  <p className="text-2xl font-black text-menusqr-emerald tracking-tight">Menu Items</p>
                   <p className="text-sm text-gray-500 font-medium mt-1">Manage your dishes and pricing.</p>
                 </div>
                 <div className="flex gap-3">

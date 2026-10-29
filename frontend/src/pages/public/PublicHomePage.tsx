@@ -13,10 +13,10 @@ import PlanComparisonSection from '../../components/marketing/PlanComparisonSect
 import HowItWorksSection from '../../components/marketing/HowItWorksSection';
 import CustomerExperienceSection from '../../components/marketing/CustomerExperienceSection';
 import CharacterCarouselSection from '../../components/marketing/CharacterCarouselSection';
-import FaqSection from '../../components/marketing/FaqSection';
+import FaqSection, { faqs } from '../../components/marketing/FaqSection';
 import FinalCtaSection from '../../components/marketing/FinalCtaSection';
 import { SEO } from '../../seo/SEO';
-import { getOrganizationSchema, getWebSiteSchema } from '../../seo/structuredData';
+import { getOrganizationSchema, getWebSiteSchema, getFaqSchema } from '../../seo/structuredData';
 import './PublicHomePage.css';
 
 export default function PublicHomePage() {
@@ -27,7 +27,7 @@ export default function PublicHomePage() {
         description="Create a professional digital QR menu for your restaurant. Update dishes, prices and availability without reprinting your QR code."
         canonicalUrl="/"
         type="website"
-        schema={[getOrganizationSchema(), getWebSiteSchema()]}
+        schema={[getOrganizationSchema(), getWebSiteSchema(), getFaqSchema(faqs)]}
       />
       {/* Header */}
       <SiteHeader />

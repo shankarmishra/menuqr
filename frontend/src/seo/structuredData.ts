@@ -8,6 +8,7 @@ export const getOrganizationSchema = () => {
     "url": DOMAIN,
     "logo": `${DOMAIN}/assets/brand/menusqr-logo-white-bg.png`,
     "image": `${DOMAIN}/assets/brand/menusqr-logo-white-bg.png`,
+    "description": "MenusQR lets restaurants create a digital QR menu and update dishes, prices and availability instantly without reprinting the QR code.",
     "email": "support@menusqr.in",
     "telephone": "+91 87965 30323",
     "contactPoint": [{
@@ -30,9 +31,21 @@ export const getWebSiteSchema = () => {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "MenusQR",
-    "url": DOMAIN
+    "url": DOMAIN,
+    "description": "Digital QR menus for restaurants with instant updates and a permanent QR code.",
+    "inLanguage": "en-IN"
   };
 };
+
+export const getFaqSchema = (faqs: { q: string; a: string }[]) => ({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map(({ q, a }) => ({
+    "@type": "Question",
+    "name": q,
+    "acceptedAnswer": { "@type": "Answer", "text": a }
+  }))
+});
 
 export interface BreadcrumbItem {
   name: string;

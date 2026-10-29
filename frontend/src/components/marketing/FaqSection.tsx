@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
-const faqs = [
+export const faqs = [
   { 
     q: 'Do I need special paper to print the QR codes?', 
     a: 'Not at all. You can print our high-resolution QR codes on any standard paper, cardstock, or custom sticker material. Your design, your choice.' 

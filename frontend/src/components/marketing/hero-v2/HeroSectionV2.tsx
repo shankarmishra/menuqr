@@ -27,7 +27,7 @@ export default function HeroSectionV2() {
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[2.6rem] leading-[1.1] sm:text-[3.8rem] lg:text-[4.2rem] font-black lg:leading-[1.05] tracking-tight mb-4 lg:mb-6 text-[#151C19]"
           >
-            Your menu changes. <br />
+            Your menu changes.{' '}<br />
             <span className="text-[#E8783C]">
               Your QR code doesn't.
             </span>
