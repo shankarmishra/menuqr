@@ -6,7 +6,7 @@ import {
   Image2ApertureRing,
   CutoutRedChili
 } from '../artwork/FoodDoodleBackgrounds';
-import { Phone, Globe, BookOpen, Utensils, Plus } from 'lucide-react';
+import { Phone, MapPin, Globe, BookOpen, Utensils, Plus } from 'lucide-react';
 
 export const MidnightBurgerTemplate: React.FC<LayoutProps> = ({
   restaurant,
@@ -59,27 +59,33 @@ export const MidnightBurgerTemplate: React.FC<LayoutProps> = ({
       </div>
 
       {/* ============================================================ */}
-      {/* PAGE 1: CHALKBOARD APERTURE COVER (Exact Match to Image 2)  */}
+      {/* PAGE 1: CHALKBOARD APERTURE COVER (Dynamic Client Branding)  */}
       {/* ============================================================ */}
       {page === 'cover' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-4 py-3 flex flex-col items-center">
-          {/* Top Hanging Orange Ribbon Crest Logo (Exact from Image 2) */}
+          {/* Top Hanging Orange Ribbon Crest Logo with Client Logo */}
           <div className="relative mb-3 flex flex-col items-center">
             <div className="w-20 h-16 bg-gradient-to-b from-[#FFA726] to-[#F57C00] rounded-b-2xl shadow-xl flex flex-col items-center justify-center p-2 border-t-2 border-white/40">
-              <div className="w-10 h-10 rounded-full border border-white/50 flex flex-col items-center justify-center text-center">
-                <span className="text-[8px] font-black tracking-tighter text-stone-950 uppercase leading-none">FAST</span>
-                <span className="text-[8px] font-serif italic font-bold text-stone-900 leading-none">Food</span>
-              </div>
+              {restaurant.logo ? (
+                <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-cover rounded-full border border-white/70 shadow-sm" />
+              ) : (
+                <div className="w-10 h-10 rounded-full border border-white/50 flex flex-col items-center justify-center text-center">
+                  <span className="text-[8px] font-black tracking-tighter text-stone-950 uppercase leading-none truncate max-w-[36px]">
+                    {restaurant.name.slice(0, 4).toUpperCase()}
+                  </span>
+                  <span className="text-[7px] font-serif italic font-bold text-stone-900 leading-none">Club</span>
+                </div>
+              )}
             </div>
             {/* Ribbon V-Cut Notch Bottom */}
             <div className="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[8px] border-t-[#F57C00]" />
           </div>
 
-          {/* Center Stage: Circular Aperture Hero Food Frame (Exact from Image 2) */}
+          {/* Center Stage: Circular Aperture Hero Food Frame with Client Name Badge */}
           <div className="relative my-2">
             <Image2ApertureRing 
               photo={heroBurgerPhoto}
-              badgeRibbonText="SMASH CLUB"
+              badgeRibbonText={restaurant.name.substring(0, 16).toUpperCase()}
               badgeRibbonColor="#FFA726"
               accentRingColor="#FFA726"
               className="!w-[210px] !h-[210px] sm:!w-[240px] sm:!h-[240px]"
@@ -88,39 +94,61 @@ export const MidnightBurgerTemplate: React.FC<LayoutProps> = ({
             <CutoutRedChili className="absolute -bottom-2 -right-2 w-12 rotate-[15deg] z-20" />
           </div>
 
-          {/* Golden Script Title: "Fast Food" (Exact from Image 2) */}
-          <div className="text-center my-3">
+          {/* Client Title & Tagline in Chalk Display Typography */}
+          <div className="text-center my-3 px-2">
             <h1 
-              className="text-3xl sm:text-4xl text-[#FFB74D] font-serif italic tracking-wide drop-shadow-md"
+              className="text-2xl sm:text-4xl text-[#FFB74D] font-serif italic tracking-wide drop-shadow-md leading-tight"
               style={{ fontFamily: "'Playfair Display', cursive" }}
             >
-              Fast Food
+              {restaurant.name}
             </h1>
-            <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mt-0.5">
-              Premium Smashed Burgers & Shakes
+            <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mt-1">
+              {restaurant.tagline || restaurant.cuisine || 'Handcrafted Smash Burgers & Specialties'}
             </p>
           </div>
 
-          {/* Contact Bar & Order Button (Exact from Image 2 footer) */}
+          {/* Dynamic Category Highlights from Client's Actual Menu */}
+          {categories.length > 0 && (
+            <div className="w-full flex flex-wrap justify-center gap-1.5 my-2">
+              {categories.slice(0, 4).map((c) => (
+                <span key={c.id || c.name} className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F57C00]/15 text-[#FFA726] border border-[#F57C00]/30 uppercase tracking-wider">
+                  {c.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Contact Bar & Order Button */}
           <div className="w-full bg-[#1B1B20] border border-stone-800 rounded-2xl p-3 text-center space-y-2 mt-1">
-            <div className="flex items-center justify-center gap-3 text-[11px] text-stone-400 font-medium">
-              <span className="flex items-center gap-1">
-                <Phone size={12} className="text-[#FFA726]" />
-                {restaurant.phone || '+1 (555) 349-2810'}
-              </span>
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-stone-400 font-medium">
+              {restaurant.phone && (
+                <span className="flex items-center gap-1">
+                  <Phone size={12} className="text-[#FFA726]" />
+                  {restaurant.phone}
+                </span>
+              )}
+              {(restaurant.address || restaurant.city) && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 truncate max-w-[180px]">
+                    <MapPin size={12} className="text-[#FFA726]" />
+                    {restaurant.address || restaurant.city}
+                  </span>
+                </>
+              )}
               <span>•</span>
               <span className="flex items-center gap-1">
                 <Globe size={12} className="text-[#FFA726]" />
-                menuqr.com/smash
+                Scan QR To Order
               </span>
             </div>
 
             <button
               type="button"
               onClick={() => setPage('menu')}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#FFA726] to-[#F57C00] text-stone-950 font-black text-xs uppercase tracking-wider shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#FFA726] to-[#F57C00] text-stone-950 font-black text-xs uppercase tracking-wider shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Explore Full Chalk Menu</span>
+              <span>Explore Full Menu</span>
               <Utensils size={13} />
             </button>
           </div>
@@ -132,11 +160,16 @@ export const MidnightBurgerTemplate: React.FC<LayoutProps> = ({
       {/* ============================================================ */}
       {page === 'menu' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-3.5 py-4 space-y-6">
-          {/* Top Brand Tag */}
+          {/* Top Brand Tag with Client Logo */}
           <div className="flex items-center justify-between pb-2 border-b border-stone-800">
-            <span className="text-xs font-black tracking-wider text-[#FFA726] uppercase">
-              {restaurant.name || 'Fast Food Club'}
-            </span>
+            <div className="flex items-center gap-2">
+              {restaurant.logo && (
+                <img src={restaurant.logo} alt={restaurant.name} className="w-7 h-7 object-cover rounded-full border border-[#FFA726]/40" />
+              )}
+              <span className="text-xs font-black tracking-wider text-[#FFA726] uppercase">
+                {restaurant.name}
+              </span>
+            </div>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FFA726]/10 text-[#FFA726] border border-[#FFA726]/30">
               CHALKBOARD MENU
             </span>

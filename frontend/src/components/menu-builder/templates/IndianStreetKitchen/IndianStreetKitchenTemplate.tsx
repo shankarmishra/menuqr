@@ -32,10 +32,15 @@ export const IndianStreetKitchenTemplate: React.FC<LayoutProps> = ({
         className="bg-gradient-to-b from-[#222226] via-[#18181B] to-[#0F0F12] text-center"
       >
         <div className="flex flex-col items-center justify-center space-y-2 py-3">
-          {/* Marquee Flashes */}
+          {/* Logo or Marquee Flashes */}
+          {restaurant.logo && (
+            <div className="w-14 h-14 rounded-full p-1 bg-[#18181B] border-2 border-[#FACC15] shadow-lg flex items-center justify-center overflow-hidden mb-1">
+              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+            </div>
+          )}
           <div className="inline-flex items-center gap-2 bg-[#DC2626] text-white px-3 py-0.5 rounded text-[10px] font-black tracking-widest uppercase shadow-md">
             <span>🔥</span>
-            <span>HIGHWAY DHABA SPECIAL • DESI TADKA</span>
+            <span>{restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} • DESI TADKA` : 'HIGHWAY DHABA SPECIAL • DESI TADKA'}</span>
             <span>🔥</span>
           </div>
 

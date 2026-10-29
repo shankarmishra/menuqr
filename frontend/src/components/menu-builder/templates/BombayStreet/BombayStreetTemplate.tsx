@@ -32,15 +32,21 @@ export const BombayStreetTemplate: React.FC<LayoutProps> = ({
         className="bg-gradient-to-b from-[#241313] via-[#1A0D0D] to-[#120808] text-center"
       >
         <div className="flex flex-col items-center justify-center space-y-2 py-3">
-          {/* Chai Glass Crest */}
+          {/* Chai Glass Crest or Client Logo */}
           <div className="flex items-center gap-3">
             <span className="h-0.5 w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#F26522]" />
-            <ChaiGlassEmblem size={compact ? 36 : 46} primary={redColor} accent={amberColor} />
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-full p-1 border-2 border-[#F26522] bg-[#1A0D0D] overflow-hidden flex items-center justify-center shadow-lg">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+              </div>
+            ) : (
+              <ChaiGlassEmblem size={compact ? 36 : 46} primary={redColor} accent={amberColor} />
+            )}
             <span className="h-0.5 w-10 sm:w-16 bg-gradient-to-l from-transparent to-[#F26522]" />
           </div>
 
           <span className="text-[9.5px] uppercase tracking-[0.45em] font-black text-[#F26522] font-mono">
-            ★ VINTAGE IRANI CHAI & BUN MASKA CANTEEN ★
+            ★ {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} • STREET DINING` : 'VINTAGE IRANI CHAI & BUN MASKA CANTEEN'} ★
           </span>
 
           <h1

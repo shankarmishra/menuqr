@@ -27,15 +27,21 @@ export const RoyalMaharajaTemplate: React.FC<LayoutProps> = ({
           ═══════════════════════════════════════════════════════════════════════ */}
       <PalaceGoldFrame goldColor={goldColor} className="bg-gradient-to-b from-[#2E0B20] via-[#1F0716] to-[#12030C] text-center">
         <div className="flex flex-col items-center justify-center space-y-2 py-2">
-          {/* Royal Crown Crest & Symmetrical Wings */}
+          {/* Royal Crown Crest & Symmetrical Wings or Client Logo */}
           <div className="flex items-center gap-3">
             <span className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#D4AF37]" />
-            <PalaceCrownEmblem size={compact ? 36 : 46} color={goldColor} />
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-full p-1 border-2 border-[#D4AF37] bg-[#12030C] overflow-hidden flex items-center justify-center shadow-lg">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+              </div>
+            ) : (
+              <PalaceCrownEmblem size={compact ? 36 : 46} color={goldColor} />
+            )}
             <span className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent to-[#D4AF37]" />
           </div>
 
           <span className="text-[9.5px] uppercase tracking-[0.4em] font-bold text-[#D4AF37]">
-            Imperial Palace Dining • Darbar Hall
+            {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} • ROYAL DINING` : 'Imperial Palace Dining • Darbar Hall'}
           </span>
 
           <h1

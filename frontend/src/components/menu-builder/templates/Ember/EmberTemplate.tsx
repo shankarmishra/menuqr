@@ -82,7 +82,7 @@ export const EmberTemplate: React.FC<LayoutProps> = ({
             className="text-[9px] uppercase tracking-[0.5em] font-semibold mb-2"
             style={{ color: amberColor, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
           >
-            Signature Dining · Tandoor & Fire
+            {restaurant.cuisine ? `${restaurant.cuisine} · Fire & Grill` : 'Signature Dining · Tandoor & Fire'}
           </p>
 
           {restaurant.logo && (

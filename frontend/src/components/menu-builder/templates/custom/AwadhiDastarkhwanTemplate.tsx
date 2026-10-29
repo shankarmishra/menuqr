@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { LayoutProps, MenuItem, CategoryGroup } from '../types';
 import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { VintageKitchenDoodleBg, CutoutRedChili, CutoutLimeSlice } from '../artwork/FoodDoodleBackgrounds';
-import { Phone, Globe, BookOpen, Utensils, Plus, Crown, Sparkles } from 'lucide-react';
+import { Phone, MapPin, Globe, BookOpen, Utensils, Plus, Crown, Sparkles } from 'lucide-react';
 
 export const AwadhiDastarkhwanTemplate: React.FC<LayoutProps> = ({
   restaurant,
@@ -57,27 +57,36 @@ export const AwadhiDastarkhwanTemplate: React.FC<LayoutProps> = ({
       {/* ============================================================ */}
       {page === 'cover' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-4 py-3 flex flex-col items-center">
-          {/* Top Royal Seal Crest */}
+          {/* Top Royal Seal Crest with Client Logo */}
           <div className="w-full flex items-center justify-between mb-2">
-            <span className="text-[10px] uppercase tracking-widest text-[#8D1436] font-black flex items-center gap-1">
-              <Crown size={12} className="text-[#C99700]" /> Dastarkhwan-e-Awadh
+            <span className="text-[10px] uppercase tracking-widest text-[#8D1436] font-black flex items-center gap-1 truncate max-w-[200px]">
+              <Crown size={12} className="text-[#C99700] shrink-0" /> {restaurant.tagline || 'Dastarkhwan-e-Khas'}
             </span>
-            <div className="px-2.5 py-0.5 rounded-full bg-[#C99700]/10 text-[#8D1436] border border-[#C99700]/40 text-[10px] font-serif italic font-bold">
-              Lakhnavi Shahi
+            <div className="w-10 h-10 rounded-full border-2 border-[#C99700] bg-[#FFFDF9] flex items-center justify-center overflow-hidden shadow-sm">
+              {restaurant.logo ? (
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[10px] font-serif font-black text-[#8D1436]">{restaurant.name.slice(0, 2).toUpperCase()}</span>
+              )}
             </div>
           </div>
 
-          {/* Typography */}
-          <div className="text-center my-2">
+          {/* Typography: Client Restaurant Title */}
+          <div className="text-center my-2 px-2">
             <h2 className="text-[#C99700] text-xs font-black tracking-widest uppercase flex items-center justify-center gap-1">
-              <Sparkles size={11} /> NAWABI IMPERIAL BANQUET
+              <Sparkles size={11} /> {restaurant.tagline ? 'IMPERIAL BANQUET SELECTION' : (restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} SPECIALS` : 'ROYAL HERITAGE BANQUET')}
             </h2>
             <h1 
-              className="text-3xl sm:text-4xl font-black text-[#8D1436] tracking-tight leading-none mt-1"
+              className="text-2xl sm:text-4xl font-black text-[#8D1436] tracking-tight leading-tight mt-1"
               style={{ fontFamily: "'Cinzel', Georgia, serif" }}
             >
-              Royal Awadhi
+              {restaurant.name}
             </h1>
+            {restaurant.tagline && (
+              <p className="text-[11px] text-stone-600 font-serif italic mt-0.5">
+                {restaurant.tagline}
+              </p>
+            )}
           </div>
 
           {/* Copper Handi Circular Frame */}
@@ -89,7 +98,7 @@ export const AwadhiDastarkhwanTemplate: React.FC<LayoutProps> = ({
               <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#8D1436] shadow-inner">
                 <img 
                   src={heroAwadhiPhoto} 
-                  alt="Awadhi Dum Biryani" 
+                  alt={restaurant.name} 
                   className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
                 />
               </div>
@@ -101,37 +110,60 @@ export const AwadhiDastarkhwanTemplate: React.FC<LayoutProps> = ({
 
             {/* Quality Stamp */}
             <div className="absolute -bottom-2 right-1 bg-gradient-to-r from-[#8D1436] to-[#420A19] text-amber-200 font-serif text-[10px] font-bold px-3 py-1 rounded-full shadow-md border border-[#C99700]">
-              Slow-Cooked Dum
+              {restaurant.cuisine ? restaurant.cuisine.split(' ')[0] : 'Handcrafted Zaika'}
             </div>
           </div>
 
-          {/* Shahi Feast Promo Card */}
-          <div className="w-full bg-[#FFFDF9] border border-[#E4CF9F] rounded-2xl p-3.5 text-left space-y-2 mt-2 shadow-xs">
-            <div className="flex items-center justify-between border-b border-[#E4CF9F] pb-2">
-              <div>
-                <h3 className="text-xs font-black text-[#8D1436] uppercase">Shahi Dastarkhwan Feast</h3>
-                <p className="text-[11px] text-stone-700">Galawati Kabab, Awadhi Gosht Biryani, Sheermal & Shahi Tukda</p>
+          {/* Dynamic Highlight Card & Contact Details */}
+          {(() => {
+            const allDishes = categories.flatMap((c) => c.items);
+            const featured = allDishes.find((i) => i.isBestseller) || allDishes.find((i) => i.isSpecial) || allDishes[0];
+            const promoTitle = featured ? `Shahi Specialty: ${featured.name}` : `${restaurant.name} Dawat Feast`;
+            const promoSub = featured?.description || restaurant.tagline || 'Prepared with royal dum pukht technique and authentic ground spices.';
+            const pricing = featured ? parseItemPricing(featured) : null;
+            const promoPrice = pricing?.formattedBasePrice || (featured?.price ? `₹${featured.price}` : '');
+
+            return (
+              <div className="w-full bg-[#FFFDF9] border border-[#E4CF9F] rounded-2xl p-3.5 text-left space-y-2 mt-2 shadow-xs">
+                <div className="flex items-center justify-between border-b border-[#E4CF9F] pb-2">
+                  <div className="min-w-0 flex-1 mr-2">
+                    <h3 className="text-xs font-black text-[#8D1436] uppercase truncate">{promoTitle}</h3>
+                    <p className="text-[11px] text-stone-700 line-clamp-1">{promoSub}</p>
+                  </div>
+                  {promoPrice ? (
+                    <span className="text-xs font-black text-[#8D1436] font-mono shrink-0">{promoPrice}</span>
+                  ) : (
+                    <span className="text-[10px] font-serif font-bold text-[#8D1436] px-2 py-0.5 rounded-full bg-[#8D1436]/10 shrink-0">Khas</span>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-stone-600 font-medium">
+                  {restaurant.phone && (
+                    <span className="flex items-center gap-1">
+                      <Phone size={11} className="text-[#8D1436]" />
+                      {restaurant.phone}
+                    </span>
+                  )}
+                  {(restaurant.address || restaurant.city) && (
+                    <span className="flex items-center gap-1 truncate max-w-[180px]">
+                      <MapPin size={11} className="text-[#8D1436]" />
+                      {restaurant.address || restaurant.city}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <Globe size={11} className="text-[#8D1436]" />
+                    Scan QR To Order
+                  </span>
+                </div>
               </div>
-              <span className="text-xs font-black text-[#8D1436] font-mono">₹899</span>
-            </div>
-
-            <div className="flex items-center justify-between text-[11px] text-stone-600 font-medium">
-              <span className="flex items-center gap-1">
-                <Phone size={11} className="text-[#8D1436]" />
-                {restaurant.phone || '+91 522 261 4088'}
-              </span>
-              <span className="flex items-center gap-1">
-                <Globe size={11} className="text-[#8D1436]" />
-                awadhidastarkhwan.menuqr
-              </span>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* Prompt */}
           <button
             type="button"
             onClick={() => setPage('menu')}
-            className="w-full py-2.5 mt-3 rounded-xl bg-gradient-to-r from-[#8D1436] to-[#5C0A1F] text-amber-200 font-bold text-xs uppercase tracking-wider shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 border border-[#C99700]/50"
+            className="w-full py-2.5 mt-3 rounded-xl bg-gradient-to-r from-[#8D1436] to-[#5C0A1F] text-amber-200 font-bold text-xs uppercase tracking-wider shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 border border-[#C99700]/50 cursor-pointer"
           >
             <span>Dastarkhwan Menu Dekhein</span>
             <Utensils size={13} />
@@ -144,13 +176,16 @@ export const AwadhiDastarkhwanTemplate: React.FC<LayoutProps> = ({
       {/* ============================================================ */}
       {page === 'menu' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-3.5 py-4 space-y-6">
-          {/* Header */}
-          <div className="text-center pb-2 border-b-2 border-[#8D1436]/20">
+          {/* Header with Client Logo */}
+          <div className="text-center pb-2 border-b-2 border-[#8D1436]/20 flex flex-col items-center">
+            {restaurant.logo && (
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-cover rounded-full mb-1 border border-[#C99700] shadow-xs" />
+            )}
             <span className="text-[10px] font-mono text-[#C99700] uppercase tracking-widest font-black">
-              Nawabi Zaika
+              {restaurant.tagline || 'Nawabi Zaika'}
             </span>
             <h2 className="text-xl font-bold text-[#8D1436]" style={{ fontFamily: "'Cinzel', serif" }}>
-              {restaurant.name || 'Dastarkhwan Royale'}
+              {restaurant.name}
             </h2>
           </div>
 

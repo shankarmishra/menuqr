@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { LayoutProps, MenuItem, CategoryGroup } from '../types';
 import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { PunjabiTruckArtBg, CutoutRedChili } from '../artwork/FoodDoodleBackgrounds';
-import { Phone, Globe, BookOpen, Utensils, Plus, Flame } from 'lucide-react';
+import { Phone, BookOpen, Utensils, Plus, Flame } from 'lucide-react';
 
 export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
   restaurant,
@@ -11,7 +11,11 @@ export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
 }) => {
   const [page, setPage] = useState<'cover' | 'menu'>('cover');
 
-  const heroThaliPhoto = 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=600&auto=format&fit=crop&q=80'; // tandoori paneer
+  const featuredItem = categories.flatMap(c => c.items).find(i => i.isBestseller || (i as any).isChefSpecial || i.isSpecial || i.image) 
+    || categories.flatMap(c => c.items)[0];
+  const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
+
+  const heroThaliPhoto = featuredItem?.image || 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=600&auto=format&fit=crop&q=80'; // tandoori paneer
   const biryaniPhoto = 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=600&auto=format&fit=crop&q=80'; // biryani
 
   return (
@@ -57,26 +61,32 @@ export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
       {/* ============================================================ */}
       {page === 'cover' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-4 py-3 flex flex-col items-center">
-          {/* Truck-Art Painted Top Signboard */}
+          {/* Truck-Art Painted Top Signboard / Logo */}
           <div className="w-full flex items-center justify-between mb-2">
             <span className="text-[10px] uppercase tracking-widest text-[#B71C1C] font-black flex items-center gap-1">
-              <Flame size={12} className="text-[#E65100]" /> 100% Shuddh Desi Ghee
+              <Flame size={12} className="text-[#E65100]" /> {restaurant.tagline || '100% Shuddh Desi Swad'}
             </span>
-            <div className="px-2.5 py-0.5 rounded-md bg-[#BF360C] text-white text-[10px] font-black uppercase shadow-xs">
-              G.T. ROAD
-            </div>
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-full bg-white p-1 border border-amber-500/40 shadow-md flex items-center justify-center overflow-hidden">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="px-2.5 py-0.5 rounded-md bg-[#BF360C] text-white text-[10px] font-black uppercase shadow-xs">
+                {restaurant.cuisine ? restaurant.cuisine.slice(0, 8).toUpperCase() : 'DESI DHABA'}
+              </div>
+            )}
           </div>
 
           {/* Typography */}
           <div className="text-center my-2">
             <h2 className="text-[#E65100] text-xs font-black tracking-widest uppercase">
-              HIGHWAY TANDOOR DHABA
+              {restaurant.cuisine || 'HIGHWAY TANDOOR DHABA'}
             </h2>
             <h1 
-              className="text-3xl sm:text-4xl font-black text-[#B71C1C] tracking-tight leading-none mt-1"
+              className="text-3xl sm:text-4xl font-black text-[#B71C1C] tracking-tight leading-tight mt-1"
               style={{ fontFamily: "'Cinzel', Georgia, serif" }}
             >
-              Grand Highway
+              {restaurant.name || 'Grand Highway Dhaba'}
             </h1>
           </div>
 
@@ -89,7 +99,7 @@ export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
               <div className="w-full h-full rounded-full overflow-hidden border-2 border-amber-600 shadow-inner">
                 <img 
                   src={heroThaliPhoto} 
-                  alt="Tandoori Paneer Tikka" 
+                  alt={featuredItem?.name || 'Tandoori Paneer Tikka'} 
                   className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
                 />
               </div>
@@ -100,29 +110,49 @@ export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
 
             {/* Quality Stamp */}
             <div className="absolute -bottom-2 right-1 bg-gradient-to-r from-[#E65100] to-[#BF360C] text-white font-mono text-[10px] font-black px-3 py-1 rounded-full shadow-md border border-amber-300">
-              Charcoal Tandoor Se
+              {featuredItem?.dietType === 'veg' || featuredItem?.dietType === 'vegan' ? 'Pure Veg Specialty' : 'Charcoal Tandoor Se'}
             </div>
           </div>
 
           {/* Maha Dhaba Thali Promo Card */}
           <div className="w-full bg-[#FFFAF2] border border-[#EFD4B2] rounded-2xl p-3.5 text-left space-y-2 mt-2 shadow-xs">
             <div className="flex items-center justify-between border-b border-[#EFD4B2] pb-2">
-              <div>
-                <h3 className="text-xs font-black text-[#B71C1C] uppercase">Maha Dhaba Thali Combo</h3>
-                <p className="text-[11px] text-stone-700">Unlimited Dal Makhani, Paneer Butter Masala, Butter Naan & Lassi</p>
+              <div className="pr-2">
+                <h3 className="text-xs font-black text-[#B71C1C] uppercase">
+                  {featuredItem ? `Dhaba Special: ${featuredItem.name}` : 'Maha Dhaba Thali Combo'}
+                </h3>
+                <p className="text-[11px] text-stone-700 line-clamp-1">
+                  {featuredItem?.description || 'Authentic highway recipes cooked fresh with rich spices and desi tadka.'}
+                </p>
               </div>
-              <span className="text-xs font-black text-[#E65100] font-mono">₹299</span>
+              {featuredPrice && (
+                <span className="text-xs font-black text-[#E65100] font-mono whitespace-nowrap">
+                  {featuredPrice}
+                </span>
+              )}
             </div>
+
+            {/* Categories */}
+            {categories.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 py-1">
+                {categories.slice(0, 5).map((c, idx) => (
+                  <span key={idx} className="text-[10px] bg-amber-100/80 text-[#B71C1C] px-2 py-0.5 rounded-full font-bold">
+                    {c.name}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="flex items-center justify-between text-[11px] text-stone-600 font-medium">
               <span className="flex items-center gap-1">
                 <Phone size={11} className="text-[#B71C1C]" />
                 {restaurant.phone || '+91 98110 44556'}
               </span>
-              <span className="flex items-center gap-1">
-                <Globe size={11} className="text-[#B71C1C]" />
-                granddhaba.menuqr
-              </span>
+              {(restaurant.city || restaurant.address) && (
+                <span className="text-[11px] text-stone-700 truncate max-w-[150px]">
+                  {restaurant.city || restaurant.address}
+                </span>
+              )}
             </div>
           </div>
 
@@ -144,9 +174,12 @@ export const DesiDhabaTemplate: React.FC<LayoutProps> = ({
       {page === 'menu' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-3.5 py-4 space-y-6">
           {/* Header */}
-          <div className="text-center pb-2 border-b-2 border-[#B71C1C]/20">
+          <div className="text-center pb-2 border-b-2 border-[#B71C1C]/20 flex flex-col items-center">
+            {restaurant.logo && (
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-amber-300" />
+            )}
             <span className="text-[10px] font-mono text-[#E65100] uppercase tracking-widest font-black">
-              Shuddh Desi Swad
+              {restaurant.tagline || 'Shuddh Desi Swad'}
             </span>
             <h2 className="text-xl font-bold text-[#B71C1C]" style={{ fontFamily: "'Cinzel', serif" }}>
               {restaurant.name || 'Grand Highway Dhaba'}

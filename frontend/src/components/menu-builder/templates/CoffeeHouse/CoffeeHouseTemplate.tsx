@@ -27,15 +27,21 @@ export const CoffeeHouseTemplate: React.FC<LayoutProps> = ({
           ═══════════════════════════════════════════════════════════════════════ */}
       <div className="relative p-6 sm:p-8 rounded-xl bg-gradient-to-b from-[#2E201B] via-[#211612] to-[#160E0B] border border-[#D4A373]/40 shadow-2xl text-center">
         <div className="flex flex-col items-center justify-center space-y-2 py-2">
-          {/* Coffee Branch Crest */}
+          {/* Coffee Branch Crest or Client Logo */}
           <div className="flex items-center gap-3">
             <span className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#D4A373]" />
-            <CoffeeBranchEmblem size={compact ? 36 : 44} woodColor={caramelColor} leafColor="#4A6B5D" />
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-full p-1 border border-[#D4A373] bg-[#160E0B] overflow-hidden flex items-center justify-center shadow-lg">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+              </div>
+            ) : (
+              <CoffeeBranchEmblem size={compact ? 36 : 44} woodColor={caramelColor} leafColor="#4A6B5D" />
+            )}
             <span className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent to-[#D4A373]" />
           </div>
 
           <span className="text-[9.5px] uppercase tracking-[0.4em] font-mono font-bold text-[#D4A373]">
-            ☕ Specialty Roastery & Artisanal Bakery ☕
+            ☕ {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} • SPECIALTY CAFÉ` : 'Specialty Roastery & Artisanal Bakery'} ☕
           </span>
 
           <h1

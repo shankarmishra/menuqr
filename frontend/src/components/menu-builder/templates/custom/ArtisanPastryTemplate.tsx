@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { LayoutProps, MenuItem, CategoryGroup } from '../types';
 import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { FrenchBoutiqueBg } from '../artwork/FoodDoodleBackgrounds';
-import { Phone, Globe, BookOpen, Utensils, Plus, Sparkles, Heart } from 'lucide-react';
+import { Phone, BookOpen, Utensils, Plus, Sparkles, Heart } from 'lucide-react';
 
 export const ArtisanPastryTemplate: React.FC<LayoutProps> = ({
   restaurant,
@@ -11,7 +11,11 @@ export const ArtisanPastryTemplate: React.FC<LayoutProps> = ({
 }) => {
   const [page, setPage] = useState<'cover' | 'menu'>('cover');
 
-  const heroPastryPhoto = 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80'; // croissant
+  const featuredItem = categories.flatMap(c => c.items).find(i => i.isBestseller || (i as any).isChefSpecial || i.isSpecial || i.image) 
+    || categories.flatMap(c => c.items)[0];
+  const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
+
+  const heroPastryPhoto = featuredItem?.image || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80'; // croissant
   const cakePhoto = 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=600&auto=format&fit=crop&q=80'; // cake
   const macaronPhoto = 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=600&auto=format&fit=crop&q=80'; // macarons
 
@@ -58,26 +62,32 @@ export const ArtisanPastryTemplate: React.FC<LayoutProps> = ({
       {/* ============================================================ */}
       {page === 'cover' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-4 py-3 flex flex-col items-center">
-          {/* Delicate Top Gold Bow Emblem */}
+          {/* Delicate Top Gold Bow Emblem / Logo */}
           <div className="flex flex-col items-center mb-2">
-            <span className="text-[10px] uppercase tracking-widest text-[#880E4F] font-bold font-serif italic">
-              Maison Fondée à Paris • 1892
+            {restaurant.logo ? (
+              <div className="w-16 h-16 rounded-full p-1 bg-white border-2 border-[#D81B60]/30 shadow-md flex items-center justify-center overflow-hidden mb-1">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="w-10 h-6 border-b-2 border-dashed border-[#D81B60]/40 flex items-center justify-center">
+                <Heart size={14} className="text-[#C2185B] fill-[#C2185B]/20" />
+              </div>
+            )}
+            <span className="text-[10px] uppercase tracking-widest text-[#880E4F] font-bold font-serif italic text-center">
+              {restaurant.tagline || (restaurant.cuisine ? `${restaurant.cuisine} • Artisan Pâtisserie` : 'Maison Fondée d’Artisanat')}
             </span>
-            <div className="w-10 h-6 border-b-2 border-dashed border-[#D81B60]/40 flex items-center justify-center">
-              <Heart size={14} className="text-[#C2185B] fill-[#C2185B]/20" />
-            </div>
           </div>
 
           {/* Elegant French Typography */}
           <div className="text-center my-2">
             <h2 className="text-[#880E4F] text-xs font-black tracking-widest uppercase">
-              ARTISAN DESSERTS & CAFÉ
+              {restaurant.cuisine || 'ARTISAN DESSERTS & CAFÉ'}
             </h2>
             <h1 
-              className="text-3xl sm:text-4xl font-serif text-[#C2185B] italic tracking-tight leading-none mt-1"
+              className="text-3xl sm:text-4xl font-serif text-[#C2185B] italic tracking-tight leading-tight mt-1"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             >
-              Sweet Velvet
+              {restaurant.name || 'Sweet Velvet'}
             </h1>
           </div>
 
@@ -87,7 +97,7 @@ export const ArtisanPastryTemplate: React.FC<LayoutProps> = ({
               <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#D81B60]/20 relative">
                 <img 
                   src={heroPastryPhoto} 
-                  alt="French Croissant" 
+                  alt={featuredItem?.name || 'French Croissant'} 
                   className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
                 />
               </div>
@@ -108,25 +118,45 @@ export const ArtisanPastryTemplate: React.FC<LayoutProps> = ({
             </div>
           </div>
 
-          {/* High Tea Promo Card */}
+          {/* High Tea / Featured Promo Card */}
           <div className="w-full bg-[#FFF9FA] border border-[#F3D5DE] rounded-2xl p-3.5 text-left space-y-2 mt-2 shadow-xs">
             <div className="flex items-center justify-between border-b border-[#F3D5DE] pb-2">
-              <div>
-                <h3 className="text-xs font-black text-[#880E4F] uppercase">Afternoon Tea 3-5pm</h3>
-                <p className="text-[11px] text-stone-600">Free Parisian Macaron Duo with any Single-Origin Pour-over</p>
+              <div className="pr-2">
+                <h3 className="text-xs font-black text-[#880E4F] uppercase">
+                  {featuredItem ? `Chef's Recommendation: ${featuredItem.name}` : 'Afternoon High Tea Special'}
+                </h3>
+                <p className="text-[11px] text-stone-600 line-clamp-1">
+                  {featuredItem?.description || 'Freshly baked daily with premium ingredients and artisan craft.'}
+                </p>
               </div>
-              <span className="text-xs font-bold text-[#C2185B] font-serif">€12.00</span>
+              {featuredPrice && (
+                <span className="text-xs font-bold text-[#C2185B] font-serif whitespace-nowrap">
+                  {featuredPrice}
+                </span>
+              )}
             </div>
+
+            {/* Category Tags */}
+            {categories.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 py-1">
+                {categories.slice(0, 5).map((c, idx) => (
+                  <span key={idx} className="text-[10px] bg-pink-100/60 text-[#880E4F] px-2 py-0.5 rounded-full font-medium">
+                    {c.name}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="flex items-center justify-between text-[11px] text-stone-500 font-medium">
               <span className="flex items-center gap-1">
                 <Phone size={11} className="text-[#C2185B]" />
-                {restaurant.phone || '+33 1 42 68 55 00'}
+                {restaurant.phone || '+91 98765 43210'}
               </span>
-              <span className="flex items-center gap-1">
-                <Globe size={11} className="text-[#C2185B]" />
-                sweetvelvet.menuqr
-              </span>
+              {(restaurant.city || restaurant.address) && (
+                <span className="text-[11px] text-stone-600 truncate max-w-[150px]">
+                  {restaurant.city || restaurant.address}
+                </span>
+              )}
             </div>
           </div>
 
@@ -148,9 +178,12 @@ export const ArtisanPastryTemplate: React.FC<LayoutProps> = ({
       {page === 'menu' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-3.5 py-4 space-y-6">
           {/* Header */}
-          <div className="text-center pb-2 border-b border-[#F3D5DE]">
+          <div className="text-center pb-2 border-b border-[#F3D5DE] flex flex-col items-center">
+            {restaurant.logo && (
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-pink-200" />
+            )}
             <span className="text-[10px] font-serif italic text-[#880E4F] tracking-widest uppercase">
-              La Carte des Gourmandises
+              {restaurant.tagline || 'La Carte des Gourmandises'}
             </span>
             <h2 className="text-xl font-serif text-[#C2185B] font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>
               {restaurant.name || 'Maison Sweet Velvet'}

@@ -30,10 +30,15 @@ export const GrandTableTemplate: React.FC<LayoutProps> = ({
         className="bg-gradient-to-b from-[#162438] via-[#0E1724] to-[#080E17] text-center"
       >
         <div className="flex flex-col items-center justify-center space-y-2 py-3">
+          {restaurant.logo && (
+            <div className="w-14 h-14 rounded-full p-1 bg-[#080E17] border-2 border-[#C8A962] shadow-lg flex items-center justify-center overflow-hidden mb-1">
+              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+            </div>
+          )}
           <div className="flex items-center gap-3">
             <span className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#C8A962]" />
             <span className="text-[10px] font-mono uppercase tracking-[0.45em] font-bold text-[#C8A962]">
-              ✦ THE GRAND TABLE ROOM ✦
+              ✦ {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} • GRAND TABLE` : 'THE GRAND TABLE ROOM'} ✦
             </span>
             <span className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent to-[#C8A962]" />
           </div>

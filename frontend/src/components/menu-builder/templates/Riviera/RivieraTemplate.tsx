@@ -63,7 +63,7 @@ export const RivieraTemplate: React.FC<LayoutProps> = ({
             className="text-[9px] uppercase tracking-[0.6em] mb-3 font-medium"
             style={{ color: goldColor, fontFamily: bodyFont }}
           >
-            Mediterranean · Fine Dining
+            {restaurant.cuisine ? `${restaurant.cuisine} · Fine Dining` : 'Mediterranean · Fine Dining'}
           </p>
 
           {/* Wave divider */}

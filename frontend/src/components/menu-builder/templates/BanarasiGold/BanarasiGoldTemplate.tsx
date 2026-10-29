@@ -31,15 +31,21 @@ export const BanarasiGoldTemplate: React.FC<LayoutProps> = ({
         className="bg-gradient-to-b from-[#380E26] via-[#28081B] to-[#1E0514] text-center"
       >
         <div className="flex flex-col items-center justify-center space-y-2 py-3">
-          {/* Zari Kalka Medallion with Weave Flanks */}
+          {/* Zari Kalka Medallion with Weave Flanks or Client Logo */}
           <div className="flex items-center gap-3">
             <span className="h-0.5 w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#FFD700]" />
-            <BanarasiKalka size={compact ? 36 : 46} color={zariGold} />
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-full p-1 border-2 border-[#FFD700] bg-[#1E0514] overflow-hidden flex items-center justify-center shadow-lg">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+              </div>
+            ) : (
+              <BanarasiKalka size={compact ? 36 : 46} color={zariGold} />
+            )}
             <span className="h-0.5 w-10 sm:w-16 bg-gradient-to-l from-transparent to-[#FFD700]" />
           </div>
 
           <span className="text-[9.5px] font-mono uppercase tracking-[0.45em] font-bold text-[#FFD700]">
-            ✦ Varanasi Silk Brocade & Pure Zari ✦
+            ✦ {restaurant.cuisine ? `${restaurant.cuisine} ✦ Handcrafted Dining` : 'Varanasi Silk Brocade & Pure Zari'} ✦
           </span>
 
           <h1

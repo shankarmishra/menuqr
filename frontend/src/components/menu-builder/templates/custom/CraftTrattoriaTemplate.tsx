@@ -63,38 +63,49 @@ export const CraftTrattoriaTemplate: React.FC<LayoutProps> = ({
       </div>
 
       {/* ============================================================ */}
-      {/* PAGE 1: VINTAGE POSTER COVER (Exact Match to Image 1)       */}
+      {/* PAGE 1: VINTAGE POSTER COVER (Dynamic Client Branding)       */}
       {/* ============================================================ */}
       {page === 'cover' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-4 py-4 flex flex-col items-center">
-          {/* Top Logo Badge (Exact placement from Image 1: Top-Right Badge) */}
+          {/* Top Row: Tagline + Client Logo Stamp Badge */}
           <div className="w-full flex items-center justify-between mb-3">
-            <div className="text-left">
-              <span className="text-[10px] uppercase tracking-widest text-[#2E7D32] font-black">
-                {restaurant.tagline || 'Cucina Italiana dal 1984'}
+            <div className="text-left max-w-[200px]">
+              <span className="text-[10px] uppercase tracking-widest text-[#2E7D32] font-black truncate block">
+                {restaurant.tagline || restaurant.cuisine || 'Authentic Handcrafted Flavors'}
               </span>
             </div>
 
-            {/* Circular Stamp Badge */}
-            <div className="w-14 h-14 rounded-full border-2 border-dashed border-[#C62828] bg-[#FFF9EE] p-1 flex flex-col items-center justify-center text-center shadow-md rotate-[6deg]">
-              <span className="text-[9px] font-black uppercase text-[#C62828] leading-tight">
-                Authentic
-              </span>
-              <span className="text-[8px] font-serif italic text-stone-600">Italian</span>
+            {/* Circular Stamp Badge with Client Logo */}
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-dashed border-[#C62828] bg-[#FFF9EE] p-1 flex flex-col items-center justify-center text-center shadow-md rotate-[6deg] overflow-hidden">
+              {restaurant.logo ? (
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover rounded-full" />
+              ) : (
+                <>
+                  <span className="text-[9px] font-black uppercase text-[#C62828] leading-tight truncate max-w-full px-0.5">
+                    {restaurant.name.split(' ')[0] || 'ESTD'}
+                  </span>
+                  <span className="text-[7.5px] font-serif italic text-stone-600">Original</span>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Main Poster Title (Image 1 Typography) */}
-          <div className="text-center w-full mb-3">
-            <h2 className="text-[#2E7D32] text-base sm:text-lg font-black tracking-wider uppercase">
-              FOODS & BEVERAGES
+          {/* Main Poster Title: Client Restaurant Name */}
+          <div className="text-center w-full mb-3 px-2">
+            <h2 className="text-[#2E7D32] text-xs sm:text-sm font-black tracking-widest uppercase">
+              {restaurant.tagline ? 'AUTHENTIC HANDCRAFTED MENU' : (restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} SPECIALS` : 'EXQUISITE FLAVORS')}
             </h2>
             <h1 
-              className="text-[#C62828] text-4xl sm:text-5xl font-black tracking-tight leading-none"
+              className="text-[#C62828] text-2xl sm:text-4xl font-black tracking-tight leading-tight mt-1"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             >
-              MENU
+              {restaurant.name}
             </h1>
+            {restaurant.tagline && (
+              <p className="text-[11px] sm:text-xs text-stone-600 font-serif italic mt-0.5 max-w-xs mx-auto">
+                {restaurant.tagline}
+              </p>
+            )}
           </div>
 
           {/* Center Stage: Circular 3-Slice Wheel Collage & Category List */}
@@ -104,71 +115,88 @@ export const CraftTrattoriaTemplate: React.FC<LayoutProps> = ({
             <CutoutBasilLeaf className="absolute top-1/2 -right-3 w-10 sm:w-14 z-20" />
             <CutoutLimeSlice className="absolute -bottom-3 left-4 w-11 sm:w-14 z-20" />
 
-            {/* 3-Slice Food Wheel Collage */}
+            {/* 3-Slice Food Wheel Collage with Restaurant Name Monogram */}
             <div className="my-2">
               <Image1WheelCollage 
                 photos={trattoriaPhotos}
-                centerText="Trattoria"
+                centerText={restaurant.name.split(' ')[0].substring(0, 10)}
                 centerColor="#C62828"
                 borderColor="#FFF"
                 className="!w-[200px] !h-[200px] sm:!w-[230px] sm:!h-[230px]"
               />
             </div>
 
-            {/* Category Highlights with Square Bullets (Exact from Image 1) */}
-            <div className="w-full flex flex-wrap justify-center gap-x-4 gap-y-1 my-3 text-xs font-bold text-stone-800">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-[#C62828]" /> Salads
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-[#C62828]" /> Woodfire Pizza
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-[#C62828]" /> Artisan Pasta
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-[#C62828]" /> Paninis
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-[#C62828]" /> Chianti Wines
-              </span>
+            {/* Dynamic Client Category Highlights with Square Bullets */}
+            <div className="w-full flex flex-wrap justify-center gap-x-4 gap-y-1.5 my-3 text-xs font-bold text-stone-800">
+              {(categories.length > 0 ? categories.slice(0, 5) : [
+                { id: 'c1', name: 'Starters' },
+                { id: 'c2', name: 'Chef Specials' },
+                { id: 'c3', name: 'Main Course' },
+                { id: 'c4', name: 'Breads & Sides' },
+                { id: 'c5', name: 'Beverages' }
+              ]).map((cat) => (
+                <span key={cat.id || cat.name} className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-[#C62828] shrink-0" /> {cat.name}
+                </span>
+              ))}
             </div>
           </div>
 
-          {/* Promo Card: "Happy Hours 4-6pm" (Exact from Image 1) */}
-          <div className="w-full bg-[#FFFDF9] border border-[#E3D8C4] rounded-2xl p-3.5 my-2 shadow-xs text-left">
-            <div className="flex items-center justify-between border-b border-stone-200/60 pb-2 mb-2">
-              <div>
-                <h3 className="text-sm font-black text-[#C62828] uppercase">Happy Hours 4-6pm</h3>
-                <p className="text-[11px] text-stone-600">20% off on all artisan woodfire pizzas & house wines</p>
-              </div>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#2E7D32]/10 text-[#2E7D32] border border-[#2E7D32]/20">
-                DAILY
-              </span>
-            </div>
+          {/* Promo Card: Dynamic Bestseller / Chef Highlight */}
+          {(() => {
+            const allDishes = categories.flatMap((c) => c.items);
+            const featured = allDishes.find((i) => i.isBestseller) || allDishes.find((i) => i.isSpecial) || allDishes[0];
+            const promoTitle = featured ? `Chef Special: ${featured.name}` : `${restaurant.name} Specialties`;
+            const promoSub = featured?.description || restaurant.tagline || 'Fresh handcrafted ingredients prepared daily.';
+            const pricing = featured ? parseItemPricing(featured) : null;
+            const promoPrice = pricing?.formattedBasePrice || (featured?.price ? `₹${featured.price}` : '');
 
-            {/* Reservation Contact Details */}
-            <div className="space-y-1 text-[11px] text-stone-600 font-medium">
-              <div className="flex items-center gap-1.5">
-                <Phone size={12} className="text-[#C62828] shrink-0" />
-                <span>{restaurant.phone || '+39 02 8765 4321'}</span>
+            return (
+              <div className="w-full bg-[#FFFDF9] border border-[#E3D8C4] rounded-2xl p-3.5 my-2 shadow-xs text-left">
+                <div className="flex items-center justify-between border-b border-stone-200/60 pb-2 mb-2">
+                  <div className="min-w-0 flex-1 mr-2">
+                    <h3 className="text-xs font-black text-[#C62828] uppercase truncate">{promoTitle}</h3>
+                    <p className="text-[11px] text-stone-600 line-clamp-1">{promoSub}</p>
+                  </div>
+                  {promoPrice ? (
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#2E7D32]/10 text-[#2E7D32] border border-[#2E7D32]/20 shrink-0 font-mono">
+                      {promoPrice}
+                    </span>
+                  ) : (
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#2E7D32]/10 text-[#2E7D32] border border-[#2E7D32]/20 shrink-0">
+                      SPECIAL
+                    </span>
+                  )}
+                </div>
+
+                {/* Reservation & Contact Details */}
+                <div className="space-y-1 text-[11px] text-stone-600 font-medium">
+                  {restaurant.phone && (
+                    <div className="flex items-center gap-1.5">
+                      <Phone size={12} className="text-[#C62828] shrink-0" />
+                      <span>Order / Call: {restaurant.phone}</span>
+                    </div>
+                  )}
+                  {(restaurant.address || restaurant.city) && (
+                    <div className="flex items-center gap-1.5">
+                      <MapPin size={12} className="text-[#C62828] shrink-0" />
+                      <span className="truncate">{restaurant.address || restaurant.city}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1.5 text-stone-500 text-[10px]">
+                    <Globe size={11} className="text-[#2E7D32] shrink-0" />
+                    <span>Scan QR Code To Order Digitally</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <MapPin size={12} className="text-[#C62828] shrink-0" />
-                <span className="truncate">{restaurant.address || 'Via dei Giubbonari, 28, Roma'}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Globe size={12} className="text-[#C62828] shrink-0" />
-                <span>menuqr.com/trattoria</span>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* Prompt to View Menu */}
           <button
             type="button"
             onClick={() => setPage('menu')}
-            className="w-full py-2.5 mt-2 rounded-xl bg-[#C62828] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:bg-[#B71C1C] transition-all flex items-center justify-center gap-2"
+            className="w-full py-2.5 mt-2 rounded-xl bg-[#C62828] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:bg-[#B71C1C] transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>Open Inside Menu Pages</span>
             <Utensils size={13} />
@@ -182,12 +210,15 @@ export const CraftTrattoriaTemplate: React.FC<LayoutProps> = ({
       {page === 'menu' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-3.5 py-4 space-y-6">
           {/* Header Banner */}
-          <div className="text-center pb-2 border-b-2 border-[#C62828]/20">
+          <div className="text-center pb-2 border-b-2 border-[#C62828]/20 flex flex-col items-center">
+            {restaurant.logo && (
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-cover rounded-full mb-1 border border-[#C62828]/30 shadow-xs" />
+            )}
             <span className="text-[10px] font-black uppercase tracking-widest text-[#2E7D32]">
-              Menu Del Giorno
+              {restaurant.tagline || 'Menu Del Giorno'}
             </span>
             <h2 className="text-xl font-black text-[#C62828]" style={{ fontFamily: "'Playfair Display', serif" }}>
-              {restaurant.name || 'Trattoria da Luigi'}
+              {restaurant.name}
             </h2>
           </div>
 

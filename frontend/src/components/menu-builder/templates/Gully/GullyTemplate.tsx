@@ -54,7 +54,7 @@ export const GullyTemplate: React.FC<LayoutProps> = ({
             className="text-[10px] font-black uppercase tracking-[0.3em] text-white"
             style={{ fontFamily: headingFont }}
           >
-            DESI STREET FOOD · DHABA VIBES
+            {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} · DHABA VIBES` : 'DESI STREET FOOD · DHABA VIBES'}
           </p>
         </div>
 

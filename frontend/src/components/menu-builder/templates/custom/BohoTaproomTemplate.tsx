@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { LayoutProps, MenuItem, CategoryGroup } from '../types';
 import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { BohoCraftBeerBg, Image1WheelCollage } from '../artwork/FoodDoodleBackgrounds';
-import { Phone, Globe, BookOpen, Utensils, Plus, Beer } from 'lucide-react';
+import { Phone, BookOpen, Utensils, Plus, Beer } from 'lucide-react';
 
 export const BohoTaproomTemplate: React.FC<LayoutProps> = ({
   restaurant,
@@ -11,10 +11,15 @@ export const BohoTaproomTemplate: React.FC<LayoutProps> = ({
 }) => {
   const [page, setPage] = useState<'cover' | 'menu'>('cover');
 
+  const featuredItem = categories.flatMap(c => c.items).find(i => i.isBestseller || (i as any).isChefSpecial || i.isSpecial || i.image) 
+    || categories.flatMap(c => c.items)[0];
+  const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
+
+  const itemPhotos = categories.flatMap(c => c.items).map(i => i.image).filter(Boolean) as string[];
   const taproomPhotos: [string, string, string] = [
-    'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80', // sliders
-    'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80', // pizza
-    'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&auto=format&fit=crop&q=80', // pasta
+    itemPhotos[0] || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80', // sliders
+    itemPhotos[1] || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80', // pizza
+    itemPhotos[2] || 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&auto=format&fit=crop&q=80', // pasta
   ];
 
   return (
@@ -60,23 +65,29 @@ export const BohoTaproomTemplate: React.FC<LayoutProps> = ({
       {/* ============================================================ */}
       {page === 'cover' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-4 py-3 flex flex-col items-center">
-          {/* Hexagonal Craft Emblem */}
+          {/* Hexagonal Craft Emblem / Logo */}
           <div className="w-full flex items-center justify-between mb-2">
             <span className="text-[10px] font-mono text-[#FFB300] uppercase tracking-widest font-black flex items-center gap-1">
-              <Beer size={12} className="text-[#FF8F00]" /> 16 Craft Taps Flowing
+              <Beer size={12} className="text-[#FF8F00]" /> {restaurant.tagline || 'Small-Batch Brewery & Kitchen'}
             </span>
-            <div className="px-2.5 py-0.5 rounded-md bg-[#FF8F00]/20 text-[#FFB300] border border-[#FF8F00]/40 text-[10px] font-mono font-bold">
-              EST. 2018
-            </div>
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-xl bg-[#1E2228] p-1 border border-amber-400/40 shadow-md flex items-center justify-center overflow-hidden">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="px-2.5 py-0.5 rounded-md bg-[#FF8F00]/20 text-[#FFB300] border border-[#FF8F00]/40 text-[10px] font-mono font-bold">
+                {restaurant.cuisine ? restaurant.cuisine.slice(0, 8).toUpperCase() : 'CRAFT TAP'}
+              </div>
+            )}
           </div>
 
           {/* Typography */}
           <div className="text-center my-2">
             <h2 className="text-[#FFB300] text-xs font-black tracking-widest uppercase">
-              ARTISAN BREWERY & SLIDERS
+              {restaurant.cuisine || 'ARTISAN BREWERY & BITES'}
             </h2>
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-none mt-1">
-              BOHO TAPROOM
+            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight mt-1">
+              {restaurant.name || 'BOHO TAPROOM'}
             </h1>
           </div>
 
@@ -84,7 +95,7 @@ export const BohoTaproomTemplate: React.FC<LayoutProps> = ({
           <div className="relative my-3">
             <Image1WheelCollage 
               photos={taproomPhotos}
-              centerText="On-Tap"
+              centerText={restaurant.name ? restaurant.name.split(' ')[0] : 'Craft'}
               centerColor="#FF8F00"
               borderColor="#14171B"
               className="!w-[200px] !h-[200px] sm:!w-[230px] sm:!h-[230px]"
@@ -94,22 +105,42 @@ export const BohoTaproomTemplate: React.FC<LayoutProps> = ({
           {/* Hoppy Hour Promo Card */}
           <div className="w-full bg-[#1E2228] border border-[#343B47] rounded-2xl p-3.5 text-left space-y-2 mt-2 shadow-xs">
             <div className="flex items-center justify-between border-b border-[#343B47] pb-2">
-              <div>
-                <h3 className="text-xs font-black text-[#FFB300] uppercase">Hoppy Hours Tue-Fri 4-6pm</h3>
-                <p className="text-[11px] text-stone-400">$5 Craft Pints on all local taps & $10 Slider Trios</p>
+              <div className="pr-2">
+                <h3 className="text-xs font-black text-[#FFB300] uppercase">
+                  {featuredItem ? `Featured Special: ${featuredItem.name}` : 'Taproom Happy Hours'}
+                </h3>
+                <p className="text-[11px] text-stone-400 line-clamp-1">
+                  {featuredItem?.description || 'Crafted with premium ingredients and curated artisanal pairings.'}
+                </p>
               </div>
-              <span className="text-xs font-black text-[#FF8F00] font-mono">$5 Pints</span>
+              {featuredPrice && (
+                <span className="text-xs font-black text-[#FF8F00] font-mono whitespace-nowrap">
+                  {featuredPrice}
+                </span>
+              )}
             </div>
+
+            {/* Categories */}
+            {categories.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 py-1">
+                {categories.slice(0, 5).map((c, idx) => (
+                  <span key={idx} className="text-[10px] bg-amber-950/60 border border-amber-500/30 text-amber-200 px-2 py-0.5 rounded-md font-medium">
+                    {c.name}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="flex items-center justify-between text-[11px] text-stone-400 font-medium">
               <span className="flex items-center gap-1">
                 <Phone size={11} className="text-[#FFB300]" />
-                {restaurant.phone || '+1 (503) 299-4100'}
+                {restaurant.phone || '+91 98765 43210'}
               </span>
-              <span className="flex items-center gap-1">
-                <Globe size={11} className="text-[#FFB300]" />
-                bohotaproom.menuqr
-              </span>
+              {(restaurant.city || restaurant.address) && (
+                <span className="text-[11px] text-stone-300 truncate max-w-[150px]">
+                  {restaurant.city || restaurant.address}
+                </span>
+              )}
             </div>
           </div>
 
@@ -132,9 +163,16 @@ export const BohoTaproomTemplate: React.FC<LayoutProps> = ({
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-3.5 py-4 space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between pb-2 border-b border-[#343B47]">
-            <div>
-              <span className="text-[10px] font-mono text-[#FFB300] uppercase tracking-widest font-bold">Small-Batch Brewery</span>
-              <h2 className="text-lg font-black text-white">{restaurant.name || 'Boho Taproom & Social'}</h2>
+            <div className="flex items-center gap-2.5">
+              {restaurant.logo && (
+                <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-xl border border-amber-400/40 bg-[#1E2228]" />
+              )}
+              <div>
+                <span className="text-[10px] font-mono text-[#FFB300] uppercase tracking-widest font-bold">
+                  {restaurant.tagline || 'Small-Batch Brewery'}
+                </span>
+                <h2 className="text-lg font-black text-white">{restaurant.name || 'Boho Taproom & Social'}</h2>
+              </div>
             </div>
             <div className="bg-[#FF8F00] text-stone-950 text-[10px] font-mono font-black px-2.5 py-1 rounded-md uppercase">
               CRAFT

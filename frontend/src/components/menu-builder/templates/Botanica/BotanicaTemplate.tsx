@@ -88,7 +88,7 @@ export const BotanicaTemplate: React.FC<LayoutProps> = ({
           className="text-[9px] uppercase tracking-[0.5em] mb-2 font-medium"
           style={{ color: sageColor, fontFamily: bodyFont }}
         >
-          Artisan · Botanical · Honest
+          {restaurant.cuisine ? `${restaurant.cuisine} · Botanical · Honest` : 'Artisan · Botanical · Honest'}
         </p>
 
         {/* Name */}

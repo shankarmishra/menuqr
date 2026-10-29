@@ -32,8 +32,13 @@ export const SpiceHouseTemplate: React.FC<LayoutProps> = ({
         <span className="absolute bottom-2 right-2 w-2 h-2 rounded-full bg-[#E07A5F]" />
 
         <div className="flex flex-col items-center justify-center space-y-2 py-2">
+          {restaurant.logo && (
+            <div className="w-14 h-14 rounded-full p-1 bg-[#1E1613] border-2 border-[#E07A5F] shadow-lg flex items-center justify-center overflow-hidden mb-1">
+              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+            </div>
+          )}
           <span className="text-[9.5px] uppercase tracking-[0.45em] font-bold text-[#E07A5F] font-mono">
-            ✦ Artisanal Spice Blends & Slow Fire Kitchen ✦
+            ✦ {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} • SLOW FIRE KITCHEN` : 'Artisanal Spice Blends & Slow Fire Kitchen'} ✦
           </span>
 
           <h1

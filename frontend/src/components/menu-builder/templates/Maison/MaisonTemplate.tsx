@@ -46,7 +46,7 @@ export const MaisonTemplate: React.FC<LayoutProps> = ({
           className="text-[9px] uppercase tracking-[0.65em] mb-3 font-medium"
           style={{ color: goldColor, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
-          Haute Cuisine
+          {restaurant.cuisine ? `${restaurant.cuisine} • Fine Dining` : 'Haute Cuisine'}
         </p>
 
         {/* Thin gold rule */}

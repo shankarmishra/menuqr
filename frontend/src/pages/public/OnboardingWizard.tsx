@@ -893,6 +893,7 @@ export default function OnboardingWizard() {
                         restaurant={{
                           name: restaurantData.name || 'Your Restaurant',
                           tagline: restaurantData.tagline,
+                          cuisine: (restaurantData as any).cuisine,
                           phone: restaurantData.phone,
                           address: restaurantData.address,
                           city: restaurantData.city,
@@ -1023,6 +1024,7 @@ export default function OnboardingWizard() {
                         restaurant={{
                           name: restaurantData.name || 'Your Restaurant',
                           tagline: restaurantData.tagline,
+                          cuisine: (restaurantData as any).cuisine,
                           phone: restaurantData.phone,
                           address: restaurantData.address,
                           city: restaurantData.city,

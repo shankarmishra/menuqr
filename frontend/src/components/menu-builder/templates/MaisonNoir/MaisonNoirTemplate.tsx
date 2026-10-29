@@ -33,15 +33,21 @@ export const MaisonNoirTemplate: React.FC<LayoutProps> = ({
         <span className="absolute bottom-2.5 right-2.5 w-2 h-2 border-b border-r border-[#C5A059]" />
 
         <div className="flex flex-col items-center justify-center space-y-3 py-2">
-          {/* Michelin Star Crest & Platinum Hairlines */}
+          {/* Michelin Star Crest or Client Logo */}
           <div className="flex items-center gap-3">
             <span className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#C5A059]" />
-            <MichelinSealEmblem size={compact ? 36 : 46} goldColor={goldColor} />
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-full p-1 border border-[#C5A059] bg-[#0E0E10] overflow-hidden flex items-center justify-center shadow-lg">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+              </div>
+            ) : (
+              <MichelinSealEmblem size={compact ? 36 : 46} goldColor={goldColor} />
+            )}
             <span className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent to-[#C5A059]" />
           </div>
 
           <span className="text-[9px] uppercase tracking-[0.55em] font-light text-[#C5A059] font-mono">
-            Haute Cuisine • Menu Dégustation
+            {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} • MENU DÉGUSTATION` : 'Haute Cuisine • Menu Dégustation'}
           </span>
 
           <h1

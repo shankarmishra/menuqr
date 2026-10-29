@@ -32,15 +32,21 @@ export const SouthIndianHeritageTemplate: React.FC<LayoutProps> = ({
         className="bg-gradient-to-b from-[#FFFDF7] via-[#FAF6ED] to-[#F5EEDB] text-center"
       >
         <div className="flex flex-col items-center justify-center space-y-2 py-3">
-          {/* Temple Gopuram Silhouette & Symmetrical Bells */}
+          {/* Temple Gopuram Silhouette & Symmetrical Bells or Client Logo */}
           <div className="flex items-center gap-3">
             <span className="h-0.5 w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#C28838]" />
-            <TempleGopuramCrest size={compact ? 36 : 46} maroon="#6E1B1B" brass={brassColor} />
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-full p-1 border-2 border-[#C28838] bg-[#FFFDF7] overflow-hidden flex items-center justify-center shadow-lg">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+              </div>
+            ) : (
+              <TempleGopuramCrest size={compact ? 36 : 46} maroon="#6E1B1B" brass={brassColor} />
+            )}
             <span className="h-0.5 w-10 sm:w-16 bg-gradient-to-l from-transparent to-[#C28838]" />
           </div>
 
           <span className="text-[9.5px] font-mono uppercase tracking-[0.4em] font-bold text-[#6E1B1B]">
-            ✦ Traditional Dakshin Cuisine • Chettinad & Malabar ✦
+            ✦ {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} • DAKSHIN CUISINE` : 'Traditional Dakshin Cuisine • Chettinad & Malabar'} ✦
           </span>
 
           <h1

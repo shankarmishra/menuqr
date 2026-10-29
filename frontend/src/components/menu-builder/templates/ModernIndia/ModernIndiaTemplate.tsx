@@ -32,8 +32,13 @@ export const ModernIndiaTemplate: React.FC<LayoutProps> = ({
         <span className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#D97706]" />
 
         <div className="flex flex-col items-center justify-center space-y-2 py-2">
+          {restaurant.logo && (
+            <div className="w-14 h-14 rounded-full p-1 bg-white border border-[#E8DFD5] shadow-sm flex items-center justify-center overflow-hidden mb-1">
+              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+            </div>
+          )}
           <span className="text-[9.5px] uppercase tracking-[0.45em] font-bold text-[#D97706]">
-            Progressive Indian Cuisine • Modern Atelier
+            {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} • MODERN ATELIER` : 'Progressive Indian Cuisine • Modern Atelier'}
           </span>
 
           <h1

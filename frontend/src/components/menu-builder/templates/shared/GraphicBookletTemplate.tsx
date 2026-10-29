@@ -63,14 +63,25 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
   // Page toggle: 'cover' (Front Cover) vs 'menu' (Inside Menu Pages)
   const [currentPage, setCurrentPage] = useState<'cover' | 'menu'>('cover');
 
-  // Find 2 highlight dishes with photos to display in the inside page callouts
+  // Find highlight dishes with photos to display in the inside page callouts
   const allItems: MenuItem[] = categories.flatMap((c: CategoryGroup) => c.items);
-  const featureDish1 = allItems.find((i) => i.isBestseller && i.image) || allItems[0] || {
+  const itemPhotos = allItems.map((i) => i.image).filter(Boolean) as string[];
+  const featuredPhotos: [string, string, string] = [
+    itemPhotos[0] || config.featuredPhotos[0],
+    itemPhotos[1] || config.featuredPhotos[1],
+    itemPhotos[2] || config.featuredPhotos[2],
+  ];
+
+  const categoryBullets = categories.length > 0
+    ? categories.slice(0, 5).map((c) => c.name)
+    : config.categoryBulletItems;
+
+  const featureDish1 = allItems.find((i) => (i.isBestseller || (i as any).isChefSpecial || i.isSpecial) && i.image) || allItems[0] || {
     id: 'f1',
     name: 'Chef Signature Dish',
     price: 249,
     description: 'Crispy special seasoned with herbs & chef sauce',
-    image: config.featuredPhotos[0],
+    image: featuredPhotos[0],
     dietType: 'non-veg',
     category: 'specials',
   };
@@ -79,10 +90,17 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
     name: 'Artisan Woodfire Special',
     price: 329,
     description: 'Stone-baked thin crust with premium toppings',
-    image: config.featuredPhotos[1],
+    image: featuredPhotos[1],
     dietType: 'veg',
     category: 'specials',
   };
+
+  const coverPromoTitle = featureDish1?.name
+    ? `Featured: ${featureDish1.name}`
+    : config.promoBadge.title;
+  const coverPromoSubtitle = featureDish1?.description
+    ? featureDish1.description
+    : config.promoBadge.subtitle;
 
   return (
     <div 
@@ -186,7 +204,7 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
                     color: config.coverTitle.color1 || config.colors.heading 
                   }}
                 >
-                  {config.coverTitle.line1}
+                  {restaurant.cuisine ? restaurant.cuisine.toUpperCase() : config.coverTitle.line1}
                 </h2>
                 <h1 
                   className="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-tight"
@@ -195,7 +213,7 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
                     color: config.coverTitle.color2 || config.colors.accent 
                   }}
                 >
-                  {config.coverTitle.line2}
+                  {restaurant.name || config.coverTitle.line2}
                 </h1>
                 <p className="text-xs sm:text-sm font-medium mt-2 opacity-80 max-w-sm">
                   {restaurant.tagline || 'Exquisite culinary handcrafted specialties prepared with passion & authentic recipes.'}
@@ -204,7 +222,7 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
 
               {/* Bulleted Category Highlights (Square bullets just like Image 1) */}
               <div className="space-y-1.5 pt-2 border-t border-current/15">
-                {config.categoryBulletItems.map((cat, idx) => (
+                {categoryBullets.map((cat, idx) => (
                   <div key={idx} className="flex items-center gap-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider">
                     <span 
                       className="w-2 h-2 rounded-xs shrink-0 shadow-xs" 
@@ -234,10 +252,10 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
               {config.collageStyle === 'wheel-3slice' ? (
                 <div className="relative">
                   <Image1WheelCollage 
-                    photos={config.featuredPhotos}
+                    photos={featuredPhotos}
                     borderColor={config.colors.surface}
                     centerColor={config.colors.accent}
-                    centerText={restaurant.name.substring(0, 10)}
+                    centerText={restaurant.name ? restaurant.name.split(' ')[0] : 'Menu'}
                   />
                   {/* Floating cutouts around the wheel */}
                   {config.cutouts.includes('lime') && (
@@ -254,8 +272,8 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
               ) : (
                 <div className="relative">
                   <Image2ApertureRing 
-                    photo={config.featuredPhotos[0]}
-                    badgeRibbonText={config.ribbonBadgeText || restaurant.name}
+                    photo={featuredPhotos[0]}
+                    badgeRibbonText={restaurant.name || config.ribbonBadgeText}
                     badgeRibbonColor={config.colors.accent}
                     accentRingColor={config.colors.accent}
                   />
@@ -284,11 +302,11 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
                   ★
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-extrabold uppercase tracking-wide leading-tight" style={{ color: config.colors.heading }}>
-                    {config.promoBadge.title}
+                  <h4 className="text-xs sm:text-sm font-extrabold uppercase tracking-wide leading-tight line-clamp-1" style={{ color: config.colors.heading }}>
+                    {coverPromoTitle}
                   </h4>
-                  <p className="text-[11px] opacity-75 leading-tight mt-0.5">
-                    {config.promoBadge.subtitle}
+                  <p className="text-[11px] opacity-75 leading-tight mt-0.5 line-clamp-2">
+                    {coverPromoSubtitle}
                   </p>
                 </div>
               </div>
@@ -301,10 +319,10 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
                     <span>Order: {restaurant.phone}</span>
                   </div>
                 )}
-                {restaurant.address && (
+                {(restaurant.address || restaurant.city) && (
                   <div className="flex items-center sm:justify-end gap-1.5 opacity-80 text-[11px]">
                     <MapPin size={13} className="shrink-0" style={{ color: config.colors.accent }} />
-                    <span className="truncate max-w-[240px]">{restaurant.address}</span>
+                    <span className="truncate max-w-[240px]">{restaurant.address || restaurant.city}</span>
                   </div>
                 )}
                 <div className="flex items-center sm:justify-end gap-1.5 opacity-80 text-[10px] font-mono">
@@ -324,27 +342,37 @@ export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThe
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-8 py-6 space-y-8 animate-in fade-in duration-300">
           {/* Header Banner */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-current/15">
-            <div>
-              <div className="flex items-center gap-2">
-                <span 
-                  className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full text-white shadow-xs"
-                  style={{ backgroundColor: config.colors.accent }}
+            <div className="flex items-center gap-3">
+              {restaurant.logo && (
+                <img 
+                  src={restaurant.logo} 
+                  alt={restaurant.name} 
+                  className="w-12 h-12 object-contain rounded-2xl border p-1 shrink-0" 
+                  style={{ borderColor: config.colors.border, backgroundColor: config.colors.cardBg }} 
+                />
+              )}
+              <div>
+                <div className="flex items-center gap-2">
+                  <span 
+                    className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full text-white shadow-xs"
+                    style={{ backgroundColor: config.colors.accent }}
+                  >
+                    Inside Menu
+                  </span>
+                  <span className="text-xs font-mono opacity-60">
+                    {restaurant.cuisine || 'Catering & Dining'}
+                  </span>
+                </div>
+                <h2 
+                  className="text-2xl sm:text-3xl font-extrabold uppercase tracking-tight mt-1"
+                  style={{ 
+                    fontFamily: config.typography.headingFont,
+                    color: config.colors.heading 
+                  }}
                 >
-                  Inside Menu Page
-                </span>
-                <span className="text-xs font-mono opacity-60">
-                  {restaurant.cuisine || 'Catering & Dining'}
-                </span>
+                  {restaurant.name}
+                </h2>
               </div>
-              <h2 
-                className="text-2xl sm:text-3xl font-extrabold uppercase tracking-tight mt-1"
-                style={{ 
-                  fontFamily: config.typography.headingFont,
-                  color: config.colors.heading 
-                }}
-              >
-                {restaurant.name}
-              </h2>
             </div>
 
             <button

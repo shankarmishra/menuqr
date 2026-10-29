@@ -455,7 +455,7 @@ export const BrandPlaque: React.FC<{
   logo?: string;
   name?: string;
   compact?: boolean;
-}> = ({ logo, compact }) => (
+}> = ({ logo, name, compact }) => (
   <div className="inline-flex items-center justify-center relative">
     <div
       className={clsx(
@@ -469,7 +469,7 @@ export const BrandPlaque: React.FC<{
       {logo && !logo.includes('unsplash.com') ? (
         <img
           src={logo}
-          alt="Restaurant Emblem"
+          alt={name || 'Restaurant Emblem'}
           className={clsx('object-contain', compact ? 'max-h-5 max-w-[80px]' : 'max-h-7 max-w-[110px]')}
           onError={(e) => {
             e.currentTarget.style.display = 'none';
@@ -478,11 +478,11 @@ export const BrandPlaque: React.FC<{
       ) : (
         <span
           className={clsx(
-            'font-serif italic font-black text-[#064F43] lowercase tracking-widest select-none drop-shadow-sm',
+            'font-serif italic font-black text-[#064F43] tracking-wider select-none drop-shadow-sm',
             compact ? 'text-xs' : 'text-sm sm:text-base'
           )}
         >
-          menu
+          {name || 'Menu'}
         </span>
       )}
     </div>
@@ -781,8 +781,14 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
                   compact ? 'px-2 pt-10 pb-6 space-y-2' : 'px-3 pt-12 sm:pt-16 pb-8 space-y-2.5 sm:space-y-4'
                 )}
               >
-                {/* Golden Blooming Lotus Crest Emblem */}
-                <GoldenLotusCrestSVG size={compact ? 44 : 70} className="mb-1" />
+                {/* Golden Blooming Lotus Crest Emblem or Restaurant Logo */}
+                {restaurant.logo && !restaurant.logo.includes('unsplash.com') ? (
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FFFDF7] p-1.5 border-2 border-[#D7B66D] shadow-lg flex items-center justify-center overflow-hidden mb-2">
+                    <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+                  </div>
+                ) : (
+                  <GoldenLotusCrestSVG size={compact ? 44 : 70} className="mb-1" />
+                )}
 
                 {/* Spaced Restaurant Cuisine Title - No Awkward Mid-Word Wraps */}
                 <div className="space-y-1 px-2 max-w-[92%] mx-auto">

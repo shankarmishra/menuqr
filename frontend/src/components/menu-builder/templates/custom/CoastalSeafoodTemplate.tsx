@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { LayoutProps, MenuItem, CategoryGroup } from '../types';
 import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { NauticalMaritimeBg, CutoutLimeSlice } from '../artwork/FoodDoodleBackgrounds';
-import { Phone, Globe, BookOpen, Utensils, Plus, Anchor, Waves } from 'lucide-react';
+import { Phone, BookOpen, Utensils, Plus, Anchor, Waves } from 'lucide-react';
 
 export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
   restaurant,
@@ -11,7 +11,11 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
 }) => {
   const [page, setPage] = useState<'cover' | 'menu'>('cover');
 
-  const heroSeafoodPhoto = 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=600&auto=format&fit=crop&q=80'; // seafood platter
+  const featuredItem = categories.flatMap(c => c.items).find(i => i.isBestseller || (i as any).isChefSpecial || i.isSpecial || i.image) 
+    || categories.flatMap(c => c.items)[0];
+  const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
+
+  const heroSeafoodPhoto = featuredItem?.image || 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=600&auto=format&fit=crop&q=80'; // seafood platter
   const oysterPhoto = 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&auto=format&fit=crop&q=80'; // grilled fish
 
   return (
@@ -57,26 +61,32 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
       {/* ============================================================ */}
       {page === 'cover' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-4 py-3 flex flex-col items-center">
-          {/* Nautical Crest */}
+          {/* Nautical Crest / Logo */}
           <div className="w-full flex items-center justify-between mb-2">
             <span className="text-[10px] uppercase tracking-widest text-[#00838F] font-black flex items-center gap-1">
-              <Anchor size={12} /> Wild Caught Daily
+              <Anchor size={12} /> {restaurant.tagline || 'Wild Caught Daily'}
             </span>
-            <div className="px-2.5 py-1 rounded-full bg-[#0D47A1]/10 text-[#0D47A1] text-[10px] font-black tracking-wider uppercase border border-[#0D47A1]/20">
-              Raw Bar
-            </div>
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-full bg-white p-1 border border-[#0D47A1]/30 shadow-sm flex items-center justify-center overflow-hidden">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="px-2.5 py-1 rounded-full bg-[#0D47A1]/10 text-[#0D47A1] text-[10px] font-black tracking-wider uppercase border border-[#0D47A1]/20">
+                {restaurant.cuisine ? restaurant.cuisine.slice(0, 10).toUpperCase() : 'RAW BAR'}
+              </div>
+            )}
           </div>
 
           {/* Typography */}
           <div className="text-center my-2">
             <h2 className="text-[#0D47A1] text-xs font-black tracking-widest uppercase flex items-center justify-center gap-1.5">
-              <Waves size={12} /> MEDITERRANEAN COASTAL
+              <Waves size={12} /> {restaurant.cuisine || 'MEDITERRANEAN COASTAL'}
             </h2>
             <h1 
-              className="text-3xl sm:text-4xl font-serif text-[#0B2545] font-black tracking-tight leading-none mt-1"
+              className="text-3xl sm:text-4xl font-serif text-[#0B2545] font-black tracking-tight leading-tight mt-1"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             >
-              Catch & Raw Bar
+              {restaurant.name || 'Catch & Raw Bar'}
             </h1>
           </div>
 
@@ -89,7 +99,7 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
               <div className="w-full h-full rounded-full overflow-hidden border-2 border-stone-400 shadow-inner">
                 <img 
                   src={heroSeafoodPhoto} 
-                  alt="Seafood Platter" 
+                  alt={featuredItem?.name || 'Seafood Platter'} 
                   className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
                 />
               </div>
@@ -100,29 +110,49 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
 
             {/* Quality Badge */}
             <div className="absolute -bottom-2 right-1 bg-[#0D47A1] text-white font-mono text-[10px] font-black px-3 py-1 rounded-full shadow-md border border-cyan-300">
-              Fresh Oysters on Ice
+              {featuredItem?.dietType === 'veg' || featuredItem?.dietType === 'vegan' ? '100% Vegetarian' : 'Fresh Kitchen Prep'}
             </div>
           </div>
 
           {/* Sunset Raw Bar Promo Card */}
           <div className="w-full bg-white border border-[#C8D5DB] rounded-2xl p-3.5 text-left space-y-2 mt-2 shadow-xs">
             <div className="flex items-center justify-between border-b border-stone-200 pb-2">
-              <div>
-                <h3 className="text-xs font-black text-[#0D47A1] uppercase">Sunset Catch Hour 4-7pm</h3>
-                <p className="text-[11px] text-stone-600">Half dozen oysters with mignonette & crisp white wine</p>
+              <div className="pr-2">
+                <h3 className="text-xs font-black text-[#0D47A1] uppercase">
+                  {featuredItem ? `Chef's Choice: ${featuredItem.name}` : 'Sunset Catch Hour Special'}
+                </h3>
+                <p className="text-[11px] text-stone-600 line-clamp-1">
+                  {featuredItem?.description || 'Served fresh with gourmet seasonings and artisan accompaniment.'}
+                </p>
               </div>
-              <span className="text-xs font-black text-[#00838F] font-mono">$14.00</span>
+              {featuredPrice && (
+                <span className="text-xs font-black text-[#00838F] font-mono whitespace-nowrap">
+                  {featuredPrice}
+                </span>
+              )}
             </div>
+
+            {/* Categories */}
+            {categories.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 py-1">
+                {categories.slice(0, 5).map((c, idx) => (
+                  <span key={idx} className="text-[10px] bg-cyan-100/70 text-[#0B2545] px-2 py-0.5 rounded-full font-medium">
+                    {c.name}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="flex items-center justify-between text-[11px] text-stone-500 font-medium">
               <span className="flex items-center gap-1">
                 <Phone size={11} className="text-[#0D47A1]" />
-                {restaurant.phone || '+30 2289 023456'}
+                {restaurant.phone || '+91 98765 43210'}
               </span>
-              <span className="flex items-center gap-1">
-                <Globe size={11} className="text-[#0D47A1]" />
-                coastalseafood.menuqr
-              </span>
+              {(restaurant.city || restaurant.address) && (
+                <span className="text-[11px] text-stone-600 truncate max-w-[150px]">
+                  {restaurant.city || restaurant.address}
+                </span>
+              )}
             </div>
           </div>
 
@@ -132,7 +162,7 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
             onClick={() => setPage('menu')}
             className="w-full py-2.5 mt-3 rounded-xl bg-[#0D47A1] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:bg-[#0A3882] transition-all flex items-center justify-center gap-2"
           >
-            <span>Explore Coastal Raw Bar</span>
+            <span>Explore Menu</span>
             <Utensils size={13} />
           </button>
         </div>
@@ -144,9 +174,12 @@ export const CoastalSeafoodTemplate: React.FC<LayoutProps> = ({
       {page === 'menu' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-3.5 py-4 space-y-6">
           {/* Header */}
-          <div className="text-center pb-2 border-b-2 border-[#0D47A1]/20">
+          <div className="text-center pb-2 border-b-2 border-[#0D47A1]/20 flex flex-col items-center">
+            {restaurant.logo && (
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-cyan-200" />
+            )}
             <span className="text-[10px] font-mono text-[#00838F] uppercase tracking-widest font-black">
-              Daily Coastal Catch
+              {restaurant.tagline || 'Daily Coastal Catch'}
             </span>
             <h2 className="text-xl font-serif text-[#0D47A1] font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>
               {restaurant.name || 'Aegean Blue Raw Bar'}

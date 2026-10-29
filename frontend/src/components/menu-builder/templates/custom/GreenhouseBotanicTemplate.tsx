@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { LayoutProps, MenuItem, CategoryGroup } from '../types';
 import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { BotanicalOrganicBg, CutoutBasilLeaf } from '../artwork/FoodDoodleBackgrounds';
-import { Phone, Globe, BookOpen, Utensils, Plus, Leaf } from 'lucide-react';
+import { Phone, BookOpen, Utensils, Plus, Leaf } from 'lucide-react';
 
 export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
   restaurant,
@@ -11,7 +11,11 @@ export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
 }) => {
   const [page, setPage] = useState<'cover' | 'menu'>('cover');
 
-  const heroBowlPhoto = 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop&q=80'; // salad
+  const featuredItem = categories.flatMap(c => c.items).find(i => i.isBestseller || (i as any).isChefSpecial || i.isSpecial || i.image) 
+    || categories.flatMap(c => c.items)[0];
+  const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
+
+  const heroBowlPhoto = featuredItem?.image || 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop&q=80'; // salad
   const pokeBowlPhoto = 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&auto=format&fit=crop&q=80'; // healthy bowl
 
   return (
@@ -57,26 +61,32 @@ export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
       {/* ============================================================ */}
       {page === 'cover' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-4 py-3 flex flex-col items-center">
-          {/* Botanical Wax Seal Emblem */}
+          {/* Botanical Wax Seal Emblem / Logo */}
           <div className="w-full flex items-center justify-between mb-2">
             <span className="text-[10px] uppercase tracking-widest text-[#2E7D32] font-black flex items-center gap-1">
-              <Leaf size={12} /> 100% Certified Organic
+              <Leaf size={12} /> {restaurant.tagline || '100% Certified Fresh & Pure'}
             </span>
-            <div className="w-10 h-10 rounded-full bg-[#2E7D32] text-white flex items-center justify-center shadow-md">
-              <Leaf size={18} />
-            </div>
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-full bg-white p-1 border border-green-600/30 shadow-md flex items-center justify-center overflow-hidden">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-[#2E7D32] text-white flex items-center justify-center shadow-md">
+                <Leaf size={18} />
+              </div>
+            )}
           </div>
 
           {/* Typography */}
           <div className="text-center my-2">
             <h2 className="text-[#558B2F] text-xs font-black tracking-widest uppercase">
-              PLANT-FORWARD & WHOLESOME
+              {restaurant.cuisine || 'PLANT-FORWARD & WHOLESOME'}
             </h2>
             <h1 
-              className="text-3xl sm:text-4xl font-serif text-[#2E7D32] font-black tracking-tight leading-none mt-1"
+              className="text-3xl sm:text-4xl font-serif text-[#2E7D32] font-black tracking-tight leading-tight mt-1"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             >
-              Botanica Kitchen
+              {restaurant.name || 'Botanica Kitchen'}
             </h1>
           </div>
 
@@ -86,7 +96,7 @@ export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
               <div className="w-full h-full rounded-full overflow-hidden border-2 border-green-600/30 shadow-inner">
                 <img 
                   src={heroBowlPhoto} 
-                  alt="Superfood Bowl" 
+                  alt={featuredItem?.name || 'Superfood Bowl'} 
                   className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
                 />
               </div>
@@ -97,29 +107,49 @@ export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
 
             {/* Quality Stamp */}
             <div className="absolute -bottom-2 right-1 bg-[#2E7D32] text-white font-mono text-[10px] font-bold px-3 py-1 rounded-full shadow-md">
-              Farm-to-Table
+              {featuredItem?.dietType === 'veg' || featuredItem?.dietType === 'vegan' ? 'Pure Vegetarian' : 'Farm-to-Table'}
             </div>
           </div>
 
           {/* Mindful Morning Promo Card */}
           <div className="w-full bg-white border border-[#D2E2D3] rounded-2xl p-3.5 text-left space-y-2 mt-2 shadow-xs">
             <div className="flex items-center justify-between border-b border-stone-200 pb-2">
-              <div>
-                <h3 className="text-xs font-black text-[#2E7D32] uppercase">Mindful Morning Combo</h3>
-                <p className="text-[11px] text-stone-600">Açaí Superfood bowl + 12oz Cold-Pressed Green Glow juice</p>
+              <div className="pr-2">
+                <h3 className="text-xs font-black text-[#2E7D32] uppercase">
+                  {featuredItem ? `Chef's Choice: ${featuredItem.name}` : 'Mindful Harvest Special'}
+                </h3>
+                <p className="text-[11px] text-stone-600 line-clamp-1">
+                  {featuredItem?.description || 'Crafted daily with wholesome seasonal produce and fresh herbs.'}
+                </p>
               </div>
-              <span className="text-xs font-bold text-[#2E7D32] font-mono">$13.50</span>
+              {featuredPrice && (
+                <span className="text-xs font-bold text-[#2E7D32] font-mono whitespace-nowrap">
+                  {featuredPrice}
+                </span>
+              )}
             </div>
+
+            {/* Categories */}
+            {categories.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 py-1">
+                {categories.slice(0, 5).map((c, idx) => (
+                  <span key={idx} className="text-[10px] bg-green-100/70 text-[#1C2C1E] px-2 py-0.5 rounded-full font-medium">
+                    {c.name}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="flex items-center justify-between text-[11px] text-stone-500 font-medium">
               <span className="flex items-center gap-1">
                 <Phone size={11} className="text-[#2E7D32]" />
-                {restaurant.phone || '+1 (415) 890-3412'}
+                {restaurant.phone || '+91 98765 43210'}
               </span>
-              <span className="flex items-center gap-1">
-                <Globe size={11} className="text-[#2E7D32]" />
-                botanica.menuqr
-              </span>
+              {(restaurant.city || restaurant.address) && (
+                <span className="text-[11px] text-stone-600 truncate max-w-[150px]">
+                  {restaurant.city || restaurant.address}
+                </span>
+              )}
             </div>
           </div>
 
@@ -141,9 +171,12 @@ export const GreenhouseBotanicTemplate: React.FC<LayoutProps> = ({
       {page === 'menu' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-3.5 py-4 space-y-6">
           {/* Header */}
-          <div className="text-center pb-2 border-b-2 border-[#2E7D32]/20">
+          <div className="text-center pb-2 border-b-2 border-[#2E7D32]/20 flex flex-col items-center">
+            {restaurant.logo && (
+              <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-full mb-1 border border-green-200" />
+            )}
             <span className="text-[10px] font-mono text-[#558B2F] uppercase tracking-widest font-black">
-              Pure Nutritional Craft
+              {restaurant.tagline || 'Pure Nutritional Craft'}
             </span>
             <h2 className="text-xl font-serif text-[#2E7D32] font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>
               {restaurant.name || 'Botanica Greenhouse'}

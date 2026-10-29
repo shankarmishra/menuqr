@@ -31,15 +31,21 @@ export const PaperCafeTemplate: React.FC<LayoutProps> = ({
         <span className="absolute top-2 right-2 text-[#8C6D53] text-xs font-mono">✁</span>
 
         <div className="flex flex-col items-center justify-center space-y-2 py-2">
-          {/* Wheat Stalk Crest */}
+          {/* Wheat Stalk Crest or Client Logo */}
           <div className="flex items-center gap-3">
             <span className="h-px w-10 sm:w-16 border-b border-dashed border-[#8C6D53]" />
-            <WheatStalkEmblem size={compact ? 36 : 44} color="#DDA15E" />
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-full p-1 border border-dashed border-[#8C6D53] bg-white overflow-hidden flex items-center justify-center shadow-sm">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+              </div>
+            ) : (
+              <WheatStalkEmblem size={compact ? 36 : 44} color="#DDA15E" />
+            )}
             <span className="h-px w-10 sm:w-16 border-b border-dashed border-[#8C6D53]" />
           </div>
 
           <span className="text-[9.5px] uppercase tracking-[0.4em] font-bold text-[#8C6D53]">
-            [ ARTISAN BAKERY • KRAFT KITCHEN ]
+            [ {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} • KRAFT KITCHEN` : 'ARTISAN BAKERY • KRAFT KITCHEN'} ]
           </span>
 
           <h1

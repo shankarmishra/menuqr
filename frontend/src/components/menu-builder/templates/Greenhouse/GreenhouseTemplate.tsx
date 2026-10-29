@@ -65,7 +65,7 @@ export const GreenhouseTemplate: React.FC<LayoutProps> = ({
             className="text-[9px] uppercase tracking-[0.5em] mb-2 font-semibold"
             style={{ color: greenColor, fontFamily: bodyFont }}
           >
-            Plant-forward · Thoughtfully grown
+            {restaurant.cuisine ? `${restaurant.cuisine} · Thoughtfully Crafted` : 'Plant-forward · Thoughtfully grown'}
           </p>
 
           {/* Logo */}

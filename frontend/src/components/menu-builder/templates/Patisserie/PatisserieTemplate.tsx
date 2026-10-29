@@ -75,7 +75,7 @@ export const PatisserieTemplate: React.FC<LayoutProps> = ({
             className="text-[9px] uppercase tracking-[0.55em] font-semibold mb-2"
             style={{ color: roseColor }}
           >
-            Artisanal Confectionery & Bakery
+            {restaurant.cuisine ? `${restaurant.cuisine} & Bakery` : 'Artisanal Confectionery & Bakery'}
           </p>
 
           <RibbonDivider color={roseColor} />

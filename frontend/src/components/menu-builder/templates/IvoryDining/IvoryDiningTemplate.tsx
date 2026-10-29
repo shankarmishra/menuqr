@@ -29,8 +29,13 @@ export const IvoryDiningTemplate: React.FC<LayoutProps> = ({
         <div className="absolute inset-2 rounded border border-[#C5A059]/25 pointer-events-none" />
 
         <div className="flex flex-col items-center justify-center space-y-2.5 py-2">
+          {restaurant.logo && (
+            <div className="w-14 h-14 rounded-full p-1 bg-white border border-[#C5A059]/50 shadow-sm flex items-center justify-center overflow-hidden mb-1">
+              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+            </div>
+          )}
           <span className="text-[9.5px] uppercase tracking-[0.45em] font-medium text-[#C5A059]">
-            Alabaster Salon • Fine Dining
+            {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} • FINE DINING` : 'Alabaster Salon • Fine Dining'}
           </span>
 
           <h1

@@ -62,7 +62,7 @@ export const Studio10Template: React.FC<LayoutProps> = ({
               <p
                 className="text-[9px] uppercase tracking-[0.6em] font-mono text-zinc-400"
               >
-                STUDIO 10 · TASTING EDITORIAL
+                {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} · TASTING EDITORIAL` : 'STUDIO 10 · TASTING EDITORIAL'}
               </p>
             </div>
 

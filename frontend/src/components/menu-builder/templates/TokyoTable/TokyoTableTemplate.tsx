@@ -60,7 +60,7 @@ export const TokyoTableTemplate: React.FC<LayoutProps> = ({
               className="text-[9px] uppercase tracking-[0.5em] mb-3 font-medium"
               style={{ color: redColor, fontFamily: bodyFont }}
             >
-              Asian Fusion · Est.
+              {restaurant.cuisine ? `${restaurant.cuisine} · Kitchen` : 'Asian Fusion · Kitchen'}
             </p>
             <h1
               className={clsx('break-words leading-none', compact ? 'text-2xl' : 'text-3xl sm:text-5xl md:text-6xl')}

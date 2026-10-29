@@ -790,10 +790,16 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
             <HeritageParchmentFrame compact={compact} hasBackgroundLace={true} className="text-center relative">
               <ScallopedArchFrame compact={compact}>
                 <div className="flex flex-col items-center justify-center space-y-2 sm:space-y-3 relative w-full">
-                  {/* Top Blooming Lotus Crest with Symmetrical Gold Connector Lines */}
+                  {/* Top Blooming Lotus Crest or Client Logo with Symmetrical Gold Connector Lines */}
                   <div className="flex items-center justify-center gap-2.5">
                     <span className="h-px w-8 sm:w-14 bg-gradient-to-r from-transparent to-[#D4AE68]" />
-                    <BloomingLotusEmblem size={compact ? 36 : 46} />
+                    {restaurant.logo ? (
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#FCF5E9] p-1 border-2 border-[#D4AE68] shadow-md flex items-center justify-center overflow-hidden">
+                        <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain rounded-full" />
+                      </div>
+                    ) : (
+                      <BloomingLotusEmblem size={compact ? 36 : 46} />
+                    )}
                     <span className="h-px w-8 sm:w-14 bg-gradient-to-l from-transparent to-[#D4AE68]" />
                   </div>
 
@@ -839,15 +845,14 @@ export const RajasthaniHeritageTemplate: React.FC<LayoutProps> = ({
 
                   {/* Address & Contact Metadata */}
                   <div className="text-center text-[#6E6657] pt-1 space-y-0.5">
-                    <p className="font-sans text-[8px] sm:text-[9.5px] tracking-wider uppercase font-semibold text-[#1B4942]">
-                      {restaurant.address || '123 Royal Haveli Marg, Heritage City'}
-                    </p>
-                    <p className="font-sans text-[7.5px] sm:text-[8.5px] tracking-wider text-[#6E6657]">
-                      {restaurant.city ? `more info www.${restaurant.city.toLowerCase().replace(/\s+/g, '')}food.com` : 'more info www.example.com'}
-                    </p>
+                    {(restaurant.address || restaurant.city) && (
+                      <p className="font-sans text-[8px] sm:text-[9.5px] tracking-wider uppercase font-semibold text-[#1B4942]">
+                        {[restaurant.address, restaurant.city].filter(Boolean).join(', ')}
+                      </p>
+                    )}
                     {restaurant.phone && (
-                      <p className="font-sans text-[7.5px] sm:text-[8.5px] tracking-wider text-[#6E6657]">
-                        call {restaurant.phone}
+                      <p className="font-sans text-[7.5px] sm:text-[8.5px] tracking-wider text-[#6E6657] font-medium">
+                        Order & Table Booking: {restaurant.phone}
                       </p>
                     )}
                   </div>

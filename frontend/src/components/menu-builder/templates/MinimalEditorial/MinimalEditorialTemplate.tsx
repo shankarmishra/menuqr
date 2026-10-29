@@ -26,9 +26,14 @@ export const MinimalEditorialTemplate: React.FC<LayoutProps> = ({
           ═══════════════════════════════════════════════════════════════════════ */}
       <SwissArchitecturalFrame className="bg-white text-center shadow-md">
         <div className="flex flex-col items-center justify-center space-y-2 py-3">
+          {restaurant.logo && (
+            <div className="w-12 h-12 rounded-full p-1 border border-black/20 shadow-xs flex items-center justify-center overflow-hidden mb-1">
+              <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono tracking-widest text-black/50 uppercase">
-              [ EDITION NO. 01 — SWISS EDITORIAL ]
+              [ {restaurant.cuisine ? `${restaurant.cuisine.toUpperCase()} — EDITORIAL` : 'EDITION NO. 01 — SWISS EDITORIAL'} ]
             </span>
           </div>
 

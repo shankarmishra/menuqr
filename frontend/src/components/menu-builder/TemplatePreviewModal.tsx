@@ -160,6 +160,10 @@ export default function TemplatePreviewModal({
                         name: restaurantToUse.name,
                         tagline: restaurantToUse.tagline,
                         cuisine: restaurantToUse.cuisine,
+                        logo: (restaurantToUse as any).logo || (restaurantToUse as any).logoUrl,
+                        phone: (restaurantToUse as any).phone,
+                        address: (restaurantToUse as any).address,
+                        city: (restaurantToUse as any).city,
                       }}
                       categories={restaurantToUse.categories}
                       items={restaurantToUse.items as any}

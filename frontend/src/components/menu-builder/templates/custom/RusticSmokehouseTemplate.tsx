@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { LayoutProps, MenuItem, CategoryGroup } from '../types';
 import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { SmokehouseTimberBg, CutoutRedChili } from '../artwork/FoodDoodleBackgrounds';
-import { Phone, Globe, BookOpen, Utensils, Plus, Flame } from 'lucide-react';
+import { Phone, BookOpen, Utensils, Plus, Flame } from 'lucide-react';
 
 export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
   restaurant,
@@ -11,7 +11,11 @@ export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
 }) => {
   const [page, setPage] = useState<'cover' | 'menu'>('cover');
 
-  const heroRibsPhoto = 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80'; // ribs
+  const featuredItem = categories.flatMap(c => c.items).find(i => i.isBestseller || (i as any).isChefSpecial || i.isSpecial || i.image) 
+    || categories.flatMap(c => c.items)[0];
+  const featuredPrice = featuredItem ? (parseItemPricing(featuredItem).formattedBasePrice || (featuredItem.price ? `₹${featuredItem.price}` : '')) : '';
+
+  const heroRibsPhoto = featuredItem?.image || 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80'; // ribs
   const brisketPhoto = 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=600&auto=format&fit=crop&q=80'; // brisket
 
   return (
@@ -57,23 +61,29 @@ export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
       {/* ============================================================ */}
       {page === 'cover' && (
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-4 py-3 flex flex-col items-center">
-          {/* Leather Stamped Ribbon Crest */}
+          {/* Leather Stamped Ribbon Crest / Logo */}
           <div className="w-full flex items-center justify-between mb-2">
             <span className="text-[10px] font-mono text-[#FFA726] uppercase tracking-widest font-black flex items-center gap-1">
-              <Flame size={12} className="text-[#FF7043]" /> 14-Hour Hickory Smoked
+              <Flame size={12} className="text-[#FF7043]" /> {restaurant.tagline || '14-Hour Hickory Smoked'}
             </span>
-            <div className="px-2.5 py-0.5 rounded-md bg-[#E65100]/20 text-[#FFA726] border border-[#E65100]/40 text-[10px] font-mono font-bold">
-              EST. 1996
-            </div>
+            {restaurant.logo ? (
+              <div className="w-12 h-12 rounded-xl bg-[#2C1F1A] p-1 border border-orange-500/40 shadow-md flex items-center justify-center overflow-hidden">
+                <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="px-2.5 py-0.5 rounded-md bg-[#E65100]/20 text-[#FFA726] border border-[#E65100]/40 text-[10px] font-mono font-bold">
+                {restaurant.cuisine ? restaurant.cuisine.slice(0, 10).toUpperCase() : 'SMOKEHOUSE'}
+              </div>
+            )}
           </div>
 
           {/* Typography */}
           <div className="text-center my-2">
             <h2 className="text-[#FFA726] text-xs font-black tracking-widest uppercase">
-              TEXAS TIMBER BBQ & GRILL
+              {restaurant.cuisine || 'TEXAS TIMBER BBQ & GRILL'}
             </h2>
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-none mt-1">
-              PITMASTER SMOKEHOUSE
+            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight mt-1">
+              {restaurant.name || 'PITMASTER SMOKEHOUSE'}
             </h1>
           </div>
 
@@ -86,7 +96,7 @@ export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
               <div className="w-full h-full rounded-full overflow-hidden border-2 border-stone-700 shadow-inner">
                 <img 
                   src={heroRibsPhoto} 
-                  alt="Smoked St. Louis Ribs" 
+                  alt={featuredItem?.name || 'Smoked St. Louis Ribs'} 
                   className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
                 />
               </div>
@@ -97,29 +107,49 @@ export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
 
             {/* Quality Stamp */}
             <div className="absolute -bottom-2 left-2 bg-[#D84315] text-white font-mono text-[10px] font-black px-3 py-1 rounded-full shadow-md border border-amber-400">
-              Prime Oak Smoked
+              {featuredItem?.dietType === 'veg' || featuredItem?.dietType === 'vegan' ? 'Pure Veg Specialty' : 'Prime Oak Smoked'}
             </div>
           </div>
 
           {/* Pitmaster Feast Promo Card */}
           <div className="w-full bg-[#241D1A] border border-[#42332C] rounded-2xl p-3.5 text-left space-y-2 mt-2 shadow-xs">
             <div className="flex items-center justify-between border-b border-[#42332C] pb-2">
-              <div>
-                <h3 className="text-xs font-black text-[#FFA726] uppercase">Pitmaster Feast Platter</h3>
-                <p className="text-[11px] text-stone-400">Sample platter with 3 meats, 2 sides, house slaw & cornbread</p>
+              <div className="pr-2">
+                <h3 className="text-xs font-black text-[#FFA726] uppercase">
+                  {featuredItem ? `House Specialty: ${featuredItem.name}` : 'Pitmaster Feast Platter'}
+                </h3>
+                <p className="text-[11px] text-stone-400 line-clamp-1">
+                  {featuredItem?.description || 'Sample platter served with house sauces, fresh garnish & chef sides.'}
+                </p>
               </div>
-              <span className="text-xs font-black text-[#FF7043] font-mono">$29.99</span>
+              {featuredPrice && (
+                <span className="text-xs font-black text-[#FF7043] font-mono whitespace-nowrap">
+                  {featuredPrice}
+                </span>
+              )}
             </div>
+
+            {/* Categories */}
+            {categories.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 py-1">
+                {categories.slice(0, 5).map((c, idx) => (
+                  <span key={idx} className="text-[10px] bg-orange-950/60 border border-orange-500/30 text-amber-200 px-2 py-0.5 rounded-md font-medium">
+                    {c.name}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="flex items-center justify-between text-[11px] text-stone-400 font-medium">
               <span className="flex items-center gap-1">
                 <Phone size={11} className="text-[#FFA726]" />
-                {restaurant.phone || '+1 (512) 478-2940'}
+                {restaurant.phone || '+91 98765 43210'}
               </span>
-              <span className="flex items-center gap-1">
-                <Globe size={11} className="text-[#FFA726]" />
-                smokehouse.menuqr
-              </span>
+              {(restaurant.city || restaurant.address) && (
+                <span className="text-[11px] text-stone-300 truncate max-w-[150px]">
+                  {restaurant.city || restaurant.address}
+                </span>
+              )}
             </div>
           </div>
 
@@ -142,9 +172,16 @@ export const RusticSmokehouseTemplate: React.FC<LayoutProps> = ({
         <div className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-auto px-3.5 py-4 space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between pb-2 border-b border-[#42332C]">
-            <div>
-              <span className="text-[10px] font-mono text-[#FFA726] uppercase tracking-widest font-bold">Texas Hickory Smoke</span>
-              <h2 className="text-lg font-black text-white">{restaurant.name || 'Lone Star Smokehouse'}</h2>
+            <div className="flex items-center gap-2.5">
+              {restaurant.logo && (
+                <img src={restaurant.logo} alt={restaurant.name} className="w-10 h-10 object-contain rounded-xl border border-orange-500/40 bg-[#261E1A]" />
+              )}
+              <div>
+                <span className="text-[10px] font-mono text-[#FFA726] uppercase tracking-widest font-bold">
+                  {restaurant.tagline || 'Texas Hickory Smoke'}
+                </span>
+                <h2 className="text-lg font-black text-white">{restaurant.name || 'Lone Star Smokehouse'}</h2>
+              </div>
             </div>
             <div className="bg-[#E65100] text-white text-[10px] font-mono font-black px-2.5 py-1 rounded-md uppercase">
               SMOKED

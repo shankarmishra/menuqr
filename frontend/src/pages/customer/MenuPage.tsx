@@ -722,6 +722,7 @@ export default function MenuPage() {
           restaurant={{
             name: client.businessName,
             tagline: client.tagline,
+            cuisine: (client as any).cuisine || client.category,
             phone: client.phone,
             address: client.address,
             city: client.city,
