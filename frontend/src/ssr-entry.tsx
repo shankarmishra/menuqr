@@ -41,11 +41,10 @@ const pages: Record<string, () => ReactElement> = {
 export const ssrPaths = Object.keys(pages);
 
 export function render(url: string) {
-  const helmetContext: { helmet?: Record<string, { toString(): string }> } = {};
   const html = renderToString(
-    <HelmetProvider context={helmetContext}>
+    <HelmetProvider>
       <StaticRouter location={url}>{pages[url]()}</StaticRouter>
     </HelmetProvider>,
   );
-  return { html, helmet: helmetContext.helmet };
+  return { html };
 }
