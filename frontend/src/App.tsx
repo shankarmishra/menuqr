@@ -3,6 +3,7 @@ import React, { Component, lazy, Suspense, useEffect, useState, type ReactNode }
 import { MenusQRMark } from './components/brand/MenusQRMark';
 import { MenusQRLoader } from './components/brand/MenusQRLoader';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useMatch } from 'react-router-dom';
+import RouteTracker from './analytics/RouteTracker';
 import { HelmetProvider } from 'react-helmet-async';
 import ScrollToTop from './components/navigation/ScrollToTop';
 import HomePage from './pages/HomePage';
@@ -409,6 +410,7 @@ export default function App() {
     <HelmetProvider>
       <BrowserRouter>
         <ScrollToTop />
+        <RouteTracker />
         <ToastProvider>
           <AppRoutes />
         </ToastProvider>
