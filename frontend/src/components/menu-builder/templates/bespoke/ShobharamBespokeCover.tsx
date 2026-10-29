@@ -30,7 +30,7 @@ export const ShobharamBespokeCover: React.FC<ShobharamCoverProps> = ({
     restaurant.logo ||
     '/uploads/shobharam/shobharam_logo_transparent.webp';
 
-  const heroDishUrl = '/uploads/shobharam/cover_hero_dish_extracted.webp';
+  const heroDishUrl = '/uploads/shobharam/generated_cover_hero_circle.webp';
 
   const categoryHighlights = categories.length > 0
     ? categories.slice(0, 5).map((c) => c.name)
@@ -153,13 +153,15 @@ export const ShobharamBespokeCover: React.FC<ShobharamCoverProps> = ({
           <div className="absolute w-52 h-52 sm:w-68 sm:h-68 rounded-full border border-[#F5C542]/20" />
 
           {/* Dish Image */}
-          <img
-            src={heroDishUrl}
-            alt="Chef's Special Culinary Dish"
-            className="relative z-10 w-52 h-52 sm:w-68 sm:h-68 object-contain filter drop-shadow-[0_22px_30px_rgba(0,0,0,0.95)] transform hover:scale-105 transition-transform duration-500"
-            loading="eager"
-            decoding="async"
-          />
+          <div className="relative z-10 w-52 h-52 sm:w-68 sm:h-68 rounded-full overflow-hidden border-2 border-[#D4AF37]/50 shadow-[0_22px_30px_rgba(0,0,0,0.95)]">
+            <img
+              src={heroDishUrl}
+              alt="Chef's Special Culinary Dish"
+              className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
 
           {/* Floating Fresh Culinary Garnishes */}
           <CutoutBasilLeaf size={40} rotation={-25} className="absolute -top-3 -right-2 z-20" />

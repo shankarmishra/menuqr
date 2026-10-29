@@ -13,6 +13,7 @@ import {
 } from '../artwork/FoodDoodleBackgrounds';
 import { Phone, MapPin, Globe, Sparkles, BookOpen, UtensilsCrossed, Plus } from 'lucide-react';
 import { ShobharamBespokeCover } from '../bespoke/ShobharamBespokeCover';
+import { ShobharamBookletSpread } from '../bespoke/ShobharamBookletSpread';
 
 export interface GraphicThemeConfig {
   id: string;
@@ -54,13 +55,18 @@ export interface GraphicThemeConfig {
   cutouts: Array<'chili' | 'basil' | 'lime'>;
 }
 
-export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThemeConfig }> = ({
-  restaurant,
-  categories,
-  onAddToCart,
-  searchBar,
-  config,
-}) => {
+export const GraphicBookletTemplate: React.FC<LayoutProps & { config: GraphicThemeConfig }> = (props) => {
+  const {
+    restaurant,
+    categories,
+    onAddToCart,
+    searchBar,
+    config,
+  } = props;
+
+  if (restaurant.name?.toLowerCase().includes('shobharam')) {
+    return <ShobharamBookletSpread {...props} />;
+  }
   // Page toggle: 'cover' (Front Cover) vs 'menu' (Inside Menu Pages)
   const [currentPage, setCurrentPage] = useState<'cover' | 'menu'>('cover');
 

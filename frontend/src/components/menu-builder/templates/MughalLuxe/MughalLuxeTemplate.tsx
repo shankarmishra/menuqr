@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import type { LayoutProps, MenuItem } from '../types';
 import { DietIndicator, RenderItemPrices, parseItemPricing } from '../shared/RenderItemPrices';
 import { ShobharamBespokeCover } from '../bespoke/ShobharamBespokeCover';
+import { ShobharamBookletSpread } from '../bespoke/ShobharamBookletSpread';
 
 // --- AUTHENTIC HERITAGE CURATED PHOTOGRAPHY ---
 // High quality Unsplash imagery for Indian luxury cuisine
@@ -663,6 +664,23 @@ export const MughalLuxeTemplate: React.FC<LayoutProps> = ({
 
   // Filtered categories handling
   const displayCategories = categories.length > 0 ? categories : rawCategories;
+
+  if (restaurant.name?.toLowerCase().includes('shobharam')) {
+    return (
+      <ShobharamBookletSpread
+        template={template}
+        restaurant={restaurant}
+        categories={displayCategories}
+        rawCategories={rawCategories}
+        compact={compact}
+        onAddToCart={onAddToCart}
+        isPremium={isPremium}
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+        searchBar={searchBar}
+      />
+    );
+  }
 
   // Split categories for editorial magazine flow:
   // First category: Page B (Curries / Starters) with Photo Collage on right
