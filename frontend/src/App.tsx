@@ -107,6 +107,7 @@ class ChunkErrorBoundary extends Component<
 
 // Lazy Authenticated App Routes (Restaurant Owner Portal)
 const AppAnalytics = lazyWithRetry(() => import('./pages/app/Analytics'));
+const AppFeedback = lazyWithRetry(() => import('./pages/app/Feedback'));
 const AppLayout = lazyWithRetry(() => import('./layouts/AppLayout'));
 const AppDashboard = lazyWithRetry(() => import('./pages/app/Dashboard'));
 const AppMenu = lazyWithRetry(() => import('./pages/app/Menu'));
@@ -359,6 +360,7 @@ function PublicAppRoutes() {
           <Route path="menu" element={<AppMenu />} />
           <Route path="appearance" element={<FeatureGate capability="menu_management"><AppAppearance /></FeatureGate>} />
           <Route path="analytics" element={<FeatureGate capability="analytics"><AppAnalytics /></FeatureGate>} />
+          <Route path="feedback" element={<AppFeedback />} />
           <Route path="qr" element={<AppQrCenter />} />
           <Route path="subscription" element={<AppSubscription />} />
           <Route path="settings" element={<AppSettings />} />
