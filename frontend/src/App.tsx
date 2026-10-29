@@ -206,6 +206,10 @@ function ProtectedAppLayout() {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
+  if (user.role === 'RESTAURANT_OWNER' && user.onboardingState === 'PENDING') {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return (
     <ChunkErrorBoundary>
       <Suspense fallback={<PageFallback />}>

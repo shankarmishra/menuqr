@@ -147,7 +147,7 @@ export async function getAuthenticatedUser(req) {
     }
     
     // Check if user still exists in DB
-    const res = await queryPortable(pool, 'SELECT id, role, tenant_id FROM users WHERE id = ?', [decoded.id]);
+    const res = await queryPortable(pool, 'SELECT id, role, tenant_id, onboarding_state FROM users WHERE id = ?', [decoded.id]);
     const currentUser = res.rows[0];
     if (!currentUser) return null;
 
@@ -155,6 +155,7 @@ export async function getAuthenticatedUser(req) {
       id: String(currentUser.id),
       role: currentUser.role,
       tenantId: currentUser.tenant_id || null,
+      onboardingState: currentUser.onboarding_state || null,
     };
   } catch (error) {
     console.error('JWT Verify Error:', error.message);

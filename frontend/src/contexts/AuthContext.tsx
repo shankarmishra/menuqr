@@ -7,6 +7,7 @@ type User = {
   id: string;
   role: 'SUPER_ADMIN' | 'RESTAURANT_OWNER';
   tenantId?: string;
+  onboardingState?: string;
 };
 
 type AuthContextType = {
