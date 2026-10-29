@@ -1,0 +1,490 @@
+/*
+ * MENUQR Menu Renderer — Token-Driven Styles
+ *
+ * Every value here comes from a `--mq-*` custom property emitted by `resolveTheme`. There is not
+ * one literal colour or font size in this file, which is the property that makes the design
+ * system actually hold: a slot component cannot invent `text-[7.5px]` or a one-off hex, because
+ * it has no mechanism to.
+ *
+ * Classes are semantic (`.mq-dish-name`, not `.mq-text-sm`) so that improving the look of dish
+ * names is a change in one place rather than a search across eighteen components.
+ */
+
+/* ------------------------------------- foundation ------------------------------------- */
+
+.mq-root {
+  /* `--mq-*` custom properties are set inline by MenuThemeProvider. */
+  background-color: var(--mq-color-bg);
+  color: var(--mq-color-text);
+  font-family: var(--mq-font-body);
+  font-size: var(--mq-text-base);
+  line-height: var(--mq-leading-normal);
+  position: relative;
+  width: 100%;
+  /* Vertical scrolling only: a menu that scrolls sideways reads as broken. */
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* The texture sits in a pseudo-element so its blend mode cannot affect foreground content. */
+.mq-root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: var(--mq-texture-image);
+  background-size: var(--mq-texture-size);
+  background-repeat: repeat;
+  mix-blend-mode: var(--mq-texture-blend);
+}
+
+.mq-root > * {
+  position: relative;
+  z-index: 1;
+}
+
+.mq-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 56rem;
+  padding-inline: var(--mq-space-4);
+  padding-block: var(--mq-space-5);
+}
+
+.mq-section-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-10);
+}
+
+.mq-prose {
+  max-width: var(--mq-measure);
+}
+
+/* --------------------------------------- typography --------------------------------------- */
+
+.mq-display {
+  font-family: var(--mq-font-display);
+  letter-spacing: var(--mq-tracking-display);
+  line-height: var(--mq-leading-tight);
+  color: var(--mq-color-heading);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.mq-display-xl { font-size: var(--mq-display-4xl); }
+.mq-display-lg { font-size: var(--mq-display-3xl); }
+.mq-display-md { font-size: var(--mq-display-2xl); }
+.mq-display-sm { font-size: var(--mq-display-xl); }
+
+.mq-eyebrow {
+  font-family: var(--mq-font-body);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-text);
+  margin: 0;
+}
+
+.mq-tagline {
+  font-size: var(--mq-text-sm);
+  line-height: var(--mq-leading-relaxed);
+  color: var(--mq-color-text-muted);
+  margin: 0;
+  max-width: var(--mq-measure);
+}
+
+/* ------------------------------------- dish presentation ------------------------------------- */
+
+.mq-dish-name {
+  font-size: var(--mq-text-base);
+  font-weight: 700;
+  line-height: var(--mq-leading-snug);
+  color: var(--mq-color-text);
+  margin: 0;
+}
+
+.mq-dish-desc {
+  font-size: var(--mq-text-sm);
+  line-height: var(--mq-leading-relaxed);
+  color: var(--mq-color-text-muted);
+  margin: 0;
+  max-width: var(--mq-measure);
+}
+
+.mq-price {
+  font-size: var(--mq-text-base);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--mq-color-accent-text);
+  white-space: nowrap;
+}
+
+.mq-price-label {
+  font-size: var(--mq-text-xs);
+  font-weight: 600;
+  color: var(--mq-color-text-muted);
+  white-space: nowrap;
+}
+
+.mq-unavailable {
+  font-size: var(--mq-text-xs);
+  font-style: italic;
+  color: var(--mq-color-text-muted);
+}
+
+/* ---------------------------------------- surfaces ---------------------------------------- */
+
+.mq-card {
+  background-color: var(--mq-color-surface);
+  border: 1px solid var(--mq-color-border);
+  border-radius: var(--mq-radius-md);
+  box-shadow: var(--mq-shadow-sm);
+}
+
+.mq-card-lg {
+  border-radius: var(--mq-radius-lg);
+  box-shadow: var(--mq-shadow-md);
+}
+
+.mq-divider {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background-color: var(--mq-color-border);
+}
+
+/* ----------------------------------------- badges ----------------------------------------- */
+
+.mq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mq-space-1);
+  padding: var(--mq-space-1) var(--mq-space-2);
+  border-radius: var(--mq-radius-pill);
+  background-color: var(--mq-color-badge-bg);
+  color: var(--mq-color-badge-text);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mq-badge-quiet {
+  background-color: var(--mq-color-surface-alt);
+  color: var(--mq-color-text);
+  border: 1px solid var(--mq-color-border);
+}
+
+/* -------------------------------------- diet marks -------------------------------------- */
+
+/*
+ * FSSAI-style marks. The colours come from the fixed `veg`/`non-veg` tokens, never from the
+ * brand colour: a restaurant with a red brand must not end up with red vegetarian marks.
+ */
+.mq-diet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 0.95em;
+  height: 0.95em;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  background-color: var(--mq-color-surface);
+}
+
+.mq-diet-veg { color: var(--mq-color-veg); }
+.mq-diet-non-veg { color: var(--mq-color-non-veg); }
+
+.mq-diet-glyph {
+  width: 72%;
+  height: 72%;
+  background-color: currentColor;
+}
+
+.mq-diet-veg .mq-diet-glyph { border-radius: 50%; }
+.mq-diet-non-veg .mq-diet-glyph { clip-path: polygon(50% 8%, 2% 92%, 98% 92%); }
+
+/* --------------------------------------- imagery --------------------------------------- */
+
+.mq-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Anchored to the owner's focal point rather than the geometric centre. */
+  object-position: var(--mq-image-position, 50% 50%);
+  background-color: var(--mq-color-surface-sunken);
+}
+
+.mq-image-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--mq-radius-md);
+  background-color: var(--mq-color-surface-sunken);
+}
+
+.mq-image-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: var(--mq-color-surface-sunken);
+  color: var(--mq-color-text-muted);
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+}
+
+/* ----------------------------------------- cover ----------------------------------------- */
+
+.mq-cover {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.mq-cover-media {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+
+.mq-cover-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--mq-cover-scrim);
+}
+
+.mq-cover-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+  padding: var(--mq-space-6) var(--mq-space-4);
+}
+
+/* On a photo cover, type sits on the scrim rather than on the palette surface. */
+.mq-on-cover { color: var(--mq-color-on-cover); }
+.mq-on-cover .mq-display { color: var(--mq-color-on-cover); }
+.mq-on-cover .mq-tagline { color: var(--mq-color-on-cover-muted); }
+.mq-on-cover .mq-eyebrow { color: var(--mq-color-on-cover); }
+
+.mq-logo {
+  display: block;
+  object-fit: contain;
+  background-color: transparent;
+}
+
+.mq-logo-circle { border-radius: 50%; object-fit: cover; }
+.mq-logo-square { border-radius: var(--mq-radius-sm); }
+
+/* ---------------------------------------- navigation ---------------------------------------- */
+
+.mq-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--mq-color-bg);
+  border-bottom: 1px solid var(--mq-color-border);
+  padding-block: var(--mq-space-2);
+}
+
+.mq-nav-scroller {
+  display: flex;
+  gap: var(--mq-space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-inline: var(--mq-space-4);
+  scroll-snap-type: x proximity;
+}
+
+.mq-nav-scroller::-webkit-scrollbar { display: none; }
+
+.mq-nav-item {
+  flex: none;
+  scroll-snap-align: start;
+  /* 44px minimum target, per WCAG 2.5.5. */
+  min-height: var(--mq-tap-target);
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--mq-space-4);
+  border-radius: var(--mq-radius-pill);
+  border: 1px solid var(--mq-color-border);
+  background-color: var(--mq-color-surface);
+  color: var(--mq-color-text);
+  font-size: var(--mq-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.mq-nav-item[aria-current='true'] {
+  background-color: var(--mq-color-accent);
+  border-color: var(--mq-color-accent);
+  color: var(--mq-color-accent-contrast);
+}
+
+/* --------------------------------------- interaction --------------------------------------- */
+
+.mq-button {
+  min-height: var(--mq-tap-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-1);
+  padding-inline: var(--mq-space-4);
+  border: 0;
+  border-radius: var(--mq-radius-pill);
+  background-color: var(--mq-color-accent);
+  color: var(--mq-color-accent-contrast);
+  font-family: var(--mq-font-body);
+  font-size: var(--mq-text-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mq-button-quiet {
+  background-color: transparent;
+  border: 1px solid var(--mq-color-border-strong);
+  color: var(--mq-color-text);
+}
+
+/* Two focus tokens, because one ring cannot be visible on both the page and a brand-filled
+ * button. See the note on `focus` / `focusOnAccent` in design-system/palette.ts. */
+.mq-root :focus-visible {
+  outline: 2px solid var(--mq-color-focus);
+  outline-offset: 2px;
+}
+
+.mq-button:focus-visible,
+.mq-nav-item[aria-current='true']:focus-visible {
+  outline-color: var(--mq-color-focus-on-accent);
+}
+
+/* ---------------------------------------- utilities ---------------------------------------- */
+
+.mq-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mq-space-3);
+}
+
+.mq-row-between {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--mq-space-3);
+}
+
+.mq-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+}
+
+.mq-grow { flex: 1 1 auto; min-width: 0; }
+
+.mq-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Visually hidden but available to assistive technology. */
+.mq-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mq-root *,
+  .mq-root *::before,
+  .mq-root *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* --------------------------------- sidebar index layout --------------------------------- */
+
+/*
+ * The sidebar nav is a progressive enhancement: a sticky pill row on phones, a persistent
+ * vertical index once there is room for it. One slot, two presentations, so a 180-item menu is
+ * navigable on a phone at the table and on a tablet at the counter.
+ */
+.mq-sidebar-index { display: none; }
+
+.mq-with-sidebar {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mq-space-6);
+}
+
+@media (min-width: 60rem) {
+  .mq-sidebar-index {
+    display: block;
+    position: sticky;
+    top: var(--mq-space-4);
+    flex: none;
+    width: 14rem;
+  }
+
+  .mq-sidebar-index-compact { display: none; }
+}
+
+/* ------------------------------------ image variants ------------------------------------ */
+
+/* A thumbnail beside leader-style text: fixed and small, so the text column stays dominant. */
+.mq-thumb {
+  flex: none;
+  width: 3.5rem;
+  border-radius: var(--mq-radius-sm);
+}
+
+/* An image that meets the card edge: the card already clips, so the frame must not re-round. */
+.mq-image-frame-flush { border-radius: 0; }
+
+/* ------------------------------------- search toolbar ------------------------------------- */
+
+.mq-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+  padding-inline: var(--mq-space-4);
+  padding-block: var(--mq-space-4);
+  margin-inline: auto;
+  width: 100%;
+  max-width: 56rem;
+}
+
+.mq-search { display: block; }
+
+.mq-search-input {
+  width: 100%;
+  min-height: var(--mq-tap-target);
+  padding-inline: var(--mq-space-4);
+  border: 1px solid var(--mq-color-border-strong);
+  border-radius: var(--mq-radius-pill);
+  background-color: var(--mq-color-surface);
+  color: var(--mq-color-text);
+  font-family: var(--mq-font-body);
+  /* 16px minimum prevents iOS Safari from zooming the page on focus. */
+  font-size: max(16px, var(--mq-text-base));
+}
+
+.mq-search-input::placeholder { color: var(--mq-color-text-muted); }

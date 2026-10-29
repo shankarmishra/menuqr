@@ -1,0 +1,126 @@
+/**
+ * MENUQR Menu Renderer — Composition Root
+ *
+ * One renderer for every menu. It reads the slot selections from the resolved theme and composes
+ * the matching components; it contains no per-preset branching, because a preset is data.
+ *
+ * This replaces thirty-five hand-written template components (about 13,400 lines) whose only
+ * structural difference was which pieces they assembled and in what colours.
+ */
+
+import React, { useMemo, useState } from 'react';
+import { MenuThemeProvider, useMenuTheme } from './MenuThemeProvider.tsx';
+import {
+  COVER_COMPONENTS,
+  DISH_CARD_COMPONENTS,
+  DISH_CARD_CONTAINER,
+  FOOTER_COMPONENTS,
+  NAV_COMPONENTS,
+  SECTION_COMPONENTS,
+} from './slots/registry.ts';
+import type { MenuTheme } from '../../design-system/theme.types.ts';
+import type { RenderCategory, RenderRestaurant, SlotProps } from './types.ts';
+import './menu-renderer.css';
+
+const ALL = 'all';
+
+export type MenuRendererProps = {
+  theme: MenuTheme;
+  restaurant: RenderRestaurant;
+  categories: RenderCategory[];
+  /** Compact mode for gallery thumbnails and the Design Studio preview. */
+  compact?: boolean;
+  /** Hides ordering controls, e.g. for a print or PDF export. */
+  readOnly?: boolean;
+  className?: string;
+};
+
+/** Inner body, so slots can call `useMenuTheme` from inside the provider. */
+const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
+  restaurant,
+  categories,
+  compact,
+  readOnly,
+}) => {
+  const tokens = useMenuTheme();
+  const [activeCategoryId, setActiveCategoryId] = useState<string>(ALL);
+
+  const nonEmpty = useMemo(() => categories.filter((category) => category.items.length > 0), [categories]);
+
+  const visible = useMemo(
+    () => (activeCategoryId === ALL ? nonEmpty : nonEmpty.filter((c) => c.id === activeCategoryId)),
+    [nonEmpty, activeCategoryId]
+  );
+
+  const Cover = COVER_COMPONENTS[tokens.slots.cover];
+  const Nav = NAV_COMPONENTS[tokens.slots.nav];
+  const SectionHeading = SECTION_COMPONENTS[tokens.slots.section];
+  const DishCard = DISH_CARD_COMPONENTS[tokens.slots.dishCard];
+  const Footer = FOOTER_COMPONENTS[tokens.slots.footer];
+
+  const slotProps: SlotProps = {
+    restaurant,
+    categories: visible,
+    allCategories: nonEmpty,
+    activeCategoryId,
+    onSelectCategory: setActiveCategoryId,
+    compact,
+  };
+
+  const itemContainerStyle = DISH_CARD_CONTAINER[tokens.slots.dishCard];
+  const usesSidebar = tokens.slots.nav === 'sidebar-index';
+
+  return (
+    <>
+      {tokens.cover.showCoverPage && <Cover {...slotProps} />}
+
+      {/* The sidebar variant renders its own sticky pill row for narrow screens, so rendering it
+       * here as well would produce two navigations on a phone. */}
+      {!usesSidebar && <Nav {...slotProps} />}
+
+      <div className={usesSidebar ? 'mq-page mq-with-sidebar' : 'mq-page'}>
+        {usesSidebar && <Nav {...slotProps} />}
+
+        <main className="mq-section-stack mq-grow">
+          {visible.length === 0 ? (
+            <p className="mq-tagline" role="status">
+              This menu has no items yet.
+            </p>
+          ) : (
+            visible.map((category) => (
+              <section key={category.id} aria-labelledby={`mq-cat-${category.id}`}>
+                <SectionHeading
+                  id={`mq-cat-${category.id}`}
+                  name={category.name}
+                  description={category.description}
+                  itemCount={category.items.length}
+                />
+                <div style={{ ...itemContainerStyle, marginTop: 'var(--mq-space-4)' }}>
+                  {category.items.map((item, index) => (
+                    <DishCard
+                      key={item.id}
+                      item={item}
+                      index={index}
+                      compact={compact}
+                      readOnly={readOnly}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))
+          )}
+
+          <Footer restaurant={restaurant} />
+        </main>
+      </div>
+    </>
+  );
+};
+
+export const MenuRenderer: React.FC<MenuRendererProps> = ({ theme, className, ...rest }) => (
+  <MenuThemeProvider theme={theme} className={className}>
+    <MenuBody {...rest} />
+  </MenuThemeProvider>
+);
+
+export default MenuRenderer;

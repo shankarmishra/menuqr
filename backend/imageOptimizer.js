@@ -1,16 +1,18 @@
 import sharp from 'sharp';
-import fs from 'fs';
-import path from 'path';
 import { randomBytes } from 'node:crypto';
+import { buildKey, putObject, sanitizeCategory } from './storage/index.js';
 
 const ALLOWED_FORMATS = new Set(['jpeg', 'png', 'webp', 'avif']);
 const MAX_INPUT_BYTES = 15 * 1024 * 1024; // 15MB
 
 /**
- * Optimize, resize, sanitize, and convert dish/restaurant photo to WebP
+ * Optimize, resize, sanitize, and convert dish/restaurant photo to WebP, then persist it
+ * through the active storage driver (local disk in dev, S3-compatible object storage in
+ * production — see backend/storage/index.js).
+ *
  * @param {Buffer|string} input - Raw Buffer or base64 data URI string
- * @param {string} tenantId - Restaurant tenant ID for scoped directory isolation
- * @param {'dishes'|'logos'|'covers'} category - Subfolder under uploads
+ * @param {string} tenantId - Restaurant tenant ID for scoped key isolation
+ * @param {'dishes'|'logos'|'covers'} category - Key prefix
  * @param {object} [opts]
  * @param {number} [opts.maxWidth=1200]
  * @param {number} [opts.quality=80]
@@ -53,17 +55,11 @@ export async function optimizeAndSaveImage(input, tenantId, category = 'dishes',
     throw new Error(`Unsupported or invalid image format: "${metadata.format || 'unknown'}". Allowed: JPG, PNG, WEBP, AVIF.`);
   }
 
-  // Ensure uploads subdirectory exists
-  const sanitizedCategory = ['dishes', 'logos', 'covers'].includes(category) ? category : 'dishes';
-  const targetDir = path.join(process.cwd(), 'uploads', sanitizedCategory);
-  if (!fs.existsSync(targetDir)) {
-    fs.mkdirSync(targetDir, { recursive: true });
-  }
+  const sanitizedCategory = sanitizeCategory(category);
 
   // Generate safe non-colliding filename
   const fileHash = randomBytes(6).toString('hex');
   const filename = `${tenantId.replace(/[^a-zA-Z0-9_-]/g, '_')}_${Date.now()}_${fileHash}.webp`;
-  const targetFilePath = path.join(targetDir, filename);
 
   // Resize, strip EXIF metadata, and encode to WebP
   const optimizedBuffer = await image
@@ -80,7 +76,7 @@ export async function optimizeAndSaveImage(input, tenantId, category = 'dishes',
     })
     .toBuffer();
 
-  fs.writeFileSync(targetFilePath, optimizedBuffer);
+  const { url } = await putObject(buildKey(sanitizedCategory, filename), optimizedBuffer, 'image/webp');
 
   const outputMeta = await sharp(optimizedBuffer).metadata();
   const originalBytes = buffer.length;
@@ -88,7 +84,7 @@ export async function optimizeAndSaveImage(input, tenantId, category = 'dishes',
   const savedPercent = Math.max(0, Math.round(((originalBytes - compressedBytes) / originalBytes) * 100));
 
   return {
-    url: `/uploads/${sanitizedCategory}/${filename}`,
+    url,
     originalBytes,
     compressedBytes,
     savedPercent: `${savedPercent}%`,

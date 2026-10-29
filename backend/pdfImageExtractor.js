@@ -1,22 +1,10 @@
 // MENUQR PDF Native Image & Logo Extractor
 // Forensic extraction of embedded raster images and logo candidate detection via pdfjs-dist and Sharp
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { randomBytes } from 'node:crypto';
 import sharp from 'sharp';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
-
-const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
-const LOGOS_DIR = path.join(UPLOADS_DIR, 'logos');
-const DISHES_DIR = path.join(UPLOADS_DIR, 'dishes');
-
-// Ensure destination directories exist
-for (const dir of [LOGOS_DIR, DISHES_DIR]) {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
+import { buildKey, putObject } from './storage/index.js';
 
 /**
  * Generates an SVG Monogram / Emblem Logo for restaurants without an embedded raster logo
@@ -36,7 +24,6 @@ export async function generateMonogramLogo({
 
   const fileHash = randomBytes(6).toString('hex');
   const filename = `${tenantId.replace(/[^a-zA-Z0-9_-]/g, '_')}_monogram_${Date.now()}_${fileHash}.svg`;
-  const filePath = path.join(LOGOS_DIR, filename);
 
   const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <defs>
@@ -59,8 +46,8 @@ export async function generateMonogramLogo({
   </text>
 </svg>`;
 
-  fs.writeFileSync(filePath, svgContent, 'utf-8');
-  return `/uploads/logos/${filename}`;
+  const { url } = await putObject(buildKey('logos', filename), Buffer.from(svgContent, 'utf-8'), 'image/svg+xml');
+  return url;
 }
 
 /**
@@ -234,9 +221,7 @@ export async function extractImagesFromPdf(pdfBuffer, tenantId = 'default', rest
 
           if (logoScore >= 60) {
             const logoFilename = `${cleanTenant}_logo_p${pageNum}_${fileHash}.webp`;
-            const logoPath = path.join(LOGOS_DIR, logoFilename);
-            fs.writeFileSync(logoPath, sharpBuffer);
-            const logoUrl = `/uploads/logos/${logoFilename}`;
+            const { url: logoUrl } = await putObject(buildKey('logos', logoFilename), sharpBuffer, 'image/webp');
 
             candidateLogos.push({
               url: logoUrl,
@@ -251,9 +236,7 @@ export async function extractImagesFromPdf(pdfBuffer, tenantId = 'default', rest
             // Dishes typically have width > 100px, aspect ratio between 0.6 and 1.8
             if (imgObj.width >= 100 && imgObj.height >= 100 && aspectRatio >= 0.6 && aspectRatio <= 2.2) {
               const dishFilename = `${cleanTenant}_dish_p${pageNum}_${fileHash}.webp`;
-              const dishPath = path.join(DISHES_DIR, dishFilename);
-              fs.writeFileSync(dishPath, sharpBuffer);
-              const dishUrl = `/uploads/dishes/${dishFilename}`;
+              const { url: dishUrl } = await putObject(buildKey('dishes', dishFilename), sharpBuffer, 'image/webp');
 
               dishImages.push({
                 url: dishUrl,

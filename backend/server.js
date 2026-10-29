@@ -23,6 +23,7 @@ import { apiError, sendJson } from './utils.js';
 import { getSystemHealth, captureException } from './observability.js';
 import { createCorsOriginChecker } from './cors.js';
 import { startOutboxWorker, getEmailConfig } from './email.js';
+import { getStorage, storageInfo } from './storage/index.js';
 
 import authRoutes from './routes/auth.js';
 import appRoutes from './routes/app.js';
@@ -194,13 +195,15 @@ const server = createServer(async (request, response) => {
         emailProvider: getEmailConfig().provider,
         emailConfigured: getEmailConfig().configured,
         resendConfigured: getEmailConfig().configured,
+        storageDriver: storageInfo(),
         uptimeSeconds: Math.floor(process.uptime()),
         timestamp: new Date().toISOString()
       });
       return;
     }
 
-        // Static file serving for uploads (dish images, logos, covers)
+    // Legacy read path for images written before object storage, and for the local driver.
+    // Kept permanently: existing DB rows and printed QR menus still reference /uploads/*.
     if (request.method === 'GET' && url.pathname.startsWith('/uploads/')) {
       const sanitized = path.normalize(url.pathname.replace(/^\/uploads\//, '')).replace(/^(\.\.[\/\\])+/, '');
       const filePath = path.join(process.cwd(), 'uploads', sanitized);
@@ -216,10 +219,26 @@ const server = createServer(async (request, response) => {
         const contentType = mimeTypes[ext] || 'application/octet-stream';
         response.writeHead(200, {
           'Content-Type': contentType,
-          'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+          'Cache-Control': 'public, max-age=31536000, immutable',
           'Access-Control-Allow-Origin': '*'
         });
         fs.createReadStream(filePath).pipe(response);
+        return;
+      }
+
+      // Not on local disk. On a remote driver the object lives in the bucket, so redirect
+      // rather than 404 — this keeps pre-migration database rows and printed QR menus working
+      // without ever rewriting stored URLs.
+      const storage = getStorage();
+      if (storage.isRemote && sanitized) {
+        // path.normalize yields OS separators; object keys are always forward-slashed.
+        const objectKey = sanitized.split(path.sep).join('/');
+        response.writeHead(302, {
+          Location: storage.url(objectKey),
+          'Cache-Control': 'public, max-age=86400',
+          'Access-Control-Allow-Origin': '*',
+        });
+        response.end();
         return;
       }
     }

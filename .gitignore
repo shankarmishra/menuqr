@@ -69,5 +69,10 @@ test_*.js
 
 docs/
 uploads/
+# ^ covers backend/uploads and frontend/public/uploads at any depth.
+#   Client media lives in object storage in production (see backend/storage/).
+#   Already-tracked legacy files stay tracked so old /uploads/* URLs keep resolving.
 
 ~$*
+menusqr.in-audit/
+

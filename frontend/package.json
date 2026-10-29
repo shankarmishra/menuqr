@@ -9,7 +9,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test:e2e": "playwright test --config=playwright.config.ts",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:unit": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@playwright/test": "^1.63.0",
