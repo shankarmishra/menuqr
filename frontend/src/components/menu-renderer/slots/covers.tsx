@@ -65,6 +65,25 @@ const RestaurantMeta: React.FC<{ restaurant: CoverProps['restaurant'] }> = ({ re
  */
 export const HeroPhotoCover: React.FC<CoverProps> = ({ restaurant, compact }) => {
   const { cover } = useMenuTheme();
+  const hasPhoto = Boolean(cover.imageUrl);
+
+  // Before a client uploads a cover photo — true for every brand-new menu — reserving 58vh for
+  // an empty frame reads as broken, not as restrained. Fall back to a compact, centred layout
+  // closer to the monogram cover until a photo exists, so the first thing an owner sees is
+  // finished rather than half-built.
+  if (!hasPhoto) {
+    return (
+      <header className="mq-cover" style={{ paddingBlock: compact ? 'var(--mq-space-8)' : 'var(--mq-space-14)' }}>
+        <div className="mq-cover-content" style={{ alignItems: 'center', textAlign: 'center' }}>
+          <BrandLogo size={compact ? 48 : 68} />
+          <Announcement />
+          <h1 className="mq-display mq-display-xl">{restaurant.name}</h1>
+          {restaurant.tagline && <p className="mq-tagline">{restaurant.tagline}</p>}
+          <RestaurantMeta restaurant={restaurant} />
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="mq-cover mq-on-cover" style={{ minHeight: compact ? '42vh' : '58vh' }}>

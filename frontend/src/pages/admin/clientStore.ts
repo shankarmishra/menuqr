@@ -15,6 +15,9 @@ export interface MenuItemRecord {
   category: string;
   dietType: MenuDietType;
   image: string;
+  /** Owner-set photo crop anchor, 0-1 coordinates. Absent means "use the centre". */
+  focalX?: number | null;
+  focalY?: number | null;
   available: boolean;
   variants?: Array<{ id?: string; name: string; price: number; variantGroup?: string }>;
 }
@@ -71,6 +74,8 @@ export interface PublicMenuRecord {
   orderingEnabled?: boolean;
   templateId?: string;
   accentConfiguration?: unknown;
+  /** Full Design Studio theme, once the owner has published one. Takes precedence over templateId. */
+  theme?: unknown;
   googleReviews?: {
     enabled: boolean;
     reviewUrl?: string;
@@ -379,6 +384,7 @@ interface RawPublicMenuApiResponse {
   orderingEnabled?: boolean;
   templateId?: string;
   accentConfiguration?: unknown;
+  theme?: unknown;
   googleReviews?: {
     enabled: boolean;
     reviewUrl?: string;
@@ -396,6 +402,8 @@ interface RawPublicMenuApiResponse {
     dietType: 'veg' | 'non-veg' | 'vegan';
     available: boolean;
     image?: string;
+    focalX?: number | null;
+    focalY?: number | null;
     variants?: Array<{ id?: string; name: string; price: number; variantGroup?: string }>;
   }>;
 }
@@ -415,6 +423,8 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     category: item.category,
     dietType: (item.dietType ?? 'veg') as MenuDietType,
     image: item.image ?? '',
+    focalX: item.focalX ?? null,
+    focalY: item.focalY ?? null,
     available: item.available,
     variants: item.variants,
   }));
@@ -440,6 +450,7 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     orderingEnabled: raw.orderingEnabled,
     templateId: raw.templateId,
     accentConfiguration: raw.accentConfiguration,
+    theme: raw.theme,
     googleReviews: raw.googleReviews,
   };
 }

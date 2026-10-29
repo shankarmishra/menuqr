@@ -635,3 +635,21 @@ ALTER TABLE menu_imports ADD COLUMN IF NOT EXISTS design_specification JSONB;
 ALTER TABLE menu_imports ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
 CREATE INDEX IF NOT EXISTS idx_users_locked_until ON users (locked_until);
+
+-- 011_menu_theme.sql: Design Studio draft/published theme pair, plus version history for rollback.
+ALTER TABLE appearance_settings ADD COLUMN IF NOT EXISTS theme_published JSONB;
+ALTER TABLE appearance_settings ADD COLUMN IF NOT EXISTS theme_draft JSONB;
+ALTER TABLE appearance_settings ADD COLUMN IF NOT EXISTS theme_version INTEGER DEFAULT 0;
+ALTER TABLE appearance_settings ADD COLUMN IF NOT EXISTS theme_updated_at TIMESTAMP;
+
+CREATE TABLE IF NOT EXISTS appearance_theme_history (
+  id VARCHAR(255) PRIMARY KEY,
+  tenant_id VARCHAR(255) REFERENCES clients(id) ON DELETE CASCADE NOT NULL,
+  version INTEGER NOT NULL,
+  theme JSONB NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (tenant_id, version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_appearance_theme_history_tenant
+  ON appearance_theme_history (tenant_id, version DESC);

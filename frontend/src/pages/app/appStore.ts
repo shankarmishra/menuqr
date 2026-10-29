@@ -1,5 +1,6 @@
 import { ensureCsrfToken } from '../../utils/csrf';
 import { parseApiResponse } from '../../utils/api';
+import type { MenuTheme } from '../../design-system/theme.types.ts';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -164,6 +165,12 @@ export interface AppAddonGroup {
   options: AppAddonOption[];
 }
 
+/** Owner-set photo crop anchor, 0-1 coordinates. Absent means "use the centre". */
+export interface FocalPoint {
+  x: number;
+  y: number;
+}
+
 export interface AppMenuItem {
   id: string;
   category_id: string;
@@ -178,6 +185,8 @@ export interface AppMenuItem {
   is_available?: boolean;
   variants?: AppVariant[];
   addon_groups?: AppAddonGroup[];
+  /** Stored in the backend's `menu_items.metadata` JSONB column; currently only ever holds `focal`. */
+  metadata?: { focal?: FocalPoint } | null;
 }
 
 export interface AppMenuImportHistory {
@@ -225,6 +234,59 @@ export function getAppearance(): Promise<AppAppearanceData> {
 
 export function updateAppearance(data: AppAppearanceData): Promise<AppAppearanceData> {
   return request<AppAppearanceData>('/appearance', { method: 'PUT', body: JSON.stringify(data) });
+}
+
+// ─────────────────────── Design Studio theme: draft / publish / rollback ───────────────────────
+
+export interface ThemeState {
+  draft: MenuTheme | null;
+  published: MenuTheme | null;
+  version: number;
+  hasUnpublishedChanges: boolean;
+}
+
+export interface ThemeHistoryEntry {
+  version: number;
+  theme: MenuTheme;
+  createdAt: string;
+}
+
+/** Current draft and published theme, plus whether the draft has unpublished edits. */
+export function getTheme(): Promise<ThemeState> {
+  return request<ThemeState>('/theme');
+}
+
+/**
+ * Autosave a draft. Accepted leniently by the backend (coerced, not strictly validated) so
+ * saving mid-edit never surfaces a 400 for a field the owner has not finished changing yet.
+ */
+export function saveThemeDraft(theme: MenuTheme): Promise<{ draft: MenuTheme }> {
+  return request<{ draft: MenuTheme }>('/theme/draft', { method: 'PUT', body: JSON.stringify(theme) });
+}
+
+/**
+ * Publish a theme to the public menu. Strictly validated server-side — a malformed theme is
+ * rejected outright, not silently repaired, because this is what customers actually see.
+ * Omitting `theme` publishes whatever was last autosaved as the draft.
+ */
+export function publishTheme(theme?: MenuTheme): Promise<{ published: MenuTheme; version: number }> {
+  return request<{ published: MenuTheme; version: number }>('/theme/publish', {
+    method: 'POST',
+    body: JSON.stringify(theme ?? {}),
+  });
+}
+
+/** The last 20 published versions, newest first, for the Studio's version history panel. */
+export function getThemeHistory(): Promise<ThemeHistoryEntry[]> {
+  return request<ThemeHistoryEntry[]>('/theme/history');
+}
+
+/** Restores a prior published version. This is itself a new version, not a rewind — rolling back twice returns to the version before the first rollback, not to the original. */
+export function rollbackTheme(version: number): Promise<{ published: MenuTheme; version: number }> {
+  return request<{ published: MenuTheme; version: number }>('/theme/rollback', {
+    method: 'POST',
+    body: JSON.stringify({ version }),
+  });
 }
 
 export function uploadImage(
@@ -397,7 +459,7 @@ export function saveOnboarding(data: OnboardingPayload): Promise<{ success: bool
   });
 }
 
-export function updateMenuItem(itemId: string, data: Partial<AppMenuItem> & { categoryId?: string; imageUrl?: string; dietType?: string; isAvailable?: boolean; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[] }): Promise<AppMenuItem> {
+export function updateMenuItem(itemId: string, data: Partial<AppMenuItem> & { categoryId?: string; imageUrl?: string; dietType?: string; isAvailable?: boolean; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[]; focal?: FocalPoint | null }): Promise<AppMenuItem> {
   return request<AppMenuItem>(`/items/${encodeURIComponent(itemId)}`, {
     method: 'PUT',
     body: JSON.stringify(data),
@@ -438,7 +500,7 @@ export function deleteMenuCategory(categoryId: string): Promise<void> {
   return request<void>(`/categories/${encodeURIComponent(categoryId)}`, { method: 'DELETE', body: '{}' });
 }
 
-export function createMenuItem(data: { menuId: string; categoryId: string; name: string; description?: string; price: number; imageUrl?: string; dietType?: string; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[] }): Promise<AppMenuItem> {
+export function createMenuItem(data: { menuId: string; categoryId: string; name: string; description?: string; price: number; imageUrl?: string; dietType?: string; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[]; focal?: FocalPoint | null }): Promise<AppMenuItem> {
   return request<AppMenuItem>('/items', { method: 'POST', body: JSON.stringify(data) });
 }
 

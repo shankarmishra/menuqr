@@ -24,6 +24,13 @@
   /* Vertical scrolling only: a menu that scrolls sideways reads as broken. */
   overflow-x: clip;
   -webkit-text-size-adjust: 100%;
+
+  /* Menu content must always be selectable so a diner can copy a dish name to search for it.
+   * Asserted defensively because user-select inherits: the marketing phone mockups
+   * (PremiumIPhoneMockup, SolidPhoneMockup) apply select-none to their frame, which would
+   * otherwise disable selection inside the real menu they contain. */
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* The texture sits in a pseudo-element so its blend mode cannot affect foreground content. */
@@ -252,6 +259,17 @@
   position: absolute;
   inset: 0;
   z-index: -2;
+}
+
+/*
+ * SmartImage's frame sizes itself from an aspect-ratio or from its content; neither applies
+ * here, since the frame must instead fill an absolutely-positioned ancestor. Without this the
+ * frame collapses to zero height and the cover photo never paints, whether or not one is set.
+ */
+.mq-cover-media .mq-image-frame,
+.mq-cover-media .mq-image {
+  width: 100%;
+  height: 100%;
 }
 
 .mq-cover-scrim {
@@ -488,3 +506,27 @@
 }
 
 .mq-search-input::placeholder { color: var(--mq-color-text-muted); }
+
+/* ------------------------------------- contact links ------------------------------------- */
+
+/*
+ * Calling and navigating are the real actions from a menu footer, so they get full tap targets
+ * rather than inline links. WCAG 2.5.8 exempts inline links in a sentence from a minimum size;
+ * that exemption is not a reason to make a primary action hard to hit on a phone.
+ */
+.mq-contact-link {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  min-height: var(--mq-tap-target);
+  padding-inline: var(--mq-space-3);
+  border: 1px solid var(--mq-color-border);
+  border-radius: var(--mq-radius-md);
+  background-color: var(--mq-color-surface);
+  color: var(--mq-color-accent-text);
+  font-size: var(--mq-text-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mq-contact-link:hover { background-color: var(--mq-color-surface-alt); }

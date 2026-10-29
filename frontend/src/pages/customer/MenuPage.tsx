@@ -599,6 +599,8 @@ export default function MenuPage() {
     dietType: (item.dietType === 'non-veg' ? 'non-veg' : item.dietType === 'vegan' ? 'vegan' : 'veg') as 'veg' | 'non-veg' | 'vegan',
     available: item.available !== false,
     image: item.image,
+    focalX: item.focalX ?? undefined,
+    focalY: item.focalY ?? undefined,
   }));
 
   const cartTotalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -730,6 +732,7 @@ export default function MenuPage() {
           }}
           categories={categoriesForRenderer}
           items={itemsForRenderer}
+          theme={client.theme}
           compact={false}
           onAddToCart={isPremium ? addToCart : undefined}
           onRemoveFromCart={isPremium ? removeFromCart : undefined}

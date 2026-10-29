@@ -18,6 +18,7 @@ import {
   NAV_COMPONENTS,
   SECTION_COMPONENTS,
 } from './slots/registry.ts';
+import { EmptyResults, MenuToolbar, type DietFilter } from './primitives/MenuToolbar.tsx';
 import type { MenuTheme } from '../../design-system/theme.types.ts';
 import type { RenderCategory, RenderRestaurant, SlotProps } from './types.ts';
 import './menu-renderer.css';
@@ -44,13 +45,45 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
 }) => {
   const tokens = useMenuTheme();
   const [activeCategoryId, setActiveCategoryId] = useState<string>(ALL);
+  const [query, setQuery] = useState('');
+  const [dietFilter, setDietFilter] = useState<DietFilter>('all');
 
-  const nonEmpty = useMemo(() => categories.filter((category) => category.items.length > 0), [categories]);
+  const counts = useMemo(() => {
+    const items = categories.flatMap((category) => category.items);
+    return {
+      all: items.length,
+      veg: items.filter((item) => item.dietType === 'veg' || item.dietType === 'vegan').length,
+      nonVeg: items.filter((item) => item.dietType === 'non-veg').length,
+    };
+  }, [categories]);
+
+  // Search and diet filtering are applied to items, then empty categories are dropped, so a
+  // category heading never appears above zero results.
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+
+    return categories
+      .map((category) => ({
+        ...category,
+        items: category.items.filter((item) => {
+          if (dietFilter === 'veg' && item.dietType !== 'veg' && item.dietType !== 'vegan') return false;
+          if (dietFilter === 'non-veg' && item.dietType !== 'non-veg') return false;
+          if (!needle) return true;
+          return (
+            item.name.toLowerCase().includes(needle) ||
+            (item.description ?? '').toLowerCase().includes(needle)
+          );
+        }),
+      }))
+      .filter((category) => category.items.length > 0);
+  }, [categories, query, dietFilter]);
 
   const visible = useMemo(
-    () => (activeCategoryId === ALL ? nonEmpty : nonEmpty.filter((c) => c.id === activeCategoryId)),
-    [nonEmpty, activeCategoryId]
+    () => (activeCategoryId === ALL ? filtered : filtered.filter((c) => c.id === activeCategoryId)),
+    [filtered, activeCategoryId]
   );
+
+  const hasQuery = query.trim().length > 0;
 
   const Cover = COVER_COMPONENTS[tokens.slots.cover];
   const Nav = NAV_COMPONENTS[tokens.slots.nav];
@@ -58,10 +91,17 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
   const DishCard = DISH_CARD_COMPONENTS[tokens.slots.dishCard];
   const Footer = FOOTER_COMPONENTS[tokens.slots.footer];
 
+  // Navigation lists every category that has items, not just the ones surviving the current
+  // filter, so a diner can always move out of an empty result.
+  const navigableCategories = useMemo(
+    () => categories.filter((category) => category.items.length > 0),
+    [categories]
+  );
+
   const slotProps: SlotProps = {
     restaurant,
     categories: visible,
-    allCategories: nonEmpty,
+    allCategories: navigableCategories,
     activeCategoryId,
     onSelectCategory: setActiveCategoryId,
     compact,
@@ -78,14 +118,29 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
        * here as well would produce two navigations on a phone. */}
       {!usesSidebar && <Nav {...slotProps} />}
 
+      {/* The compact preview is too small for a usable search field, so it is omitted there. */}
+      {!compact && (
+        <MenuToolbar
+          query={query}
+          onQueryChange={setQuery}
+          dietFilter={dietFilter}
+          onDietFilterChange={setDietFilter}
+          counts={counts}
+        />
+      )}
+
       <div className={usesSidebar ? 'mq-page mq-with-sidebar' : 'mq-page'}>
         {usesSidebar && <Nav {...slotProps} />}
 
         <main className="mq-section-stack mq-grow">
           {visible.length === 0 ? (
-            <p className="mq-tagline" role="status">
-              This menu has no items yet.
-            </p>
+            hasQuery ? (
+              <EmptyResults query={query.trim()} onClear={() => setQuery('')} />
+            ) : (
+              <p className="mq-tagline" role="status">
+                {counts.all === 0 ? 'This menu has no items yet.' : 'No dishes match this filter.'}
+              </p>
+            )
           ) : (
             visible.map((category) => (
               <section key={category.id} aria-labelledby={`mq-cat-${category.id}`}>

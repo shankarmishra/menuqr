@@ -18,7 +18,14 @@ import type { RenderMenuItem } from '../types.ts';
 
 export type DishCardProps = {
   item: RenderMenuItem;
-  /** Index within its category, used to prioritise only the first image above the fold. */
+  /**
+   * Index within its category. Available for ordinal numbering in a layout that wants it.
+   *
+   * Deliberately NOT used to set image fetch priority: this index restarts at zero for every
+   * category, so doing that eagerly fetched one image per category — six categories meant six
+   * eager requests competing with the cover photo. A dish card always sits below the cover, so
+   * none of them is ever the largest contentful paint.
+   */
   index: number;
   compact?: boolean;
   /** Hides ordering controls, e.g. in a print export or the gallery preview. */
@@ -56,7 +63,7 @@ export const DISH_CARD_CONTAINER: Record<DishCardSlot, React.CSSProperties> = {
  * The highest-converting layout when the client has real photography, and the worst when they
  * do not, which is why the photo library work in Phase 3 pairs with it.
  */
-export const MagazineCard: React.FC<DishCardProps> = ({ item, index, readOnly }) => {
+export const MagazineCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
   const description = dishDescription(item);
 
   return (
@@ -68,7 +75,6 @@ export const MagazineCard: React.FC<DishCardProps> = ({ item, index, readOnly })
           role="card"
           focal={item.focal}
           aspectRatio="var(--mq-aspect-hero)"
-          priority={index === 0}
           className="mq-image-frame-flush"
         />
       )}
@@ -176,7 +182,7 @@ export const CompactRowCard: React.FC<DishCardProps> = ({ item, readOnly }) => (
  * The grid uses `auto-fill` so it is two columns on a phone and four on a tablet without the
  * preset needing to know anything about viewports.
  */
-export const BentoTileCard: React.FC<DishCardProps> = ({ item, index, readOnly }) => (
+export const BentoTileCard: React.FC<DishCardProps> = ({ item, readOnly }) => (
   <article className="mq-card" style={{ overflow: 'hidden' }}>
     <SmartImage
       src={item.imageUrl}
@@ -184,7 +190,6 @@ export const BentoTileCard: React.FC<DishCardProps> = ({ item, index, readOnly }
       role="card"
       focal={item.focal}
       aspectRatio="var(--mq-aspect-square)"
-      priority={index === 0}
     />
     <div className="mq-stack" style={{ padding: 'var(--mq-space-3)', gap: 'var(--mq-space-1)' }}>
       <div className="mq-row" style={{ alignItems: 'center' }}>

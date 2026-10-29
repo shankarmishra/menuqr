@@ -109,7 +109,7 @@ class ChunkErrorBoundary extends Component<
 const AppLayout = lazyWithRetry(() => import('./layouts/AppLayout'));
 const AppDashboard = lazyWithRetry(() => import('./pages/app/Dashboard'));
 const AppMenu = lazyWithRetry(() => import('./pages/app/Menu'));
-const AppAppearance = lazyWithRetry(() => import('./pages/app/Appearance'));
+const AppAppearance = lazyWithRetry(() => import('./pages/app/MenuDesignStudio'));
 const AppQrCenter = lazyWithRetry(() => import('./pages/app/QrCenter'));
 const AppSubscription = lazyWithRetry(() => import('./pages/app/Subscription'));
 const AppSettings = lazyWithRetry(() => import('./pages/app/Settings'));

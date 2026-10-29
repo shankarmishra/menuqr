@@ -8,6 +8,7 @@ import { invalidatePublicMenuCache } from './public.js';
 import { generateAiMenuDesign, isGeminiAvailable } from '../aiDesignService.js';
 import { extractMenuFromPdf, refinePdfDesign } from '../pdfMenuService.js';
 import { validateDesignSpecification } from '../designSpecValidator.js';
+import { coerceTheme, validateTheme } from '../themeValidator.js';
 import { registerOrderClient, broadcastOrderEvent } from '../orderStream.js';
 import { optimizeAndSaveImage } from '../imageOptimizer.js';
 import { enqueueTask, getJobStatus, TASK_TYPES } from '../taskQueue.js';
@@ -15,6 +16,29 @@ import { enqueueTask, getJobStatus, TASK_TYPES } from '../taskQueue.js';
 function inputText(value, maxLength = 255) {
   if (value === undefined || value === null) return '';
   return String(value).trim().slice(0, maxLength);
+}
+
+/**
+ * Normalises an owner-set photo focal point to 0-1 coordinates, or null when absent/invalid.
+ * Stored inside `menu_items.metadata` (an existing, previously-unused JSONB column) rather than
+ * a dedicated column — no migration needed to add this field.
+ */
+export function inputFocalPoint(value) {
+  if (!value || typeof value !== 'object') return null;
+  const x = Number(value.x);
+  const y = Number(value.y);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  return { x: Math.min(1, Math.max(0, x)), y: Math.min(1, Math.max(0, y)) };
+}
+
+/** Merges a focal point into an item's existing metadata without discarding other fields. */
+export function mergeItemMetadata(existingMetadata, focal) {
+  const base = existingMetadata && typeof existingMetadata === 'object' ? existingMetadata : {};
+  if (focal === null) {
+    const { focal: _omit, ...rest } = base;
+    return rest;
+  }
+  return { ...base, focal };
 }
 
 function requireBasicContentAccess(authorization) {
@@ -782,9 +806,167 @@ export default async function appRoutes(request, response, url) {
     if (input.logo) {
       await pool.query('UPDATE clients SET logo_url = $1 WHERE id = $2', [input.logo, user.tenantId]);
     }
-    
+
     invalidatePublicMenuCache(user.tenantId);
     sendJson(response, 200, res.rows[0]);
+    return true;
+  }
+
+  // ───────────────────────── Design Studio theme: draft / publish / rollback ─────────────────────────
+  //
+  // `theme_draft` is what the Studio edits live and autosaves to — accepted leniently via
+  // coerceTheme, because an owner mid-edit should never see a 400 for a field they have not
+  // finished changing. `theme_published` is what the public menu actually renders, written only
+  // through /publish, which runs the STRICT validator and rejects a malformed document outright
+  // rather than silently storing a coerced guess. `appearance_theme_history` keeps every
+  // published version so /rollback can restore one without reconstructing it from memory.
+
+  if (request.method === 'GET' && url.pathname === '/api/app/theme') {
+    requireEntitlement(authorization, 'templates', 'Menu design requires an Intermediate or Premium plan.');
+    const res = await pool.query(
+      'SELECT theme_draft as "draft", theme_published as "published", theme_version as "version" FROM appearance_settings WHERE tenant_id = $1',
+      [user.tenantId]
+    );
+    const row = res.rows[0] || {};
+    sendJson(response, 200, {
+      draft: row.draft || row.published || null,
+      published: row.published || null,
+      version: row.version || 0,
+      // True once there is an edit the owner has not published yet, so the Studio can show
+      // "unpublished changes" without the client re-deriving it from a deep-equal check.
+      hasUnpublishedChanges: Boolean(row.draft) && JSON.stringify(row.draft) !== JSON.stringify(row.published),
+    });
+    return true;
+  }
+
+  if (request.method === 'PUT' && url.pathname === '/api/app/theme/draft') {
+    requireEntitlement(authorization, 'templates', 'Menu design requires an Intermediate or Premium plan.');
+    const input = await readJson(request);
+
+    const existing = await pool.query('SELECT theme_published FROM appearance_settings WHERE tenant_id = $1', [user.tenantId]);
+    const base = existing.rows[0]?.theme_published || undefined;
+    const theme = coerceTheme(input, base);
+
+    const settingId = randomUUID();
+    const res = await pool.query(
+      `INSERT INTO appearance_settings (id, tenant_id, theme_draft)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (tenant_id) DO UPDATE SET theme_draft = EXCLUDED.theme_draft, updated_at = CURRENT_TIMESTAMP
+       RETURNING theme_draft as "draft"`,
+      [settingId, user.tenantId, JSON.stringify(theme)]
+    );
+    sendJson(response, 200, { draft: res.rows[0].draft });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/theme/publish') {
+    requireEntitlement(authorization, 'templates', 'Menu design requires an Intermediate or Premium plan.');
+    const input = await readJson(request);
+
+    // Publishing an explicit body (the Studio's "Publish" button, mid-edit, before autosave
+    // catches up) is supported; omitting it publishes whatever the last autosaved draft was.
+    let candidate = input && Object.keys(input).length > 0 ? input : null;
+    if (!candidate) {
+      const draftRes = await pool.query('SELECT theme_draft FROM appearance_settings WHERE tenant_id = $1', [user.tenantId]);
+      candidate = draftRes.rows[0]?.theme_draft;
+    }
+    if (!candidate) throw apiError(400, 'There is no theme to publish yet.');
+
+    const result = validateTheme(candidate);
+    if (!result.ok) {
+      throw apiError(400, `The menu theme could not be published: ${result.errors.join('; ')}`);
+    }
+
+    const published = await withContentChange(authorization, async (client) => {
+      const settingId = randomUUID();
+      const updateRes = await client.query(
+        `INSERT INTO appearance_settings (id, tenant_id, template_id, theme_published, theme_draft, theme_version, theme_updated_at)
+         VALUES ($1, $2, $3, $4, $4, 1, CURRENT_TIMESTAMP)
+         ON CONFLICT (tenant_id) DO UPDATE SET
+           template_id = EXCLUDED.template_id,
+           theme_published = EXCLUDED.theme_published,
+           theme_draft = EXCLUDED.theme_draft,
+           theme_version = appearance_settings.theme_version + 1,
+           theme_updated_at = CURRENT_TIMESTAMP,
+           updated_at = CURRENT_TIMESTAMP
+         RETURNING theme_published as "published", theme_version as "version"`,
+        [settingId, user.tenantId, result.theme.presetId, JSON.stringify(result.theme)]
+      );
+
+      const row = updateRes.rows[0];
+      await client.query(
+        `INSERT INTO appearance_theme_history (id, tenant_id, version, theme)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (tenant_id, version) DO NOTHING`,
+        [randomUUID(), user.tenantId, row.version, JSON.stringify(result.theme)]
+      );
+
+      return row;
+    });
+
+    invalidatePublicMenuCache(user.tenantId);
+    sendJson(response, 200, published);
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/app/theme/history') {
+    requireEntitlement(authorization, 'templates', 'Menu design requires an Intermediate or Premium plan.');
+    const res = await pool.query(
+      'SELECT version, theme, created_at as "createdAt" FROM appearance_theme_history WHERE tenant_id = $1 ORDER BY version DESC LIMIT 20',
+      [user.tenantId]
+    );
+    sendJson(response, 200, res.rows);
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/theme/rollback') {
+    requireEntitlement(authorization, 'templates', 'Menu design requires an Intermediate or Premium plan.');
+    const input = await readJson(request);
+    const targetVersion = Number(input.version);
+    if (!Number.isInteger(targetVersion) || targetVersion < 1) {
+      throw apiError(400, 'A valid theme version is required to roll back.');
+    }
+
+    const rolledBack = await withContentChange(authorization, async (client) => {
+      const historyRes = await client.query(
+        'SELECT theme FROM appearance_theme_history WHERE tenant_id = $1 AND version = $2',
+        [user.tenantId, targetVersion]
+      );
+      if (!historyRes.rows[0]) throw apiError(404, `Theme version ${targetVersion} was not found.`);
+
+      // The restored theme is re-validated, not trusted blindly — it was valid when it was
+      // written, but the allowlists it must satisfy can change between releases.
+      const result = validateTheme(historyRes.rows[0].theme);
+      const restoredTheme = result.ok ? result.theme : coerceTheme(historyRes.rows[0].theme);
+
+      // A rollback is itself a new, newest version — history is append-only, so "undo the undo"
+      // is always possible by rolling back again, rather than special-casing a rewind.
+      const updateRes = await client.query(
+        `UPDATE appearance_settings SET
+           template_id = $2,
+           theme_published = $3,
+           theme_draft = $3,
+           theme_version = theme_version + 1,
+           theme_updated_at = CURRENT_TIMESTAMP,
+           updated_at = CURRENT_TIMESTAMP
+         WHERE tenant_id = $1
+         RETURNING theme_published as "published", theme_version as "version"`,
+        [user.tenantId, restoredTheme.presetId, JSON.stringify(restoredTheme)]
+      );
+      if (!updateRes.rows[0]) throw apiError(404, 'No published theme exists for this account yet.');
+
+      await client.query(
+        `INSERT INTO appearance_theme_history (id, tenant_id, version, theme)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (tenant_id, version) DO NOTHING`,
+        [randomUUID(), user.tenantId, updateRes.rows[0].version, JSON.stringify(restoredTheme)]
+      );
+
+      return updateRes.rows[0];
+    });
+
+    invalidatePublicMenuCache(user.tenantId);
+    sendJson(response, 200, rolledBack);
     return true;
   }
 
@@ -1131,10 +1313,11 @@ export default async function appRoutes(request, response, url) {
       const sort = await queryPortable(client, 'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM menu_items WHERE category_id = ? AND tenant_id = ?', [categoryId, user.tenantId]);
       const itemId = randomUUID();
       const actualPricingType = pricingType || (Array.isArray(variants) && variants.length > 0 ? 'variants' : 'single');
+      const focal = inputFocalPoint(input.focal);
 
       await queryPortable(client,
-        'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, half_price, full_price, image_url, diet_type, is_available, sort_order, pricing_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [itemId, menuId, user.tenantId, categoryId, name, inputText(description, 2000) || null, numericPrice, halfPrice ?? null, fullPrice ?? null, inputText(input.imageUrl, 2048) || null, dietType || 'veg', isAvailable !== false, sort.rows[0].next_order, actualPricingType]
+        'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, half_price, full_price, image_url, diet_type, is_available, sort_order, pricing_type, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [itemId, menuId, user.tenantId, categoryId, name, inputText(description, 2000) || null, numericPrice, halfPrice ?? null, fullPrice ?? null, inputText(input.imageUrl, 2048) || null, dietType || 'veg', isAvailable !== false, sort.rows[0].next_order, actualPricingType, focal ? JSON.stringify({ focal }) : null]
       );
 
       if (Array.isArray(variants) && variants.length > 0) {
@@ -1385,9 +1568,17 @@ export default async function appRoutes(request, response, url) {
       if (price !== null && (!Number.isFinite(price) || price < 0)) throw apiError(400, 'Enter a valid menu item price.');
       
       const result = await withContentChange(authorization, async (client) => {
-        const existing = await queryPortable(client, 'SELECT menu_id, category_id FROM menu_items WHERE id = ? AND tenant_id = ?', [itemId, user.tenantId]);
+        const existing = await queryPortable(client, 'SELECT menu_id, category_id, metadata FROM menu_items WHERE id = ? AND tenant_id = ?', [itemId, user.tenantId]);
         if (!existing.rows[0]) throw apiError(404, 'Menu item could not be found.');
         const categoryId = input.categoryId || existing.rows[0].category_id;
+
+        // 'focal' absent from the request leaves metadata untouched; present (even as null,
+        // which clears it) updates it. This mirrors the COALESCE semantics already used for
+        // every other optional field on this endpoint.
+        const metadataJson =
+          'focal' in input
+            ? JSON.stringify(mergeItemMetadata(existing.rows[0].metadata, inputFocalPoint(input.focal)))
+            : null;
         const ownedCategory = await queryPortable(client,
           'SELECT id FROM menu_categories WHERE id = ? AND menu_id = ? AND tenant_id = ?',
           [categoryId, existing.rows[0].menu_id, user.tenantId]
@@ -1397,8 +1588,8 @@ export default async function appRoutes(request, response, url) {
         const pricingType = input.pricingType || (Array.isArray(input.variants) && input.variants.length > 0 ? 'variants' : 'single');
 
         await queryPortable(client,
-          'UPDATE menu_items SET category_id = ?, name = COALESCE(?, name), description = ?, price = COALESCE(?, price), half_price = COALESCE(?, half_price), full_price = COALESCE(?, full_price), image_url = COALESCE(?, image_url), diet_type = COALESCE(?, diet_type), is_available = COALESCE(?, is_available), pricing_type = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
-          [categoryId, name, input.description === undefined ? null : inputText(input.description, 2000) || null, price, input.halfPrice === undefined ? null : input.halfPrice, input.fullPrice === undefined ? null : input.fullPrice, input.imageUrl === undefined ? null : inputText(input.imageUrl, 2048) || null, input.dietType === undefined ? null : input.dietType, input.isAvailable === undefined ? null : input.isAvailable !== false, pricingType, itemId, user.tenantId]
+          'UPDATE menu_items SET category_id = ?, name = COALESCE(?, name), description = ?, price = COALESCE(?, price), half_price = COALESCE(?, half_price), full_price = COALESCE(?, full_price), image_url = COALESCE(?, image_url), diet_type = COALESCE(?, diet_type), is_available = COALESCE(?, is_available), pricing_type = ?, metadata = COALESCE(?, metadata), updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
+          [categoryId, name, input.description === undefined ? null : inputText(input.description, 2000) || null, price, input.halfPrice === undefined ? null : input.halfPrice, input.fullPrice === undefined ? null : input.fullPrice, input.imageUrl === undefined ? null : inputText(input.imageUrl, 2048) || null, input.dietType === undefined ? null : input.dietType, input.isAvailable === undefined ? null : input.isAvailable !== false, pricingType, metadataJson, itemId, user.tenantId]
         );
 
         if (Array.isArray(input.variants)) {

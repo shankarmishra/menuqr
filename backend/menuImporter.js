@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { queryPortable } from './db.js';
 import { apiError } from './utils.js';
+import { resolveDishImage } from './culinaryImageService.js';
 
 export const COLUMN_ALIASES = {
   category: ['category', 'section', 'group', 'menu category', 'category name', 'type', 'course', 'item category'],
@@ -258,7 +259,11 @@ export async function executeImportTransaction(client, tenantId, menuId, parsedC
       
       let itemId;
       const pricingType = item.pricingType || (item.variants?.length > 0 ? 'variants' : 'single');
-      const finalImageUrl = item.imageUrl || item.image || item.image_url || null;
+      // The PDF import path has always photographed every dish via resolveDishImage; the Excel
+      // path never did, so a spreadsheet with no "image" column produced a menu with zero
+      // photos. Only fills a gap — an image column in the sheet always wins.
+      const finalImageUrl =
+        item.imageUrl || item.image || item.image_url || resolveDishImage(item.name, cat.name, [], 0, tenantId);
       
       if (existingItem && mode === 'update') {
         itemId = existingItem.id;

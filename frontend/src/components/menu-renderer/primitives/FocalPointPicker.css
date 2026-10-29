@@ -1,0 +1,64 @@
+/*
+ * MENUQR Focal Point Picker — Design Studio control, not customer-facing.
+ *
+ * Deliberately its own file rather than an addition to menu-renderer.css: that stylesheet loads
+ * on every public menu view, and this control is never shown to a diner. Keeping it separate
+ * means it only ships in whichever bundle actually imports the picker (the Design Studio),
+ * which is exactly the "zero extra bytes on the menu route" budget the renderer holds elsewhere.
+ *
+ * Uses the same --mq-* tokens as the renderer so the control sits comfortably inside the Studio
+ * preview, without depending on menu-renderer.css being loaded.
+ */
+
+.mq-focal-picker {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--mq-aspect-card, 4 / 3);
+  overflow: hidden;
+  border-radius: var(--mq-radius-md, 8px);
+  cursor: crosshair;
+  touch-action: none;
+  outline: none;
+}
+
+.mq-focal-picker:focus-visible {
+  outline: 2px solid var(--mq-color-focus, #38bdf8);
+  outline-offset: 2px;
+}
+
+.mq-focal-picker-disabled {
+  cursor: default;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.mq-focal-picker-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.mq-focal-picker-dot {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.mq-focal-picker-dot::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+}

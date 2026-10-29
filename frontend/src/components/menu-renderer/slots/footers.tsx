@@ -25,25 +25,28 @@ export const ContactBlockFooter: React.FC<FooterProps> = ({ restaurant }) => {
       <hr className="mq-divider" />
       <h2 className="mq-eyebrow">{restaurant.name}</h2>
 
+      {/*
+       * Calling and navigating are the two actions a diner actually takes from a menu footer, so
+       * these are full-width tap targets rather than inline links in a sentence. At the table,
+       * on a phone, a 17px-tall phone number is a miss waiting to happen.
+       */}
       <div className="mq-stack" style={{ gap: 'var(--mq-space-1)' }}>
         {restaurant.phone && (
-          <p className="mq-tagline">
-            <a href={telHref(restaurant.phone)} style={{ color: 'var(--mq-color-accent-text)' }}>
-              {restaurant.phone}
-            </a>
-          </p>
+          <a className="mq-contact-link" href={telHref(restaurant.phone)}>
+            <span className="mq-price-label">Call</span>
+            <span>{restaurant.phone}</span>
+          </a>
         )}
         {location && (
-          <p className="mq-tagline">
-            <a
-              href={`https://maps.google.com/?q=${encodeURIComponent(`${restaurant.name} ${location}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'var(--mq-color-accent-text)' }}
-            >
-              {location}
-            </a>
-          </p>
+          <a
+            className="mq-contact-link"
+            href={`https://maps.google.com/?q=${encodeURIComponent(`${restaurant.name} ${location}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span className="mq-price-label">Find us</span>
+            <span>{location}</span>
+          </a>
         )}
         {restaurant.openingHours && <p className="mq-tagline">{restaurant.openingHours}</p>}
       </div>
@@ -63,11 +66,9 @@ export const MinimalMarkFooter: React.FC<FooterProps> = ({ restaurant }) => (
     />
     <p className="mq-eyebrow">{restaurant.name}</p>
     {restaurant.phone && (
-      <p className="mq-tagline">
-        <a href={telHref(restaurant.phone)} style={{ color: 'var(--mq-color-text-muted)' }}>
-          {restaurant.phone}
-        </a>
-      </p>
+      <a className="mq-contact-link" href={telHref(restaurant.phone)}>
+        {restaurant.phone}
+      </a>
     )}
   </footer>
 );

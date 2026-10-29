@@ -145,6 +145,11 @@ export async function getFullPublicMenuData(tenantId) {
         dietType: i.diet_type || 'veg',
         available: i.is_available,
         image: i.image_url || '',
+        // Owner-set photo focal point, stored in the previously-unused `metadata` JSONB column
+        // (no migration needed). Absent for the common case of no focal point set, in which
+        // case the renderer defaults to a centred crop.
+        focalX: i.metadata?.focal?.x ?? null,
+        focalY: i.metadata?.focal?.y ?? null,
         variants: itemVariants,
         addonGroups: itemAddonGroups,
       };
@@ -197,6 +202,12 @@ export async function getFullPublicMenuData(tenantId) {
     orderingEnabled: Boolean(authorization.active && authorization.entitlements.includes('customer_ordering')),
     templateId: appearance.template_id || 'royal-maharaja',
     accentConfiguration: appearance.accent_configuration || null,
+    // The full Design Studio theme, once the owner has published one. `templateId` above stays
+    // populated for every caller that predates it (the public API itself is unversioned, so
+    // old cached clients and third-party integrations must keep working unchanged); the
+    // frontend renderer prefers `theme` when present and falls back to deriving a theme from
+    // `templateId` alone otherwise — see MenuTemplateRenderer.tsx.
+    theme: appearance.theme_published || null,
     googleReviews,
     categories,
     items,
