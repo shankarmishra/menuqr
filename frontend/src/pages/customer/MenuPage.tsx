@@ -658,9 +658,10 @@ export default function MenuPage() {
     }
   };
 
+  const isShobharam = Boolean(client?.businessName?.toLowerCase().includes('shobharam'));
   const bespokeColors = (client?.accentConfiguration as { colors?: { bg?: string; text?: string } } | undefined)?.colors;
-  const effectiveBg = bespokeColors?.bg || template.colors.bg;
-  const effectiveText = bespokeColors?.text || template.colors.text;
+  const effectiveBg = isShobharam ? '#090C0B' : (bespokeColors?.bg || template.colors.bg);
+  const effectiveText = isShobharam ? '#F3F4F6' : (bespokeColors?.text || template.colors.text);
 
   return (
     <div className="min-h-screen flex flex-col font-sans transition-colors duration-300" style={{ backgroundColor: effectiveBg, color: effectiveText }}>

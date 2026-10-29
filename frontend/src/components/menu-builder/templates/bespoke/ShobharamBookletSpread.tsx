@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import clsx from 'clsx';
 import type { LayoutProps, CategoryGroup } from '../types';
 import { ShobharamBespokeCover } from './ShobharamBespokeCover';
-import { ChalkboardDoodleBg } from '../artwork/FoodDoodleBackgrounds';
+import { AuthenticNoirChalkboardBg } from '../artwork/AuthenticNoirChalkboardBg';
 import {
   BookOpen,
   Sparkles,
@@ -20,7 +20,6 @@ import {
 
 export interface ShobharamBookletSpreadProps extends LayoutProps {}
 
-// Curated Category Visual & Culinary Metadata
 interface CategoryMeta {
   photo: string;
   badge: string;
@@ -33,12 +32,12 @@ const CATEGORY_META_REGISTRY: Record<string, CategoryMeta> = {
     photo: '/uploads/shobharam/dishes/dish_paneer_masala.webp',
     badge: "Chef's Special",
     subtitle: 'Signature Desi Ghee Curries',
-    tagline: 'Crafted with royal spices & pure cream',
+    tagline: 'Cooked with royal spices & rich cream',
   },
   'breakfast': {
     photo: '/uploads/shobharam/dishes/dish_samosa_chaat.webp',
     badge: 'Morning Fresh',
-    subtitle: 'Crispy Kachoris & Chole Poori',
+    subtitle: 'Crispy Kachoris & Chole Bhature',
     tagline: 'Served piping hot with tangy aloo sabji',
   },
   'combos': {
@@ -51,7 +50,7 @@ const CATEGORY_META_REGISTRY: Record<string, CategoryMeta> = {
     photo: '/uploads/shobharam/dish_royal_thali.webp',
     badge: 'Royal Thali',
     subtitle: 'Authentic Rajasthani & North Indian Spread',
-    tagline: 'Unlimited royal indulgence with dessert & breads',
+    tagline: 'Unlimited royal indulgence with breads & dessert',
   },
   'meals': {
     photo: '/uploads/shobharam/dishes/dish_platter.webp',
@@ -63,19 +62,19 @@ const CATEGORY_META_REGISTRY: Record<string, CategoryMeta> = {
     photo: '/uploads/shobharam/dishes/dish_soup.webp',
     badge: 'Hot & Steamy',
     subtitle: 'Warm Simmered Broths',
-    tagline: 'Perfect starter for a chilly evening',
+    tagline: 'Freshly prepared rich aromatic soups',
   },
   'starters': {
     photo: '/uploads/shobharam/dishes/dish_starters.webp',
     badge: 'Tandoori Sizzle',
     subtitle: 'Charcoal Grilled Paneer & Chaap',
-    tagline: 'Marinated in yogurt & roasted to perfection',
+    tagline: 'Marinated in thick spiced curd & roasted',
   },
   'main course': {
     photo: '/uploads/shobharam/dishes/dish_dal_makhani.webp',
     badge: 'Slow Cooked',
     subtitle: 'Dal Makhani Bukhara & Paneer Gravies',
-    tagline: 'Simmered overnight on charcoal fire',
+    tagline: 'Simmered overnight on traditional slow flame',
   },
   'breads': {
     photo: '/uploads/shobharam/dishes/dish_tandoori_naan.webp',
@@ -93,25 +92,25 @@ const CATEGORY_META_REGISTRY: Record<string, CategoryMeta> = {
     photo: '/uploads/shobharam/dishes/dish_crispy_dosa.webp',
     badge: 'Crispy Gold',
     subtitle: 'Traditional Idli, Vada & Uttapam',
-    tagline: 'Served with fresh coconut chutney & sambar',
+    tagline: 'Served with fresh coconut chutney & hot sambar',
   },
   'dosa': {
     photo: '/uploads/shobharam/dishes/dish_crispy_dosa.webp',
     badge: 'Butter Crisp',
     subtitle: 'Tawa Roasted Crispy Dosas',
-    tagline: 'Thin, crispy crepe with spiced potato masala',
+    tagline: 'Thin golden crepe with spiced potato masala',
   },
   'chinese': {
     photo: '/uploads/shobharam/dishes/dish_pasta.webp',
     badge: 'Wok Tossed',
     subtitle: 'Chilli Paneer & Manchurian',
-    tagline: 'Flavored with ginger, garlic & secret sauces',
+    tagline: 'Flavored with ginger, garlic & oriental spices',
   },
   'fried rice & noodles': {
     photo: '/uploads/shobharam/dishes/dish_noodles.webp',
     badge: 'Hakka Style',
     subtitle: 'Wok Fried Noodles & Fragrant Rice',
-    tagline: 'Crisp vegetables tossed on high flame',
+    tagline: 'Crisp julienne vegetables tossed on high flame',
   },
   'snacks & chaat': {
     photo: '/uploads/shobharam/dishes/dish_street_chaat.webp',
@@ -123,25 +122,25 @@ const CATEGORY_META_REGISTRY: Record<string, CategoryMeta> = {
     photo: '/uploads/shobharam/dishes/dish_sandwich.webp',
     badge: 'Steamed & Fried',
     subtitle: 'Juicy Vegetable & Tandoori Momos',
-    tagline: 'Served with fiery red garlic dip',
+    tagline: 'Served with fiery red chilli garlic dip',
   },
   'accompaniments': {
-    photo: '/uploads/shobharam/dishes/dish_nachos.webp',
+    photo: '/uploads/shobharam/dishes/dish_accompaniments.webp',
     badge: 'Royal Sides',
-    subtitle: 'Cool Raitas, Crispy Papad & Salads',
+    subtitle: 'Cool Raitas, Crispy Papad & Fresh Salads',
     tagline: 'The perfect cooling accompaniment to your meal',
   },
   'sweets & desserts': {
     photo: '/uploads/shobharam/dish_sweets_luxury.webp',
     badge: '100% Desi Ghee',
     subtitle: 'Heritage Mawa Sweets & Kulfi',
-    tagline: 'Prepared with pure desi ghee & silver vark',
+    tagline: 'Crafted with pure desi ghee, saffron & pistachios',
   },
   'add-ons & extras': {
     photo: '/uploads/shobharam/dishes/dish_coffee.webp',
     badge: 'Coolers & Shakes',
-    subtitle: 'Fresh Lassi, Shakes & Beverages',
-    tagline: 'Thick, creamy & ice-chilled refreshment',
+    subtitle: 'Fresh Lassi, Thick Shakes & Beverages',
+    tagline: 'Chilled refreshing drinks to complete your feast',
   },
 };
 
@@ -152,7 +151,6 @@ function getCategoryMeta(catName: string, index: number): CategoryMeta {
       return meta;
     }
   }
-  // Alternating fallback image
   const fallbackPhotos = [
     '/uploads/shobharam/dishes/dish_starters.webp',
     '/uploads/shobharam/dishes/dish_paneer_masala.webp',
@@ -181,7 +179,6 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
 
   const displayCategories = categories.length > 0 ? categories : rawCategories;
 
-  // Thematic pages mapping
   const bookletPages = useMemo(() => {
     const findCats = (regex: RegExp) =>
       displayCategories.filter((c) => regex.test(c.name));
@@ -193,7 +190,6 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
     const p5Cats = findCats(/soup|chinese|fried rice|noodle|momo/i);
     const p6Cats = findCats(/sweet|dessert|add-on|extra|beverage|drink|shake/i);
 
-    // Fallback unmapped
     const mappedIds = new Set([
       ...p1Cats, ...p2Cats, ...p3Cats, ...p4Cats, ...p5Cats, ...p6Cats
     ].map((c) => c.id));
@@ -253,7 +249,7 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
   const address = [restaurant.address, restaurant.city].filter(Boolean).join(', ') || 'Main Market Road, City Center, Jaipur';
   const website = (restaurant as any).website || 'WWW.MENUSQR.IN';
 
-  // Render a Single Category Section with Alternating Circular Photo (Matching Reference Poster Mockup)
+  // Render a Single Category Section with Alternating Circular Food Plate
   const renderCategorySection = (cat: CategoryGroup, index: number) => {
     if (!cat || !cat.items || cat.items.length === 0) return null;
     const meta = getCategoryMeta(cat.name, index);
@@ -262,7 +258,7 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
     return (
       <div
         key={cat.id}
-        className="relative rounded-2xl bg-gradient-to-b from-[#111714]/90 via-[#0B0E0D]/95 to-black/95 border border-[#D4AF37]/35 p-4 sm:p-6 backdrop-blur-md shadow-2xl overflow-hidden my-4"
+        className="relative rounded-2xl bg-gradient-to-b from-[#131916]/95 via-[#0D1210]/95 to-[#080B0A]/95 border border-[#D4AF37]/35 p-4 sm:p-6 backdrop-blur-md shadow-2xl overflow-hidden my-4"
       >
         {/* Subtle Decorative Golden Border Accent */}
         <div className="absolute inset-1.5 rounded-xl border border-dashed border-[#D4AF37]/15 pointer-events-none" />
@@ -295,44 +291,15 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
           </div>
         </div>
 
-        {/* Section Body: 2-Column or Side-by-Side with Circular Photo Callout */}
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          {/* Circular Food Photo Card (Matching Reference Layout) */}
-          <div
-            className={clsx(
-              'flex flex-col items-center justify-center shrink-0 order-first lg:order-none',
-              isPhotoOnLeft ? 'lg:col-span-4' : 'lg:col-span-4 lg:order-last'
-            )}
-          >
-            <div className="relative group w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center">
-              {/* Outer Golden Halo Ring */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-500/25 via-emerald-500/20 to-amber-300/30 blur-md group-hover:scale-105 transition-transform duration-500" />
-              <div className="absolute inset-1 rounded-full border-2 border-dashed border-[#D4AF37]/40 pointer-events-none animate-spin-slow" />
-              <div className="absolute inset-2.5 rounded-full border border-[#F5C542]/30 pointer-events-none" />
-
-              {/* High-Resolution Circular Dish Photo */}
-              <div className="relative z-10 w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-[0_12px_28px_rgba(0,0,0,0.95)]">
-                <img
-                  src={meta.photo}
-                  alt={cat.name}
-                  className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-
-              {/* Floating Badge on Circular Rim */}
-              <span className="absolute -bottom-1.5 z-20 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-700 to-emerald-600 text-[9px] font-bold text-white border border-emerald-400 shadow-md whitespace-nowrap">
-                {meta.badge}
-              </span>
-            </div>
-            <p className="text-[10px] text-gray-400 italic text-center mt-3 max-w-[180px]">
-              {meta.tagline}
-            </p>
-          </div>
-
+        {/* Section Body: Side-by-Side Flex Layout (Item List + Circular Dish Plate) */}
+        <div
+          className={clsx(
+            'relative z-10 flex flex-col gap-6 items-center',
+            isPhotoOnLeft ? 'md:flex-row-reverse' : 'md:flex-row'
+          )}
+        >
           {/* Menu Items List with Clean Dot Leaders & Numbering */}
-          <div className="lg:col-span-8 space-y-1">
+          <div className="flex-1 w-full space-y-1">
             {cat.items.map((item, idx) => {
               const numStr = String(idx + 1).padStart(2, '0');
               const singlePrice = item.price;
@@ -407,7 +374,7 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
                             hasHalfFull ? `₹${item.fullPrice || item.halfPrice}` : `₹${singlePrice}`
                           )
                         }
-                        className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-[#D4AF37]/20 hover:bg-[#D4AF37] text-amber-300 hover:text-black border border-[#D4AF37]/50 flex items-center justify-center transition-all active:scale-90"
+                        className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-[#D4AF37]/20 hover:bg-[#D4AF37] text-amber-300 hover:text-black border border-[#D4AF37]/50 flex items-center justify-center transition-all active:scale-90 cursor-pointer"
                         title="Add to cart"
                       >
                         <Plus size={11} />
@@ -417,6 +384,35 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
                 </div>
               );
             })}
+          </div>
+
+          {/* Circular Food Photo Card (Matching Reference Layout) */}
+          <div className="shrink-0 flex flex-col items-center justify-center p-2 order-first md:order-none">
+            <div className="relative group w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center">
+              {/* Outer Golden Halo Ring */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-500/25 via-emerald-500/20 to-amber-300/30 blur-md group-hover:scale-105 transition-transform duration-500" />
+              <div className="absolute inset-1 rounded-full border-2 border-dashed border-[#D4AF37]/45 pointer-events-none" />
+              <div className="absolute inset-2.5 rounded-full border border-[#F5C542]/30 pointer-events-none" />
+
+              {/* High-Resolution Circular Dish Photo */}
+              <div className="relative z-10 w-26 h-26 sm:w-34 sm:h-34 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-[0_12px_28px_rgba(0,0,0,0.95)]">
+                <img
+                  src={meta.photo}
+                  alt={cat.name}
+                  className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+
+              {/* Floating Badge on Circular Rim */}
+              <span className="absolute -bottom-1.5 z-20 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-700 to-emerald-600 text-[9px] font-bold text-white border border-emerald-400 shadow-md whitespace-nowrap">
+                {meta.badge}
+              </span>
+            </div>
+            <p className="text-[10px] text-gray-400 italic text-center mt-2 max-w-[150px]">
+              {meta.tagline}
+            </p>
           </div>
         </div>
       </div>
@@ -431,10 +427,10 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
     return (
       <div
         key={page.id}
-        className="relative w-full max-w-5xl mx-auto rounded-3xl border border-[#D4AF37]/45 shadow-2xl bg-[#0B0E0D] text-[#F3F4F6] p-4 sm:p-8 my-6 overflow-hidden"
+        className="relative w-full max-w-5xl mx-auto rounded-3xl border border-[#D4AF37]/45 shadow-[0_25px_60px_rgba(0,0,0,0.95)] bg-[#0C100E] text-[#F3F4F6] p-4 sm:p-8 my-6 overflow-hidden"
       >
         {/* Authentic Background Texture & Doodles */}
-        <ChalkboardDoodleBg opacity={0.12} />
+        <AuthenticNoirChalkboardBg opacity={0.12} />
         <div
           className="absolute inset-0 pointer-events-none opacity-20"
           style={{
@@ -462,7 +458,7 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
 
         {/* Spread Top Header Ribbon */}
         <div className="relative z-10 flex flex-col items-center text-center pb-5 border-b border-[#D4AF37]/35 mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#1E5E3A]/40 border border-[#1E5E3A] text-[10px] font-bold tracking-widest uppercase text-emerald-300 mb-2">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#1E5E3A]/50 border border-[#1E5E3A] text-[10px] font-bold tracking-widest uppercase text-emerald-300 mb-2 shadow-md">
             <ShieldCheck size={12} className="text-emerald-400" />
             <span>SHOBHARAM&apos;S MENU BOOKLET • CHAPTER 0{page.pageNumber}</span>
           </div>
@@ -492,7 +488,7 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab(prevTab)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
           >
             <ChevronLeft size={14} />
             <span>{page.pageNumber === 1 ? 'Back to Cover' : `Chapter 0${page.pageNumber - 1}`}</span>
@@ -501,7 +497,7 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#F5C542]" />
             <span className="font-bold text-gray-200">Shobharam&apos;s Pure Veg</span>
-            <span className="font-mono text-[#F5C542] font-bold px-2 py-0.5 rounded-md bg-black/60 border border-[#D4AF37]/40">
+            <span className="font-mono text-[#F5C542] font-bold px-2.5 py-0.5 rounded-md bg-black/60 border border-[#D4AF37]/40 shadow-inner">
               PAGE 0{page.pageNumber + 1} OF 07
             </span>
           </div>
@@ -509,7 +505,7 @@ export const ShobharamBookletSpread: React.FC<LayoutProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab(nextTab)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D4AF37]/20 hover:bg-[#D4AF37] text-amber-300 hover:text-black border border-[#D4AF37]/50 transition-colors font-bold cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F5C542] to-[#D4AF37] hover:brightness-110 text-black border border-[#D4AF37]/60 transition-colors font-extrabold cursor-pointer shadow-md"
           >
             <span>{page.pageNumber === 6 ? 'View All Spreads' : `Chapter 0${page.pageNumber + 1}`}</span>
             <ChevronRight size={14} />
