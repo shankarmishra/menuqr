@@ -37,6 +37,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return parseApiResponse<T>(response);
 }
 
+import type { ItemTags } from '../../components/menu-renderer/types';
 export interface AppProfile {
   id: string;
   businessName: string;
@@ -186,7 +187,7 @@ export interface AppMenuItem {
   variants?: AppVariant[];
   addon_groups?: AppAddonGroup[];
   /** Stored in the backend's `menu_items.metadata` JSONB column; currently only ever holds `focal`. */
-  metadata?: { focal?: FocalPoint } | null;
+  metadata?: { focal?: FocalPoint; tags?: ItemTags | null; soldOutOn?: string } | null;
 }
 
 export interface AppMenuImportHistory {
@@ -459,7 +460,7 @@ export function saveOnboarding(data: OnboardingPayload): Promise<{ success: bool
   });
 }
 
-export function updateMenuItem(itemId: string, data: Partial<AppMenuItem> & { categoryId?: string; imageUrl?: string; dietType?: string; isAvailable?: boolean; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[]; focal?: FocalPoint | null }): Promise<AppMenuItem> {
+export function updateMenuItem(itemId: string, data: Partial<AppMenuItem> & { categoryId?: string; imageUrl?: string; dietType?: string; isAvailable?: boolean; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[]; focal?: FocalPoint | null; tags?: ItemTags | null }): Promise<AppMenuItem> {
   return request<AppMenuItem>(`/items/${encodeURIComponent(itemId)}`, {
     method: 'PUT',
     body: JSON.stringify(data),
@@ -500,12 +501,16 @@ export function deleteMenuCategory(categoryId: string): Promise<void> {
   return request<void>(`/categories/${encodeURIComponent(categoryId)}`, { method: 'DELETE', body: '{}' });
 }
 
-export function createMenuItem(data: { menuId: string; categoryId: string; name: string; description?: string; price: number; imageUrl?: string; dietType?: string; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[]; focal?: FocalPoint | null }): Promise<AppMenuItem> {
+export function createMenuItem(data: { menuId: string; categoryId: string; name: string; description?: string; price: number; imageUrl?: string; dietType?: string; pricingType?: string; variants?: AppVariant[]; addonGroups?: AppAddonGroup[]; focal?: FocalPoint | null; tags?: ItemTags | null }): Promise<AppMenuItem> {
   return request<AppMenuItem>('/items', { method: 'POST', body: JSON.stringify(data) });
 }
 
 export function deleteMenuItem(itemId: string): Promise<void> {
   return request<void>(`/items/${encodeURIComponent(itemId)}`, { method: 'DELETE', body: '{}' });
+}
+
+export function setMenuItemSoldOut(itemId: string, soldOut: boolean): Promise<{ id: string; soldOut: boolean; soldOutOn: string | null }> {
+  return request(`/items/${encodeURIComponent(itemId)}/sold-out`, { method: 'POST', body: JSON.stringify({ soldOut }) });
 }
 
 export function setMenuItemAvailability(itemId: string, isAvailable: boolean): Promise<AppMenuItem> {

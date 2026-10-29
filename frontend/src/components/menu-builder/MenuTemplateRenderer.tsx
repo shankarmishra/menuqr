@@ -58,6 +58,10 @@ export interface MenuTemplateRendererProps {
     dietType: 'veg' | 'non-veg' | 'vegan';
     available?: boolean;
     isBestseller?: boolean;
+    isSpecial?: boolean;
+    spicyLevel?: number;
+    tags?: RenderMenuItem['tags'];
+    soldOut?: boolean;
     image?: string;
     imageUrl?: string;
     focalX?: number;
@@ -121,6 +125,10 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
       dietType: item.dietType,
       available: item.available,
       isBestseller: item.isBestseller,
+      isSpecial: item.isSpecial,
+      spicyLevel: item.spicyLevel,
+      tags: item.tags,
+      soldOut: item.soldOut,
       // Older callers use `image`; newer ones use `imageUrl`.
       imageUrl: item.imageUrl ?? item.image,
       focal:

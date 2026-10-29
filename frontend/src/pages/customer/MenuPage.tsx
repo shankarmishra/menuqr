@@ -1,3 +1,4 @@
+import { reportMenuVisit } from '../../utils/menuHit';
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -88,7 +89,12 @@ export default function MenuPage() {
   const qrId = searchParams.get('qr');
   const tableParam = searchParams.get('table') || searchParams.get('t') || searchParams.get('tableNumber') || '';
   const showToast = useToast();
-  
+
+  // Anonymous once-a-day visit counter for the owner's analytics (QR scan vs direct link).
+  useEffect(() => {
+    if (slug) reportMenuVisit(slug, qrId ? 'qr' : 'direct');
+  }, [slug, qrId]);
+
   const [menuResult, setMenuResult] = useState<{ slug: string; client?: PublicMenuRecord; error?: string }>();
   
   // Ordering State
@@ -601,6 +607,10 @@ export default function MenuPage() {
     image: item.image,
     focalX: item.focalX ?? undefined,
     focalY: item.focalY ?? undefined,
+    tags: item.tags ?? null,
+    soldOut: item.soldOut ?? false,
+    isBestseller: Boolean(item.tags?.badges?.includes('bestseller')),
+    isSpecial: Boolean(item.tags?.badges?.includes('special')),
   }));
 
   const cartTotalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);

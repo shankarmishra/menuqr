@@ -54,6 +54,7 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
       all: items.length,
       veg: items.filter((item) => item.dietType === 'veg' || item.dietType === 'vegan').length,
       nonVeg: items.filter((item) => item.dietType === 'non-veg').length,
+      jain: items.filter((item) => item.tags?.jain).length,
     };
   }, [categories]);
 
@@ -68,6 +69,7 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
         items: category.items.filter((item) => {
           if (dietFilter === 'veg' && item.dietType !== 'veg' && item.dietType !== 'vegan') return false;
           if (dietFilter === 'non-veg' && item.dietType !== 'non-veg') return false;
+          if (dietFilter === 'jain' && !item.tags?.jain) return false;
           if (!needle) return true;
           return (
             item.name.toLowerCase().includes(needle) ||

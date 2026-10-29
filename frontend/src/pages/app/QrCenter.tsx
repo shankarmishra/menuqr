@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { Download, PackageCheck, QrCode, Printer, Send, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import QRCode from 'qrcode';
+import TableQrGenerator from '../../components/qr/TableQrGenerator';
+import ShareMenuLink from '../../components/qr/ShareMenuLink';
 import { exportStickerToPng } from '../../utils/stickerExporter';
 import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerCard';
 import { type StickerThemeId } from '../../components/sticker/StickerTemplates';
@@ -273,6 +275,8 @@ export default function QrCenter() {
 
               </div>
             </div>
+            <ShareMenuLink menuUrl={menuUrl} restaurantName={restaurantName} />
+            <TableQrGenerator baseUrl={menuUrl} restaurantName={restaurantName} />
           </div>
           
           {/* RIGHT COLUMN: Physical Stickers Order Form & Order History */}

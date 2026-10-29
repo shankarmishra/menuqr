@@ -8,6 +8,15 @@
 
 export type DietType = 'veg' | 'non-veg' | 'vegan';
 
+/** Owner-set dish tags. Mirrors the whitelisted shape the backend stores in `metadata.tags`. */
+export type ItemTags = {
+  allergens: string[];
+  badges: string[];
+  spice: number;
+  jain: boolean;
+  eggless: boolean;
+};
+
 export type MenuItemVariant = {
   id?: string;
   name: string;
@@ -35,6 +44,9 @@ export type RenderMenuItem = {
   isBestseller?: boolean;
   isSpecial?: boolean;
   spicyLevel?: number;
+  tags?: ItemTags | null;
+  /** True while the owner has marked the dish sold out for today. */
+  soldOut?: boolean;
 
   imageUrl?: string;
   /**
