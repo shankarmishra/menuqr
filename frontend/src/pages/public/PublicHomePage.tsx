@@ -15,6 +15,7 @@ import CustomerExperienceSection from '../../components/marketing/CustomerExperi
 import CharacterCarouselSection from '../../components/marketing/CharacterCarouselSection';
 import FaqSection, { faqs } from '../../components/marketing/FaqSection';
 import FinalCtaSection from '../../components/marketing/FinalCtaSection';
+import { Helmet } from 'react-helmet-async';
 import { SEO } from '../../seo/SEO';
 import { getOrganizationSchema, getWebSiteSchema, getFaqSchema, getWebPageSchema } from '../../seo/structuredData';
 import './PublicHomePage.css';
@@ -29,6 +30,9 @@ export default function PublicHomePage() {
         type="website"
         schema={[getOrganizationSchema(), getWebSiteSchema(), getFaqSchema(faqs), getWebPageSchema('/', 'MenusQR | Digital QR Menu for Restaurants', ['h1', '#faq h3'])]}
       />
+      <Helmet>
+        <link rel="preload" as="image" href="/marketing/hero/hero-restaurant-poster.webp" type="image/webp" fetchPriority="high" />
+      </Helmet>
       {/* Header */}
       <SiteHeader />
 

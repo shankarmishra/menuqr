@@ -31,10 +31,20 @@ export function initAnalytics() {
   // SPA: page views are sent manually on route change.
   window.gtag('config', MEASUREMENT_ID, { send_page_view: false });
 
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`;
-  document.head.appendChild(script);
+  // Events queue on window.dataLayer; load the 170 KB gtag script only after the page is
+  // interactive so it never competes with first paint / hydration.
+  const loadScript = () => {
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`;
+    document.head.appendChild(script);
+  };
+  const whenIdle = () => {
+    if ('requestIdleCallback' in window) window.requestIdleCallback(loadScript, { timeout: 4000 });
+    else setTimeout(loadScript, 2000);
+  };
+  if (document.readyState === 'complete') whenIdle();
+  else window.addEventListener('load', whenIdle, { once: true });
 }
 
 export function trackPageView(path: string) {

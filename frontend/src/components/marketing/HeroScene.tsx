@@ -71,7 +71,7 @@ export default function HeroScene() {
           src={heroRestaurantPoster}
           alt="Restaurant background"
           className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.1] scale-105"
-          decoding="async"
+          fetchPriority="high"
         />
       </motion.div>
 

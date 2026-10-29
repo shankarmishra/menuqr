@@ -54,3 +54,13 @@ main > section > :not(.absolute):not([class*='sticky']):not([class*='fixed']) {
 main > section > .sticky {
   z-index: 10;
 }
+
+/*
+ * Below-the-fold static sections: let the browser skip layout/paint until they approach the
+ * viewport (cuts the ~4.4k-node first render). Sections 1-2 are above the fold; 4 (scroll-linked),
+ * 5 (template gallery) and 8 (carousel) measure layout, so they are left alone.
+ */
+main > section:is(:nth-of-type(3), :nth-of-type(6), :nth-of-type(7), :nth-of-type(9), :nth-of-type(10), :nth-of-type(11), :nth-of-type(12), :nth-of-type(13), :nth-of-type(14), :nth-of-type(15)) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1060px;
+}
