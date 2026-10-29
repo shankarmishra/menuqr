@@ -1,0 +1,16 @@
+# MenusQR
+
+> MenusQR lets restaurants, cafes and dhabas in India create a digital QR menu. Dishes, prices and availability can be updated instantly, and the printed table QR code never changes.
+
+## Key pages
+- [Digital QR menu](https://menusqr.in/digital-qr-menu): how a digital QR menu works
+- [How it works](https://menusqr.in/how-it-works): setup steps
+- [Menu templates](https://menusqr.in/templates): ready-made menu designs
+- [Plans and pricing](https://menusqr.in/plans): subscription plans
+- [FAQ](https://menusqr.in/faq): common questions
+- [Contact](https://menusqr.in/contact)
+
+## Legal
+- [Privacy](https://menusqr.in/privacy)
+- [Terms](https://menusqr.in/terms)
+- [Refund and cancellation](https://menusqr.in/refund-cancellation)

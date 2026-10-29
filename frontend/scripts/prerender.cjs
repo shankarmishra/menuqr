@@ -522,5 +522,13 @@ html404 = html404.replace('</head>', `<meta name="robots" content="noindex, nofo
 html404 = html404.replace('<div id="root"></div>', `<div id="root"><main class="max-w-4xl mx-auto px-6 py-20 text-center"><h1 class="text-4xl font-bold text-[#151C19]">404 - Page Not Found</h1><p class="mt-4 text-gray-600">The requested page does not exist on MenusQR.</p><a href="/" class="mt-6 inline-block bg-[#E8783C] text-white px-6 py-3 rounded-full font-bold">Go to Homepage</a></main></div>`);
 fs.writeFileSync(path.join(DIST_DIR, '404.html'), html404, 'utf-8');
 
+// Stamp sitemap <lastmod> with the build date so it never goes stale.
+const sitemapPath = path.join(DIST_DIR, 'sitemap.xml');
+if (fs.existsSync(sitemapPath)) {
+  const today = new Date().toISOString().slice(0, 10);
+  const sitemap = fs.readFileSync(sitemapPath, 'utf-8').replace(/<lastmod>[^<]*<\/lastmod>/g, `<lastmod>${today}</lastmod>`);
+  fs.writeFileSync(sitemapPath, sitemap, 'utf-8');
+}
+
 console.log(`Prerender complete: Generated static HTML for ${routes.length} marketing routes + ${spaRoutes.length} SPA shells + 404.html`);
 
