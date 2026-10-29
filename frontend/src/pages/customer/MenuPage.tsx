@@ -61,6 +61,7 @@ import { resolveTheme } from '../../design-system/resolveTheme';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import { SEO } from '../../seo/SEO';
 import GuestFeedbackCard from '../../components/customer/GuestFeedbackCard';
+import VoiceWelcomeBanner from '../../components/customer/VoiceWelcomeBanner';
 import './MenuPage.css';
 
 export interface DiningSessionOrder {
@@ -761,6 +762,14 @@ export default function MenuPage() {
           )}
         </div>
       </header>
+
+      {/* Table Welcome Voice Greeting */}
+      {Boolean(client?.accentConfiguration) && (
+        <VoiceWelcomeBanner
+          voiceGreeting={(client.accentConfiguration as any)?.voiceGreeting}
+          restaurantName={client.businessName || 'the restaurant'}
+        />
+      )}
 
       <main className="flex-1 pb-28">
         <MenuTemplateRenderer

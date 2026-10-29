@@ -17,7 +17,7 @@
 import { createLocalDriver } from './localDriver.js';
 import { createS3Driver } from './s3Driver.js';
 
-const VALID_CATEGORIES = new Set(['dishes', 'logos', 'covers', 'library']);
+const VALID_CATEGORIES = new Set(['dishes', 'logos', 'covers', 'library', 'voices']);
 
 let activeDriver = null;
 

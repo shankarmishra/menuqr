@@ -14,6 +14,7 @@ import { coerceTheme, validateTheme } from '../themeValidator.js';
 import { registerOrderClient, broadcastOrderEvent } from '../orderStream.js';
 import { optimizeAndSaveImage } from '../imageOptimizer.js';
 import { enqueueTask, getJobStatus, TASK_TYPES } from '../taskQueue.js';
+import { synthesizeVoiceGreeting, saveTenantVoiceGreeting } from '../welcomeVoice.js';
 
 function inputText(value, maxLength = 255) {
   if (value === undefined || value === null) return '';
@@ -284,14 +285,82 @@ export default async function appRoutes(request, response, url) {
 
   if (request.method === 'GET' && url.pathname === '/api/app/profile') {
     const res = await pool.query(`
-      SELECT u.email, u.role, c.business_name as "businessName", c.menu_slug as "menuSlug", c.status, c.tagline, c.phone, c.city, c.state, c.address, c.logo_url as "logoUrl", c.cuisine, c.opening_hours as "openingHours", c.instagram, c.facebook, c.website
+      SELECT u.email, u.role, c.business_name as "businessName", c.menu_slug as "menuSlug", c.status, c.tagline, c.phone, c.city, c.state, c.address, c.logo_url as "logoUrl", c.cuisine, c.opening_hours as "openingHours", c.instagram, c.facebook, c.website, a.accent_configuration as "accentConfiguration"
       FROM users u
       JOIN clients c ON u.tenant_id = c.id
+      LEFT JOIN appearance_settings a ON a.tenant_id = c.id
       WHERE u.id = $1 AND c.id = $2
     `, [user.id, user.tenantId]);
     if (!res.rows[0]) throw apiError(404, 'Profile not found.');
     invalidatePublicMenuCache(user.tenantId);
     sendJson(response, 200, res.rows[0]);
+    return true;
+  }
+
+  // ───────────────────────── AI Voice Greeting (Table Welcome Hostess) ─────────────────────────
+  if (request.method === 'POST' && url.pathname === '/api/app/voice-greeting/preview') {
+    const input = await readJson(request);
+    const clientRes = await pool.query('SELECT business_name FROM clients WHERE id = $1', [user.tenantId]);
+    const businessName = clientRes.rows[0]?.business_name || 'Our Restaurant';
+    const { audioBuffer, text } = await synthesizeVoiceGreeting({
+      businessName,
+      messageStyle: input.messageStyle,
+      customText: input.customText,
+      voiceGender: input.voiceGender,
+    });
+    sendJson(response, 200, {
+      audioBase64: `data:audio/wav;base64,${audioBuffer.toString('base64')}`,
+      text,
+    });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/app/voice-greeting') {
+    const input = await readJson(request);
+    const clientRes = await pool.query('SELECT business_name FROM clients WHERE id = $1', [user.tenantId]);
+    const businessName = clientRes.rows[0]?.business_name || 'Our Restaurant';
+
+    let voiceGreetingData = { enabled: Boolean(input.enabled) };
+
+    if (input.enabled) {
+      const res = await saveTenantVoiceGreeting({
+        tenantId: user.tenantId,
+        businessName,
+        messageStyle: input.messageStyle,
+        customText: input.customText,
+        voiceGender: input.voiceGender,
+      });
+      voiceGreetingData = {
+        enabled: true,
+        audioUrl: res.audioUrl,
+        text: res.text,
+        messageStyle: res.messageStyle,
+        voiceGender: res.voiceGender,
+        customText: input.customText || '',
+      };
+    }
+
+    const appRes = await pool.query('SELECT id, accent_configuration FROM appearance_settings WHERE tenant_id = $1', [user.tenantId]);
+    let currentConfig = appRes.rows[0]?.accent_configuration || {};
+    if (typeof currentConfig === 'string') {
+      try { currentConfig = JSON.parse(currentConfig); } catch { currentConfig = {}; }
+    }
+    currentConfig.voiceGreeting = voiceGreetingData;
+
+    if (appRes.rows[0]) {
+      await pool.query(
+        'UPDATE appearance_settings SET accent_configuration = $1, updated_at = NOW() WHERE tenant_id = $2',
+        [currentConfig, user.tenantId]
+      );
+    } else {
+      await pool.query(
+        'INSERT INTO appearance_settings (id, tenant_id, accent_configuration) VALUES ($1, $2, $3)',
+        [randomUUID(), user.tenantId, currentConfig]
+      );
+    }
+
+    invalidatePublicMenuCache(user.tenantId);
+    sendJson(response, 200, { success: true, voiceGreeting: voiceGreetingData });
     return true;
   }
 

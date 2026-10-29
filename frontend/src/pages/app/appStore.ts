@@ -54,6 +54,7 @@ export interface AppProfile {
   openingHours?: string;
   logo?: string;
   instagram?: string;
+  accentConfiguration?: any;
   facebook?: string;
   website?: string;
 }
@@ -92,7 +93,7 @@ export interface AppQrData {
   facebook?: string;
   website?: string;
   templateId?: string;
-  accentConfiguration?: unknown;
+  accentConfiguration?: any;
 }
 
 export interface OnboardingPayload {
@@ -404,6 +405,27 @@ export type FeedbackSummary = {
     createdAt: string;
   }>;
 };
+
+export type VoiceGreetingPayload = {
+  enabled: boolean;
+  messageStyle?: 'hinglish_warm' | 'hindi_respectful' | 'english_welcome' | 'custom';
+  customText?: string;
+  voiceGender?: 'female' | 'male';
+};
+
+export function saveVoiceGreeting(payload: VoiceGreetingPayload): Promise<{ success: boolean; voiceGreeting: any }> {
+  return request('/voice-greeting', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function previewVoiceGreeting(payload: Omit<VoiceGreetingPayload, 'enabled'>): Promise<{ audioBase64: string; text: string }> {
+  return request('/voice-greeting/preview', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
 
 export function getFeedback(limit = 50): Promise<FeedbackSummary> {
   return request<FeedbackSummary>(`/feedback?limit=${limit}`);

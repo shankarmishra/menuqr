@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   getProfile,
   updateSettings,
   getGoogleReviewsAddon,
   updateGoogleReviewsAddon,
   deleteGoogleReviewsAddon,
+  saveVoiceGreeting,
+  previewVoiceGreeting,
   type AppProfile,
   type GoogleReviewsAddonStatus,
 } from './appStore';
@@ -18,6 +20,9 @@ import {
   Save,
   Clock,
   Sparkles,
+  Volume2,
+  Play,
+  Pause,
   Link as LinkIcon,
   Building2,
   Phone,
@@ -72,6 +77,17 @@ export default function Settings() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // AI Voice Greeting state
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [voiceStyle, setVoiceStyle] = useState<'hinglish_warm' | 'hindi_respectful' | 'english_welcome' | 'custom'>('hinglish_warm');
+  const [voiceCustomText, setVoiceCustomText] = useState('');
+  const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
+  const [savingVoice, setSavingVoice] = useState(false);
+  const [previewingVoice, setPreviewingVoice] = useState(false);
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
+  const [activeVoiceUrl, setActiveVoiceUrl] = useState<string | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+
   // Review URL form state
   const [reviewUrlInput, setReviewUrlInput] = useState('');
   const [isEditingReview, setIsEditingReview] = useState(false);
@@ -87,6 +103,14 @@ export default function Settings() {
       .then(([prof, addon]) => {
         if (prof) {
           setProfile(prof);
+          const vg = (prof.accentConfiguration as any)?.voiceGreeting;
+          if (vg) {
+            setVoiceEnabled(Boolean(vg.enabled));
+            setVoiceStyle(vg.messageStyle || 'hinglish_warm');
+            setVoiceCustomText(vg.customText || '');
+            setVoiceGender(vg.voiceGender || 'female');
+            setActiveVoiceUrl(vg.audioUrl || null);
+          }
           setProfileForm({
             businessName: prof.businessName || '',
             tagline: prof.tagline || '',
@@ -109,6 +133,50 @@ export default function Settings() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handlePreviewVoice = async () => {
+    setPreviewingVoice(true);
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+    }
+    try {
+      const res = await previewVoiceGreeting({
+        messageStyle: voiceStyle,
+        customText: voiceCustomText,
+        voiceGender,
+      });
+      const audio = new Audio(res.audioBase64);
+      previewAudioRef.current = audio;
+      audio.onplay = () => setIsPlayingPreview(true);
+      audio.onended = () => setIsPlayingPreview(false);
+      audio.onpause = () => setIsPlayingPreview(false);
+      await audio.play();
+    } catch (err: any) {
+      showToast('error', err.message || 'Failed to preview voice greeting.');
+    } finally {
+      setPreviewingVoice(false);
+    }
+  };
+
+  const handleSaveVoice = async () => {
+    setSavingVoice(true);
+    try {
+      const res = await saveVoiceGreeting({
+        enabled: voiceEnabled,
+        messageStyle: voiceStyle,
+        customText: voiceCustomText,
+        voiceGender,
+      });
+      if (res.voiceGreeting?.audioUrl) {
+        setActiveVoiceUrl(res.voiceGreeting.audioUrl);
+      }
+      showToast('success', voiceEnabled ? 'AI Table Voice Greeting activated!' : 'Voice Greeting turned off.');
+    } catch (err: any) {
+      showToast('error', err.message || 'Failed to update voice greeting.');
+    } finally {
+      setSavingVoice(false);
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -525,7 +593,224 @@ export default function Settings() {
         </div>
       </form>
 
-      {/* ── 2. Google Reviews Add-on Section ─────────────────────────────────── */}
+      {/* ── 2. AI Table Voice Greeting (Smart Host / Hostess) ──────────────── */}
+      <div className="bg-[#1d2723] rounded-2xl p-6 md:p-8 border border-[#2a3832] space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-[#2a3832]">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-400/10 text-amber-400 border border-amber-400/20 shrink-0 mt-0.5">
+              <Volume2 className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold text-white tracking-tight">AI Table Voice Greeting</h2>
+                <span className="px-2 py-0.5 rounded-full bg-amber-400/15 text-amber-300 text-[10px] font-bold border border-amber-400/30">
+                  Real AI Hostess
+                </span>
+              </div>
+              <p className="text-xs text-[#849a90] mt-1 leading-relaxed max-w-xl">
+                Plays a natural, warm voice greeting in authentic Hinglish or Hindi when diners scan your table QR code.
+              </p>
+            </div>
+          </div>
+
+          <label className="inline-flex items-center gap-3 cursor-pointer select-none">
+            <span className="text-xs font-semibold text-white/80">
+              {voiceEnabled ? 'Enabled' : 'Disabled'}
+            </span>
+            <input
+              type="checkbox"
+              checked={voiceEnabled}
+              onChange={(e) => setVoiceEnabled(e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="relative w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+          </label>
+        </div>
+
+        {voiceEnabled && (
+          <div className="space-y-5 animate-in fade-in duration-200">
+            {/* Voice Style Choice */}
+            <div>
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-2.5">
+                Greeting Style & Language
+              </label>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div
+                  onClick={() => setVoiceStyle('hinglish_warm')}
+                  className={`rounded-xl p-3.5 border cursor-pointer transition-all ${
+                    voiceStyle === 'hinglish_warm'
+                      ? 'border-amber-400 bg-amber-400/10'
+                      : 'border-[#2a3832] bg-[#151c19] hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-white">🌸 Warm Hinglish Hostess (Recommended)</span>
+                    {voiceStyle === 'hinglish_warm' && <CheckCircle2 className="h-4 w-4 text-amber-400" />}
+                  </div>
+                  <p className="text-[11px] text-[#849a90] italic">
+                    "नमस्ते! Welcome to {profileForm.businessName || 'Our Restaurant'}! Please menu dekhiye aur bataiye aaj aapke liye kya layein!"
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setVoiceStyle('hindi_respectful')}
+                  className={`rounded-xl p-3.5 border cursor-pointer transition-all ${
+                    voiceStyle === 'hindi_respectful'
+                      ? 'border-amber-400 bg-amber-400/10'
+                      : 'border-[#2a3832] bg-[#151c19] hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-white">🙏 Traditional Respectful Hindi</span>
+                    {voiceStyle === 'hindi_respectful' && <CheckCircle2 className="h-4 w-4 text-amber-400" />}
+                  </div>
+                  <p className="text-[11px] text-[#849a90] italic">
+                    "नमस्ते! {profileForm.businessName || 'Our Restaurant'} में आपका हार्दिक स्वागत है! बताइए, आज आप क्या खाना पसंद करेंगे?"
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setVoiceStyle('english_welcome')}
+                  className={`rounded-xl p-3.5 border cursor-pointer transition-all ${
+                    voiceStyle === 'english_welcome'
+                      ? 'border-amber-400 bg-amber-400/10'
+                      : 'border-[#2a3832] bg-[#151c19] hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-white">🌟 Modern Hospitality English</span>
+                    {voiceStyle === 'english_welcome' && <CheckCircle2 className="h-4 w-4 text-amber-400" />}
+                  </div>
+                  <p className="text-[11px] text-[#849a90] italic">
+                    "Hello and welcome to {profileForm.businessName || 'Our Restaurant'}! Please explore our fresh menu and enjoy your meal!"
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setVoiceStyle('custom')}
+                  className={`rounded-xl p-3.5 border cursor-pointer transition-all ${
+                    voiceStyle === 'custom'
+                      ? 'border-amber-400 bg-amber-400/10'
+                      : 'border-[#2a3832] bg-[#151c19] hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-white">✍️ Custom Greeting Message</span>
+                    {voiceStyle === 'custom' && <CheckCircle2 className="h-4 w-4 text-amber-400" />}
+                  </div>
+                  <p className="text-[11px] text-[#849a90]">
+                    Write your own customized welcome line in Hindi or Hinglish.
+                  </p>
+                </div>
+              </div>
+
+              {voiceStyle === 'custom' && (
+                <div className="mt-3">
+                  <textarea
+                    rows={2}
+                    value={voiceCustomText}
+                    onChange={(e) => setVoiceCustomText(e.target.value.slice(0, 200))}
+                    placeholder="e.g. नमस्ते! हमारे ढाबे पर पधारने के लिए शुक्रिया, आज की स्पेशल कड़ाही पनीर जरूर ट्राई करें!"
+                    className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-amber-400"
+                  />
+                  <div className="text-right text-[10px] text-[#849a90] mt-0.5">{voiceCustomText.length}/200</div>
+                </div>
+              )}
+            </div>
+
+            {/* Voice Gender Selection */}
+            <div>
+              <label className="block text-xs font-semibold text-[#f3f4f6] mb-2">
+                Voice Character
+              </label>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setVoiceGender('female')}
+                  className={`px-4 py-2 rounded-xl text-xs font-medium border transition-all ${
+                    voiceGender === 'female'
+                      ? 'border-amber-400 bg-amber-400/15 text-amber-300 font-bold'
+                      : 'border-[#2a3832] bg-[#151c19] text-[#849a90]'
+                  }`}
+                >
+                  Sweet Hostess (Female)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVoiceGender('male')}
+                  className={`px-4 py-2 rounded-xl text-xs font-medium border transition-all ${
+                    voiceGender === 'male'
+                      ? 'border-amber-400 bg-amber-400/15 text-amber-300 font-bold'
+                      : 'border-[#2a3832] bg-[#151c19] text-[#849a90]'
+                  }`}
+                >
+                  Welcoming Host (Male)
+                </button>
+              </div>
+            </div>
+
+            {/* Preview and Save Action Bar */}
+            <div className="pt-3 border-t border-[#2a3832] flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={handlePreviewVoice}
+                disabled={previewingVoice}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {previewingVoice ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
+                ) : isPlayingPreview ? (
+                  <Pause className="h-4 w-4 text-amber-400" />
+                ) : (
+                  <Play className="h-4 w-4 text-amber-400" />
+                )}
+                <span>{previewingVoice ? 'Generating AI Voice...' : isPlayingPreview ? 'Playing Voice...' : 'Listen Live Preview'}</span>
+              </button>
+
+              {activeVoiceUrl && (
+                <div className="flex items-center gap-2 text-xs text-[#849a90]">
+                  <span>Saved Audio:</span>
+                  <audio controls src={activeVoiceUrl} className="h-7 w-40 rounded opacity-80" />
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={handleSaveVoice}
+                disabled={savingVoice}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black px-5 py-2.5 text-xs font-bold transition-all shadow-md shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+              >
+                {savingVoice ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Saving Greeting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>Save & Activate Voice Greeting</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!voiceEnabled && (
+          <div className="pt-2 flex justify-end">
+            <button
+              type="button"
+              onClick={handleSaveVoice}
+              disabled={savingVoice}
+              className="inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/15 text-white px-5 py-2 text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer"
+            >
+              {savingVoice ? 'Saving...' : 'Save Setting'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── 3. Google Reviews Add-on Section ─────────────────────────────────── */}
       <div className="rounded-2xl border border-[#2a3832] bg-[#1d2723] p-6 md:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2a3832] pb-6">
           <div className="flex items-center gap-3">
