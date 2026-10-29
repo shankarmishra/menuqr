@@ -17,7 +17,7 @@
  * degrades to exactly today's behaviour rather than producing broken requests.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import type { FocalPoint } from '../../../design-system/theme.types.ts';
 
 /** Widths generated at upload time. Keep in step with backend/imageOptimizer.js. */
@@ -79,12 +79,17 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   className,
   placeholder,
 }) => {
+  const [hasError, setHasError] = useState(false);
   const frameStyle: React.CSSProperties = aspectRatio ? { aspectRatio } : {};
 
-  if (!src) {
+  if (!src || hasError) {
     return (
       <div className={['mq-image-frame', className].filter(Boolean).join(' ')} style={frameStyle}>
-        {placeholder ?? <div className="mq-image-placeholder" aria-hidden="true" />}
+        {placeholder ?? (
+          <div className="mq-image-placeholder flex items-center justify-center bg-white/[0.04] text-white/30" aria-hidden="true">
+            <span className="text-[10px] uppercase font-bold tracking-widest text-white/40">Delicious</span>
+          </div>
+        )}
       </div>
     );
   }
@@ -102,6 +107,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   const img = (
     <img
       className="mq-image"
+      onError={() => setHasError(true)}
       src={src}
       alt={alt}
       // Intrinsic dimensions plus the frame's aspect-ratio are what hold layout steady while

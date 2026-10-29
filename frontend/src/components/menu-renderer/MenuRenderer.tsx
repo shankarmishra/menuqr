@@ -20,6 +20,7 @@ import {
 } from './slots/registry.ts';
 import { SIGNATURE_COMPONENTS } from './signature/registry.ts';
 import { EmptyResults, MenuToolbar } from './primitives/MenuToolbar.tsx';
+import { AnnouncementBanner } from './primitives/AnnouncementBanner.tsx';
 import { useMenuFilters } from './useMenuFilters.ts';
 import type { MenuTheme } from '../../design-system/theme.types.ts';
 import type { RenderCategory, RenderRestaurant, SlotProps } from './types.ts';
@@ -77,6 +78,7 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
 
   return (
     <>
+      <AnnouncementBanner />
       {tokens.cover.showCoverPage && <Cover {...slotProps} />}
 
       {/* The sidebar variant renders its own sticky pill row for narrow screens, so rendering it

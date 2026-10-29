@@ -684,6 +684,15 @@ export default function MenuPage() {
   const effectiveBg = isShobharam ? '#090C0B' : (bespokeColors?.bg || pagePalette.bg);
   const effectiveText = isShobharam ? '#F3F4F6' : (bespokeColors?.text || pagePalette.text);
 
+  // Prevent white overscroll / bottom strip on dark themed menus
+  useEffect(() => {
+    const originalBg = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = effectiveBg;
+    return () => {
+      document.body.style.backgroundColor = originalBg;
+    };
+  }, [effectiveBg]);
+
   return (
     <div className="min-h-screen flex flex-col font-sans transition-colors duration-300" style={{ backgroundColor: effectiveBg, color: effectiveText }}>
       <SEO 
@@ -692,7 +701,7 @@ export default function MenuPage() {
         canonicalUrl={`/menu/${slug}`} 
         index={false} 
       />
-      <header className="px-4 py-3 border-b border-white/10 flex items-center justify-between backdrop-blur-md sticky top-0 z-40 bg-black/40">
+      <header className="px-4 py-3 border-b border-white/10 flex items-center justify-between backdrop-blur-md relative z-30 bg-black/40">
         {isShobharam ? (
           <div className="flex items-center gap-2.5">
             <img
