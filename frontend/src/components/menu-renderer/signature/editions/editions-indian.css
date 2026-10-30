@@ -1,0 +1,2166 @@
+/*
+ * MENUQR Signature Editions — Authentic Indian Culinary Editions
+ *
+ * Dedicated luxury stylesheets for the 5 curated Indian restaurant editions:
+ *   1. Maharaja's Table — Indian Royal Dining (Imperial Emerald, Burgundy, Antique Brass)
+ *   2. Rang-e-Punjab   — Premium Punjabi Restaurant (Tandoori Red, Charcoal Slate, Glowing Embers)
+ *   3. Dakshin         — South Indian Heritage (Banana Leaf Green, Turmeric Gold, Kolam Rangoli)
+ *   4. Thali & Co.     — Modern Indian Regional Cuisine (Terracotta, Jaipur Indigo, Linen Khadi)
+ *   5. Bombay Chowk    — Modern Indian Street Food (Mumbai Tomato Red, Cobalt Blue, Irani Chai)
+ *
+ * All editions feature CSS Container Queries (inline-size), fluid cqw typography,
+ * high-contrast photographic veils, and responsive containment so no text ever
+ * cuts through borders or overflows on any device.
+ */
+
+/* ========================================================================================
+   GLOBAL CONTAINER QUERY SCROLLBARS FOR INDIAN EDITIONS
+   ======================================================================================== */
+
+.mq-ed-maharaja,
+.mq-ed-punjab,
+.mq-ed-dakshin,
+.mq-ed-thali,
+.mq-ed-chowk {
+  container-type: inline-size;
+  box-sizing: border-box;
+  scrollbar-width: thin;
+}
+
+.mq-ed-maharaja { scrollbar-color: rgba(212, 175, 55, 0.45) transparent; }
+.mq-ed-punjab   { scrollbar-color: rgba(200, 50, 26, 0.45) transparent; }
+.mq-ed-dakshin  { scrollbar-color: rgba(212, 152, 29, 0.45) transparent; }
+.mq-ed-thali    { scrollbar-color: rgba(184, 83, 52, 0.45) transparent; }
+.mq-ed-chowk    { scrollbar-color: rgba(216, 58, 45, 0.45) transparent; }
+
+.mq-ed-maharaja::-webkit-scrollbar,
+.mq-ed-punjab::-webkit-scrollbar,
+.mq-ed-dakshin::-webkit-scrollbar,
+.mq-ed-thali::-webkit-scrollbar,
+.mq-ed-chowk::-webkit-scrollbar {
+  width: 5px;
+}
+
+.mq-ed-maharaja::-webkit-scrollbar-thumb { background-color: rgba(212, 175, 55, 0.45); border-radius: 9999px; }
+.mq-ed-punjab::-webkit-scrollbar-thumb   { background-color: rgba(200, 50, 26, 0.45); border-radius: 9999px; }
+.mq-ed-dakshin::-webkit-scrollbar-thumb  { background-color: rgba(212, 152, 29, 0.45); border-radius: 9999px; }
+.mq-ed-thali::-webkit-scrollbar-thumb    { background-color: rgba(184, 83, 52, 0.45); border-radius: 9999px; }
+.mq-ed-chowk::-webkit-scrollbar-thumb    { background-color: rgba(216, 58, 45, 0.45); border-radius: 9999px; }
+
+
+/* ========================================================================================
+   A — MAHARAJA'S TABLE : Indian Royal Dining
+   ======================================================================================== */
+
+.mq-ed-maharaja {
+  --royal-arch-inset: clamp(10px, 3cqw, 24px);
+  background-color: var(--mq-color-bg, #081a12);
+  color: var(--mq-color-text, #fbf8f0);
+  position: relative;
+  container-name: maharaja;
+}
+
+.mq-ed-maharaja-cover {
+  container-type: inline-size;
+  container-name: maharaja-cover;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: min(100svh, 54rem);
+  padding: calc(var(--royal-arch-inset) + clamp(0.75rem, 2.5cqw, 1.75rem)) calc(var(--royal-arch-inset) + clamp(0.5rem, 2cqw, 1.5rem));
+  overflow: hidden;
+  text-align: center;
+  color: #fbf8f0;
+  box-sizing: border-box;
+}
+
+.mq-ed-maharaja-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(
+      ellipse at 50% 38%,
+      rgba(10, 32, 22, 0.68) 0%,
+      rgba(8, 25, 17, 0.88) 60%,
+      #040f0a 100%
+    );
+  pointer-events: none;
+}
+
+.mq-ed-maharaja-arch-frame {
+  position: absolute;
+  inset: var(--royal-arch-inset);
+  z-index: 2;
+  border: 1px solid rgba(212, 175, 55, 0.7);
+  box-shadow:
+    inset 0 0 24px rgba(0, 0, 0, 0.75),
+    0 0 16px rgba(212, 175, 55, 0.15);
+  pointer-events: none;
+}
+
+.mq-ed-maharaja-arch-frame::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+}
+
+.mq-ed-maharaja-jali-watermark {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0.07;
+  background-image: radial-gradient(
+    rgba(212, 175, 55, 0.8) 1px,
+    transparent 1px
+  );
+  background-size: 26px 26px;
+  pointer-events: none;
+}
+
+.mq-ed-maharaja-cover-body {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.35rem, 1.6cqw, 0.95rem);
+  width: 100%;
+  max-width: min(34rem, 100%);
+  margin-block: auto;
+  box-sizing: border-box;
+}
+
+.mq-ed-maharaja-heritage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  padding: 3px 14px;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
+  letter-spacing: clamp(0.08em, 0.3cqw, 0.16em);
+  text-transform: uppercase;
+  color: #ecdcb9;
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  border-radius: 9999px;
+  background-color: rgba(10, 32, 22, 0.75);
+  backdrop-filter: blur(4px);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-maharaja-crest {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: clamp(74px, 18cqw, 108px);
+  height: clamp(74px, 18cqw, 108px);
+  color: #d4af37;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.7));
+}
+
+.mq-ed-maharaja-crest > * {
+  grid-area: 1 / 1;
+}
+
+.mq-ed-maharaja-crest > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.mq-ed-maharaja-crest .mq-ed-mark {
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-mark-bare {
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+.mq-ed-maharaja-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 5.8cqw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: clamp(0.04em, 0.8cqw, 0.14em);
+  text-transform: uppercase;
+  color: #fbf8f0;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8);
+  text-wrap: balance;
+  word-break: break-word;
+  max-width: min(32rem, 90%);
+}
+
+.mq-ed-maharaja-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-3);
+  width: min(20rem, 80%);
+  color: #d4af37;
+}
+
+.mq-ed-maharaja-divider-line {
+  flex: 1 1 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, currentColor 50%, transparent);
+}
+
+.mq-ed-maharaja-tagline {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.72rem, 2.2cqw, 1rem);
+  font-style: italic;
+  letter-spacing: clamp(0.02em, 0.4cqw, 0.06em);
+  line-height: var(--mq-leading-relaxed);
+  color: #ecdcb9;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+  max-width: min(25rem, 90%);
+  text-wrap: balance;
+}
+
+.mq-ed-maharaja-teaser {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
+  letter-spacing: clamp(0.06em, 0.3cqw, 0.14em);
+  text-transform: uppercase;
+  color: #d4af37;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  max-width: min(26rem, 90%);
+}
+
+.mq-ed-maharaja-contact {
+  position: relative;
+  z-index: 4;
+  margin-top: auto;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.6rem, 1.7cqw, 0.75rem);
+  letter-spacing: 0.12em;
+  color: #ecdcb9;
+  opacity: 0.88;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-maharaja-plate {
+  max-width: var(--mq-ed-measure);
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-12);
+}
+
+/* Shahi Showcase Cards */
+.mq-ed-maharaja-showcase {
+  margin-bottom: var(--mq-space-12);
+}
+
+.mq-ed-maharaja-showcase-title {
+  text-align: center;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mq-color-accent);
+  margin-bottom: var(--mq-space-6);
+}
+
+.mq-ed-maharaja-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--mq-space-6);
+}
+
+.mq-ed-maharaja-card {
+  position: relative;
+  background-color: var(--mq-color-surface);
+  border: 1px solid color-mix(in oklab, var(--mq-color-accent) 40%, transparent);
+  padding: var(--mq-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+}
+
+.mq-ed-maharaja-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--mq-color-accent) 25%, transparent);
+}
+
+.mq-ed-maharaja-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-1);
+}
+
+.mq-ed-maharaja-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-maharaja-card-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 600;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-maharaja-card-price {
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  font-weight: 700;
+  color: var(--mq-color-accent);
+}
+
+.mq-ed-maharaja-card-desc {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  color: var(--mq-color-text-muted);
+  line-height: var(--mq-leading-relaxed);
+}
+
+/* ========================================================================================
+   A — MAHARAJA'S TABLE : Shahi Banquet Sections & Leaders
+   ======================================================================================== */
+
+.mq-ed-maharaja-course {
+  position: relative;
+  margin-bottom: var(--mq-space-10);
+  padding: clamp(1.25rem, 3.5cqw, 2.25rem) clamp(1rem, 3cqw, 2rem);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(18, 48, 32, 0.5) 0%, rgba(8, 24, 16, 0.8) 85%),
+    #06150e;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 24px rgba(0, 0, 0, 0.65),
+    0 8px 32px rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+}
+
+.mq-ed-maharaja-course::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  pointer-events: none;
+}
+
+.mq-ed-maharaja-course-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: clamp(1rem, 2.5cqw, 1.75rem);
+}
+
+.mq-ed-maharaja-course-title {
+  margin: var(--mq-space-2) 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 4cqw, 1.85rem);
+  font-weight: 600;
+  letter-spacing: clamp(0.06em, 0.6cqw, 0.14em);
+  color: #fbf8f0;
+  text-transform: uppercase;
+  text-wrap: balance;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+}
+
+.mq-ed-maharaja-course-desc {
+  margin: 0 auto;
+  max-width: 48ch;
+  font-size: clamp(0.78rem, 2cqw, 0.9rem);
+  color: rgba(236, 220, 185, 0.85);
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-maharaja-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 2cqw, 1.25rem);
+  margin-top: var(--mq-space-4);
+}
+
+.mq-ed-maharaja .mq-ed-leader {
+  display: block;
+  min-width: 0;
+  padding-bottom: clamp(0.4rem, 1.2cqw, 0.75rem);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.mq-ed-maharaja .mq-ed-leader:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mq-ed-maharaja .mq-ed-leader-head {
+  display: flex;
+  align-items: last baseline;
+  gap: clamp(0.35rem, 1.2cqw, 0.75rem);
+  min-width: 0;
+  width: 100%;
+}
+
+.mq-ed-maharaja .mq-diet {
+  flex-shrink: 0;
+  margin-top: 0.12em;
+  align-self: center;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-maharaja .mq-ed-leader-name {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 4.5rem);
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.92rem, 2.4cqw, 1.12rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: #fbf8f0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  overflow-wrap: break-word;
+  word-break: normal;
+  text-wrap: pretty;
+}
+
+.mq-ed-maharaja .mq-ed-leader-rule {
+  flex: 1 1 1.5rem;
+  min-width: 0.85rem;
+  height: 1px;
+  align-self: last baseline;
+  margin-bottom: 0.22em;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(212, 175, 55, 0.75) 1px,
+    transparent 1.2px
+  );
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.85;
+}
+
+.mq-ed-maharaja .mq-ed-leader-head .mq-row,
+.mq-ed-maharaja .mq-ed-leader-head .mq-stack {
+  flex-shrink: 0;
+  margin-left: auto;
+  align-self: last baseline;
+}
+
+.mq-ed-maharaja .mq-price {
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: #d4af37;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+  white-space: nowrap;
+}
+
+.mq-ed-maharaja .mq-price-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ecdcb9;
+  opacity: 0.85;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
+.mq-ed-maharaja .mq-ed-leader-desc {
+  margin: var(--mq-space-1) 0 0;
+  max-width: 54ch;
+  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+  line-height: var(--mq-leading-relaxed);
+  color: rgba(236, 220, 185, 0.82);
+  font-style: italic;
+  overflow-wrap: break-word;
+}
+
+.mq-ed-maharaja .mq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  font-family: var(--mq-font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.08) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  color: #ecdcb9;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+}
+
+.mq-ed-maharaja .mq-badge::before {
+  content: '⚜';
+  font-size: 0.65rem;
+  color: #d4af37;
+}
+
+.mq-ed-maharaja .mq-badge-quiet {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: #ecdcb9;
+}
+
+.mq-ed-maharaja .mq-badge-quiet::before {
+  content: '◆';
+  font-size: 0.55rem;
+  color: rgba(212, 175, 55, 0.65);
+}
+
+.mq-ed-maharaja-foot {
+  padding: var(--mq-space-10) var(--mq-space-5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-3);
+  border-top: 1px solid var(--mq-color-border);
+}
+
+.mq-ed-maharaja-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-maharaja-foot-sub {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  font-style: italic;
+  color: var(--mq-color-text-muted);
+}
+
+
+/* ========================================================================================
+   B — RANG-E-PUNJAB : Premium Punjabi Restaurant
+   ======================================================================================== */
+
+.mq-ed-punjab {
+  background-color: var(--mq-color-bg, #141010);
+  color: var(--mq-color-text, #fffbf5);
+  position: relative;
+  container-name: punjab;
+}
+
+.mq-ed-punjab-cover {
+  container-type: inline-size;
+  container-name: punjab-cover;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: min(100svh, 54rem);
+  padding: clamp(1.5rem, 4cqw, 2.5rem) clamp(1rem, 3cqw, 2rem);
+  overflow: hidden;
+  text-align: center;
+  color: #fffbf5;
+  box-sizing: border-box;
+}
+
+.mq-ed-punjab-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(
+      ellipse at 50% 38%,
+      rgba(26, 18, 18, 0.65) 0%,
+      rgba(20, 14, 14, 0.88) 65%,
+      #0e0909 100%
+    );
+  pointer-events: none;
+}
+
+/* Geometric Phulkari embroidered border fringe */
+.mq-ed-punjab-phulkari-strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12px;
+  z-index: 3;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #c8321a 0,
+    #c8321a 8px,
+    #e5a93c 8px,
+    #e5a93c 16px,
+    #221616 16px,
+    #221616 24px
+  );
+  opacity: 0.92;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.mq-ed-punjab-phulkari-top { top: 0; }
+.mq-ed-punjab-phulkari-bottom { bottom: 0; }
+
+.mq-ed-punjab-cover-body {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.35rem, 1.8cqw, 0.95rem);
+  width: 100%;
+  max-width: min(34rem, 100%);
+  margin-block: auto;
+  box-sizing: border-box;
+}
+
+.mq-ed-punjab-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  padding: 4px 14px;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
+  font-weight: 700;
+  letter-spacing: clamp(0.08em, 0.3cqw, 0.16em);
+  text-transform: uppercase;
+  color: #fffbf5;
+  background-color: #c8321a;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(200, 50, 26, 0.4);
+}
+
+.mq-ed-punjab-crest {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: clamp(62px, 15cqw, 92px);
+  height: clamp(62px, 15cqw, 92px);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+}
+
+.mq-ed-punjab-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.35rem, 6.8cqw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fffbf5;
+  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.85);
+  text-wrap: balance;
+  word-break: break-word;
+  max-width: min(32rem, 90%);
+}
+
+.mq-ed-punjab-tagline {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.74rem, 2.3cqw, 1.05rem);
+  font-style: italic;
+  letter-spacing: 0.04em;
+  line-height: var(--mq-leading-relaxed);
+  color: #f5ebe6;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  max-width: min(25rem, 90%);
+  text-wrap: balance;
+}
+
+.mq-ed-punjab-teaser {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.58rem, 1.7cqw, 0.75rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e5a93c;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  max-width: min(26rem, 90%);
+}
+
+.mq-ed-punjab-contact {
+  position: relative;
+  z-index: 4;
+  margin-top: auto;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.6rem, 1.7cqw, 0.75rem);
+  letter-spacing: 0.12em;
+  color: #f5ebe6;
+  opacity: 0.9;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-punjab-plate {
+  max-width: var(--mq-ed-measure);
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-12);
+}
+
+.mq-ed-punjab-course {
+  position: relative;
+  margin-bottom: var(--mq-space-10);
+  padding: clamp(1.25rem, 3.5cqw, 2.25rem) clamp(1rem, 3cqw, 2rem);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(32, 22, 22, 0.5) 0%, rgba(20, 14, 14, 0.8) 85%),
+    #120d0d;
+  border: 1px solid rgba(200, 50, 26, 0.35);
+  border-left: 5px solid #c8321a;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 24px rgba(0, 0, 0, 0.65),
+    0 8px 32px rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+}
+
+.mq-ed-punjab-course-header {
+  margin-bottom: clamp(1rem, 2.5cqw, 1.75rem);
+}
+
+.mq-ed-punjab-course-title {
+  margin: 0 0 var(--mq-space-2);
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 4.2cqw, 1.95rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fffbf5;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+}
+
+.mq-ed-punjab-course-desc {
+  margin: 0;
+  max-width: 52ch;
+  font-size: clamp(0.78rem, 2cqw, 0.9rem);
+  color: #f5ebe6;
+  opacity: 0.88;
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+}
+
+.mq-ed-punjab-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 2cqw, 1.25rem);
+  margin-top: var(--mq-space-4);
+}
+
+.mq-ed-punjab .mq-ed-leader {
+  display: block;
+  min-width: 0;
+  padding-bottom: clamp(0.4rem, 1.2cqw, 0.75rem);
+  border-bottom: 1px solid rgba(200, 50, 26, 0.12);
+}
+
+.mq-ed-punjab .mq-ed-leader:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mq-ed-punjab .mq-ed-leader-head {
+  display: flex;
+  align-items: last baseline;
+  gap: clamp(0.35rem, 1.2cqw, 0.75rem);
+  min-width: 0;
+  width: 100%;
+}
+
+.mq-ed-punjab .mq-ed-leader-name {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 4.5rem);
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.92rem, 2.4cqw, 1.15rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fffbf5;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  overflow-wrap: break-word;
+}
+
+.mq-ed-punjab .mq-ed-leader-rule {
+  flex: 1 1 1.5rem;
+  min-width: 0.85rem;
+  height: 1px;
+  align-self: last baseline;
+  margin-bottom: 0.22em;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(229, 169, 60, 0.75) 1px,
+    transparent 1.2px
+  );
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.85;
+}
+
+.mq-ed-punjab .mq-price {
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 800;
+  color: #e5a93c;
+  text-shadow: 0 0 10px rgba(229, 169, 60, 0.35);
+  white-space: nowrap;
+}
+
+.mq-ed-punjab .mq-ed-leader-desc {
+  margin: var(--mq-space-1) 0 0;
+  max-width: 54ch;
+  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+  line-height: var(--mq-leading-relaxed);
+  color: #f5ebe6;
+  opacity: 0.82;
+  font-style: italic;
+}
+
+.mq-ed-punjab .mq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  font-family: var(--mq-font-display);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  background: #c8321a;
+  border: 1px solid rgba(229, 169, 60, 0.6);
+  color: #fffbf5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.mq-ed-punjab .mq-badge::before {
+  content: '★';
+  font-size: 0.6rem;
+  color: #e5a93c;
+}
+
+.mq-ed-punjab-foot {
+  padding: var(--mq-space-10) var(--mq-space-5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-3);
+  border-top: 1px solid var(--mq-color-border);
+}
+
+.mq-ed-punjab-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-punjab-foot-sub {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  color: var(--mq-color-text-muted);
+}
+
+
+/* ========================================================================================
+   C — DAKSHIN : South Indian Heritage
+   ======================================================================================== */
+
+.mq-ed-dakshin {
+  background-color: var(--mq-color-bg, #f4f8f3);
+  color: var(--mq-color-text, #142417);
+  position: relative;
+  container-name: dakshin;
+}
+
+.mq-ed-dakshin-cover {
+  container-type: inline-size;
+  container-name: dakshin-cover;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: min(100svh, 54rem);
+  padding: clamp(1.5rem, 4cqw, 2.5rem) clamp(1rem, 3cqw, 2rem);
+  overflow: hidden;
+  text-align: center;
+  color: #faf8f2;
+  box-sizing: border-box;
+}
+
+/* Deep Banana-Leaf Emerald Night Overlay Scrim ensures 100% crystal-clear contrast over bright dosa photography */
+.mq-ed-dakshin-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(10, 36, 18, 0.72) 0%,
+      rgba(8, 28, 14, 0.88) 55%,
+      rgba(4, 18, 9, 0.97) 100%
+    );
+  pointer-events: none;
+}
+
+/* Kolam border ornament */
+.mq-ed-dakshin-kolam-border {
+  position: absolute;
+  inset: clamp(10px, 3cqw, 20px);
+  z-index: 2;
+  border: 1px dashed rgba(212, 160, 23, 0.65);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.mq-ed-dakshin-cover-body {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.35rem, 1.8cqw, 0.95rem);
+  width: 100%;
+  max-width: min(34rem, 100%);
+  margin-block: auto;
+  box-sizing: border-box;
+}
+
+.mq-ed-dakshin-banner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  padding: 3px 14px;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
+  letter-spacing: clamp(0.06em, 0.3cqw, 0.14em);
+  text-transform: uppercase;
+  color: #faf8f2;
+  background-color: rgba(22, 68, 38, 0.85);
+  border: 1px solid rgba(212, 160, 23, 0.5);
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.mq-ed-dakshin-crest {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: clamp(62px, 15cqw, 92px);
+  height: clamp(62px, 15cqw, 92px);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+}
+
+.mq-ed-dakshin-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 5.8cqw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: clamp(0.04em, 0.8cqw, 0.12em);
+  text-transform: uppercase;
+  color: #faf8f2;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
+  text-wrap: balance;
+  word-break: break-word;
+  max-width: min(32rem, 90%);
+}
+
+.mq-ed-dakshin-tagline {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.72rem, 2.2cqw, 1rem);
+  font-style: italic;
+  letter-spacing: clamp(0.02em, 0.4cqw, 0.06em);
+  line-height: var(--mq-leading-relaxed);
+  color: #f2eee3;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  max-width: min(25rem, 90%);
+  text-wrap: balance;
+}
+
+.mq-ed-dakshin-teaser {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.58rem, 1.7cqw, 0.75rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d4a017;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  max-width: min(26rem, 90%);
+}
+
+.mq-ed-dakshin-contact {
+  position: relative;
+  z-index: 4;
+  margin-top: auto;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.6rem, 1.7cqw, 0.75rem);
+  letter-spacing: 0.12em;
+  color: #f2eee3;
+  opacity: 0.9;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-dakshin-plate {
+  max-width: var(--mq-ed-measure);
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-12);
+}
+
+.mq-ed-dakshin-leaf-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-3);
+  margin-bottom: var(--mq-space-8);
+  padding: var(--mq-space-3) var(--mq-space-4);
+  background-color: color-mix(in oklab, var(--mq-color-accent) 12%, transparent);
+  border-radius: 6px;
+  color: var(--mq-color-accent-text, #164426);
+  font-size: var(--mq-text-sm);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+.mq-ed-dakshin-course {
+  position: relative;
+  margin-bottom: var(--mq-space-10);
+  padding: clamp(1.25rem, 3.5cqw, 2.25rem) clamp(1rem, 3cqw, 2rem);
+  background: #ffffff;
+  border: 1px solid rgba(22, 68, 38, 0.2);
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(22, 68, 38, 0.08);
+  box-sizing: border-box;
+}
+
+.mq-ed-dakshin-course-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: clamp(1rem, 2.5cqw, 1.75rem);
+}
+
+.mq-ed-dakshin-course-title {
+  margin: var(--mq-space-2) 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 4cqw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: clamp(0.06em, 0.6cqw, 0.12em);
+  color: #12381b;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.mq-ed-dakshin-course-title::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 2px;
+  margin: var(--mq-space-2) auto 0;
+  background-color: #d4a017;
+}
+
+.mq-ed-dakshin-course-desc {
+  margin: var(--mq-space-2) auto 0;
+  max-width: 48ch;
+  font-size: clamp(0.78rem, 2cqw, 0.9rem);
+  color: #4a5d4e;
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+}
+
+.mq-ed-dakshin-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 2cqw, 1.25rem);
+  margin-top: var(--mq-space-4);
+}
+
+.mq-ed-dakshin .mq-ed-leader {
+  display: block;
+  min-width: 0;
+  padding-bottom: clamp(0.4rem, 1.2cqw, 0.75rem);
+  border-bottom: 1px dashed rgba(22, 68, 38, 0.16);
+}
+
+.mq-ed-dakshin .mq-ed-leader:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mq-ed-dakshin .mq-ed-leader-head {
+  display: flex;
+  align-items: last baseline;
+  gap: clamp(0.35rem, 1.2cqw, 0.75rem);
+  min-width: 0;
+  width: 100%;
+}
+
+.mq-ed-dakshin .mq-ed-leader-name {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 4.5rem);
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.92rem, 2.4cqw, 1.12rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #142417;
+  overflow-wrap: break-word;
+}
+
+.mq-ed-dakshin .mq-ed-leader-rule {
+  flex: 1 1 1.5rem;
+  min-width: 0.85rem;
+  height: 1px;
+  align-self: last baseline;
+  margin-bottom: 0.22em;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(22, 68, 38, 0.5) 1px,
+    transparent 1.2px
+  );
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+}
+
+.mq-ed-dakshin .mq-price {
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 700;
+  color: #164426;
+  white-space: nowrap;
+}
+
+.mq-ed-dakshin .mq-ed-leader-desc {
+  margin: var(--mq-space-1) 0 0;
+  max-width: 54ch;
+  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+  line-height: var(--mq-leading-relaxed);
+  color: #4a5d4e;
+  font-style: italic;
+}
+
+.mq-ed-dakshin .mq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  font-family: var(--mq-font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  background: rgba(22, 68, 38, 0.1);
+  border: 1px solid rgba(22, 68, 38, 0.35);
+  color: #164426;
+}
+
+.mq-ed-dakshin .mq-badge::before {
+  content: '🌿';
+  font-size: 0.65rem;
+}
+
+.mq-ed-dakshin-foot {
+  padding: var(--mq-space-10) var(--mq-space-5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-3);
+  border-top: 1px solid var(--mq-color-border);
+}
+
+.mq-ed-dakshin-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-dakshin-foot-sub {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  font-style: italic;
+  color: var(--mq-color-text-muted);
+}
+
+
+/* ========================================================================================
+   D — THALI & CO. : Modern Indian Regional Cuisine
+   ======================================================================================== */
+
+.mq-ed-thali {
+  background-color: var(--mq-color-bg, #faf6f2);
+  color: var(--mq-color-text, #2c1e18);
+  position: relative;
+  container-name: thali;
+}
+
+.mq-ed-thali-cover {
+  container-type: inline-size;
+  container-name: thali-cover;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: min(100svh, 54rem);
+  padding: clamp(1.5rem, 4cqw, 2.5rem) clamp(1rem, 3cqw, 2rem);
+  overflow: hidden;
+  text-align: center;
+  color: #faf5ee;
+  box-sizing: border-box;
+}
+
+/* Deep Roasted Spice & Terracotta Evening Scrim ensures 100% crisp typography over bright overhead thali photos */
+.mq-ed-thali-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(42, 18, 14, 0.72) 0%,
+      rgba(36, 15, 12, 0.88) 55%,
+      rgba(22, 9, 7, 0.97) 100%
+    );
+  pointer-events: none;
+}
+
+.mq-ed-thali-cover-body {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.35rem, 1.8cqw, 0.95rem);
+  width: 100%;
+  max-width: min(34rem, 100%);
+  margin-block: auto;
+  box-sizing: border-box;
+}
+
+.mq-ed-thali-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  padding: 3px 14px;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
+  letter-spacing: clamp(0.06em, 0.3cqw, 0.14em);
+  text-transform: uppercase;
+  color: #faf5ee;
+  background-color: rgba(184, 83, 52, 0.85);
+  border: 1px solid rgba(212, 162, 59, 0.5);
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.mq-ed-thali-crest {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: clamp(62px, 15cqw, 92px);
+  height: clamp(62px, 15cqw, 92px);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+}
+
+.mq-ed-thali-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.25rem, 6cqw, 2.85rem);
+  font-weight: 700;
+  letter-spacing: clamp(0.02em, 0.6cqw, 0.08em);
+  text-transform: uppercase;
+  color: #faf5ee;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
+  text-wrap: balance;
+  word-break: break-word;
+  max-width: min(32rem, 90%);
+}
+
+.mq-ed-thali-tagline {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.74rem, 2.3cqw, 1.02rem);
+  font-style: italic;
+  letter-spacing: clamp(0.02em, 0.4cqw, 0.06em);
+  line-height: var(--mq-leading-relaxed);
+  color: #f5ece1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  max-width: min(25rem, 90%);
+  text-wrap: balance;
+}
+
+.mq-ed-thali-teaser {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.58rem, 1.7cqw, 0.75rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e5b358;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  max-width: min(26rem, 90%);
+}
+
+.mq-ed-thali-contact {
+  position: relative;
+  z-index: 4;
+  margin-top: auto;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.6rem, 1.7cqw, 0.75rem);
+  letter-spacing: 0.12em;
+  color: #f5ece1;
+  opacity: 0.9;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-thali-plate {
+  max-width: var(--mq-ed-measure);
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-12);
+}
+
+.mq-ed-thali-anatomy-banner {
+  background-color: var(--mq-color-surface);
+  border: 1px solid var(--mq-color-border);
+  border-radius: 8px;
+  padding: var(--mq-space-5);
+  margin-bottom: var(--mq-space-10);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.mq-ed-thali-anatomy-title {
+  margin: 0 0 var(--mq-space-2);
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  font-weight: 700;
+  color: var(--mq-color-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mq-ed-thali-anatomy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-thali-state-pill {
+  font-size: var(--mq-text-xs);
+  padding: 3px 10px;
+  background-color: color-mix(in oklab, var(--mq-color-accent) 15%, transparent);
+  color: var(--mq-color-accent-text, #b85334);
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.mq-ed-thali-course {
+  position: relative;
+  margin-bottom: var(--mq-space-10);
+  padding: clamp(1.25rem, 3.5cqw, 2.25rem) clamp(1rem, 3cqw, 2rem);
+  background: #ffffff;
+  border: 1px solid rgba(184, 83, 52, 0.22);
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(184, 83, 52, 0.08);
+  box-sizing: border-box;
+}
+
+.mq-ed-thali-course-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: clamp(1rem, 2.5cqw, 1.75rem);
+}
+
+.mq-ed-thali-course-title {
+  margin: var(--mq-space-2) 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 4cqw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: clamp(0.04em, 0.6cqw, 0.1em);
+  color: #9c3f25;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.mq-ed-thali-course-desc {
+  margin: 0 auto;
+  max-width: 48ch;
+  font-size: clamp(0.78rem, 2cqw, 0.9rem);
+  color: #634f46;
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+}
+
+.mq-ed-thali-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 2cqw, 1.25rem);
+  margin-top: var(--mq-space-4);
+}
+
+.mq-ed-thali .mq-ed-leader {
+  display: block;
+  min-width: 0;
+  padding-bottom: clamp(0.4rem, 1.2cqw, 0.75rem);
+  border-bottom: 1px solid rgba(184, 83, 52, 0.14);
+}
+
+.mq-ed-thali .mq-ed-leader:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mq-ed-thali .mq-ed-leader-head {
+  display: flex;
+  align-items: last baseline;
+  gap: clamp(0.35rem, 1.2cqw, 0.75rem);
+  min-width: 0;
+  width: 100%;
+}
+
+.mq-ed-thali .mq-ed-leader-name {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 4.5rem);
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.92rem, 2.4cqw, 1.12rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #2c1e18;
+  overflow-wrap: break-word;
+}
+
+.mq-ed-thali .mq-ed-leader-rule {
+  flex: 1 1 1.5rem;
+  min-width: 0.85rem;
+  height: 1px;
+  align-self: last baseline;
+  margin-bottom: 0.22em;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(184, 83, 52, 0.5) 1px,
+    transparent 1.2px
+  );
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+}
+
+.mq-ed-thali .mq-price {
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 700;
+  color: #9c3f25;
+  white-space: nowrap;
+}
+
+.mq-ed-thali .mq-ed-leader-desc {
+  margin: var(--mq-space-1) 0 0;
+  max-width: 54ch;
+  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+  line-height: var(--mq-leading-relaxed);
+  color: #634f46;
+  font-style: italic;
+}
+
+.mq-ed-thali .mq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  font-family: var(--mq-font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  background: rgba(184, 83, 52, 0.1);
+  border: 1px solid rgba(184, 83, 52, 0.35);
+  color: #9c3f25;
+}
+
+.mq-ed-thali .mq-badge::before {
+  content: '🏺';
+  font-size: 0.65rem;
+}
+
+.mq-ed-thali-foot {
+  padding: var(--mq-space-10) var(--mq-space-5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-3);
+  border-top: 1px solid var(--mq-color-border);
+}
+
+.mq-ed-thali-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-thali-foot-sub {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  color: var(--mq-color-text-muted);
+}
+
+
+/* ========================================================================================
+   E — BOMBAY CHOWK : Modern Indian Street Food
+   ======================================================================================== */
+
+.mq-ed-chowk {
+  background-color: var(--mq-color-bg, #161214);
+  color: var(--mq-color-text, #faf8f3);
+  position: relative;
+  container-name: chowk;
+}
+
+.mq-ed-chowk-cover {
+  container-type: inline-size;
+  container-name: chowk-cover;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: min(100svh, 54rem);
+  padding: clamp(1.5rem, 4cqw, 2.5rem) clamp(1rem, 3cqw, 2rem);
+  overflow: hidden;
+  text-align: center;
+  color: #faf8f3;
+  box-sizing: border-box;
+}
+
+.mq-ed-chowk-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(
+      ellipse at 50% 38%,
+      rgba(24, 18, 22, 0.65) 0%,
+      rgba(18, 14, 16, 0.88) 65%,
+      #0e0a0c 100%
+    );
+  pointer-events: none;
+}
+
+.mq-ed-chowk-cover-body {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.35rem, 1.8cqw, 0.95rem);
+  width: 100%;
+  max-width: min(34rem, 100%);
+  margin-block: auto;
+  box-sizing: border-box;
+}
+
+.mq-ed-chowk-stamp {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 2px dashed #d83a2d;
+  color: #fffbf5;
+  background-color: rgba(216, 58, 45, 0.3);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
+  letter-spacing: 0.12em;
+  transform: rotate(-1.5deg);
+  border-radius: 2px;
+}
+
+.mq-ed-chowk-crest {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: clamp(62px, 15cqw, 92px);
+  height: clamp(62px, 15cqw, 92px);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+}
+
+.mq-ed-chowk-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.35rem, 6.8cqw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #faf8f3;
+  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.85);
+  text-wrap: balance;
+  word-break: break-word;
+  max-width: min(32rem, 90%);
+}
+
+.mq-ed-chowk-tagline {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.74rem, 2.3cqw, 1.02rem);
+  font-style: italic;
+  letter-spacing: 0.04em;
+  line-height: var(--mq-leading-relaxed);
+  color: #fcefe6;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  max-width: min(25rem, 90%);
+  text-wrap: balance;
+}
+
+.mq-ed-chowk-teaser {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.58rem, 1.7cqw, 0.75rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f09c2a;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  max-width: min(26rem, 90%);
+}
+
+.mq-ed-chowk-contact {
+  position: relative;
+  z-index: 4;
+  margin-top: auto;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.6rem, 1.7cqw, 0.75rem);
+  letter-spacing: 0.12em;
+  color: #fcefe6;
+  opacity: 0.9;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-chowk-plate {
+  max-width: var(--mq-ed-measure);
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-12);
+}
+
+.mq-ed-chowk-course {
+  position: relative;
+  margin-bottom: var(--mq-space-10);
+  padding: clamp(1.25rem, 3.5cqw, 2.25rem) clamp(1rem, 3cqw, 2rem);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(36, 26, 32, 0.6) 0%, rgba(18, 14, 16, 0.85) 85%),
+    #120e10;
+  border: 1px solid rgba(216, 58, 45, 0.35);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 24px rgba(0, 0, 0, 0.65),
+    0 8px 32px rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+}
+
+.mq-ed-chowk-course-header {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-3);
+  margin-bottom: clamp(1rem, 2.5cqw, 1.75rem);
+  border-bottom: 2px solid rgba(216, 58, 45, 0.45);
+  padding-bottom: var(--mq-space-2);
+}
+
+.mq-ed-chowk-course-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 4.2cqw, 1.95rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #faf8f3;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+}
+
+.mq-ed-chowk-course-desc {
+  margin: var(--mq-space-2) 0;
+  max-width: 52ch;
+  font-size: clamp(0.78rem, 2cqw, 0.9rem);
+  color: #ded4cd;
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+}
+
+.mq-ed-chowk-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 2cqw, 1.25rem);
+  margin-top: var(--mq-space-4);
+}
+
+.mq-ed-chowk .mq-ed-leader {
+  display: block;
+  min-width: 0;
+  padding-bottom: clamp(0.4rem, 1.2cqw, 0.75rem);
+  border-bottom: 1px solid rgba(216, 58, 45, 0.15);
+}
+
+.mq-ed-chowk .mq-ed-leader:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mq-ed-chowk .mq-ed-leader-head {
+  display: flex;
+  align-items: last baseline;
+  gap: clamp(0.35rem, 1.2cqw, 0.75rem);
+  min-width: 0;
+  width: 100%;
+}
+
+.mq-ed-chowk .mq-ed-leader-name {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 4.5rem);
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.92rem, 2.4cqw, 1.15rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #faf8f3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  overflow-wrap: break-word;
+}
+
+.mq-ed-chowk .mq-ed-leader-rule {
+  flex: 1 1 1.5rem;
+  min-width: 0.85rem;
+  height: 1px;
+  align-self: last baseline;
+  margin-bottom: 0.22em;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(240, 156, 42, 0.75) 1px,
+    transparent 1.2px
+  );
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.85;
+}
+
+.mq-ed-chowk .mq-price {
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 800;
+  color: #f09c2a;
+  text-shadow: 0 0 10px rgba(240, 156, 42, 0.35);
+  white-space: nowrap;
+}
+
+.mq-ed-chowk .mq-ed-leader-desc {
+  margin: var(--mq-space-1) 0 0;
+  max-width: 54ch;
+  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+  line-height: var(--mq-leading-relaxed);
+  color: #ded4cd;
+  font-style: italic;
+}
+
+.mq-ed-chowk .mq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  font-family: var(--mq-font-display);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  background: rgba(216, 58, 45, 0.3);
+  border: 1px dashed #d83a2d;
+  color: #fffbf5;
+}
+
+.mq-ed-chowk .mq-badge::before {
+  content: '⚡';
+  font-size: 0.65rem;
+}
+
+.mq-ed-chowk-foot {
+  padding: var(--mq-space-10) var(--mq-space-5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-3);
+  border-top: 1px solid var(--mq-color-border);
+}
+
+.mq-ed-chowk-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-chowk-foot-sub {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  color: var(--mq-color-text-muted);
+}
+
+/* ========================================================================================
+   DEDICATED SHOWCASE CARDS FOR INDIAN EDITIONS
+   ======================================================================================== */
+
+/* Dakshin Showcase */
+.mq-ed-dakshin-showcase {
+  margin-bottom: var(--mq-space-12);
+}
+.mq-ed-dakshin-showcase-head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-1);
+  margin-bottom: var(--mq-space-6);
+}
+.mq-ed-dakshin-showcase-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #164426;
+  font-weight: 700;
+}
+.mq-ed-dakshin-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--mq-space-6);
+}
+.mq-ed-dakshin-card {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid rgba(22, 68, 38, 0.2);
+  padding: var(--mq-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+  box-shadow: 0 8px 24px rgba(22, 68, 38, 0.08);
+  border-radius: 6px;
+}
+.mq-ed-dakshin-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(22, 68, 38, 0.15);
+}
+.mq-ed-dakshin-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-1);
+}
+.mq-ed-dakshin-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+}
+.mq-ed-dakshin-card-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 700;
+  color: #12381b;
+}
+.mq-ed-dakshin-card-price {
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  font-weight: 800;
+  color: #d4a017;
+}
+.mq-ed-dakshin-card-desc {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  color: #4a5d4e;
+  line-height: var(--mq-leading-relaxed);
+}
+
+/* Thali & Co. Showcase */
+.mq-ed-thali-showcase {
+  margin-bottom: var(--mq-space-12);
+}
+.mq-ed-thali-showcase-head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-1);
+  margin-bottom: var(--mq-space-6);
+}
+.mq-ed-thali-showcase-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #9c3f25;
+  font-weight: 700;
+}
+.mq-ed-thali-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--mq-space-6);
+}
+.mq-ed-thali-card {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid rgba(156, 63, 37, 0.22);
+  padding: var(--mq-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+  box-shadow: 0 8px 24px rgba(156, 63, 37, 0.08);
+  border-radius: 6px;
+}
+.mq-ed-thali-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(156, 63, 37, 0.18);
+}
+.mq-ed-thali-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-1);
+}
+.mq-ed-thali-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+}
+.mq-ed-thali-card-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 700;
+  color: #2e1a12;
+}
+.mq-ed-thali-card-price {
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  font-weight: 800;
+  color: #9c3f25;
+}
+.mq-ed-thali-card-desc {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  color: #5d4237;
+  line-height: var(--mq-leading-relaxed);
+}
+
+/* Bombay Chowk Showcase */
+.mq-ed-chowk-showcase {
+  margin-bottom: var(--mq-space-12);
+}
+.mq-ed-chowk-showcase-head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-1);
+  margin-bottom: var(--mq-space-6);
+}
+.mq-ed-chowk-showcase-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f09c2a;
+  font-weight: 800;
+}
+.mq-ed-chowk-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--mq-space-6);
+}
+.mq-ed-chowk-card {
+  position: relative;
+  background-color: #141416;
+  border: 1px solid rgba(216, 58, 45, 0.35);
+  padding: var(--mq-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+}
+.mq-ed-chowk-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid rgba(216, 58, 45, 0.25);
+}
+.mq-ed-chowk-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-1);
+}
+.mq-ed-chowk-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+}
+.mq-ed-chowk-card-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 800;
+  color: #fffbf5;
+}
+.mq-ed-chowk-card-price {
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  font-weight: 800;
+  color: #f09c2a;
+}
+.mq-ed-chowk-card-desc {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  color: rgba(255, 251, 245, 0.75);
+  line-height: var(--mq-leading-relaxed);
+}
+
+/* Rang-e-Punjab Showcase */
+.mq-ed-punjab-showcase {
+  margin-bottom: var(--mq-space-12);
+}
+.mq-ed-punjab-showcase-head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-1);
+  margin-bottom: var(--mq-space-6);
+}
+.mq-ed-punjab-showcase-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #e5a93c;
+  font-weight: 800;
+}
+.mq-ed-punjab-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--mq-space-6);
+}
+.mq-ed-punjab-card {
+  position: relative;
+  background-color: #14100e;
+  border: 1px solid rgba(200, 50, 26, 0.35);
+  padding: var(--mq-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+}
+.mq-ed-punjab-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid rgba(200, 50, 26, 0.25);
+}
+.mq-ed-punjab-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-1);
+}
+.mq-ed-punjab-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+}
+.mq-ed-punjab-card-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 800;
+  color: #fffbf5;
+}
+.mq-ed-punjab-card-price {
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  font-weight: 800;
+  color: #e5a93c;
+}
+.mq-ed-punjab-card-desc {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  color: rgba(255, 251, 245, 0.75);
+  line-height: var(--mq-leading-relaxed);
+}

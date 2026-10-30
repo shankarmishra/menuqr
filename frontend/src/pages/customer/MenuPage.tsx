@@ -560,6 +560,22 @@ export default function MenuPage() {
     return () => { isCurrent = false; };
   }, [location.state, slug]);
 
+  // Hooks must run on every render, so this lives above the early returns below. Placing it after
+  // them made the first loaded render call one more hook than the loading render and crashed the page.
+  const isShobharam = Boolean(client?.businessName?.toLowerCase().includes('shobharam'));
+  const bespokeColors = (client?.accentConfiguration as { colors?: { bg?: string; text?: string } } | undefined)?.colors;
+  const effectiveBg = isShobharam ? '#090C0B' : (bespokeColors?.bg || pagePalette.bg);
+  const effectiveText = isShobharam ? '#F3F4F6' : (bespokeColors?.text || pagePalette.text);
+
+  // Prevent white overscroll / bottom strip on dark themed menus
+  useEffect(() => {
+    const originalBg = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = effectiveBg;
+    return () => {
+      document.body.style.backgroundColor = originalBg;
+    };
+  }, [effectiveBg]);
+
   if (loadError === 'SUBSCRIPTION_EXPIRED') {
     return (
       <div className="customer-menu menu-expired-lock">
@@ -621,6 +637,7 @@ export default function MenuPage() {
     focalY: item.focalY ?? undefined,
     tags: item.tags ?? null,
     soldOut: item.soldOut ?? false,
+    availabilityNote: item.availabilityNote ?? null,
     isBestseller: Boolean(item.tags?.badges?.includes('bestseller')),
     isSpecial: Boolean(item.tags?.badges?.includes('special')),
   }));
@@ -679,20 +696,6 @@ export default function MenuPage() {
       default: return status;
     }
   };
-
-  const isShobharam = Boolean(client?.businessName?.toLowerCase().includes('shobharam'));
-  const bespokeColors = (client?.accentConfiguration as { colors?: { bg?: string; text?: string } } | undefined)?.colors;
-  const effectiveBg = isShobharam ? '#090C0B' : (bespokeColors?.bg || pagePalette.bg);
-  const effectiveText = isShobharam ? '#F3F4F6' : (bespokeColors?.text || pagePalette.text);
-
-  // Prevent white overscroll / bottom strip on dark themed menus
-  useEffect(() => {
-    const originalBg = document.body.style.backgroundColor;
-    document.body.style.backgroundColor = effectiveBg;
-    return () => {
-      document.body.style.backgroundColor = originalBg;
-    };
-  }, [effectiveBg]);
 
   return (
     <div className="min-h-screen flex flex-col font-sans transition-colors duration-300" style={{ backgroundColor: effectiveBg, color: effectiveText }}>

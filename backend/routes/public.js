@@ -2,6 +2,7 @@ import { pool } from '../db.js';
 import { istDateString } from '../istTime.js';
 import { allowHit, isBotAgent, recordMenuHit } from '../menuStats.js';
 import { saveFeedback, validateFeedback } from '../feedback.js';
+import { applyLiveFlags, isScheduleActive, scheduleLabel } from '../schedule.js';
 import { apiError, sendJson, readJson, getClientIp } from '../utils.js';
 import { resolveTenantAuthorization, requireEntitlement } from '../authorization.js';
 import { getCachedMenu, setCachedMenu, invalidateMenuCache } from '../redisClient.js';
@@ -96,7 +97,7 @@ export async function getFullPublicMenuData(tenantId) {
       'SELECT * FROM menu_categories WHERE menu_id = $1 AND tenant_id = $2 AND is_visible = true ORDER BY sort_order',
       [menu.id, tenantId]
     );
-    categories = catRes.rows.map(c => ({ id: c.id, name: c.name, order: c.sort_order }));
+    categories = catRes.rows.map(c => ({ id: c.id, name: c.name, order: c.sort_order, schedule: c.schedule || null }));
 
     const itemRes = await pool.query(
       'SELECT * FROM menu_items WHERE menu_id = $1 AND tenant_id = $2 AND is_available = true ORDER BY sort_order',
@@ -151,7 +152,10 @@ export async function getFullPublicMenuData(tenantId) {
         available: i.is_available,
         // "Sold out today" is separate from hidden: the dish stays visible but cannot be ordered,
         // and the flag lapses on its own at the next IST midnight.
-        soldOut: i.metadata?.soldOutOn === istDateString(),
+        categoryId: i.category_id,
+        // Raw date, not a boolean: the payload is cached, and "today" changes at IST midnight.
+        // `applyLiveFlags` turns this into `soldOut` on every request.
+        soldOutOn: i.metadata?.soldOutOn || null,
         image: i.image_url || '',
         // Owner-set photo focal point, stored in the previously-unused `metadata` JSONB column
         // (no migration needed). Absent for the common case of no focal point set, in which
@@ -293,7 +297,7 @@ export default async function publicRoutes(request, response, url) {
       return true;
     }
 
-    sendJson(response, 200, data);
+    sendJson(response, 200, applyLiveFlags(data, new Date(), istDateString()));
     return true;
   }
 
@@ -319,9 +323,7 @@ export default async function publicRoutes(request, response, url) {
       return true;
     }
 
-    data.menuSlug = qr.menu_slug;
-
-    sendJson(response, 200, data);
+    sendJson(response, 200, applyLiveFlags({ ...data, menuSlug: qr.menu_slug }, new Date(), istDateString()));
     return true;
   }
 
@@ -509,7 +511,7 @@ export default async function publicRoutes(request, response, url) {
     
     // Fetch real prices, variants, and addon options from database
     const menuItemsRes = await pool.query(
-      "SELECT id, price, half_price, full_price, name FROM menu_items WHERE tenant_id = $1 AND is_available = true AND COALESCE(metadata->>'soldOutOn', '') <> $2",
+      "SELECT i.id, i.price, i.half_price, i.full_price, i.name, c.schedule FROM menu_items i LEFT JOIN menu_categories c ON c.id = i.category_id WHERE i.tenant_id = $1 AND i.is_available = true AND COALESCE(i.metadata->>'soldOutOn', '') <> $2",
       [client.id, istDateString()]
     );
     const variantsRes = await pool.query(
@@ -529,6 +531,7 @@ export default async function publicRoutes(request, response, url) {
       {
         id: r.id,
         name: r.name,
+        schedule: r.schedule || null,
         price: parseFloat(r.price || '0'),
         halfPrice: r.half_price !== null && r.half_price !== undefined ? parseFloat(r.half_price) : null,
         fullPrice: r.full_price !== null && r.full_price !== undefined ? parseFloat(r.full_price) : null,
@@ -585,6 +588,9 @@ export default async function publicRoutes(request, response, url) {
         throw apiError(400, `Item not found or unavailable: ${item.name || item.id}`);
       }
       const dbItem = itemMap.get(item.id);
+      if (!isScheduleActive(dbItem.schedule)) {
+        throw apiError(400, `${dbItem.name} is only available ${scheduleLabel(dbItem.schedule)}.`);
+      }
       let unitPrice = dbItem.price;
       const variantName = item.variant ? String(item.variant).trim() : null;
 

@@ -23,7 +23,26 @@ const FOOTER_SLOTS = ['contact-block', 'minimal-mark'];
 const TEXTURE_IDS = ['none', 'grain', 'parchment', 'slate', 'silk', 'dots'];
 const LOGO_SHAPES = ['circle', 'square', 'wordmark'];
 const FONT_PAIRING_IDS = ['royal-serif', 'modern-sans', 'warm-editorial', 'bold-street', 'devanagari-pro'];
-const SIGNATURE_COMPOSITION_IDS = ['heritage-booklet', 'graphic-booklet', 'chalkboard-clipboard'];
+const SIGNATURE_COMPOSITION_IDS = [
+  'heritage-booklet',
+  'graphic-booklet',
+  'chalkboard-clipboard',
+  'maison-noir',
+  'herbarium',
+  'noren',
+  'carta-rustica',
+  'darbar',
+  'chalk-house',
+  'atelier-pastel',
+  'presse-brut',
+  'littorale',
+  'neon-ichiban',
+  'maharaja-table',
+  'rang-e-punjab',
+  'dakshin-heritage',
+  'thali-and-co',
+  'bombay-chowk',
+];
 
 export const MAX_ANNOUNCEMENT_LENGTH = 120;
 export const MAX_URL_LENGTH = 2048;

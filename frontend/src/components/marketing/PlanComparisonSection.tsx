@@ -9,6 +9,8 @@ const features = [
   { name: 'Included Edits', basic: '1 Edit', intermediate: 'Unlimited', premium: 'Unlimited' },
   { name: 'Premium Layout Templates', basic: false, intermediate: '3-4 Templates', premium: 'All Templates' },
   { name: 'Live Menu Updates', basic: false, intermediate: true, premium: true },
+  { name: 'Table-wise QR Codes', basic: true, intermediate: true, premium: true },
+  { name: 'Analytics Dashboard', basic: false, intermediate: true, premium: true },
   { name: 'Customer Table Ordering', basic: false, intermediate: false, premium: true },
   { name: 'Reception Dashboard', basic: false, intermediate: false, premium: true },
   { name: 'Permanent QR Identity', basic: true, intermediate: true, premium: true },

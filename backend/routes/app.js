@@ -2,11 +2,13 @@ import { pool, queryPortable } from '../db.js';
 import { istDateString } from '../istTime.js';
 import { getTenantAnalytics, ALLOWED_RANGES } from '../analytics.js';
 import { getFeedbackSummary } from '../feedback.js';
+import { validateSchedule } from '../schedule.js';
 import { enforceTenant } from '../auth.js';
 import { apiError, sendJson, readJson } from '../utils.js';
 import { randomUUID } from 'node:crypto';
 import { resolveTenantAuthorization, requireEntitlement, withContentChange, getContentUsage } from '../authorization.js';
 import { detectColumnMappings, validateAndPreviewImport, executeImportTransaction } from '../menuImporter.js';
+import { resolveDishImage } from '../culinaryImageService.js';
 import { invalidatePublicMenuCache } from './public.js';
 import { extractMenuFromPdf, refinePdfDesign } from '../pdfMenuService.js';
 import { validateDesignSpecification } from '../designSpecValidator.js';
@@ -1288,6 +1290,8 @@ export default async function appRoutes(request, response, url) {
     const input = await readJson(request);
     const name = inputText(input.name, 100);
     if (!name) throw apiError(400, 'Add a name for this menu category.');
+    const schedule = validateSchedule(input.schedule);
+    if (schedule?.error) throw apiError(400, schedule.error);
     const result = await withContentChange(authorization, async (client) => {
       let menuId = input.menuId;
       if (!menuId) {
@@ -1299,8 +1303,8 @@ export default async function appRoutes(request, response, url) {
       const sort = await queryPortable(client, 'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM menu_categories WHERE menu_id = ? AND tenant_id = ?', [menuId, user.tenantId]);
       const categoryId = randomUUID();
       await queryPortable(client,
-        'INSERT INTO menu_categories (id, menu_id, tenant_id, name, description, sort_order) VALUES (?, ?, ?, ?, ?, ?)',
-        [categoryId, menuId, user.tenantId, name, inputText(input.description, 500) || null, sort.rows[0].next_order]
+        'INSERT INTO menu_categories (id, menu_id, tenant_id, name, description, sort_order, schedule) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [categoryId, menuId, user.tenantId, name, inputText(input.description, 500) || null, sort.rows[0].next_order, schedule ? JSON.stringify(schedule) : null]
       );
       return queryPortable(client, 'SELECT * FROM menu_categories WHERE id = ? AND tenant_id = ?', [categoryId, user.tenantId]);
     });
@@ -1315,10 +1319,14 @@ export default async function appRoutes(request, response, url) {
     const catId = catMatch[1];
     if (request.method === 'PUT') {
       const input = await readJson(request);
+      // `schedule` absent leaves the window untouched; present (null clears it) replaces it.
+      const hasSchedule = 'schedule' in input;
+      const schedule = hasSchedule ? validateSchedule(input.schedule) : null;
+      if (schedule?.error) throw apiError(400, schedule.error);
       const result = await withContentChange(authorization, async (client) => {
         const update = await queryPortable(client,
-          'UPDATE menu_categories SET name = COALESCE(?, name), description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
-          [input.name === undefined ? null : inputText(input.name, 100), inputText(input.description, 500) || null, catId, user.tenantId]
+          'UPDATE menu_categories SET name = COALESCE(?, name), description = ?, schedule = CASE WHEN ?::boolean THEN ?::jsonb ELSE schedule END, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
+          [input.name === undefined ? null : inputText(input.name, 100), inputText(input.description, 500) || null, hasSchedule, schedule ? JSON.stringify(schedule) : null, catId, user.tenantId]
         );
         if (update.rowCount === 0) throw apiError(404, 'Category not found.');
         return queryPortable(client, 'SELECT * FROM menu_categories WHERE id = ? AND tenant_id = ?', [catId, user.tenantId]);
@@ -1637,6 +1645,25 @@ export default async function appRoutes(request, response, url) {
     }
 
     sendJson(response, 200, { success: true, ...stats });
+    return true;
+  }
+
+  // Batch dish-photo matching for the onboarding wizard's Excel path, which parses
+  // client-side and therefore never runs through menuImporter.js's own resolveDishImage
+  // call — this is what gives an onboarded-via-Excel menu the same photo coverage an
+  // Excel import done later from the Menu page already gets.
+  if (request.method === 'POST' && url.pathname === '/api/app/menu/resolve-images') {
+    requireBasicContentAccess(authorization);
+    const input = await readJson(request);
+    const rawItems = Array.isArray(input?.items) ? input.items : [];
+    if (rawItems.length === 0 || rawItems.length > 300) {
+      throw apiError(400, 'Provide between 1 and 300 items to resolve photos for.');
+    }
+    const matches = rawItems.map((item, position) => ({
+      index: Number.isInteger(item?.index) ? item.index : position,
+      imageUrl: resolveDishImage(inputText(item?.name, 255), inputText(item?.category, 100), [], 0, user.tenantId),
+    }));
+    sendJson(response, 200, { matches });
     return true;
   }
 

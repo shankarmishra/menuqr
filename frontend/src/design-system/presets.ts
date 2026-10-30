@@ -47,6 +47,21 @@ export type Preset = {
   density: Density;
   radius: RadiusToken;
   shadow: ShadowToken;
+  /**
+   * Only for a preset whose cover genuinely needs a specific photo to read as finished on first
+   * view (e.g. a `hero-photo` cover built around one curated image) — most presets leave this
+   * unset and start photo-less, which is itself a deliberate, restrained default.
+   */
+  cover?: Partial<Pick<MenuTheme['cover'], 'imageUrl' | 'overlayStrength'>>;
+  /**
+   * Superseded by the Edition catalogue, but still resolvable.
+   *
+   * A legacy preset is hidden from the gallery and from onboarding, so nobody picks it again —
+   * yet `getPreset()` still returns it, so every menu already published against its id keeps
+   * rendering exactly as it does today. Removing these outright would silently restyle live
+   * customer menus, which is the one thing a template catalogue must never do.
+   */
+  legacy?: true;
 };
 
 export const PRESETS: readonly Preset[] = [
@@ -70,6 +85,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'spacious',
     radius: 'sm',
     shadow: 'subtle',
+    legacy: true,
   },
   {
     id: 'mughal-luxe',
@@ -91,6 +107,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'spacious',
     radius: 'sm',
     shadow: 'elevated',
+    legacy: true,
   },
   {
     id: 'awadhi-dastarkhwan',
@@ -112,6 +129,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'spacious',
     radius: 'none',
     shadow: 'none',
+    legacy: true,
   },
   {
     id: 'craft-trattoria',
@@ -133,6 +151,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'balanced',
     radius: 'lg',
     shadow: 'subtle',
+    legacy: true,
   },
   {
     id: 'artisan-pastry',
@@ -154,6 +173,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'spacious',
     radius: 'xl',
     shadow: 'subtle',
+    legacy: true,
   },
   {
     id: 'greenhouse-botanic',
@@ -175,6 +195,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'spacious',
     radius: 'lg',
     shadow: 'subtle',
+    legacy: true,
   },
   {
     id: 'coastal-seafood',
@@ -196,6 +217,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'balanced',
     radius: 'lg',
     shadow: 'subtle',
+    legacy: true,
   },
   {
     id: 'midnight-burger',
@@ -217,6 +239,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'compact',
     radius: 'lg',
     shadow: 'elevated',
+    legacy: true,
   },
   {
     id: 'tokyo-izakaya',
@@ -238,6 +261,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'compact',
     radius: 'md',
     shadow: 'elevated',
+    legacy: true,
   },
   {
     id: 'rustic-smokehouse',
@@ -259,6 +283,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'balanced',
     radius: 'sm',
     shadow: 'elevated',
+    legacy: true,
   },
   {
     id: 'desi-dhaba',
@@ -281,6 +306,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'compact',
     radius: 'sm',
     shadow: 'none',
+    legacy: true,
   },
   {
     id: 'boho-taproom',
@@ -302,8 +328,8 @@ export const PRESETS: readonly Preset[] = [
     density: 'balanced',
     radius: 'md',
     shadow: 'subtle',
+    legacy: true,
   },
-
   // ------------------------------- Signature (Tier 2) -------------------------------
   // These three render a full-page art-directed composition instead of assembling slots. The
   // `slots` selection below is still a real, coherent fallback for "switch to a composable
@@ -329,6 +355,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'spacious',
     radius: 'sm',
     shadow: 'elevated',
+    legacy: true,
   },
   {
     id: 'signature-graphic-booklet',
@@ -351,6 +378,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'balanced',
     radius: 'lg',
     shadow: 'subtle',
+    legacy: true,
   },
   {
     id: 'signature-chalkboard-clipboard',
@@ -373,10 +401,296 @@ export const PRESETS: readonly Preset[] = [
     density: 'compact',
     radius: 'sm',
     shadow: 'elevated',
+    legacy: true,
+  },
+
+  // ============================== EDITIONS — the live catalogue ==============================
+  // Ten art-directed publications. Each owns its cover *and* its interior through a composition
+  // in `menu-renderer/signature/editions/`, which is why a preset here is still ~20 lines of
+  // data: the design lives in one composition, not in per-client markup.
+  //
+  // `slots` is still a real, coherent fallback for "convert me to a composable preset", not a
+  // dummy value — but an Edition never reads it while its `signatureId` is set.
+
+  {
+    id: 'edition-maison-noir',
+    label: 'Maison Noir',
+    description:
+      'Art Deco fine dining. A black-marble cover under a gold double rule and faceted crest, with an engraved tasting-card interior.',
+    audience: 'Fine dining, chef tasting rooms, premium steak and wine',
+    category: 'fine-dining',
+    seedColor: '#c9a227',
+    mode: 'dark',
+    slots: { cover: 'hero-photo', nav: 'underline-tabs', dishCard: 'michelin-leader', section: 'hairline-caps', footer: 'minimal-mark' },
+    signatureId: 'maison-noir',
+    typePair: 'royal-serif',
+    texture: 'silk',
+    density: 'spacious',
+    radius: 'none',
+    shadow: 'elevated',
+    cover: { imageUrl: '/assets/themes/maison-noir-luxury-cover.webp', overlayStrength: 0.45 },
+  },
+  {
+    id: 'edition-herbarium',
+    label: 'Herbarium',
+    description:
+      'Botanical letterpress. Drawn sprigs frame a pressed-specimen cover, and the menu sets in two columns like a printed bill of fare.',
+    audience: 'Farm-to-table, organic kitchens, garden cafes, vegetarian dining',
+    category: 'cafe',
+    seedColor: '#4f7a52',
+    mode: 'light',
+    slots: { cover: 'monogram', nav: 'underline-tabs', dishCard: 'michelin-leader', section: 'hairline-caps', footer: 'contact-block' },
+    signatureId: 'herbarium',
+    typePair: 'warm-editorial',
+    texture: 'parchment',
+    density: 'spacious',
+    radius: 'sm',
+    shadow: 'none',
+    cover: { imageUrl: '/assets/themes/herbarium-hero.webp', overlayStrength: 0.12 },
+  },
+  {
+    id: 'edition-noren',
+    label: 'Noren',
+    description:
+      'Japanese culinary minimalism. A vermillion hanko seal, suspended noren fabric drapery, washi paper textures, and omakase kaiseki hairline discipline.',
+    audience: 'Sushi counters, ramen bars, izakaya, robata grill, omakase',
+    category: 'contemporary',
+    seedColor: '#c93a2a',
+    mode: 'light',
+    slots: { cover: 'monogram', nav: 'underline-tabs', dishCard: 'compact-row', section: 'hairline-caps', footer: 'minimal-mark' },
+    signatureId: 'noren',
+    typePair: 'modern-sans',
+    texture: 'grain',
+    density: 'spacious',
+    radius: 'none',
+    shadow: 'none',
+    cover: { imageUrl: '/assets/themes/noren-hero.webp', overlayStrength: 0.08 },
+  },
+  {
+    id: 'edition-carta-rustica',
+    label: 'Carta Rustica',
+    description:
+      'Artisanal Italian trattoria & Tuscan kraft paper. Woven gingham ribbons, ceralacca wax seal, polaroid mounts, and wood-fired kitchen storytelling.',
+    audience: 'Trattorias, osterias, wood-fired pizzerias, artisanal Italian dining, wine bars',
+    category: 'cafe',
+    seedColor: '#b83b26',
+    mode: 'light',
+    slots: { cover: 'bento-collage', nav: 'capsule-pills', dishCard: 'magazine', section: 'ribbon', footer: 'contact-block' },
+    signatureId: 'carta-rustica',
+    typePair: 'warm-editorial',
+    texture: 'grain',
+    density: 'balanced',
+    radius: 'sm',
+    shadow: 'subtle',
+    cover: { imageUrl: '/assets/themes/carta-rustica-hero.webp', overlayStrength: 0.1 },
+  },
+  {
+    id: 'edition-darbar',
+    label: 'Darbar',
+    description:
+      'Indian royal. A cusped jali arch and paisley filigree over a deep cover, with each course opening under its own arch.',
+    audience: 'Mughlai and Awadhi fine dining, banquet halls, heritage thali houses',
+    category: 'heritage',
+    seedColor: '#d4af37',
+    mode: 'dark',
+    slots: { cover: 'heritage-arch', nav: 'underline-tabs', dishCard: 'michelin-leader', section: 'arch-title', footer: 'contact-block' },
+    signatureId: 'darbar',
+    typePair: 'royal-serif',
+    texture: 'silk',
+    density: 'spacious',
+    radius: 'none',
+    shadow: 'elevated',
+    cover: { imageUrl: '/assets/themes/variations/royal-darbar-facing.jpg', overlayStrength: 0.5 },
+  },
+  {
+    id: 'edition-chalk-house',
+    label: 'Chalk House',
+    description:
+      'A bistro board. Hand-chalked frame and swooshes on slate, courses written out rather than laid out, prices in chalk rings.',
+    audience: 'Bistros, grills, gastropubs, daily-special kitchens',
+    category: 'street',
+    seedColor: '#d8a657',
+    mode: 'dark',
+    slots: { cover: 'monogram', nav: 'capsule-pills', dishCard: 'compact-row', section: 'ribbon', footer: 'minimal-mark' },
+    signatureId: 'chalk-house',
+    typePair: 'bold-street',
+    texture: 'slate',
+    density: 'balanced',
+    radius: 'sm',
+    shadow: 'none',
+  },
+  {
+    id: 'edition-atelier-pastel',
+    label: 'Atelier Pastel',
+    description:
+      'Patisserie. A scalloped arch window holds the hero photograph; inside, soft cards on a scalloped page with pill prices.',
+    audience: 'Patisseries, bakeries, dessert bars, tea rooms',
+    category: 'cafe',
+    seedColor: '#c2577a',
+    mode: 'light',
+    slots: { cover: 'monogram', nav: 'underline-tabs', dishCard: 'bento-tile', section: 'hairline-caps', footer: 'minimal-mark' },
+    signatureId: 'atelier-pastel',
+    typePair: 'warm-editorial',
+    texture: 'dots',
+    density: 'spacious',
+    radius: 'xl',
+    shadow: 'subtle',
+  },
+  {
+    id: 'edition-presse-brut',
+    label: 'Presse Brut',
+    description:
+      'A brutalist type specimen. No ornament at all — the name set oversized and cropped, a solid accent bar, every dish numbered.',
+    audience: 'Modern bistros, specialty coffee, natural wine, design-led kitchens',
+    category: 'contemporary',
+    seedColor: '#e2571e',
+    mode: 'light',
+    slots: { cover: 'monogram', nav: 'underline-tabs', dishCard: 'compact-row', section: 'ribbon', footer: 'minimal-mark' },
+    signatureId: 'presse-brut',
+    typePair: 'bold-street',
+    texture: 'none',
+    density: 'compact',
+    radius: 'none',
+    shadow: 'none',
+  },
+  {
+    id: 'edition-littorale',
+    label: 'Littorale',
+    description:
+      'Coastal Mediterranean. A photographic band cuts the cover like a horizon, and every course opens with its own strip of photography.',
+    audience: 'Seafood, coastal and Mediterranean kitchens, beach clubs',
+    category: 'contemporary',
+    seedColor: '#2f8a9b',
+    mode: 'light',
+    slots: { cover: 'hero-photo', nav: 'capsule-pills', dishCard: 'magazine', section: 'hairline-caps', footer: 'contact-block' },
+    signatureId: 'littorale',
+    typePair: 'warm-editorial',
+    texture: 'none',
+    density: 'spacious',
+    radius: 'lg',
+    shadow: 'subtle',
+  },
+  {
+    id: 'edition-neon-ichiban',
+    label: 'Neon Ichiban',
+    description:
+      'Late-night counter. The name printed twice in hard misregistration over a measured grid, with sticker badges and hard-edge price tags.',
+    audience: 'Late-night counters, burger and ramen bars, street kitchens',
+    category: 'street',
+    seedColor: '#ff3d6e',
+    mode: 'dark',
+    slots: { cover: 'hero-photo', nav: 'capsule-pills', dishCard: 'bento-tile', section: 'ribbon', footer: 'minimal-mark' },
+    signatureId: 'neon-ichiban',
+    typePair: 'bold-street',
+    texture: 'none',
+    density: 'compact',
+    radius: 'none',
+    shadow: 'elevated',
+  },
+  {
+    id: 'edition-maharaja-table',
+    label: "Maharaja's Table",
+    description:
+      'Imperial Indian royal dining. Multifoil Mughal arches and beaten brass over deep imperial emerald and royal burgundy.',
+    audience: 'Royal Indian, Awadhi & Mughlai fine dining, heritage palace banquets',
+    category: 'heritage',
+    seedColor: '#d4af37',
+    mode: 'dark',
+    slots: { cover: 'heritage-arch', nav: 'underline-tabs', dishCard: 'michelin-leader', section: 'arch-title', footer: 'contact-block' },
+    signatureId: 'maharaja-table',
+    typePair: 'royal-serif',
+    texture: 'silk',
+    density: 'spacious',
+    radius: 'none',
+    shadow: 'elevated',
+    cover: { imageUrl: '/assets/themes/maharaja-table-hero.webp', overlayStrength: 0.45 },
+  },
+  {
+    id: 'edition-rang-e-punjab',
+    label: 'Rang-e-Punjab',
+    description:
+      'Authentic Punjabi feast. Phulkari embroidery, charcoal iron slate and tandoori vermilion with clay kiln embers.',
+    audience: 'Punjabi restaurants, tandoori grills, highway dhabas, North Indian kitchens',
+    category: 'street',
+    seedColor: '#b82e1f',
+    mode: 'dark',
+    slots: { cover: 'hero-photo', nav: 'capsule-pills', dishCard: 'compact-row', section: 'ribbon', footer: 'contact-block' },
+    signatureId: 'rang-e-punjab',
+    typePair: 'bold-street',
+    texture: 'slate',
+    density: 'balanced',
+    radius: 'sm',
+    shadow: 'elevated',
+    cover: { imageUrl: '/assets/themes/rang-e-punjab-hero.webp', overlayStrength: 0.4 },
+  },
+  {
+    id: 'edition-dakshin-heritage',
+    label: 'Dakshin',
+    description:
+      'South Indian heritage. Vibrant banana leaf green, coconut ivory, and geometric kolam rangoli flourishes.',
+    audience: 'South Indian fine dining, authentic tiffin houses, coastal and Chettinad restaurants',
+    category: 'heritage',
+    seedColor: '#1e4d2b',
+    mode: 'light',
+    slots: { cover: 'monogram', nav: 'underline-tabs', dishCard: 'michelin-leader', section: 'hairline-caps', footer: 'contact-block' },
+    signatureId: 'dakshin-heritage',
+    typePair: 'royal-serif',
+    texture: 'parchment',
+    density: 'spacious',
+    radius: 'sm',
+    shadow: 'subtle',
+    cover: { imageUrl: '/assets/themes/dakshin-heritage-hero.webp', overlayStrength: 0.35 },
+  },
+  {
+    id: 'edition-thali-and-co',
+    label: 'Thali & Co.',
+    description:
+      'Modern regional thalis. Terracotta pottery, Jaipur indigo, and handcrafted Indian block-print storytelling.',
+    audience: 'Regional Indian thali houses, contemporary Indian diners, farm-to-table eateries',
+    category: 'contemporary',
+    seedColor: '#c2593f',
+    mode: 'light',
+    slots: { cover: 'hero-photo', nav: 'underline-tabs', dishCard: 'bento-tile', section: 'hairline-caps', footer: 'contact-block' },
+    signatureId: 'thali-and-co',
+    typePair: 'warm-editorial',
+    texture: 'grain',
+    density: 'balanced',
+    radius: 'md',
+    shadow: 'subtle',
+    cover: { imageUrl: '/assets/themes/thali-and-co-hero.webp', overlayStrength: 0.35 },
+  },
+  {
+    id: 'edition-bombay-chowk',
+    label: 'Bombay Chowk',
+    description:
+      'Mumbai street culture. Ripe tomato red, cobalt blue, cutting chai saffron and Irani café nostalgia.',
+    audience: 'Chaat cafes, Mumbai street diners, roll bars, fast-casual Indian bistros',
+    category: 'street',
+    seedColor: '#d32f2f',
+    mode: 'dark',
+    slots: { cover: 'hero-photo', nav: 'capsule-pills', dishCard: 'compact-row', section: 'ribbon', footer: 'minimal-mark' },
+    signatureId: 'bombay-chowk',
+    typePair: 'bold-street',
+    texture: 'none',
+    density: 'compact',
+    radius: 'sm',
+    shadow: 'elevated',
+    cover: { imageUrl: '/assets/themes/bombay-chowk-hero.webp', overlayStrength: 0.4 },
   },
 ];
 
 export const PRESET_IDS = PRESETS.map((preset) => preset.id);
+
+/**
+ * What the gallery, the onboarding picker and the Design Studio offer.
+ *
+ * Legacy presets are excluded here but remain in `PRESETS` and resolvable through `getPreset`,
+ * so no published menu changes appearance while no new owner can pick a superseded design.
+ */
+export const SHOWCASE_PRESETS: readonly Preset[] = PRESETS.filter((preset) => !preset.legacy);
+
+/** The design a brand-new client starts on, before they pick anything. */
+export const DEFAULT_SHOWCASE_PRESET_ID = 'edition-maison-noir';
 
 export const DEFAULT_PRESET_ID = 'rajasthani-heritage';
 
@@ -445,7 +759,13 @@ export function themeFromPreset(preset: Preset, overrides: Partial<MenuTheme> = 
     density: preset.density,
     radius: preset.radius,
     shadow: preset.shadow,
-    cover: { imageUrl: null, focal: CENTRE_FOCAL, overlayStrength: 0.55, showCoverPage: true },
+    cover: {
+      imageUrl: null,
+      focal: CENTRE_FOCAL,
+      overlayStrength: 0.55,
+      showCoverPage: true,
+      ...preset.cover,
+    },
     announcement: null,
     ...overrides,
   };

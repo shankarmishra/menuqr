@@ -6,8 +6,10 @@ import { FONT_PAIRING_IDS } from './fonts.ts';
 import {
   DEFAULT_PRESET_ID,
   getPreset,
+  DEFAULT_SHOWCASE_PRESET_ID,
   PRESET_IDS,
   PRESETS,
+  SHOWCASE_PRESETS,
   presetFromProfile,
   themeFromPreset,
   themeFromPresetId,
@@ -48,35 +50,87 @@ const SIGNATURE_PRESET_IDS = [
   'signature-chalkboard-clipboard',
 ];
 
+/** The curated Edition presets — the live, showcased catalogue. */
+const EDITION_PRESET_IDS = [
+  'edition-maison-noir',
+  'edition-herbarium',
+  'edition-noren',
+  'edition-carta-rustica',
+  'edition-darbar',
+  'edition-chalk-house',
+  'edition-atelier-pastel',
+  'edition-presse-brut',
+  'edition-littorale',
+  'edition-neon-ichiban',
+  'edition-maharaja-table',
+  'edition-rang-e-punjab',
+  'edition-dakshin-heritage',
+  'edition-thali-and-co',
+  'edition-bombay-chowk',
+];
+
+/** Every preset that predates the Edition catalogue; all of them must stay resolvable. */
+const SUPERSEDED_PRESET_IDS = [...LIVE_TEMPLATE_IDS, ...SIGNATURE_PRESET_IDS];
+
 test('presets: catalogue integrity', async (t) => {
   await t.test('covers every currently live template id', () => {
     for (const id of LIVE_TEMPLATE_IDS) {
       assert.ok(PRESET_IDS.includes(id), `no preset for live template "${id}"`);
     }
-    assert.equal(PRESETS.length, LIVE_TEMPLATE_IDS.length + SIGNATURE_PRESET_IDS.length);
+    assert.equal(PRESETS.length, SUPERSEDED_PRESET_IDS.length + EDITION_PRESET_IDS.length);
+    for (const id of EDITION_PRESET_IDS) {
+      assert.ok(PRESET_IDS.includes(id), `missing Edition preset "${id}"`);
+    }
   });
 
-  await t.test('exactly the three Signature presets carry a signatureId, one each', () => {
-    const withSignature = PRESETS.filter((p) => p.signatureId != null);
-    assert.equal(withSignature.length, SIGNATURE_PRESET_IDS.length);
+  await t.test('the showcase offers the Editions and nothing superseded', () => {
+    assert.deepEqual(
+      SHOWCASE_PRESETS.map((preset) => preset.id),
+      EDITION_PRESET_IDS,
+      'the showcased catalogue must be exactly the Editions, in catalogue order'
+    );
 
-    for (const id of SIGNATURE_PRESET_IDS) {
+    // The point of `legacy`: hidden from every picker, still resolvable for published menus.
+    for (const id of SUPERSEDED_PRESET_IDS) {
       const preset = PRESETS.find((p) => p.id === id);
-      assert.ok(preset, `missing signature preset "${id}"`);
+      assert.ok(preset, `superseded preset "${id}" was removed instead of retired`);
+      assert.equal(preset!.legacy, true, `${id}: must be marked legacy, not offered as new`);
+      assert.equal(getPreset(id).id, id, `${id}: a published menu must still resolve to itself`);
+    }
+
+    assert.ok(
+      PRESET_IDS.includes(DEFAULT_SHOWCASE_PRESET_ID),
+      'the onboarding default must be a real preset'
+    );
+    assert.ok(
+      SHOWCASE_PRESETS.some((preset) => preset.id === DEFAULT_SHOWCASE_PRESET_ID),
+      'the onboarding default must be one an owner can actually see and re-pick'
+    );
+  });
+
+  await t.test('every composition id is claimed by exactly one preset', () => {
+    const withSignature = PRESETS.filter((p) => p.signatureId != null);
+
+    for (const preset of withSignature) {
       assert.ok(
-        SIGNATURE_COMPOSITION_IDS.includes(preset!.signatureId!),
-        `${id}: signatureId "${preset!.signatureId}" is not a known composition`
+        SIGNATURE_COMPOSITION_IDS.includes(preset.signatureId!),
+        `${preset.id}: signatureId "${preset.signatureId}" is not a known composition`
       );
     }
 
-    // Every composition id is used by exactly one preset — no silent duplicate or gap.
-    const usedCompositionIds = withSignature.map((p) => p.signatureId);
-    assert.equal(new Set(usedCompositionIds).size, SIGNATURE_COMPOSITION_IDS.length);
+    // No silent duplicate (two presets fighting over one composition) and no gap (a composition
+    // shipped but unreachable because no preset points at it).
+    const used = withSignature.map((p) => p.signatureId);
+    assert.equal(new Set(used).size, used.length, 'two presets claim the same composition');
+    assert.equal(
+      new Set(used).size,
+      SIGNATURE_COMPOSITION_IDS.length,
+      'a composition exists that no preset can reach'
+    );
 
-    for (const preset of PRESETS) {
-      if (!SIGNATURE_PRESET_IDS.includes(preset.id)) {
-        assert.equal(preset.signatureId, undefined, `${preset.id}: composable preset must not set signatureId`);
-      }
+    for (const id of EDITION_PRESET_IDS) {
+      const preset = PRESETS.find((p) => p.id === id);
+      assert.ok(preset?.signatureId, `${id}: an Edition must own a composition`);
     }
   });
 

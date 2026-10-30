@@ -46,12 +46,53 @@ export type LogoShape = 'circle' | 'square' | 'wordmark';
  * photos exactly like a composable preset; what differs is that one hand-art-directed component
  * renders the whole page instead of five independently-chosen pieces.
  */
-export type SignatureCompositionId = 'heritage-booklet' | 'graphic-booklet' | 'chalkboard-clipboard';
+/**
+ * A full-page composition.
+ *
+ * The first three are the original Signature tier, kept because live client menus reference
+ * them. The ten `Edition` ids below are the current art-directed catalogue: each owns its cover
+ * *and* its interior, so a cover and its menu pages read as one designed publication rather than
+ * as a cover bolted onto a generic list.
+ */
+export type SignatureCompositionId =
+  | 'heritage-booklet'
+  | 'graphic-booklet'
+  | 'chalkboard-clipboard'
+  | 'maison-noir'
+  | 'herbarium'
+  | 'noren'
+  | 'carta-rustica'
+  | 'darbar'
+  | 'chalk-house'
+  | 'atelier-pastel'
+  | 'presse-brut'
+  | 'littorale'
+  | 'neon-ichiban'
+  | 'maharaja-table'
+  | 'rang-e-punjab'
+  | 'dakshin-heritage'
+  | 'thali-and-co'
+  | 'bombay-chowk';
 
 export const SIGNATURE_COMPOSITION_IDS: readonly SignatureCompositionId[] = [
   'heritage-booklet',
   'graphic-booklet',
   'chalkboard-clipboard',
+  'maison-noir',
+  'herbarium',
+  'noren',
+  'carta-rustica',
+  'darbar',
+  'chalk-house',
+  'atelier-pastel',
+  'presse-brut',
+  'littorale',
+  'neon-ichiban',
+  'maharaja-table',
+  'rang-e-punjab',
+  'dakshin-heritage',
+  'thali-and-co',
+  'bombay-chowk',
 ];
 
 export const COVER_SLOTS: readonly CoverSlot[] = ['hero-photo', 'monogram', 'heritage-arch', 'bento-collage'];

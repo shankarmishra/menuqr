@@ -62,6 +62,7 @@ export interface MenuTemplateRendererProps {
     spicyLevel?: number;
     tags?: RenderMenuItem['tags'];
     soldOut?: boolean;
+    availabilityNote?: string | null;
     image?: string;
     imageUrl?: string;
     focalX?: number;
@@ -129,6 +130,7 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
       spicyLevel: item.spicyLevel,
       tags: item.tags,
       soldOut: item.soldOut,
+      availabilityNote: item.availabilityNote,
       // Older callers use `image`; newer ones use `imageUrl`.
       imageUrl: item.imageUrl ?? item.image,
       focal:

@@ -1,0 +1,2126 @@
+/*
+ * MENUQR Editions — Compositions 4 to 10
+ *
+ * Continuation of `editions.css`, split purely for file length. Same rules apply: no literal
+ * hex, every value a `var(--mq-*)` token, ornament stroked in `currentColor` so it inherits the
+ * seed-derived accent.
+ */
+
+/* ========================================================================================
+   4 — CARTA RUSTICA : Trattoria Kraft, Woven Gingham & Artisanal Hand-Set Bill of Fare
+   ======================================================================================== */
+
+.mq-ed-carta {
+  container-type: inline-size;
+  container-name: carta-edition;
+  position: relative;
+  background-color: var(--mq-color-surface, #F6EEDB);
+  background-image: var(--mq-texture-image);
+  background-size: var(--mq-texture-size);
+  background-blend-mode: var(--mq-texture-blend);
+  color: var(--mq-color-text, #231C18);
+  --carta-chianti: var(--mq-color-accent, #7A1E28);
+  --carta-chianti-dark: color-mix(in oklab, var(--carta-chianti) 75%, #000);
+  --carta-chianti-light: color-mix(in oklab, var(--carta-chianti) 80%, #fff);
+  --carta-kraft-base: #F6EEDB;
+  --carta-kraft-card: #EFE4CD;
+  --carta-kraft-deep: #DFCDB1;
+  --carta-charcoal: #231C18;
+  --carta-charcoal-muted: #6B5E53;
+  --carta-linen-cream: #FAF8F4;
+  --carta-tape: rgba(228, 215, 188, 0.88);
+}
+
+/* ----------------------------------------------------------------------------------------
+   Tovaglia a Quadri (Woven Gingham Ribbon & Saddle-Stitch Thread)
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-gingham {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 26px;
+  background-color: #FAF6ED;
+  background-image:
+    repeating-linear-gradient(90deg, color-mix(in oklab, var(--carta-chianti) 75%, transparent) 0 13px, transparent 13px 26px),
+    repeating-linear-gradient(0deg, color-mix(in oklab, var(--carta-chianti) 65%, transparent) 0 13px, transparent 13px 26px);
+  box-shadow: inset 0 1px 3px rgba(35, 28, 24, 0.18), inset 0 -1px 3px rgba(35, 28, 24, 0.18);
+}
+
+.mq-ed-carta-stitch {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(90deg, #FBF8F2 0 6px, transparent 6px 12px);
+  opacity: 0.95;
+  filter: drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.35));
+}
+
+.mq-ed-carta-stitch.top-stitch { top: 2px; }
+.mq-ed-carta-stitch.bottom-stitch { bottom: 2px; }
+
+/* ----------------------------------------------------------------------------------------
+   Cover Publication Architecture
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: var(--mq-ed-cover-min, 38rem);
+  padding-block: 0;
+  background-color: var(--carta-kraft-base);
+}
+
+.mq-ed-carta-cover-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-5);
+  padding: var(--mq-space-8) var(--mq-space-5);
+  text-align: center;
+  max-width: 58rem;
+  margin-inline: auto;
+  width: 100%;
+}
+
+/* Archival Folio Ledger Eyebrow */
+.mq-ed-carta-folio-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-3);
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--carta-chianti);
+  padding-bottom: var(--mq-space-2);
+  border-bottom: 1px dashed var(--carta-kraft-deep);
+  width: min(100%, 34rem);
+}
+
+.folio-wheat {
+  font-size: 0.95rem;
+  filter: sepia(0.6);
+}
+
+/* ----------------------------------------------------------------------------------------
+   Artisan Crimson Wax Seal (*Sigillo di Ceralacca*)
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-wax-seal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-block: var(--mq-space-2);
+}
+
+.mq-ed-carta-seal-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-3deg);
+  filter: drop-shadow(0 6px 14px rgba(60, 9, 12, 0.45));
+}
+
+.mq-ed-carta-seal-logo {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 54%;
+  height: 54%;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.mq-ed-carta-seal-brand {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* ----------------------------------------------------------------------------------------
+   Brand Titles & Typography
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-brand-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-2);
+  width: 100%;
+}
+
+.mq-ed-carta-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(2.2rem, 8cqw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: var(--carta-charcoal);
+  text-wrap: balance;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.is-compact .mq-ed-carta-title {
+  font-size: var(--mq-display-lg);
+}
+
+.mq-ed-carta-wheat-divider {
+  display: flex;
+  justify-content: center;
+  color: var(--carta-chianti);
+  margin-block: var(--mq-space-1);
+}
+
+.mq-ed-carta-cuisine {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--carta-chianti);
+}
+
+.mq-ed-carta-tagline {
+  margin: 0;
+  max-width: 44ch;
+  font-size: var(--mq-text-sm);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--carta-charcoal-muted);
+}
+
+/* ----------------------------------------------------------------------------------------
+   Pinned Snapshots (Cartoline Polaroids with Deckle Crepe Tape)
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-collage {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--mq-space-6);
+  margin-block: var(--mq-space-4);
+  width: 100%;
+}
+
+.mq-ed-carta-snap {
+  position: relative;
+  margin: 0;
+  width: clamp(10.5rem, 30cqw, 14rem);
+  padding: 10px 10px 16px 10px;
+  background-color: var(--carta-linen-cream);
+  border: 1px solid rgba(215, 200, 175, 0.9);
+  border-radius: 2px;
+  box-shadow: 0 6px 18px rgba(35, 28, 24, 0.14), 0 1px 3px rgba(35, 28, 24, 0.08);
+  transform: rotate(var(--snap-tilt, 0deg));
+  transition: transform 0.25s ease;
+}
+
+.mq-ed-carta-snap:hover {
+  transform: rotate(0deg) scale(1.03);
+  z-index: 5;
+}
+
+.mq-ed-carta-snap-hero {
+  width: clamp(15rem, 50cqw, 22rem);
+}
+
+.is-compact .mq-ed-carta-snap {
+  width: 6.5rem;
+  padding: 6px 6px 10px 6px;
+}
+
+/* Authentic Crepe Masking Tape */
+.mq-ed-carta-tape {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%) rotate(0.8deg);
+  width: 3.8rem;
+  height: 22px;
+  background-color: var(--carta-tape);
+  box-shadow: 0 1px 3px rgba(35, 28, 24, 0.15);
+  border-left: 2px dotted rgba(160, 140, 105, 0.7);
+  border-right: 2px dotted rgba(160, 140, 105, 0.7);
+  opacity: 0.92;
+  z-index: 3;
+}
+
+.mq-ed-carta-snap-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1px;
+  background-color: #E8DEC8;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.mq-ed-carta-snap-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.mq-ed-carta-snap-caption .snap-title {
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  color: var(--carta-charcoal);
+  line-height: 1.25;
+}
+
+.mq-ed-carta-snap-caption .snap-craft {
+  font-size: 10px;
+  font-style: italic;
+  color: var(--carta-chianti);
+}
+
+/* Category Teaser Ribbon */
+.mq-ed-carta-teasers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-2);
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--carta-charcoal-muted);
+  padding: var(--mq-space-2) var(--mq-space-4);
+  background-color: color-mix(in oklab, var(--carta-kraft-deep) 35%, transparent);
+  border-radius: 999px;
+}
+
+.mq-ed-carta-teasers .teaser-dot {
+  color: var(--carta-chianti);
+}
+
+.mq-ed-carta-contact {
+  font-size: var(--mq-text-xs);
+  color: var(--carta-charcoal-muted);
+}
+
+/* ----------------------------------------------------------------------------------------
+   Announcement & Notice
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-announce-wrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--mq-space-3) var(--mq-space-4);
+}
+
+.mq-ed-carta-announce {
+  margin: 0;
+  padding: var(--mq-space-2) var(--mq-space-5);
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--carta-linen-cream);
+  background-color: var(--carta-chianti);
+  border-radius: 2px;
+  box-shadow: 0 2px 6px rgba(122, 30, 40, 0.25);
+}
+
+.announce-star {
+  color: #F8D394;
+}
+
+/* ----------------------------------------------------------------------------------------
+   Specialità della Casa (Curated House Specialties Showcase)
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-showcase {
+  margin-bottom: var(--mq-space-10);
+  padding: var(--mq-space-6) var(--mq-space-5);
+  background-color: color-mix(in oklab, var(--carta-kraft-card) 60%, transparent);
+  border: 1px dashed var(--carta-kraft-deep);
+  border-radius: 4px;
+}
+
+.mq-ed-carta-showcase-header {
+  text-align: center;
+  margin-bottom: var(--mq-space-6);
+}
+
+.mq-ed-carta-showcase-eyebrow {
+  display: block;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--carta-chianti);
+  margin-bottom: var(--mq-space-1);
+}
+
+.mq-ed-carta-showcase-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.6rem, 4cqw, 2.2rem);
+  font-weight: 800;
+  color: var(--carta-charcoal);
+}
+
+.mq-ed-carta-showcase-sub {
+  margin: var(--mq-space-1) 0 0;
+  font-size: var(--mq-text-sm);
+  font-style: italic;
+  color: var(--carta-charcoal-muted);
+}
+
+.mq-ed-carta-showcase-divider {
+  display: flex;
+  justify-content: center;
+  color: var(--carta-chianti);
+  margin-top: var(--mq-space-2);
+}
+
+.mq-ed-carta-showcase-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mq-space-6);
+}
+
+@container carta-edition (min-width: 52rem) {
+  .mq-ed-carta-showcase-grid {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  }
+}
+
+.mq-ed-carta-showcase-card {
+  position: relative;
+  background-color: var(--carta-linen-cream);
+  padding: 10px;
+  border: 1px solid rgba(215, 200, 175, 0.9);
+  border-radius: 2px;
+  box-shadow: 0 4px 14px rgba(35, 28, 24, 0.1);
+  transform: rotate(var(--card-tilt, 0deg));
+}
+
+.mq-ed-carta-card-tape {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3.25rem;
+  height: 18px;
+  background-color: var(--carta-tape);
+  box-shadow: 0 1px 2px rgba(35, 28, 24, 0.12);
+  border-left: 2px dotted rgba(160, 140, 105, 0.6);
+  border-right: 2px dotted rgba(160, 140, 105, 0.6);
+  z-index: 2;
+}
+
+.mq-ed-carta-showcase-media {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1px;
+}
+
+.mq-ed-carta-craft-ribbon {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-family: var(--mq-font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FFF;
+  background-color: var(--carta-chianti);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.mq-ed-carta-craft-ribbon .ribbon-star {
+  color: #F8D394;
+}
+
+.mq-ed-carta-showcase-body {
+  padding: var(--mq-space-3) var(--mq-space-2) var(--mq-space-1);
+}
+
+.mq-ed-carta-showcase-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--mq-space-3);
+  margin-bottom: var(--mq-space-1);
+}
+
+.mq-ed-carta-showcase-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  flex: 1 1 auto;
+}
+
+.mq-ed-carta-showcase-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  font-weight: 700;
+  color: var(--carta-charcoal);
+  line-height: 1.25;
+}
+
+.mq-ed-carta-showcase-stamp {
+  flex: 0 0 auto;
+}
+
+.mq-ed-carta-showcase-desc {
+  margin: 0 0 var(--mq-space-2);
+  font-size: var(--mq-text-xs);
+  line-height: 1.45;
+  font-style: italic;
+  color: var(--carta-charcoal-muted);
+}
+
+/* ----------------------------------------------------------------------------------------
+   Interior Bill of Fare Layout: Container-Query Responsive Columns
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-body {
+  flex: 1 1 auto;
+  padding: var(--mq-space-8) var(--mq-space-5) var(--mq-space-12);
+  max-width: 68rem;
+  margin-inline: auto;
+  width: 100%;
+}
+
+/* Single column on mobile; dual columns on wider viewports */
+.mq-ed-carta-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mq-space-8);
+}
+
+@container carta-edition (min-width: 50rem) {
+  .mq-ed-carta-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--mq-space-10);
+    row-gap: var(--mq-space-10);
+  }
+}
+
+/* ----------------------------------------------------------------------------------------
+   Course Section Headers
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.mq-ed-carta-section-head {
+  margin-bottom: var(--mq-space-5);
+  border-bottom: 2px solid var(--carta-chianti);
+  padding-bottom: var(--mq-space-2);
+}
+
+.mq-ed-carta-section-badge {
+  display: flex;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+  flex-wrap: wrap;
+}
+
+.mq-ed-carta-section-badge .section-index {
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-sm);
+  font-weight: 800;
+  color: var(--carta-chianti);
+}
+
+.mq-ed-carta-section-badge .section-dot {
+  color: var(--carta-kraft-deep);
+}
+
+.mq-ed-carta-section-badge .section-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--carta-charcoal);
+  flex: 1 1 auto;
+}
+
+.mq-ed-carta-section-badge .section-count {
+  font-family: var(--mq-font-display);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--carta-charcoal-muted);
+}
+
+/* ----------------------------------------------------------------------------------------
+   Anti-Squash & Anti-Collision Two-Tier Dish Row Architecture
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-4);
+}
+
+.mq-ed-carta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-bottom: var(--mq-space-4);
+  border-bottom: 1px dashed var(--carta-kraft-deep);
+}
+
+/* TIER 1: Row Header (Title + Stretch Dot Leader + Stamped Price) */
+.mq-ed-carta-row-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+  min-width: 0;
+  width: 100%;
+}
+
+.mq-ed-carta-row-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.mq-ed-carta-item-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  font-weight: 700;
+  color: var(--carta-charcoal);
+  line-height: 1.25;
+  overflow-wrap: break-word;
+}
+
+/* Flexible Dotted Leader Line */
+.mq-ed-carta-leader-dots {
+  flex: 1 1 1.5rem;
+  border-bottom: 2px dotted color-mix(in oklab, var(--carta-charcoal) 30%, transparent);
+  margin-bottom: 0.25em;
+  min-width: 1.5rem;
+}
+
+/* Baseline-anchored stamped price seal */
+.mq-ed-carta-stamp-slot {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mq-ed-carta-stamp-slot .mq-price {
+  font-family: var(--mq-font-display);
+  font-weight: 800;
+  font-size: var(--mq-text-sm);
+  color: var(--carta-chianti);
+  padding: 0.18rem 0.55rem;
+  border: 1.5px dashed var(--carta-chianti);
+  border-radius: 999px;
+  background-color: color-mix(in oklab, var(--carta-linen-cream) 70%, transparent);
+  transform: rotate(-1.5deg);
+  box-shadow: 0 1px 2px rgba(77, 18, 25, 0.08);
+  white-space: nowrap;
+}
+
+/* TIER 2: Full-width un-squashed description (Never 1 word per line!) */
+.mq-ed-carta-item-desc {
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  line-height: 1.48;
+  color: var(--carta-charcoal-muted);
+  font-style: italic;
+  max-width: 62ch;
+  width: 100%;
+}
+
+/* TIER 3: Badges & Dietary Flags */
+.mq-ed-carta-item-flags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--mq-space-2);
+  margin-top: 2px;
+}
+
+.mq-ed-carta-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--mq-font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1.5px 6px;
+  border-radius: 2px;
+}
+
+.mq-ed-carta-badge.badge-bestseller {
+  background-color: color-mix(in oklab, var(--carta-chianti) 12%, transparent);
+  color: var(--carta-chianti);
+  border: 1px solid color-mix(in oklab, var(--carta-chianti) 35%, transparent);
+}
+
+.mq-ed-carta-badge.badge-special {
+  background-color: color-mix(in oklab, #B48424 16%, transparent);
+  color: #7A570C;
+  border: 1px solid color-mix(in oklab, #B48424 40%, transparent);
+}
+
+/* ----------------------------------------------------------------------------------------
+   Hearth Tradition Plaque (*La Nostra Tradizione*)
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-hearth-plaque {
+  grid-column: 1 / -1;
+  position: relative;
+  margin-block: var(--mq-space-4);
+  padding: var(--mq-space-6) var(--mq-space-5);
+  background-color: var(--carta-kraft-card);
+  border: 2px solid var(--carta-chianti);
+  box-shadow: 0 4px 16px rgba(35, 28, 24, 0.08);
+}
+
+.mq-ed-carta-plaque-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1px dashed var(--carta-kraft-deep);
+  padding: var(--mq-space-5) var(--mq-space-4);
+}
+
+.mq-ed-carta-plaque-corner {
+  position: absolute;
+  font-size: 12px;
+  color: var(--carta-chianti);
+}
+
+.corner-tl { top: -6px; left: -6px; }
+.corner-tr { top: -6px; right: -6px; }
+.corner-bl { bottom: -6px; left: -6px; }
+.corner-br { bottom: -6px; right: -6px; }
+
+.mq-ed-carta-plaque-icon {
+  color: var(--carta-chianti);
+  margin-bottom: var(--mq-space-2);
+}
+
+.mq-ed-carta-plaque-head {
+  margin-bottom: var(--mq-space-2);
+}
+
+.mq-ed-carta-plaque-eyebrow {
+  display: block;
+  font-family: var(--mq-font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--carta-chianti);
+  margin-bottom: 3px;
+}
+
+.mq-ed-carta-plaque-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 3cqw, 1.6rem);
+  font-weight: 800;
+  color: var(--carta-charcoal);
+}
+
+.mq-ed-carta-plaque-story {
+  margin: 0 0 var(--mq-space-4);
+  max-width: 54ch;
+  font-size: var(--mq-text-xs);
+  line-height: 1.6;
+  font-style: italic;
+  color: var(--carta-charcoal);
+}
+
+.mq-ed-carta-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-carta-pill {
+  font-family: var(--mq-font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--carta-charcoal);
+  background-color: var(--carta-linen-cream);
+  padding: 3px 8px;
+  border: 1px solid var(--carta-kraft-deep);
+  border-radius: 999px;
+}
+
+/* ----------------------------------------------------------------------------------------
+   Colophon Footer & Weathered Rubber Stamp
+   ---------------------------------------------------------------------------------------- */
+
+.mq-ed-carta-foot {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--carta-kraft-base);
+}
+
+.mq-ed-carta-foot-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-2);
+  padding: var(--mq-space-8) var(--mq-space-5);
+  text-align: center;
+}
+
+.mq-ed-carta-stamp-colophon {
+  color: var(--carta-chianti);
+  opacity: 0.78;
+  transform: rotate(-4deg);
+  margin-bottom: var(--mq-space-2);
+  filter: drop-shadow(0 1px 2px rgba(35, 28, 24, 0.1));
+}
+
+.mq-ed-carta-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--carta-charcoal);
+}
+
+.mq-ed-carta-motto {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  font-style: italic;
+  color: var(--carta-chianti);
+}
+
+.mq-ed-carta-foot-contact {
+  font-size: var(--mq-text-xs);
+  color: var(--carta-charcoal-muted);
+}
+
+.mq-ed-carta-legal {
+  margin: var(--mq-space-2) 0 0;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--carta-kraft-deep);
+}
+
+
+/* ========================================================================================
+   5 — DARBAR : Indian royal
+   ======================================================================================== */
+
+.mq-ed-darbar-cover {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-5);
+  min-height: var(--mq-ed-cover-min);
+  padding: var(--mq-space-8) var(--mq-space-10) var(--mq-space-12);
+  overflow: hidden;
+  color: var(--mq-color-on-cover);
+}
+
+.mq-ed-darbar-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--mq-color-bg) 82%, transparent),
+    color-mix(in oklab, var(--mq-color-bg) 94%, transparent)
+  );
+}
+
+.mq-ed-darbar-paisley {
+  position: absolute;
+  z-index: 3;
+  color: var(--mq-color-accent);
+  line-height: 0;
+  opacity: 0.9;
+}
+
+.mq-ed-darbar-paisley-tl { top: var(--mq-space-4); left: var(--mq-space-4); }
+.mq-ed-darbar-paisley-tr { top: var(--mq-space-4); right: var(--mq-space-4); transform: scaleX(-1); }
+.mq-ed-darbar-paisley-bl { bottom: var(--mq-space-4); left: var(--mq-space-4); transform: scaleY(-1); }
+.mq-ed-darbar-paisley-br { bottom: var(--mq-space-4); right: var(--mq-space-4); transform: scale(-1, -1); }
+
+.mq-ed-darbar-arch {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: min(23rem, 88%);
+  min-height: 23rem;
+  color: var(--mq-color-accent);
+}
+
+.is-compact .mq-ed-darbar-arch { min-height: 9.5rem; }
+
+.mq-ed-darbar-arch-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * Held well inside the arch outline.
+ *
+ * The arch is drawn with `preserveAspectRatio: none`, so its sides sit at a fixed fraction of
+ * the box no matter how tall it stretches. Content therefore has to be inset in percentage
+ * terms, not by a fixed padding, or a long restaurant name spills straight through the stroke.
+ */
+.mq-ed-darbar-arch-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-2);
+  width: 74%;
+  padding-block: var(--mq-space-6);
+  text-align: center;
+}
+
+.mq-ed-darbar-arch-body .mq-ed-teaser {
+  gap: var(--mq-space-1);
+  font-size: var(--mq-text-xs);
+  line-height: var(--mq-leading-snug);
+}
+
+.mq-ed-darbar-medallion {
+  display: grid;
+  place-items: center;
+  padding: var(--mq-space-2);
+  border: 1px solid var(--mq-color-accent);
+  border-radius: 50%;
+  color: var(--mq-color-on-cover);
+}
+
+.mq-ed-darbar-cuisine {
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent);
+}
+
+.mq-ed-darbar-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-2xl);
+  font-weight: 400;
+  line-height: var(--mq-leading-tight);
+  letter-spacing: var(--mq-tracking-display);
+  color: var(--mq-color-on-cover);
+  text-wrap: balance;
+}
+
+.is-compact .mq-ed-darbar-title { font-size: var(--mq-display-base); }
+
+.mq-ed-darbar-tagline {
+  margin: 0;
+  max-width: 28ch;
+  font-size: var(--mq-text-sm);
+  font-style: italic;
+  color: var(--mq-color-on-cover-muted);
+}
+
+.mq-ed-darbar-teaser { color: color-mix(in oklab, var(--mq-color-on-cover) 70%, transparent); }
+
+.mq-ed-darbar-contact {
+  position: relative;
+  z-index: 4;
+  color: color-mix(in oklab, var(--mq-color-on-cover) 68%, transparent);
+}
+
+.mq-ed-darbar-announce {
+  margin: 0;
+  padding: var(--mq-space-3) var(--mq-space-5);
+  text-align: center;
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-contrast);
+  background-color: var(--mq-color-accent);
+}
+
+.mq-ed-darbar-body {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: var(--mq-ed-measure);
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-5);
+}
+
+.mq-ed-darbar-royal { margin: 0 0 var(--mq-space-10); }
+
+.mq-ed-darbar-royal .mq-image-frame {
+  border: 1px solid var(--mq-color-accent);
+  padding: 5px;
+}
+
+.mq-ed-darbar-royal figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-1);
+  margin-top: var(--mq-space-3);
+  text-align: center;
+}
+
+.mq-ed-darbar-royal figcaption strong {
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 400;
+  letter-spacing: var(--mq-tracking-display);
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-darbar-course + .mq-ed-darbar-course { margin-top: var(--mq-space-10); }
+
+.mq-ed-darbar-course-head {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-3);
+  margin-bottom: var(--mq-space-6);
+  color: var(--mq-color-accent);
+}
+
+/* The wings taper, so the title reads as set inside an arch rather than between two rules. */
+.mq-ed-darbar-course-wing {
+  flex: 1 1 auto;
+  height: 2px;
+  background-image: linear-gradient(to right, transparent, currentColor);
+}
+
+.mq-ed-darbar-course-wing:last-child {
+  background-image: linear-gradient(to left, transparent, currentColor);
+}
+
+.mq-ed-darbar-course-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-lg);
+  font-weight: 400;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-darbar-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-5);
+}
+
+.mq-ed-darbar .mq-ed-leader-name {
+  font-family: var(--mq-font-display);
+  font-weight: 400;
+  letter-spacing: var(--mq-tracking-display);
+}
+
+.mq-ed-darbar .mq-ed-leader-rule {
+  background-image: linear-gradient(to right, var(--mq-color-accent) 0 2px, transparent 2px 6px);
+  background-size: 6px 1px;
+  opacity: 0.5;
+}
+
+.mq-ed-darbar-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-3);
+  padding: var(--mq-space-8) var(--mq-space-5) var(--mq-space-10);
+  color: var(--mq-color-accent);
+  border-top: 1px solid var(--mq-color-border);
+}
+
+.mq-ed-darbar-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-sm);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+/* ========================================================================================
+   6 — CHALK HOUSE : bistro board
+   ======================================================================================== */
+
+.mq-ed-chalk {
+  background-image: var(--mq-texture-image);
+  background-size: var(--mq-texture-size);
+  background-blend-mode: var(--mq-texture-blend);
+}
+
+.mq-ed-chalk-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: var(--mq-ed-cover-min);
+  padding: var(--mq-space-10) var(--mq-space-6);
+}
+
+.mq-ed-chalk-frame {
+  position: absolute;
+  inset: var(--mq-space-3);
+  width: calc(100% - var(--mq-space-6));
+  height: calc(100% - var(--mq-space-6));
+  color: var(--mq-color-accent);
+  pointer-events: none;
+}
+
+.mq-ed-chalk-cover-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-4);
+  text-align: center;
+}
+
+.mq-ed-chalk-kicker {
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent);
+}
+
+.mq-ed-chalk-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-3xl);
+  font-weight: 700;
+  line-height: var(--mq-leading-tight);
+  letter-spacing: var(--mq-tracking-display);
+  color: var(--mq-color-heading);
+  text-wrap: balance;
+}
+
+.is-compact .mq-ed-chalk-title { font-size: var(--mq-display-lg); }
+
+.mq-ed-chalk-swoosh {
+  display: block;
+  width: min(14rem, 80%);
+  height: var(--mq-space-4);
+  color: var(--mq-color-accent);
+}
+
+.mq-ed-chalk-swoosh-section {
+  width: 100%;
+  margin-bottom: var(--mq-space-4);
+}
+
+.mq-ed-chalk-tagline {
+  margin: 0;
+  max-width: 32ch;
+  font-size: var(--mq-text-sm);
+  font-style: italic;
+  color: var(--mq-color-text-muted);
+}
+
+.mq-ed-chalk-special {
+  margin: 0;
+  width: min(17rem, 100%);
+}
+
+.mq-ed-chalk-special .mq-image-frame {
+  border: 2px solid var(--mq-color-accent);
+  border-radius: var(--mq-radius-sm);
+  overflow: hidden;
+}
+
+.mq-ed-chalk-special figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-2);
+  margin-top: var(--mq-space-2);
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-sm);
+  letter-spacing: var(--mq-tracking-display);
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-chalk-star { color: var(--mq-color-accent); }
+
+.mq-ed-chalk-contact { color: var(--mq-color-text-muted); }
+
+.mq-ed-chalk-announce {
+  margin: 0;
+  padding: var(--mq-space-3) var(--mq-space-5);
+  text-align: center;
+  font-size: var(--mq-text-sm);
+  font-style: italic;
+  color: var(--mq-color-accent-text);
+  border-block: 1px solid var(--mq-color-border);
+}
+
+.mq-ed-chalk-body {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 50rem;
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-6);
+}
+
+.mq-ed-chalk-section + .mq-ed-chalk-section { margin-top: var(--mq-space-10); }
+
+.mq-ed-chalk-section-title {
+  margin: 0 0 var(--mq-space-1);
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-lg);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-display);
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-chalk-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-5);
+}
+
+.mq-ed-chalk-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mq-space-4);
+}
+
+.mq-ed-chalk-row-main { flex: 1 1 auto; min-width: 0; }
+
+.mq-ed-chalk-row-title {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  min-width: 0;
+}
+
+/* Hand-chalked price ring: thick, slightly soft, never a filled pill. */
+.mq-ed-chalk-ring {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 3.75rem;
+  min-height: 3.75rem;
+  padding: var(--mq-space-2);
+  border: 2px solid var(--mq-color-accent);
+  border-radius: 48% 52% 51% 49% / 50% 49% 51% 50%;
+  color: var(--mq-color-accent-text);
+}
+
+.mq-ed-chalk-ring .mq-price { font-weight: 700; }
+
+.mq-ed-chalk-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-2);
+  padding: var(--mq-space-8) var(--mq-space-6) var(--mq-space-10);
+}
+
+.mq-ed-chalk-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+/* ========================================================================================
+   7 — ATELIER PASTEL : patisserie
+   ======================================================================================== */
+
+.mq-ed-pastel-cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-6);
+  min-height: var(--mq-ed-cover-min);
+  padding: var(--mq-space-10) var(--mq-space-5) 0;
+  background-color: var(--mq-color-surface);
+}
+
+/* Arch window: a full radius on the top corners only, which is the whole patisserie signature. */
+.mq-ed-pastel-arch {
+  position: relative;
+  width: min(17rem, 72%);
+  border-radius: 999px 999px var(--mq-radius-md) var(--mq-radius-md);
+  overflow: hidden;
+  box-shadow: var(--mq-shadow-lg);
+}
+
+.is-compact .mq-ed-pastel-arch { width: 58%; }
+
+.mq-ed-pastel-arch .mq-image-frame,
+.mq-ed-pastel-arch .mq-image { width: 100%; }
+
+.mq-ed-pastel-arch-empty {
+  display: block;
+  aspect-ratio: var(--mq-aspect-portrait);
+  background-color: var(--mq-color-surface-sunken);
+}
+
+.mq-ed-pastel-arch-ring {
+  position: absolute;
+  inset: var(--mq-space-2);
+  border: 1px solid color-mix(in oklab, var(--mq-color-accent) 60%, transparent);
+  border-radius: 999px 999px var(--mq-radius-sm) var(--mq-radius-sm);
+  pointer-events: none;
+}
+
+.mq-ed-pastel-cover-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-3);
+  padding-bottom: var(--mq-space-8);
+  text-align: center;
+}
+
+.mq-ed-pastel-cuisine {
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-text);
+}
+
+.mq-ed-pastel-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-2xl);
+  font-weight: 400;
+  line-height: var(--mq-leading-tight);
+  letter-spacing: var(--mq-tracking-display);
+  color: var(--mq-color-heading);
+  text-wrap: balance;
+}
+
+.is-compact .mq-ed-pastel-title { font-size: var(--mq-display-base); }
+
+.mq-ed-pastel-tagline {
+  margin: 0;
+  max-width: 32ch;
+  font-size: var(--mq-text-sm);
+  font-style: italic;
+  color: var(--mq-color-text-muted);
+}
+
+.mq-ed-pastel-contact { color: var(--mq-color-text-muted); }
+
+/* Scalloped edge: a repeating radial mask, so it stays sharp at any page width. */
+.mq-ed-pastel-scallop {
+  display: block;
+  width: 100%;
+  height: var(--mq-space-5);
+  background-color: var(--mq-color-bg);
+  -webkit-mask-image: radial-gradient(circle at 50% 0, transparent 0 62%, black 63%);
+  mask-image: radial-gradient(circle at 50% 0, transparent 0 62%, black 63%);
+  -webkit-mask-size: 28px 100%;
+  mask-size: 28px 100%;
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+}
+
+.mq-ed-pastel-scallop-up {
+  background-color: var(--mq-color-surface);
+  -webkit-mask-image: radial-gradient(circle at 50% 100%, transparent 0 62%, black 63%);
+  mask-image: radial-gradient(circle at 50% 100%, transparent 0 62%, black 63%);
+}
+
+.mq-ed-pastel-announce {
+  margin: 0;
+  padding: var(--mq-space-3) var(--mq-space-5);
+  text-align: center;
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-text);
+  background-color: var(--mq-color-surface);
+}
+
+.mq-ed-pastel-body {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 62rem;
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-5);
+}
+
+.mq-ed-pastel-section + .mq-ed-pastel-section { margin-top: var(--mq-space-12); }
+
+.mq-ed-pastel-ribbon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--mq-space-2);
+}
+
+.mq-ed-pastel-ribbon h2 {
+  margin: 0;
+  padding: var(--mq-space-2) var(--mq-space-6);
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 400;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-text);
+  background-color: var(--mq-color-surface);
+  border-radius: var(--mq-radius-pill);
+  border: 1px solid color-mix(in oklab, var(--mq-color-accent) 40%, transparent);
+}
+
+.mq-ed-pastel-section-note {
+  margin: 0 auto var(--mq-space-6);
+  max-width: 44ch;
+  text-align: center;
+  font-size: var(--mq-text-sm);
+  font-style: italic;
+  color: var(--mq-color-text-muted);
+}
+
+.mq-ed-pastel-grid {
+  display: grid;
+  gap: var(--mq-space-6);
+  margin-top: var(--mq-space-6);
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+}
+
+.mq-ed-pastel-card {
+  padding: var(--mq-space-3);
+  background-color: var(--mq-color-surface);
+  border-radius: var(--mq-radius-lg);
+  box-shadow: var(--mq-shadow-sm);
+}
+
+.mq-ed-pastel-card .mq-ed-photo-dish-media { border-radius: var(--mq-radius-md); }
+
+.mq-ed-pastel-card .mq-price {
+  padding: var(--mq-space-1) var(--mq-space-3);
+  border-radius: var(--mq-radius-pill);
+  background-color: var(--mq-color-surface-alt);
+  color: var(--mq-color-accent-text);
+  font-weight: 600;
+}
+
+.mq-ed-pastel-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-3);
+  padding-bottom: var(--mq-space-10);
+  background-color: var(--mq-color-surface);
+}
+
+.mq-ed-pastel-foot-name {
+  margin: var(--mq-space-5) 0 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+/* ========================================================================================
+   8 — PRESSE BRUT : brutalist type specimen
+   ======================================================================================== */
+
+.mq-ed-brut-cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--mq-space-5);
+  min-height: var(--mq-ed-cover-min);
+  padding: var(--mq-space-6) var(--mq-space-5) var(--mq-space-8);
+  overflow: hidden;
+}
+
+.mq-ed-brut-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mq-space-2) var(--mq-space-5);
+  font-family: var(--mq-font-body);
+  font-size: var(--mq-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-text-muted);
+  padding-bottom: var(--mq-space-4);
+  border-bottom: 2px solid var(--mq-color-heading);
+}
+
+/* Set tight and oversized, so long names crop against the page edge rather than shrinking. */
+.mq-ed-brut-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-4xl);
+  font-weight: 700;
+  line-height: 0.88;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+  overflow-wrap: anywhere;
+}
+
+.is-compact .mq-ed-brut-title { font-size: var(--mq-display-xl); }
+
+.mq-ed-brut-bar {
+  display: block;
+  width: 100%;
+  height: var(--mq-space-3);
+  background-color: var(--mq-color-accent);
+}
+
+.mq-ed-brut-cover-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--mq-space-5);
+}
+
+.mq-ed-brut-cover-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+  min-width: 0;
+  flex: 1 1 16rem;
+}
+
+.mq-ed-brut-tagline {
+  margin: 0;
+  max-width: 34ch;
+  font-size: var(--mq-text-sm);
+  line-height: var(--mq-leading-relaxed);
+  color: var(--mq-color-text);
+}
+
+.mq-ed-brut-contact {
+  justify-content: flex-start;
+  text-transform: uppercase;
+  letter-spacing: var(--mq-tracking-caps);
+}
+
+.mq-ed-brut-slab {
+  position: relative;
+  flex: none;
+  width: 9rem;
+}
+
+.mq-ed-brut-slab-tag {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: var(--mq-space-1) var(--mq-space-2);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-contrast);
+  background-color: var(--mq-color-accent);
+}
+
+.mq-ed-brut-logo {
+  position: absolute;
+  top: var(--mq-space-5);
+  right: var(--mq-space-5);
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+}
+
+.mq-ed-brut-announce {
+  margin: 0;
+  padding: var(--mq-space-3) var(--mq-space-5);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-contrast);
+  background-color: var(--mq-color-accent);
+}
+
+.mq-ed-brut-body {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 54rem;
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-5);
+}
+
+.mq-ed-brut-section + .mq-ed-brut-section { margin-top: var(--mq-space-12); }
+
+.mq-ed-brut-section-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--mq-space-3);
+  margin: 0 0 var(--mq-space-5);
+  padding-bottom: var(--mq-space-3);
+  border-bottom: 2px solid var(--mq-color-heading);
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-base);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-brut-section-index {
+  font-size: var(--mq-text-sm);
+  color: var(--mq-color-accent-text);
+}
+
+.mq-ed-brut-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mq-ed-brut-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mq-space-4);
+  padding-block: var(--mq-space-4);
+  border-bottom: 1px solid var(--mq-color-border);
+}
+
+.mq-ed-brut-row-index {
+  flex: none;
+  width: 2rem;
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  color: var(--mq-color-text-muted);
+  padding-top: 2px;
+}
+
+.mq-ed-brut-row-main { flex: 1 1 auto; min-width: 0; }
+
+.mq-ed-brut-row-title {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  min-width: 0;
+}
+
+.mq-ed-brut .mq-ed-leader-name {
+  text-transform: uppercase;
+  letter-spacing: var(--mq-tracking-caps);
+  font-weight: 700;
+  font-size: var(--mq-text-sm);
+}
+
+.mq-ed-brut-row-price {
+  flex: none;
+  text-align: right;
+}
+
+.mq-ed-brut-row-price .mq-price {
+  font-weight: 700;
+  font-size: var(--mq-text-base);
+}
+
+.mq-ed-brut-foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+  padding: 0 var(--mq-space-5) var(--mq-space-10);
+}
+
+.mq-ed-brut-foot .mq-ed-brut-bar { margin-bottom: var(--mq-space-4); }
+
+.mq-ed-brut-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-base);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-brut-foot-meta {
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-text-muted);
+}
+
+/* ========================================================================================
+   9 — LITTORALE : coastal Mediterranean
+   ======================================================================================== */
+
+.mq-ed-litt-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-6);
+  min-height: var(--mq-ed-cover-min);
+  padding-top: var(--mq-space-10);
+}
+
+.mq-ed-litt-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-3);
+  padding-inline: var(--mq-space-5);
+  text-align: center;
+}
+
+.mq-ed-litt-cuisine {
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-text);
+}
+
+.mq-ed-litt-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-3xl);
+  font-weight: 400;
+  line-height: var(--mq-leading-tight);
+  letter-spacing: var(--mq-tracking-display);
+  color: var(--mq-color-heading);
+  text-wrap: balance;
+}
+
+.is-compact .mq-ed-litt-title { font-size: var(--mq-display-lg); }
+
+.mq-ed-litt-wave {
+  display: block;
+  width: min(13rem, 70%);
+  height: var(--mq-space-4);
+  color: var(--mq-color-accent);
+}
+
+.mq-ed-litt-wave-inline {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: var(--mq-space-10);
+}
+
+.mq-ed-litt-tagline {
+  margin: 0;
+  max-width: 36ch;
+  font-size: var(--mq-text-sm);
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+  color: var(--mq-color-text-muted);
+}
+
+/* The horizon: a full-bleed band, deliberately not inset, so it cuts the page in two. */
+.mq-ed-litt-band {
+  width: 100%;
+  border-block: 1px solid var(--mq-color-border);
+}
+
+.mq-ed-litt-band .mq-image-frame,
+.mq-ed-litt-band .mq-image { width: 100%; }
+
+.mq-ed-litt-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-3);
+  padding: 0 var(--mq-space-5) var(--mq-space-8);
+}
+
+.mq-ed-litt-teaser { color: var(--mq-color-accent-text); }
+.mq-ed-litt-contact { color: var(--mq-color-text-muted); }
+
+.mq-ed-litt-announce {
+  margin: 0;
+  padding: var(--mq-space-3) var(--mq-space-5);
+  text-align: center;
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-text);
+  background-color: var(--mq-color-surface-alt);
+}
+
+.mq-ed-litt-body {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 52rem;
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-5);
+}
+
+.mq-ed-litt-section + .mq-ed-litt-section { margin-top: var(--mq-space-12); }
+
+.mq-ed-litt-section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-3);
+  margin-bottom: var(--mq-space-5);
+}
+
+.mq-ed-litt-section-index {
+  font-size: var(--mq-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--mq-tracking-caps);
+  color: var(--mq-color-accent-text);
+}
+
+.mq-ed-litt-section-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-lg);
+  font-weight: 400;
+  letter-spacing: var(--mq-tracking-display);
+  color: var(--mq-color-heading);
+  white-space: nowrap;
+}
+
+.mq-ed-litt-strip {
+  margin-bottom: var(--mq-space-6);
+  border-radius: var(--mq-radius-lg);
+  overflow: hidden;
+}
+
+.mq-ed-litt-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-5);
+}
+
+.mq-ed-litt-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-2);
+  padding: var(--mq-space-8) var(--mq-space-5) var(--mq-space-10);
+  border-top: 1px solid var(--mq-color-border);
+}
+
+.mq-ed-litt-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+/* ========================================================================================
+   10 — NEON ICHIBAN : late-night counter
+   ======================================================================================== */
+
+.mq-ed-neon-cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-5);
+  min-height: var(--mq-ed-cover-min);
+  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-8);
+  overflow: hidden;
+}
+
+/* A measured grid, not decoration: it sets the page's rhythm and reads as a printed register. */
+.mq-ed-neon-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--mq-color-accent) 14%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--mq-color-accent) 14%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+}
+
+.mq-ed-neon-cover-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+}
+
+.mq-ed-neon-kicker {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent);
+}
+
+.mq-ed-neon-blip {
+  width: 8px;
+  height: 8px;
+  background-color: var(--mq-color-accent);
+}
+
+/* Offset "misregistration" copy, duplicated in the DOM so it can take its own colour. */
+.mq-ed-neon-wordmark { position: relative; }
+
+.mq-ed-neon-title,
+.mq-ed-neon-wordmark-echo {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-4xl);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.mq-ed-neon-title {
+  position: relative;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-neon-wordmark-echo {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  color: var(--mq-color-accent);
+  opacity: 0.85;
+  pointer-events: none;
+  user-select: none;
+}
+
+.is-compact .mq-ed-neon-title,
+.is-compact .mq-ed-neon-wordmark-echo { font-size: var(--mq-display-lg); }
+
+.is-compact .mq-ed-neon-wordmark-echo { top: 2px; left: 2px; }
+
+.mq-ed-neon-tagline {
+  margin: 0;
+  max-width: 34ch;
+  font-size: var(--mq-text-sm);
+  line-height: var(--mq-leading-relaxed);
+  color: var(--mq-color-text-muted);
+}
+
+.mq-ed-neon-stickers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mq-space-3);
+  margin-top: var(--mq-space-2);
+}
+
+.mq-ed-neon-sticker {
+  padding: var(--mq-space-1) var(--mq-space-3);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-contrast);
+  background-color: var(--mq-color-accent);
+}
+
+.mq-ed-neon-sticker-a { transform: rotate(-3deg); }
+
+.mq-ed-neon-sticker-b {
+  transform: rotate(2deg);
+  color: var(--mq-color-accent-text);
+  background-color: transparent;
+  border: 2px solid var(--mq-color-accent);
+}
+
+.mq-ed-neon-hero {
+  position: relative;
+  width: 100%;
+}
+
+.mq-ed-neon-hero .mq-image-frame,
+.mq-ed-neon-hero .mq-image { width: 100%; }
+
+.mq-ed-neon-hero-tag {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: var(--mq-space-1) var(--mq-space-3);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-contrast);
+  background-color: var(--mq-color-accent);
+}
+
+.mq-ed-neon-contact {
+  position: relative;
+  justify-content: flex-start;
+  text-transform: uppercase;
+  letter-spacing: var(--mq-tracking-caps);
+  color: var(--mq-color-text-muted);
+}
+
+.mq-ed-neon-announce {
+  margin: 0;
+  padding: var(--mq-space-3) var(--mq-space-5);
+  font-size: var(--mq-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-contrast);
+  background-color: var(--mq-color-accent);
+}
+
+.mq-ed-neon-body {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 64rem;
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-5);
+}
+
+.mq-ed-neon-section + .mq-ed-neon-section { margin-top: var(--mq-space-12); }
+
+.mq-ed-neon-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mq-space-3);
+  margin: 0 0 var(--mq-space-6);
+  padding: var(--mq-space-2) var(--mq-space-4);
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-contrast);
+  background-color: var(--mq-color-accent);
+}
+
+.mq-ed-neon-section-count {
+  font-family: var(--mq-font-body);
+  font-size: var(--mq-text-xs);
+}
+
+.mq-ed-neon-grid-list {
+  display: grid;
+  gap: var(--mq-space-5);
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+
+.mq-ed-neon-tile {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: var(--mq-color-surface);
+  border: 1px solid var(--mq-color-border-strong);
+}
+
+.mq-ed-neon-tile-media {
+  overflow: hidden;
+  border-bottom: 1px solid var(--mq-color-border-strong);
+}
+
+.mq-ed-neon-tile-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+  padding: var(--mq-space-3);
+}
+
+.mq-ed-neon-tile-title {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  min-width: 0;
+}
+
+.mq-ed-neon .mq-ed-leader-name {
+  text-transform: uppercase;
+  letter-spacing: var(--mq-tracking-caps);
+  font-weight: 700;
+  font-size: var(--mq-text-sm);
+}
+
+.mq-ed-neon-tile-foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--mq-space-2);
+  margin-top: auto;
+  padding-top: var(--mq-space-2);
+}
+
+.mq-ed-neon-tag {
+  display: inline-grid;
+  place-items: center;
+  padding: var(--mq-space-1) var(--mq-space-3);
+  color: var(--mq-color-accent-contrast);
+  background-color: var(--mq-color-accent);
+}
+
+.mq-ed-neon-tag .mq-price {
+  font-weight: 700;
+  color: var(--mq-color-accent-contrast);
+}
+
+.mq-ed-neon-foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+  padding: var(--mq-space-8) var(--mq-space-5) var(--mq-space-10);
+  border-top: 2px solid var(--mq-color-accent);
+}
+
+.mq-ed-neon-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-display-base);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--mq-color-heading);
+}

@@ -313,6 +313,15 @@ export function publishMenu(status: 'PUBLISHED' | 'DRAFT'): Promise<{ id: string
   });
 }
 
+export function resolveMenuImages(
+  items: Array<{ index: number; name: string; category?: string }>
+): Promise<{ matches: Array<{ index: number; imageUrl: string }> }> {
+  return request<{ matches: Array<{ index: number; imageUrl: string }> }>('/menu/resolve-images', {
+    method: 'POST',
+    body: JSON.stringify({ items }),
+  });
+}
+
 export function saveOnboarding(data: OnboardingPayload): Promise<{ success: boolean; menuId: string }> {
   return request<{ success: boolean; menuId: string }>('/onboarding/save', {
     method: 'POST',
@@ -349,11 +358,11 @@ export function createPermanentQr(): Promise<AppQrData> {
   return request<AppQrData>('/qr', { method: 'POST', body: '{}' });
 }
 
-export function createMenuCategory(data: { name: string; description?: string; menuId: string }): Promise<{ id: string; name: string }> {
+export function createMenuCategory(data: { name: string; description?: string; menuId: string; schedule?: { from: string; to: string; days?: number[] } | null }): Promise<{ id: string; name: string }> {
   return request<{ id: string; name: string }>('/categories', { method: 'POST', body: JSON.stringify(data) });
 }
 
-export function updateMenuCategory(categoryId: string, data: { name: string; description?: string }): Promise<{ id: string; name: string }> {
+export function updateMenuCategory(categoryId: string, data: { name: string; description?: string; schedule?: { from: string; to: string; days?: number[] } | null }): Promise<{ id: string; name: string }> {
   return request<{ id: string; name: string }>(`/categories/${encodeURIComponent(categoryId)}`, { method: 'PUT', body: JSON.stringify(data) });
 }
 

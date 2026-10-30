@@ -20,6 +20,8 @@ export interface MenuItemRecord {
   focalY?: number | null;
   tags?: ItemTags | null;
   soldOut?: boolean;
+  /** e.g. "Available 7:00 AM – 11:00 AM" while the dish's category is outside its serving window. */
+  availabilityNote?: string | null;
   available: boolean;
   variants?: Array<{ id?: string; name: string; price: number; variantGroup?: string }>;
 }
@@ -409,6 +411,7 @@ interface RawPublicMenuApiResponse {
     focalY?: number | null;
     tags?: ItemTags | null;
     soldOut?: boolean;
+    availabilityNote?: string | null;
     variants?: Array<{ id?: string; name: string; price: number; variantGroup?: string }>;
   }>;
 }
@@ -432,6 +435,7 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     focalY: item.focalY ?? null,
     tags: item.tags ?? null,
     soldOut: item.soldOut ?? false,
+    availabilityNote: item.availabilityNote ?? null,
     available: item.available,
     variants: item.variants,
   }));

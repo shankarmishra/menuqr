@@ -1,0 +1,3148 @@
+/*
+ * MENUQR Editions — Composition Styles
+ *
+ * Ten art-directed menu publications. Each `.mq-ed-*` block below owns one Edition's layout and
+ * ornament; none of them share a skeleton, because a shared skeleton is exactly what makes a
+ * template set look like one template recoloured ten times.
+ *
+ * What they DO share is the token contract: every colour is `var(--mq-color-*)`, every gap is
+ * `var(--mq-space-*)`, every size is `var(--mq-text-*)` or `var(--mq-display-*)`. There is no
+ * literal hex in this file. That is what lets one owner's seed colour redraw an entire Edition —
+ * including its ornament, which is stroked in `currentColor` and inherits the accent.
+ *
+ * Sizing note: covers are measured in `rem`, never `vh`. An Edition renders both full-page and
+ * inside a 155px gallery thumbnail, and viewport units would size the thumbnail against the real
+ * window — the `.is-compact` modifier handles the small case instead.
+ */
+
+/* ========================================================================================
+   SHARED — layout-neutral pieces only
+   ======================================================================================== */
+
+.mq-ed {
+  --mq-ed-cover-min: 34rem;
+  --mq-ed-measure: 44rem;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background-color: var(--mq-color-bg);
+  color: var(--mq-color-text);
+  font-family: var(--mq-font-body);
+}
+
+.mq-ed.is-compact {
+  --mq-ed-cover-min: 14rem;
+  --mq-ed-measure: 100%;
+}
+
+/* Full-bleed cover photograph, sitting behind every other cover layer. */
+.mq-ed-cover-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.mq-ed-cover-media .mq-image-frame,
+.mq-ed-cover-media .mq-image {
+  width: 100%;
+  height: 100%;
+}
+
+.mq-ed-eyebrow {
+  display: block;
+  font-family: var(--mq-font-body);
+  font-size: var(--mq-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-text);
+}
+
+.mq-ed-empty {
+  padding: var(--mq-space-10) var(--mq-space-4);
+  text-align: center;
+  color: var(--mq-color-text-muted);
+  font-size: var(--mq-text-sm);
+}
+
+/* ---------------------------------- brand mark ---------------------------------- */
+
+.mq-ed-mark {
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  flex: none;
+  border-radius: 50%;
+}
+
+/*
+ * Cropped to fill, not letterboxed.
+ *
+ * Owners upload whatever they have — a photo of the shopfront as often as a vector wordmark —
+ * and `contain` turns a wide image into a thin strip floating inside the crest, which reads as a
+ * rendering bug. A circular fill always reads as a deliberate brand medallion.
+ */
+.mq-ed-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mq-ed-mark-letters {
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-lg);
+  font-weight: 700;
+  letter-spacing: var(--mq-tracking-caps);
+  line-height: 1;
+  color: currentColor;
+}
+
+.mq-ed-mark-ring {
+  border: 1px solid var(--mq-color-accent);
+  border-radius: 50%;
+  padding: var(--mq-space-2);
+  color: var(--mq-color-accent-text);
+}
+
+/* ---------------------------------- contact + teaser ---------------------------------- */
+
+.mq-ed-contact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  line-height: var(--mq-leading-relaxed);
+  color: var(--mq-color-text-muted);
+}
+
+.mq-ed-contact-sep,
+.mq-ed-teaser-sep {
+  opacity: 0.55;
+}
+
+.mq-ed-teaser {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--mq-space-2);
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-text-muted);
+}
+
+/* ---------------------------------- leader row ---------------------------------- */
+
+.mq-ed-leader {
+  display: block;
+}
+
+.mq-ed-leader-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-leader-name {
+  margin: 0;
+  flex: 0 1 auto;
+  font-family: var(--mq-font-body);
+  font-size: var(--mq-text-base);
+  font-weight: 600;
+  line-height: var(--mq-leading-snug);
+  color: var(--mq-color-heading);
+}
+
+/* Eats the space between the dish name and its price, at any name length. */
+.mq-ed-leader-rule {
+  flex: 1 1 auto;
+  min-width: var(--mq-space-4);
+  align-self: center;
+  height: 1px;
+  background-image: linear-gradient(
+    to right,
+    var(--mq-color-border-strong) 0 2px,
+    transparent 2px 5px
+  );
+  background-size: 5px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.75;
+}
+
+.mq-ed-leader-desc {
+  margin: var(--mq-space-1) 0 0;
+  max-width: 46ch;
+  font-size: var(--mq-text-sm);
+  line-height: var(--mq-leading-relaxed);
+  color: var(--mq-color-text-muted);
+}
+
+.mq-ed-leader-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mq-space-1);
+  margin-top: var(--mq-space-1);
+  empty-cells: hide;
+}
+
+.mq-ed-leader-flags:empty {
+  display: none;
+}
+
+/* ---------------------------------- photo dish ---------------------------------- */
+
+.mq-ed-photo-dish {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+  min-width: 0;
+}
+
+.mq-ed-photo-dish-media {
+  overflow: hidden;
+  border-radius: var(--mq-radius-md);
+  background-color: var(--mq-color-surface-sunken);
+}
+
+.mq-ed-photo-dish-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-1);
+  min-width: 0;
+}
+
+.mq-ed-photo-dish-title {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  min-width: 0;
+}
+
+.mq-ed-photo-dish-foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--mq-space-2);
+  margin-top: var(--mq-space-1);
+}
+
+/* ========================================================================================
+   1 — MAISON NOIR : Art Deco fine dining
+   ======================================================================================== */
+
+.mq-ed-noir {
+  container-type: inline-size;
+  container-name: noir;
+  --noir-inset: var(--mq-space-5);
+  --noir-gold-foil: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #8a6117 100%);
+  --noir-gold-border: color-mix(in oklab, var(--mq-color-accent, #d4af37) 65%, transparent);
+  --noir-gold-hairline: color-mix(in oklab, var(--mq-color-accent, #d4af37) 35%, transparent);
+  --noir-velvet-card: radial-gradient(ellipse at 50% 20%, rgba(22, 20, 28, 0.98) 0%, #0d0c10 100%);
+  --noir-text-heading: #fcf6ba;
+  --noir-text-body: #ede9df;
+  --noir-text-muted: #b8b2a2;
+  --noir-text-gold: #e5c158;
+}
+
+.is-compact.mq-ed-noir {
+  --noir-inset: 12px;
+}
+
+@media (max-width: 480px) {
+  .mq-ed-noir {
+    --noir-inset: 12px;
+  }
+}
+
+@container (max-width: 480px) {
+  .mq-ed-noir {
+    --noir-inset: 12px;
+  }
+}
+
+.mq-ed-noir-cover {
+  container-type: inline-size;
+  container-name: noir-cover;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: clamp(0.4rem, 1.8cqw, 1.25rem);
+  min-height: min(100svh, 54rem);
+  padding: calc(var(--noir-inset) + clamp(0.75rem, 2.8cqw, 1.75rem)) calc(var(--noir-inset) + clamp(0.5rem, 2.2cqw, 1.5rem));
+  background-color: #0d0c10;
+  text-align: center;
+  overflow: hidden;
+  color: var(--mq-color-on-cover);
+  box-sizing: border-box;
+}
+
+/* Authentic 600gsm cotton rag substrate with micro-tooth texture and vignette */
+.mq-ed-noir-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-color: #0d0c10;
+  background-image:
+    radial-gradient(
+      ellipse at 50% 38%,
+      color-mix(in oklab, var(--mq-color-bg, #0d0c10) 45%, transparent) 0%,
+      color-mix(in oklab, var(--mq-color-bg, #0d0c10) 86%, transparent) 65%,
+      #060608 100%
+    ),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.038'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Master Architectural Ziggurat Casing Frame */
+.mq-ed-noir-frame {
+  position: absolute;
+  z-index: 2;
+  inset: var(--noir-inset);
+  border: 1px solid var(--noir-gold-border);
+  box-shadow:
+    inset 0 0 24px rgba(0, 0, 0, 0.85),
+    0 0 16px rgba(212, 175, 55, 0.1);
+  pointer-events: none;
+}
+
+.mq-ed-noir-frame::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid color-mix(in oklab, var(--mq-color-accent, #d4af37) 30%, transparent);
+}
+
+/* Stepped corner ziggurats - scale proportionally to container width */
+.mq-ed-noir-fan {
+  position: absolute;
+  z-index: 3;
+  color: var(--mq-color-accent);
+  line-height: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.85));
+  pointer-events: none;
+}
+
+.mq-ed-noir-fan svg {
+  display: block;
+  width: clamp(34px, 10cqw, 64px);
+  height: clamp(34px, 10cqw, 64px);
+}
+
+.mq-ed-noir-fan-tl { top: var(--noir-inset); left: var(--noir-inset); }
+.mq-ed-noir-fan-tr { top: var(--noir-inset); right: var(--noir-inset); transform: scaleX(-1); }
+.mq-ed-noir-fan-bl { bottom: var(--noir-inset); left: var(--noir-inset); transform: scaleY(-1); }
+.mq-ed-noir-fan-br { bottom: var(--noir-inset); right: var(--noir-inset); transform: scale(-1, -1); }
+
+.mq-ed-noir-cover-body {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.3rem, 1.5cqw, 0.85rem);
+  width: 100%;
+  max-width: min(34rem, 100%);
+  margin-block: auto;
+  box-sizing: border-box;
+}
+
+/* Prestige Sur-Titre Strip */
+.mq-ed-noir-prestige-strip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--mq-space-2);
+  max-width: min(30rem, 90%);
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
+  font-weight: 600;
+  letter-spacing: clamp(0.12em, 0.6cqw, 0.26em);
+  text-transform: uppercase;
+  color: #d4af37;
+  opacity: 0.95;
+  margin-bottom: 2px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.mq-ed-noir-prestige-pip {
+  font-size: 0.5rem;
+  color: #fcf6ba;
+  opacity: 0.8;
+}
+
+.mq-ed-noir-edition-label {
+  font-size: var(--mq-text-xs);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--mq-color-accent);
+  font-weight: 600;
+}
+
+.mq-ed-noir-cuisine {
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent);
+}
+
+/* STRICT DEDICATED LOCATION: Architectural Central Logo Cartouche directly above title */
+.mq-ed-noir-cartouche {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  margin-block: clamp(10px, 2.5cqw, 20px);
+  width: clamp(148px, 36cqw, 196px);
+  height: clamp(148px, 36cqw, 196px);
+}
+
+.mq-ed-noir-cartouche-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 16px rgba(212, 175, 55, 0.45))
+          drop-shadow(0 2px 6px rgba(0, 0, 0, 0.95));
+}
+
+.mq-ed-noir-cartouche-logo {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 66%;
+  height: 66%;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+/* Framing logo within the recessed coin bed */
+.mq-ed-mark-in-cartouche,
+.mq-ed-noir-crest .mq-ed-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle, rgba(22, 20, 28, 0.95) 0%, rgba(9, 8, 12, 0.98) 100%);
+  border: 1px solid color-mix(in oklab, #d4af37 75%, transparent);
+  box-shadow:
+    inset 0 0 12px rgba(0, 0, 0, 0.92),
+    0 0 14px rgba(212, 175, 55, 0.25);
+}
+
+.mq-ed-mark-in-cartouche img,
+.mq-ed-noir-crest .mq-ed-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+}
+
+.mq-ed-mark-in-cartouche .mq-ed-mark-letters,
+.mq-ed-noir-crest .mq-ed-mark-letters {
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 3.2cqw, 1.7rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #fcf6ba;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.95),
+    0 0 14px rgba(212, 175, 55, 0.45);
+}
+
+/* Grand Restaurant Name - strict container-aware scaling so it NEVER cuts through borders */
+.mq-ed-noir-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.15rem, 5.5cqw, 2.65rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: clamp(0.04em, 1cqw, 0.14em);
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  max-width: 100%;
+  padding-inline: 0.25rem;
+  color: var(--mq-color-on-cover);
+}
+
+.is-compact .mq-ed-noir-title {
+  font-size: clamp(1.05rem, 4.6cqw, 1.55rem);
+  letter-spacing: 0.08em;
+}
+
+/* Dorure à Chaud (24k Gold Hot Foil Stamping Shader) */
+.mq-ed-noir-foil-text {
+  background: linear-gradient(
+    135deg,
+    #bf953f 0%,
+    #fcf6ba 22%,
+    #b38728 45%,
+    #fbf5b7 68%,
+    #aa771c 85%,
+    #80530d 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter:
+    drop-shadow(0 1px 1px rgba(0, 0, 0, 0.95))
+    drop-shadow(0 0 18px rgba(212, 175, 55, 0.22));
+}
+
+/* Center Astragal Divider */
+.mq-ed-noir-astragal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-2);
+  width: min(18rem, 75%);
+  margin-block: 2px;
+}
+
+.mq-ed-noir-astragal-rail {
+  flex: 1 1 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c5a059 60%, transparent);
+  opacity: 0.75;
+}
+
+.mq-ed-noir-astragal-center {
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.7));
+}
+
+/* Legacy rule fallback for interior pages */
+.mq-ed-noir-rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-2);
+  width: min(20rem, 75%);
+  color: var(--mq-color-accent);
+}
+
+.mq-ed-noir-rule-line {
+  flex: 1 1 auto;
+  height: 1px;
+  background-color: currentColor;
+  opacity: 0.65;
+}
+
+.mq-ed-noir-rule-step {
+  width: 6px;
+  height: 1px;
+  background-color: currentColor;
+  opacity: 0.9;
+}
+
+/* Tagline & Teaser - bounded strictly inside the frame */
+.mq-ed-noir-tagline {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.72rem, 2.3cqw, 1.02rem);
+  font-style: italic;
+  letter-spacing: clamp(0.02em, 0.4cqw, 0.06em);
+  line-height: var(--mq-leading-relaxed);
+  color: #dfdbcf;
+  opacity: 0.92;
+  max-width: min(24rem, 90%);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  padding-inline: 0.25rem;
+}
+
+.mq-ed-noir-teaser {
+  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
+  letter-spacing: clamp(0.06em, 0.6cqw, 0.16em);
+  text-transform: uppercase;
+  color: rgba(223, 219, 207, 0.7);
+  max-width: min(26rem, 90%);
+  line-height: 1.5;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  padding-inline: 0.25rem;
+}
+
+.mq-ed-noir-contact {
+  position: relative;
+  z-index: 4;
+  font-size: clamp(0.6rem, 1.7cqw, 0.75rem);
+  letter-spacing: clamp(0.04em, 0.5cqw, 0.12em);
+  text-transform: uppercase;
+  color: rgba(223, 219, 207, 0.82);
+  max-width: min(28rem, 90%);
+  line-height: 1.45;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  padding-inline: 0.25rem;
+  margin-top: auto;
+}
+
+/* Custom dark luxury scrollbars (replaces standard Windows white/gray scrollbars) */
+.mq-showcase-preview-frame,
+.mq-ed-noir,
+.mq-ed-noir-cover {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.45) transparent;
+}
+
+.mq-showcase-preview-frame::-webkit-scrollbar,
+.mq-ed-noir::-webkit-scrollbar,
+.mq-ed-noir-cover::-webkit-scrollbar {
+  width: 5px;
+}
+
+.mq-showcase-preview-frame::-webkit-scrollbar-track,
+.mq-ed-noir::-webkit-scrollbar-track,
+.mq-ed-noir-cover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mq-showcase-preview-frame::-webkit-scrollbar-thumb,
+.mq-ed-noir::-webkit-scrollbar-thumb,
+.mq-ed-noir-cover::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.35);
+  border-radius: 4px;
+}
+
+.mq-showcase-preview-frame::-webkit-scrollbar-thumb:hover,
+.mq-ed-noir::-webkit-scrollbar-thumb:hover,
+.mq-ed-noir-cover::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.6);
+}
+
+.mq-ed-noir-announce {
+  margin: 0;
+  padding: var(--mq-space-3) var(--mq-space-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-3);
+  font-size: var(--mq-text-xs);
+  letter-spacing: var(--mq-tracking-caps);
+  text-transform: uppercase;
+  color: var(--mq-color-accent-contrast);
+  background-color: var(--mq-color-accent);
+}
+
+.mq-ed-noir-announce-bullet {
+  font-size: 8px;
+  opacity: 0.8;
+}
+
+.mq-ed-noir-plate {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: var(--mq-ed-measure);
+  margin-inline: auto;
+  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-12);
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .mq-ed-noir-plate {
+    padding: var(--mq-space-8) var(--mq-space-3) var(--mq-space-10);
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   1. Course Roman Numeral Medallions & Service Headings
+   ----------------------------------------------------------------------------- */
+.mq-ed-noir-medallion-wrap {
+  display: inline-grid;
+  place-items: center;
+  position: relative;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.85));
+  margin-bottom: var(--mq-space-2);
+}
+
+.mq-ed-noir-medallion-svg {
+  display: block;
+}
+
+.mq-ed-noir-course-service-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--noir-text-gold, #e5c158);
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+/* -----------------------------------------------------------------------------
+   2. Architectural Category Dividers (DecoArchitecturalDivider)
+   ----------------------------------------------------------------------------- */
+.mq-ed-noir-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-3);
+  width: min(28rem, 85%);
+  margin-block: var(--mq-space-2);
+}
+
+.mq-ed-noir-divider.is-grand {
+  width: min(34rem, 92%);
+  margin-block: var(--mq-space-4);
+}
+
+.mq-ed-noir-divider-rail {
+  flex: 1 1 auto;
+  height: 1px;
+}
+
+.mq-ed-noir-divider-rail.rail-left {
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.7));
+}
+
+.mq-ed-noir-divider-rail.rail-right {
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.7), transparent);
+}
+
+.mq-ed-noir-divider-svg {
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.8));
+  overflow: visible;
+}
+
+/* -----------------------------------------------------------------------------
+   3. "Sélection du Chef" Signature Showcase Cards
+   ----------------------------------------------------------------------------- */
+.mq-ed-noir-signatures-section {
+  margin-bottom: var(--mq-space-12);
+}
+
+.mq-ed-noir-section-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-1);
+  margin-bottom: var(--mq-space-8);
+}
+
+.mq-ed-noir-section-title {
+  margin: var(--mq-space-1) 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.4rem, 3.5vw, var(--mq-display-xl));
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-noir-section-rule {
+  margin-top: var(--mq-space-2);
+}
+
+.mq-ed-noir-signatures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--mq-space-6);
+  align-items: stretch;
+}
+
+.mq-ed-noir-curation-card {
+  position: relative;
+  background: var(--noir-velvet-card, radial-gradient(ellipse at 50% 20%, rgba(22, 20, 28, 0.98) 0%, #0d0c10 100%));
+  border: 1px solid var(--noir-gold-border);
+  padding: var(--mq-space-4);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.6),
+    inset 0 0 20px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.mq-ed-noir-curation-card::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid color-mix(in oklab, var(--mq-color-accent, #d4af37) 22%, transparent);
+  pointer-events: none;
+}
+
+/* Stepped corner brackets for cards */
+.mq-ed-noir-card-corner {
+  position: absolute;
+  color: var(--mq-color-accent);
+  line-height: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8));
+  z-index: 2;
+}
+
+.mq-ed-noir-card-corner-tl { top: 3px; left: 3px; }
+.mq-ed-noir-card-corner-tr { top: 3px; right: 3px; transform: scaleX(-1); }
+.mq-ed-noir-card-corner-bl { bottom: 3px; left: 3px; transform: scaleY(-1); }
+.mq-ed-noir-card-corner-br { bottom: 3px; right: 3px; transform: scale(-1, -1); }
+
+.mq-ed-noir-card-media-wrapper {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--mq-color-accent, #d4af37) 35%, transparent);
+  z-index: 1;
+}
+
+.mq-ed-noir-card-badge {
+  position: absolute;
+  top: var(--mq-space-2);
+  right: var(--mq-space-2);
+  padding: 3px 9px;
+  font-family: var(--mq-font-display);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: rgba(10, 12, 13, 0.92);
+  color: #fcf6ba;
+  border: 1px solid var(--noir-gold-border);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+}
+
+.mq-ed-noir-card-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: var(--mq-space-2);
+  z-index: 1;
+}
+
+.mq-ed-noir-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+  min-width: 0;
+}
+
+.mq-ed-noir-card-identity {
+  display: flex;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.mq-ed-noir-card-identity .mq-diet {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.mq-ed-noir-card-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  line-height: 1.25;
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.mq-ed-noir-card-price-slot {
+  flex-shrink: 0;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.mq-ed-noir-card-desc {
+  margin: 0;
+  font-size: var(--mq-text-sm);
+  line-height: var(--mq-leading-relaxed);
+  color: var(--noir-text-muted, rgba(223, 219, 207, 0.75));
+  font-style: italic;
+  overflow-wrap: break-word;
+}
+
+/* Sommelier Wine Pairing Ribbon pinned to bottom of card */
+.mq-ed-noir-card-pairing-ribbon {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: auto;
+  padding: var(--mq-space-2) var(--mq-space-3);
+  background: rgba(18, 16, 24, 0.75);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-left: 2px solid #d4af37;
+}
+
+.mq-ed-noir-ribbon-tag {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-noir-wine-icon {
+  flex-shrink: 0;
+}
+
+.mq-ed-noir-ribbon-label {
+  font-family: var(--mq-font-display);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--noir-text-gold, #e5c158);
+}
+
+.mq-ed-noir-ribbon-badge {
+  font-size: 0.58rem;
+  padding: 1px 6px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(252, 246, 186, 0.35);
+  color: #fcf6ba;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+
+.mq-ed-noir-ribbon-text {
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  color: var(--noir-text-muted, rgba(223, 219, 207, 0.7));
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* -----------------------------------------------------------------------------
+   4. Course Headings & Resilient Dotted Leaders
+   ----------------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------------
+   4. Menu Courses & Architectural Dotted Leaders
+   ----------------------------------------------------------------------------- */
+.mq-ed-noir-course {
+  position: relative;
+  padding: clamp(1.25rem, 3.5cqw, 2.25rem) clamp(1rem, 3cqw, 2rem);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(26, 22, 34, 0.5) 0%, rgba(13, 12, 16, 0.75) 85%),
+    #0c0b10;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 24px rgba(0, 0, 0, 0.65),
+    0 8px 32px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+}
+
+.mq-ed-noir-course::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.08);
+  pointer-events: none;
+}
+
+.mq-ed-noir-course + .mq-ed-noir-course {
+  margin-top: var(--mq-space-10);
+}
+
+.mq-ed-noir-course-heading-box {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: clamp(1rem, 2.5cqw, 1.75rem);
+}
+
+.mq-ed-noir-course-title {
+  margin: var(--mq-space-1) 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 4cqw, 1.85rem);
+  font-weight: 500;
+  letter-spacing: clamp(0.06em, 0.6cqw, 0.16em);
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  color: #fcf6ba;
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.95),
+    0 0 16px rgba(212, 175, 55, 0.28);
+}
+
+.mq-ed-noir-course-rule {
+  margin-top: var(--mq-space-2);
+  margin-bottom: var(--mq-space-2);
+}
+
+.mq-ed-noir-course-note {
+  margin: 0 auto;
+  max-width: 52ch;
+  font-size: clamp(0.78rem, 2cqw, 0.9rem);
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+  color: rgba(235, 230, 218, 0.85);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-noir-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 2cqw, 1.25rem);
+  margin-top: var(--mq-space-4);
+}
+
+.mq-ed-noir .mq-ed-leader {
+  display: block;
+  min-width: 0;
+  padding-bottom: clamp(0.4rem, 1.2cqw, 0.75rem);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.08);
+  transition: background-color 0.2s ease;
+}
+
+.mq-ed-noir .mq-ed-leader:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mq-ed-noir .mq-ed-leader-head {
+  display: flex;
+  align-items: last baseline;
+  gap: clamp(0.35rem, 1.2cqw, 0.75rem);
+  min-width: 0;
+  width: 100%;
+}
+
+.mq-ed-noir .mq-diet {
+  flex-shrink: 0;
+  margin-top: 0.12em;
+  align-self: center;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-noir .mq-ed-leader-name {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 4.5rem);
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.92rem, 2.4cqw, 1.12rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: #fffbf5;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  overflow-wrap: break-word;
+  word-break: normal;
+  text-wrap: pretty;
+}
+
+/* Micro-pearl dotted leader rule with baseline optical anchoring */
+.mq-ed-noir .mq-ed-leader-rule {
+  flex: 1 1 1.5rem;
+  min-width: 0.85rem;
+  height: 1px;
+  align-self: last baseline;
+  margin-bottom: 0.22em;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(212, 175, 55, 0.75) 1px,
+    transparent 1.2px
+  );
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.85;
+}
+
+@media (max-width: 360px) {
+  .mq-ed-noir .mq-ed-leader-rule {
+    min-width: 0.5rem;
+  }
+}
+
+/* Price block alignment & variants */
+.mq-ed-noir .mq-ed-leader-head .mq-row,
+.mq-ed-noir .mq-ed-leader-head .mq-stack {
+  flex-shrink: 0;
+  margin-left: auto;
+  align-self: last baseline;
+}
+
+.mq-ed-noir .mq-price {
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: #fcf6ba;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+  white-space: nowrap;
+}
+
+.mq-ed-noir .mq-price-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mq-color-accent);
+  opacity: 0.85;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
+.mq-ed-noir .mq-ed-leader-desc {
+  margin: var(--mq-space-1) 0 0;
+  max-width: 54ch;
+  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+  line-height: var(--mq-leading-relaxed);
+  color: rgba(235, 230, 218, 0.82);
+  font-style: italic;
+  overflow-wrap: break-word;
+}
+
+/* Luxury Art Deco Accolade Badges */
+.mq-ed-noir .mq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  font-family: var(--mq-font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.22) 0%, rgba(252, 246, 186, 0.08) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  color: #fcf6ba;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+}
+
+.mq-ed-noir .mq-badge::before {
+  content: '★';
+  font-size: 0.6rem;
+  color: #d4af37;
+}
+
+.mq-ed-noir .mq-badge-quiet {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: #dfdbcf;
+}
+
+.mq-ed-noir .mq-badge-quiet::before {
+  content: '◈';
+  font-size: 0.55rem;
+  color: rgba(212, 175, 55, 0.65);
+}
+
+/* -----------------------------------------------------------------------------
+   5. Grand Tasting Plaque ("Menu Dégustation")
+   ----------------------------------------------------------------------------- */
+.mq-ed-noir-tasting-flight {
+  position: relative;
+  margin-top: var(--mq-space-14);
+  padding: calc(var(--mq-space-8) + 4px) var(--mq-space-6);
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(28, 24, 38, 0.75) 0%, rgba(10, 9, 13, 0.95) 75%),
+    #08080a;
+  border: 1px solid var(--noir-gold-border);
+  box-shadow:
+    inset 0 0 36px rgba(0, 0, 0, 0.95),
+    inset 0 1px 0 rgba(252, 246, 186, 0.2),
+    0 16px 48px rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+  text-align: center;
+}
+
+.mq-ed-noir-tasting-flight::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(252, 246, 186, 0.18);
+  pointer-events: none;
+}
+
+.mq-ed-noir-plaque-bracket {
+  position: absolute;
+  color: var(--mq-color-accent);
+  line-height: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9));
+  z-index: 2;
+}
+
+.mq-ed-noir-plaque-bracket-tl { top: 6px; left: 6px; }
+.mq-ed-noir-plaque-bracket-tr { top: 6px; right: 6px; transform: scaleX(-1); }
+.mq-ed-noir-plaque-bracket-bl { bottom: 6px; left: 6px; transform: scaleY(-1); }
+.mq-ed-noir-plaque-bracket-br { bottom: 6px; right: 6px; transform: scale(-1, -1); }
+
+.mq-ed-noir-tasting-frame {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-noir-tasting-surtitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  font-family: var(--mq-font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--noir-text-gold, #e5c158);
+  font-weight: 600;
+  margin-bottom: var(--mq-space-1);
+}
+
+.mq-ed-noir-tasting-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.25rem, 3.2vw, 1.95rem);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--noir-text-heading, #fcf6ba);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+}
+
+.mq-ed-noir-tasting-text {
+  margin: var(--mq-space-2) auto 0;
+  max-width: 58ch;
+  font-size: var(--mq-text-sm);
+  line-height: 1.7;
+  color: var(--noir-text-muted, rgba(223, 219, 207, 0.75));
+  font-style: italic;
+  text-align: center;
+}
+
+.mq-ed-noir-tasting-divider {
+  margin: var(--mq-space-4) auto;
+}
+
+.mq-ed-noir-flight-tiers {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--mq-space-4);
+  width: 100%;
+  max-width: 50rem;
+  margin-top: var(--mq-space-2);
+}
+
+.mq-ed-noir-flight-tier {
+  flex: 1 1 18rem;
+  background: rgba(18, 16, 24, 0.65);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: var(--mq-space-4);
+  text-align: left;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-1);
+}
+
+.mq-ed-noir-flight-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-noir-flight-vol {
+  font-family: var(--mq-font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--noir-text-gold, #e5c158);
+}
+
+.mq-ed-noir-flight-name {
+  font-family: var(--mq-font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--noir-text-heading, #fcf6ba);
+}
+
+.mq-ed-noir-flight-desc {
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  line-height: 1.5;
+  color: var(--noir-text-muted, rgba(223, 219, 207, 0.7));
+}
+
+.mq-ed-noir-flight-sep {
+  align-self: center;
+  color: #bf953f;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.mq-ed-noir-tasting-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--mq-space-2) var(--mq-space-3);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--noir-text-gold, #e5c158);
+  margin-top: var(--mq-space-6);
+  padding-top: var(--mq-space-4);
+  border-top: 1px dashed rgba(212, 175, 55, 0.35);
+}
+
+.mq-ed-noir-tasting-pill {
+  white-space: nowrap;
+}
+
+/* -----------------------------------------------------------------------------
+   6. Michelin Seal, Brigade Grid & Colophon Footer
+   ----------------------------------------------------------------------------- */
+.mq-ed-noir-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-3);
+  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-12);
+  color: var(--mq-color-accent);
+  border-top: 1px solid color-mix(in oklab, var(--mq-color-accent) 30%, transparent);
+  text-align: center;
+}
+
+.mq-ed-noir-michelin-seal {
+  display: block;
+  margin-inline: auto;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.95));
+}
+
+.mq-ed-noir-foot-name {
+  margin: var(--mq-space-2) 0 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 3.5vw, 1.85rem);
+  letter-spacing: clamp(0.12em, 1.5vw, 0.22em);
+  text-transform: uppercase;
+  color: var(--mq-color-heading);
+}
+
+.mq-ed-noir-foot-sub {
+  margin: 0;
+  font-size: var(--mq-text-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--noir-text-gold, #e5c158);
+  font-weight: 600;
+}
+
+.mq-ed-noir-brigade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: var(--mq-space-3);
+  width: 100%;
+  max-width: 44rem;
+  margin-top: var(--mq-space-4);
+  margin-bottom: var(--mq-space-3);
+  padding-block: var(--mq-space-3);
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.mq-ed-noir-brigade-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mq-ed-noir-brigade-title {
+  font-family: var(--mq-font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--noir-text-heading, #fcf6ba);
+}
+
+.mq-ed-noir-brigade-role {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--noir-text-muted, rgba(223, 219, 207, 0.65));
+  font-style: italic;
+}
+
+.mq-ed-noir-disclosures {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-2);
+  max-width: 54ch;
+  margin-top: var(--mq-space-3);
+  font-size: 0.75rem;
+  line-height: var(--mq-leading-relaxed);
+  color: var(--noir-text-muted, rgba(223, 219, 207, 0.65));
+}
+
+.mq-ed-noir-disclosure-line {
+  margin: 0;
+  font-style: italic;
+}
+
+.mq-ed-noir-disclosure-line strong {
+  color: var(--noir-text-gold, #e5c158);
+  font-weight: 600;
+  font-style: normal;
+}
+
+.mq-ed-noir-provenance {
+  font-size: 0.6875rem;
+  opacity: 0.85;
+}
+
+.mq-ed-noir-finial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-2);
+  width: min(14rem, 60%);
+  margin-top: var(--mq-space-4);
+  opacity: 0.75;
+}
+
+.mq-ed-noir-finial-bar {
+  flex: 1 1 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--noir-gold-border), transparent);
+}
+
+.mq-ed-noir-finial-lozenge {
+  color: #bf953f;
+  font-size: 0.75rem;
+}
+
+/* ========================================================================================
+   2 — HERBARIUM : Botanical Letterpress & French Conservatory Bistro
+   ======================================================================================== */
+
+.mq-ed-herb {
+  container-type: inline-size;
+  container-name: herb;
+  background-color: #faf8f2;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.9) 0%, rgba(244, 239, 228, 0.6) 100%),
+    var(--mq-texture-image);
+  background-size: auto, var(--mq-texture-size);
+  background-blend-mode: multiply;
+  color: #231e19;
+  font-family: var(--mq-font-body, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+}
+
+/* -----------------------------------------------------------------------------
+   COVER : Pressed Botanical Specimen & Archival Letterpress Plate
+   ----------------------------------------------------------------------------- */
+.mq-ed-herb-cover {
+  container-type: inline-size;
+  container-name: herb-cover;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--mq-ed-cover-min);
+  padding: clamp(1.5rem, 5cqw, 3.5rem) clamp(1rem, 3.5cqw, 2.5rem);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* Archival Plate Margin: Letterpress double-hairline frame */
+.mq-ed-herb-plate {
+  position: absolute;
+  inset: clamp(10px, 2.5cqw, 20px);
+  border: 1px solid rgba(53, 94, 59, 0.35);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mq-ed-herb-plate::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(53, 94, 59, 0.15);
+  pointer-events: none;
+}
+
+/* 4 Corner Botanical Filigrees */
+.mq-ed-herb-corner {
+  position: absolute;
+  color: var(--mq-color-accent, #3e6347);
+  pointer-events: none;
+  z-index: 2;
+  line-height: 0;
+  opacity: 0.85;
+}
+
+.mq-ed-herb-corner-tl { top: clamp(8px, 2cqw, 16px); left: clamp(8px, 2cqw, 16px); }
+.mq-ed-herb-corner-tr { top: clamp(8px, 2cqw, 16px); right: clamp(8px, 2cqw, 16px); transform: scaleX(-1); }
+.mq-ed-herb-corner-bl { bottom: clamp(8px, 2cqw, 16px); left: clamp(8px, 2cqw, 16px); transform: scaleY(-1); }
+.mq-ed-herb-corner-br { bottom: clamp(8px, 2cqw, 16px); right: clamp(8px, 2cqw, 16px); transform: scale(-1, -1); }
+
+.mq-ed-herb-cover-body {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 2.2cqw, 22px);
+  max-width: 36rem;
+  width: 100%;
+}
+
+/* Accession Folio Header */
+.mq-ed-herb-folio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 1.5cqw, 12px);
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.56rem, 1.5cqw, 0.7rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #5c5246;
+}
+
+.mq-ed-herb-folio-badge {
+  font-weight: 700;
+  color: var(--mq-color-accent, #3e6347);
+}
+
+.mq-ed-herb-folio-num {
+  font-weight: 600;
+}
+
+.mq-ed-herb-folio-dash {
+  width: clamp(12px, 3cqw, 24px);
+  height: 1px;
+  background-color: rgba(53, 94, 59, 0.4);
+}
+
+/* Symmetrical Botanical Wreath Seal */
+.mq-ed-herb-wreath-seal {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: clamp(96px, 24cqw, 130px);
+  height: clamp(96px, 24cqw, 130px);
+  margin-block: clamp(2px, 1cqw, 8px);
+  color: var(--mq-color-accent, #3e6347);
+  flex-shrink: 0;
+}
+
+.mq-ed-herb-seal-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 12px rgba(53, 94, 59, 0.15))
+          drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1));
+}
+
+.mq-ed-herb-seal-logo {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 58%;
+  height: 58%;
+  margin-top: -3%;
+}
+
+.mq-ed-mark-herb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle, #ffffff 0%, #f4f0e6 100%);
+  border: 1px solid rgba(53, 94, 59, 0.45);
+  box-shadow:
+    inset 0 0 8px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(53, 94, 59, 0.15);
+}
+
+.mq-ed-mark-herb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+.mq-ed-mark-herb .mq-ed-mark-letters {
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.95rem, 2.6cqw, 1.35rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #2b5232;
+}
+
+/* Grand Restaurant Name & Identity */
+.mq-ed-herb-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(4px, 1cqw, 8px);
+  width: 100%;
+}
+
+.mq-ed-herb-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.5rem, 5.5cqw, 2.85rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: clamp(0.04em, 1cqw, 0.12em);
+  text-transform: uppercase;
+  color: #1e1b18;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.is-compact .mq-ed-herb-title {
+  font-size: clamp(1.35rem, 5cqw, 2.2rem);
+}
+
+.mq-ed-herb-title-divider {
+  width: min(20rem, 75%);
+  margin-block: 2px;
+}
+
+.mq-ed-herb-cuisine {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.65rem, 1.8cqw, 0.82rem);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--mq-color-accent, #3e6347);
+  font-weight: 600;
+}
+
+.mq-ed-herb-tagline {
+  margin: 0;
+  max-width: 44ch;
+  font-size: clamp(0.78rem, 2.2cqw, 1.02rem);
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+  color: #554c42;
+  text-wrap: balance;
+}
+
+.mq-ed-herb-teaser {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.58rem, 1.6cqw, 0.72rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #635a4e;
+  max-width: min(28rem, 90%);
+  line-height: 1.45;
+}
+
+/* Archival Specimen Photograph Mount (Passepartout Frame) */
+.mq-ed-herb-specimen-mount {
+  position: relative;
+  margin: clamp(4px, 1.5cqw, 12px) 0 0;
+  width: min(26rem, 100%);
+  background-color: #ffffff;
+  padding: clamp(8px, 2cqw, 14px);
+  border: 1px solid rgba(53, 94, 59, 0.3);
+  box-shadow:
+    0 10px 30px rgba(53, 94, 59, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+.mq-ed-herb-mount-inner {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(53, 94, 59, 0.2);
+}
+
+/* Kraft paper photo corners */
+.mq-ed-herb-kraft-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, #c49a6c 0%, #a0784c 100%);
+  z-index: 4;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.mq-ed-herb-kraft-corner.corner-tl { top: 4px; left: 4px; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.mq-ed-herb-kraft-corner.corner-tr { top: 4px; right: 4px; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.mq-ed-herb-kraft-corner.corner-bl { bottom: 4px; left: 4px; clip-path: polygon(0 0, 0 100%, 100% 100%); }
+.mq-ed-herb-kraft-corner.corner-br { bottom: 4px; right: 4px; clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+
+.mq-ed-herb-mount-caption {
+  margin-top: clamp(6px, 1.5cqw, 10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.58rem, 1.5cqw, 0.72rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4c443b;
+}
+
+.mq-ed-herb-mount-caption .caption-tag {
+  font-weight: 700;
+  color: var(--mq-color-accent, #3e6347);
+}
+
+.mq-ed-herb-mount-caption .caption-sep {
+  opacity: 0.6;
+}
+
+.mq-ed-herb-contact {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.6rem, 1.6cqw, 0.74rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #61574b;
+  max-width: min(30rem, 95%);
+  line-height: 1.45;
+}
+
+/* -----------------------------------------------------------------------------
+   INTERIOR : Botanical Bill of Fare
+   ----------------------------------------------------------------------------- */
+.mq-ed-herb-announce {
+  margin: 0;
+  padding: var(--mq-space-3) var(--mq-space-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-3);
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #2b5232;
+  background-color: rgba(62, 99, 71, 0.08);
+  border-block: 1px solid rgba(53, 94, 59, 0.22);
+}
+
+.mq-ed-herb-announce-pip {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.mq-ed-herb-plate-main {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 68rem;
+  margin-inline: auto;
+  padding: clamp(1rem, 3cqw, 2.5rem) clamp(0.75rem, 2.5cqw, 2rem) clamp(2rem, 5cqw, 3.5rem);
+  box-sizing: border-box;
+}
+
+/* Botanical Engraved Divider */
+.mq-ed-herb-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-3);
+  width: min(24rem, 80%);
+  margin-block: var(--mq-space-2);
+  color: var(--mq-color-accent, #3e6347);
+}
+
+.mq-ed-herb-divider-rail {
+  flex: 1 1 auto;
+  height: 1px;
+}
+
+.mq-ed-herb-divider-rail.rail-left {
+  background: linear-gradient(90deg, transparent, rgba(53, 94, 59, 0.5));
+}
+
+.mq-ed-herb-divider-rail.rail-right {
+  background: linear-gradient(90deg, rgba(53, 94, 59, 0.5), transparent);
+}
+
+.mq-ed-herb-divider-svg {
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* -----------------------------------------------------------------------------
+   1. Récolte du Jardin Signature Showcase
+   ----------------------------------------------------------------------------- */
+.mq-ed-herb-showcase {
+  margin-bottom: clamp(2rem, 5cqw, 3.5rem);
+}
+
+.mq-ed-herb-showcase-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: clamp(1.25rem, 3cqw, 2rem);
+}
+
+.mq-ed-herb-showcase-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.25rem, 3.5cqw, 1.85rem);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #1e1b18;
+}
+
+.mq-ed-herb-showcase-sub {
+  margin: 0;
+  max-width: 52ch;
+  font-size: clamp(0.78rem, 2cqw, 0.9rem);
+  font-style: italic;
+  color: #554c42;
+  line-height: var(--mq-leading-relaxed);
+}
+
+.mq-ed-herb-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: clamp(1rem, 2.5cqw, 1.75rem);
+}
+
+.mq-ed-herb-card {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid rgba(53, 94, 59, 0.25);
+  padding: clamp(10px, 2cqw, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+  box-shadow:
+    0 8px 24px rgba(53, 94, 59, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.mq-ed-herb-card-media {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(53, 94, 59, 0.2);
+}
+
+.mq-ed-herb-card-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 8px;
+  background: rgba(250, 248, 242, 0.95);
+  border: 1px solid rgba(53, 94, 59, 0.4);
+  font-family: var(--mq-font-display);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #2b5232;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.mq-ed-herb-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+  flex: 1 1 auto;
+}
+
+.mq-ed-herb-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-herb-card-name-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mq-ed-herb-card-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 600;
+  color: #1e1b18;
+  letter-spacing: 0.02em;
+}
+
+.mq-ed-herb-card-price {
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 700;
+  color: #2b5232;
+  flex-shrink: 0;
+}
+
+.mq-ed-herb-card-desc {
+  margin: 0;
+  font-size: clamp(0.78rem, 2cqw, 0.88rem);
+  font-style: italic;
+  color: #554c42;
+  line-height: 1.45;
+}
+
+.mq-ed-herb-card-infusion {
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(53, 94, 59, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.65rem;
+  color: #3e6347;
+  font-style: italic;
+}
+
+/* -----------------------------------------------------------------------------
+   2. Course Sections & Dotted Leaders (RESPONSIVE SINGLE / DUAL COLUMN)
+   ----------------------------------------------------------------------------- */
+.mq-ed-herb-columns {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 4cqw, 2.5rem);
+  width: 100%;
+}
+
+/* Switch to two columns with a center vertical rule on wide screens */
+@container (min-width: 50rem) {
+  .mq-ed-herb-columns {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: var(--mq-space-10) var(--mq-space-12);
+  }
+
+  .mq-ed-herb-columns::before {
+    content: '';
+    grid-column: 2;
+    grid-row: 1 / -1;
+    background-color: rgba(53, 94, 59, 0.22);
+  }
+
+  .mq-ed-herb-section:nth-child(odd) { grid-column: 1; }
+  .mq-ed-herb-section:nth-child(even) { grid-column: 3; }
+}
+
+.mq-ed-herb-section {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid rgba(53, 94, 59, 0.22);
+  padding: clamp(1rem, 2.5cqw, 1.75rem) clamp(0.75rem, 2cqw, 1.5rem);
+  box-shadow: 0 4px 16px rgba(53, 94, 59, 0.06);
+  box-sizing: border-box;
+}
+
+.mq-ed-herb-section-heading {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: clamp(1rem, 2.5cqw, 1.5rem);
+}
+
+.mq-ed-herb-section-title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mq-ed-herb-leaf-tick {
+  color: var(--mq-color-accent, #3e6347);
+  flex-shrink: 0;
+}
+
+.mq-ed-herb-section-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.1rem, 3.5cqw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: clamp(0.06em, 0.6cqw, 0.14em);
+  text-transform: uppercase;
+  color: #1e1b18;
+  text-wrap: balance;
+}
+
+.mq-ed-herb-section-count {
+  font-family: var(--mq-font-body);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b6255;
+  background: rgba(53, 94, 59, 0.08);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.mq-ed-herb-section-divider {
+  width: min(18rem, 70%);
+  margin-block: 4px;
+}
+
+.mq-ed-herb-section-note {
+  margin: 4px auto 0;
+  max-width: 48ch;
+  font-size: clamp(0.78rem, 2cqw, 0.88rem);
+  font-style: italic;
+  color: #554c42;
+  line-height: var(--mq-leading-relaxed);
+}
+
+.mq-ed-herb-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 2cqw, 1.25rem);
+  margin-top: var(--mq-space-3);
+}
+
+/* Dotted Leaders with Baseline Optical Anchoring */
+.mq-ed-herb .mq-ed-leader {
+  display: block;
+  min-width: 0;
+  padding-bottom: clamp(0.4rem, 1.2cqw, 0.75rem);
+  border-bottom: 1px dashed rgba(53, 94, 59, 0.16);
+}
+
+.mq-ed-herb .mq-ed-leader:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mq-ed-herb .mq-ed-leader-head {
+  display: flex;
+  align-items: last baseline;
+  gap: clamp(0.35rem, 1.2cqw, 0.75rem);
+  min-width: 0;
+  width: 100%;
+}
+
+.mq-ed-herb .mq-diet {
+  flex-shrink: 0;
+  margin-top: 0.12em;
+  align-self: center;
+  border-radius: 2px;
+}
+
+.mq-ed-herb .mq-ed-leader-name {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 4.25rem);
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.92rem, 2.4cqw, 1.12rem);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.35;
+  color: #1e1b18;
+  overflow-wrap: break-word;
+  word-break: normal;
+  text-wrap: pretty;
+}
+
+/* Vegetal Pearl Dotted Leader Rule */
+.mq-ed-herb .mq-ed-leader-rule {
+  flex: 1 1 auto;
+  min-width: 0.75rem;
+  height: 1px;
+  align-self: last baseline;
+  margin-bottom: 0.22em;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(53, 94, 59, 0.5) 1px,
+    transparent 1.2px
+  );
+  background-size: 5px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.8;
+}
+
+@media (max-width: 360px) {
+  .mq-ed-herb .mq-ed-leader-rule {
+    min-width: 0.5rem;
+  }
+}
+
+.mq-ed-herb .mq-price {
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: #2b5232;
+  white-space: nowrap;
+}
+
+.mq-ed-herb .mq-ed-leader-desc {
+  margin: 3px 0 0;
+  font-size: clamp(0.78rem, 2cqw, 0.88rem);
+  font-style: italic;
+  color: #554c42;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+
+.mq-ed-herb .mq-ed-leader-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mq-space-2);
+  margin-top: 4px;
+}
+
+/* Botanical Accolade Badges */
+.mq-ed-herb .mq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  font-family: var(--mq-font-display);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  background: rgba(53, 94, 59, 0.1);
+  border: 1px solid rgba(53, 94, 59, 0.35);
+  color: #24462a;
+}
+
+.mq-ed-herb .mq-badge::before {
+  content: '🌿';
+  font-size: 0.65rem;
+}
+
+/* -----------------------------------------------------------------------------
+   3. Conservatory & Hearth Aside Plaque
+   ----------------------------------------------------------------------------- */
+.mq-ed-herb-conservatory-aside {
+  position: relative;
+  margin-top: clamp(2rem, 5cqw, 3.5rem);
+  padding: clamp(1.5rem, 4cqw, 2.5rem);
+  background-color: #ffffff;
+  border: 1px solid rgba(53, 94, 59, 0.3);
+  box-shadow: 0 8px 28px rgba(53, 94, 59, 0.08);
+  box-sizing: border-box;
+}
+
+.mq-ed-herb-conservatory-inner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 44rem;
+  margin-inline: auto;
+}
+
+.mq-ed-herb-conservatory-surtitle {
+  font-family: var(--mq-font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mq-color-accent, #3e6347);
+}
+
+.mq-ed-herb-conservatory-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.2rem, 3cqw, 1.65rem);
+  font-weight: 600;
+  color: #1e1b18;
+}
+
+.mq-ed-herb-conservatory-text {
+  margin: 0;
+  font-size: clamp(0.82rem, 2cqw, 0.94rem);
+  font-style: italic;
+  color: #554c42;
+  line-height: var(--mq-leading-relaxed);
+}
+
+.mq-ed-herb-conservatory-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.mq-ed-herb-conservatory-tags .conservatory-pill {
+  font-family: var(--mq-font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2b5232;
+  background: rgba(53, 94, 59, 0.08);
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(53, 94, 59, 0.2);
+}
+
+/* -----------------------------------------------------------------------------
+   FOOTER : Field Ledger Seal & Botanical Colophon
+   ----------------------------------------------------------------------------- */
+.mq-ed-herb-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-2);
+  padding: clamp(1.5rem, 4cqw, 2.5rem) var(--mq-space-5) clamp(2.5rem, 5cqw, 3.5rem);
+  border-top: 1px solid rgba(53, 94, 59, 0.25);
+  background: rgba(244, 239, 228, 0.5);
+  text-align: center;
+}
+
+.mq-ed-herb-foot-sprig {
+  color: var(--mq-color-accent, #3e6347);
+  margin-bottom: 4px;
+}
+
+.mq-ed-herb-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-base);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #1e1b18;
+  font-weight: 700;
+}
+
+.mq-ed-herb-foot-motto {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: var(--mq-text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mq-color-accent, #3e6347);
+}
+
+.mq-ed-herb-foot-contact {
+  margin-top: 4px;
+  font-family: var(--mq-font-display);
+  font-size: clamp(0.6rem, 1.6cqw, 0.74rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #61574b;
+}
+
+/* ========================================================================================
+   3 — NOREN (暖簾) : Japanese Culinary Minimalism & Master-Craft Editorial Design
+   ======================================================================================== */
+
+.mq-ed-noren {
+  container-type: inline-size;
+  container-name: noren;
+  background-color: #faf8f2;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.95) 0%, rgba(245, 241, 233, 0.7) 100%),
+    var(--mq-texture-image);
+  background-size: auto, var(--mq-texture-size);
+  background-blend-mode: multiply;
+  color: #1c1917;
+  font-family: var(--mq-font-body, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+}
+
+/* -----------------------------------------------------------------------------
+   COVER : Minimalist Japanese Washi & Suspended Noren Folio
+   ----------------------------------------------------------------------------- */
+.mq-ed-noren-cover {
+  container-type: inline-size;
+  container-name: noren-cover;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: var(--mq-ed-cover-min);
+  padding: 0 clamp(1rem, 3.5cqw, 2.5rem) clamp(2.5rem, 5cqw, 4rem);
+  text-align: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 1. Architectural Suspended Noren Curtain */
+.mq-ed-noren-curtain-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 44rem;
+  margin-bottom: clamp(14px, 3cqw, 26px);
+  pointer-events: none;
+}
+
+.mq-ed-noren-rod {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 12px;
+  width: 100%;
+}
+
+.mq-ed-noren-rod-brass {
+  width: 14px;
+  height: 10px;
+  background: linear-gradient(180deg, #e5c378 0%, #a47d33 100%);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.mq-ed-noren-rod-bar {
+  flex: 1 1 auto;
+  height: 6px;
+  background: linear-gradient(180deg, #3d352e 0%, #1c1815 100%);
+  border-radius: 3px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+.mq-ed-noren-loops {
+  display: flex;
+  justify-content: space-around;
+  padding-inline: 12%;
+  margin-top: -3px;
+}
+
+.mq-ed-noren-loop {
+  width: 14px;
+  height: 12px;
+  background: linear-gradient(180deg, #ece6d8 0%, #d8cfbe 100%);
+  border-radius: 2px 2px 0 0;
+  border: 1px solid rgba(28, 25, 23, 0.2);
+  border-bottom: none;
+}
+
+.mq-ed-noren-valance {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.12);
+}
+
+.mq-ed-noren-panel {
+  flex: 1 1 0;
+  height: clamp(14px, 2.5cqw, 22px);
+  background: linear-gradient(180deg, #f7f3e8 0%, #eee6d3 100%);
+  border: 1px solid rgba(28, 25, 23, 0.18);
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+}
+
+/* 2. Cover Main Content Body */
+.mq-ed-noren-cover-body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 2cqw, 20px);
+  max-width: 36rem;
+  width: 100%;
+}
+
+/* Archival Register Header */
+.mq-ed-noren-folio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: var(--mq-font-display, inherit);
+  text-align: center;
+}
+
+.mq-ed-noren-folio-kanji {
+  font-weight: 700;
+  color: #c93a2a;
+  font-size: clamp(0.68rem, 1.8cqw, 0.8rem);
+  letter-spacing: 0.28em;
+  white-space: nowrap;
+}
+
+.mq-ed-noren-folio-sep {
+  display: none;
+}
+
+.mq-ed-noren-folio-text {
+  font-size: clamp(0.56rem, 1.4cqw, 0.65rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #78716c;
+  white-space: nowrap;
+}
+
+/* 3. Central Cinnabar Hanko Chop Seal */
+.mq-ed-noren-seal-slot {
+  display: flex;
+  justify-content: center;
+  margin-block: clamp(4px, 1.2cqw, 10px);
+}
+
+.mq-ed-noren-hanko {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  filter: drop-shadow(0 4px 14px rgba(201, 58, 42, 0.32))
+          drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2));
+}
+
+.mq-ed-noren-hanko-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mq-ed-noren-hanko-content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 58%;
+  height: 58%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+.mq-ed-noren-hanko-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+}
+
+.mq-ed-noren-hanko-initials {
+  font-family: var(--mq-font-display, serif);
+  font-size: clamp(1.4rem, 3.8cqw, 2rem);
+  font-weight: 800;
+  line-height: 1;
+  color: #c93a2a;
+  letter-spacing: -0.05em;
+}
+
+/* 4. Restaurant Identity */
+.mq-ed-noren-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(4px, 1cqw, 8px);
+  width: 100%;
+}
+
+.mq-ed-noren-cuisine {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(0.64rem, 1.8cqw, 0.78rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #c93a2a;
+  font-weight: 600;
+}
+
+.mq-ed-noren-red-dot {
+  font-size: 0.5rem;
+  color: #c93a2a;
+}
+
+.mq-ed-noren-title {
+  margin: 0;
+  font-family: var(--mq-font-display, inherit);
+  font-size: clamp(1.5rem, 5.5cqw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: clamp(0.04em, 0.8cqw, 0.12em);
+  text-transform: uppercase;
+  line-height: 1.15;
+  color: #1c1917;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.is-compact .mq-ed-noren-title {
+  font-size: clamp(1.35rem, 4.8cqw, 2.2rem);
+}
+
+.mq-ed-noren-tagline {
+  margin: 0;
+  max-width: 42ch;
+  font-size: clamp(0.78rem, 2cqw, 0.98rem);
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+  color: #57534e;
+  text-wrap: balance;
+}
+
+.mq-ed-noren-teaser {
+  margin: 0;
+  font-size: clamp(0.56rem, 1.5cqw, 0.7rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #78716c;
+  max-width: min(28rem, 90%);
+  line-height: 1.45;
+}
+
+/* 5. Minimalist Washi Photographic Mount (Specimen Plate) */
+.mq-ed-noren-mount {
+  position: relative;
+  margin: clamp(6px, 1.6cqw, 14px) 0 0;
+  width: min(26rem, 100%);
+  background-color: #ffffff;
+  padding: clamp(8px, 2cqw, 14px);
+  border: 1px solid rgba(28, 25, 23, 0.15);
+  box-shadow:
+    0 12px 32px rgba(28, 25, 23, 0.08),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.mq-ed-noren-mount-inner {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(28, 25, 23, 0.18);
+}
+
+/* Kento Crosshair Registration Marks (見当) */
+.mq-ed-noren-kento {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.mq-ed-noren-kento::before,
+.mq-ed-noren-kento::after {
+  content: '';
+  position: absolute;
+  background-color: #c93a2a;
+}
+
+.mq-ed-noren-kento.kento-tl { top: -2px; left: -2px; }
+.mq-ed-noren-kento.kento-tl::before { top: 0; left: 0; width: 8px; height: 1.5px; }
+.mq-ed-noren-kento.kento-tl::after { top: 0; left: 0; width: 1.5px; height: 8px; }
+
+.mq-ed-noren-kento.kento-tr { top: -2px; right: -2px; }
+.mq-ed-noren-kento.kento-tr::before { top: 0; right: 0; width: 8px; height: 1.5px; }
+.mq-ed-noren-kento.kento-tr::after { top: 0; right: 0; width: 1.5px; height: 8px; }
+
+.mq-ed-noren-kento.kento-bl { bottom: -2px; left: -2px; }
+.mq-ed-noren-kento.kento-bl::before { bottom: 0; left: 0; width: 8px; height: 1.5px; }
+.mq-ed-noren-kento.kento-bl::after { bottom: 0; left: 0; width: 1.5px; height: 8px; }
+
+.mq-ed-noren-kento.kento-br { bottom: -2px; right: -2px; }
+.mq-ed-noren-kento.kento-br::before { bottom: 0; right: 0; width: 8px; height: 1.5px; }
+.mq-ed-noren-kento.kento-br::after { bottom: 0; right: 0; width: 1.5px; height: 8px; }
+
+.mq-ed-noren-mount-caption {
+  margin-top: clamp(6px, 1.4cqw, 10px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 8px;
+  font-size: clamp(0.56rem, 1.4cqw, 0.68rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #57534e;
+  text-align: center;
+}
+
+.mq-ed-noren-caption-kanji {
+  font-weight: 700;
+  color: #c93a2a;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+}
+
+.mq-ed-noren-caption-sep {
+  opacity: 0.4;
+}
+
+.mq-ed-noren-caption-text {
+  white-space: nowrap;
+}
+
+/* 6. Cover Contact & Hairline */
+.mq-ed-noren-cover-contact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: clamp(4px, 1.2cqw, 12px);
+}
+
+.mq-ed-noren-hair {
+  display: block;
+  width: clamp(32px, 8cqw, 64px);
+  height: 1.5px;
+  background-color: #c93a2a;
+  opacity: 0.75;
+}
+
+.mq-ed-noren-contact {
+  font-size: clamp(0.6rem, 1.5cqw, 0.72rem);
+  letter-spacing: 0.08em;
+  color: #78716c;
+  text-align: center;
+}
+
+/* -----------------------------------------------------------------------------
+   INTERIOR : Kaiseki Register & Binchōtan Hearth
+   ----------------------------------------------------------------------------- */
+.mq-ed-noren-announce {
+  margin: 0;
+  padding: var(--mq-space-3) var(--mq-space-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: var(--mq-text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #1c1917;
+  background-color: rgba(201, 58, 42, 0.06);
+  border-block: 1px solid rgba(201, 58, 42, 0.2);
+}
+
+.mq-ed-noren-announce-kanji {
+  font-weight: 700;
+  color: #c93a2a;
+}
+
+.mq-ed-noren-announce-sep {
+  opacity: 0.4;
+}
+
+.mq-ed-noren-body {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 68rem;
+  margin-inline: auto;
+  padding: clamp(1rem, 3cqw, 2.5rem) clamp(0.75rem, 2.5cqw, 2rem) clamp(2rem, 5cqw, 3.5rem);
+  box-sizing: border-box;
+}
+
+/* 1. Shun Tokusen (旬の特選) — Curated Signature Showcase */
+.mq-ed-noren-showcase {
+  margin-bottom: clamp(2rem, 5cqw, 3.5rem);
+}
+
+.mq-ed-noren-showcase-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: clamp(1.25rem, 3cqw, 2rem);
+}
+
+.mq-ed-noren-showcase-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: #c93a2a;
+}
+
+.mq-ed-noren-showcase-title {
+  margin: 0;
+  font-family: var(--mq-font-display, inherit);
+  font-size: clamp(1.2rem, 3.5cqw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #1c1917;
+}
+
+.mq-ed-noren-showcase-sub {
+  margin: 0;
+  max-width: 50ch;
+  font-size: clamp(0.76rem, 2cqw, 0.88rem);
+  font-style: italic;
+  color: #57534e;
+}
+
+.mq-ed-noren-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: clamp(1rem, 2.5cqw, 1.75rem);
+}
+
+.mq-ed-noren-card {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid rgba(28, 25, 23, 0.18);
+  padding: clamp(10px, 2cqw, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+  box-shadow: 0 8px 24px rgba(28, 25, 23, 0.06);
+  box-sizing: border-box;
+}
+
+.mq-ed-noren-card-kanji-num {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 2px 7px;
+  background: #c93a2a;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 2px;
+  z-index: 3;
+}
+
+.mq-ed-noren-card-media {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(28, 25, 23, 0.15);
+}
+
+.mq-ed-noren-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+  flex: 1 1 auto;
+}
+
+.mq-ed-noren-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-noren-card-name-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mq-ed-noren-card-name {
+  margin: 0;
+  font-family: var(--mq-font-display, inherit);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 600;
+  color: #1c1917;
+  letter-spacing: 0.02em;
+}
+
+.mq-ed-noren-card-price {
+  font-family: var(--mq-font-display, inherit);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 700;
+  color: #c93a2a;
+  flex-shrink: 0;
+}
+
+.mq-ed-noren-card-desc {
+  margin: 0;
+  font-size: clamp(0.78rem, 2cqw, 0.88rem);
+  font-style: italic;
+  color: #57534e;
+  line-height: 1.45;
+}
+
+.mq-ed-noren-card-accent {
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(28, 25, 23, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.65rem;
+  color: #57534e;
+  font-style: italic;
+}
+
+.noren-pill-red {
+  display: inline-block;
+  padding: 1px 5px;
+  background: rgba(201, 58, 42, 0.1);
+  border: 1px solid rgba(201, 58, 42, 0.35);
+  color: #c93a2a;
+  font-weight: 700;
+  border-radius: 2px;
+  font-size: 0.6rem;
+  font-style: normal;
+}
+
+/* 2. Responsive Course Sections & Hairline Leaders */
+.mq-ed-noren-columns {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 4cqw, 2.5rem);
+  width: 100%;
+}
+
+@container (min-width: 50rem) {
+  .mq-ed-noren-columns {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: var(--mq-space-8) var(--mq-space-10);
+  }
+
+  .mq-ed-noren-columns::before {
+    content: '';
+    grid-column: 2;
+    grid-row: 1 / -1;
+    background-color: rgba(28, 25, 23, 0.15);
+  }
+
+  .mq-ed-noren-section:nth-child(odd) { grid-column: 1; }
+  .mq-ed-noren-section:nth-child(even) { grid-column: 3; }
+}
+
+.mq-ed-noren-section {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid rgba(28, 25, 23, 0.15);
+  padding: clamp(1rem, 2.5cqw, 1.75rem) clamp(0.75rem, 2cqw, 1.5rem);
+  box-shadow: 0 4px 16px rgba(28, 25, 23, 0.04);
+  box-sizing: border-box;
+}
+
+.mq-ed-noren-section-header {
+  margin-bottom: clamp(1rem, 2.5cqw, 1.5rem);
+}
+
+.mq-ed-noren-section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mq-ed-noren-section-kanji {
+  font-family: serif;
+  font-weight: 700;
+  color: #c93a2a;
+  font-size: 0.85rem;
+}
+
+.mq-ed-noren-section-title {
+  margin: 0;
+  font-family: var(--mq-font-display, inherit);
+  font-size: clamp(1.05rem, 3cqw, 1.4rem);
+  font-weight: 700;
+  letter-spacing: clamp(0.06em, 0.5cqw, 0.14em);
+  text-transform: uppercase;
+  color: #1c1917;
+  text-wrap: balance;
+}
+
+.mq-ed-noren-section-count {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: #78716c;
+  background: rgba(28, 25, 23, 0.06);
+  padding: 2px 7px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+
+.mq-ed-noren-section-hairline {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, #c93a2a 0%, rgba(28, 25, 23, 0.15) 30%, transparent 100%);
+  margin-top: 8px;
+}
+
+.mq-ed-noren-section-desc {
+  margin: 6px 0 0;
+  font-size: clamp(0.78rem, 2cqw, 0.88rem);
+  font-style: italic;
+  color: #57534e;
+}
+
+.mq-ed-noren-list {
+  list-style: none;
+  margin: var(--mq-space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.65rem, 1.8cqw, 1.15rem);
+}
+
+.mq-ed-noren-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-bottom: clamp(0.35rem, 1cqw, 0.65rem);
+  border-bottom: 1px dashed rgba(28, 25, 23, 0.12);
+}
+
+.mq-ed-noren-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mq-ed-noren-row-head {
+  display: flex;
+  align-items: last baseline;
+  gap: clamp(0.35rem, 1cqw, 0.75rem);
+  width: 100%;
+  min-width: 0;
+}
+
+.mq-ed-noren-row-identity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 4.25rem);
+}
+
+.mq-ed-noren-name {
+  margin: 0;
+  font-family: var(--mq-font-display, inherit);
+  font-size: clamp(0.92rem, 2.4cqw, 1.12rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  color: #1c1917;
+  overflow-wrap: break-word;
+  word-break: normal;
+  text-wrap: pretty;
+}
+
+.mq-ed-noren-leader-hair {
+  flex: 1 1 auto;
+  min-width: 0.75rem;
+  height: 1px;
+  align-self: last baseline;
+  margin-bottom: 0.25em;
+  background-image: radial-gradient(circle at center, rgba(28, 25, 23, 0.4) 0.8px, transparent 1px);
+  background-size: 4px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.75;
+}
+
+.mq-ed-noren-price {
+  font-family: var(--mq-font-display, inherit);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #c93a2a;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mq-ed-noren-desc {
+  margin: 2px 0 0;
+  font-size: clamp(0.78rem, 2cqw, 0.88rem);
+  font-style: italic;
+  color: #57534e;
+  line-height: 1.45;
+}
+
+.mq-ed-noren-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.noren-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 2px;
+}
+
+.noren-badge.bestseller {
+  background: rgba(201, 58, 42, 0.08);
+  border: 1px solid rgba(201, 58, 42, 0.35);
+  color: #c93a2a;
+}
+
+.noren-badge.special {
+  background: rgba(28, 25, 23, 0.08);
+  border: 1px solid rgba(28, 25, 23, 0.25);
+  color: #1c1917;
+}
+
+.noren-badge.spice {
+  background: rgba(234, 88, 12, 0.08);
+  border: 1px solid rgba(234, 88, 12, 0.3);
+  color: #c2410c;
+}
+
+/* 3. Binchōtan Hearth & Kaiseki Philosophy Aside Plaque */
+.mq-ed-noren-hearth-aside {
+  position: relative;
+  margin-top: clamp(2rem, 5cqw, 3.5rem);
+  padding: clamp(1.5rem, 4cqw, 2.5rem);
+  background-color: #ffffff;
+  border: 1px solid rgba(28, 25, 23, 0.2);
+  box-shadow: 0 8px 28px rgba(28, 25, 23, 0.06);
+  box-sizing: border-box;
+}
+
+.mq-ed-noren-hearth-inner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 44rem;
+  margin-inline: auto;
+}
+
+.mq-ed-noren-hearth-seal {
+  margin-bottom: 2px;
+}
+
+.mq-ed-noren-hearth-kanji {
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: #c93a2a;
+  font-size: 0.72rem;
+  margin: 0;
+}
+
+.mq-ed-noren-hearth-title {
+  margin: 0;
+  font-family: var(--mq-font-display, inherit);
+  font-size: clamp(1.2rem, 3cqw, 1.65rem);
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.mq-ed-noren-hearth-text {
+  margin: 0;
+  font-size: clamp(0.82rem, 2cqw, 0.94rem);
+  font-style: italic;
+  color: #57534e;
+  line-height: var(--mq-leading-relaxed);
+}
+
+.mq-ed-noren-hearth-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.mq-ed-noren-hearth-tags .hearth-pill {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1c1917;
+  background: rgba(28, 25, 23, 0.06);
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(28, 25, 23, 0.18);
+}
+
+/* 4. Colophon Footer with Hanko Chop Stamp */
+.mq-ed-noren-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: clamp(2rem, 5cqw, 3.5rem) var(--mq-space-5);
+  border-top: 1px solid rgba(28, 25, 23, 0.15);
+  background: rgba(245, 241, 233, 0.5);
+  text-align: center;
+}
+
+.mq-ed-noren-foot-hanko {
+  margin-bottom: 4px;
+}
+
+.mq-ed-noren-foot-name {
+  margin: 0;
+  font-family: var(--mq-font-display, inherit);
+  font-size: clamp(0.88rem, 2.2cqw, 1.1rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #1c1917;
+}
+
+.mq-ed-noren-foot-motto {
+  margin: 0;
+  font-size: clamp(0.62rem, 1.6cqw, 0.74rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #c93a2a;
+  font-weight: 600;
+}
+
+.mq-ed-noren-foot-contact {
+  margin-top: 4px;
+  font-size: clamp(0.62rem, 1.6cqw, 0.75rem);
+  color: #78716c;
+  justify-content: center;
+  text-align: center;
+}

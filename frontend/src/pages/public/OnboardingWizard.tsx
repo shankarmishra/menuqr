@@ -24,7 +24,8 @@ import {
   Sun,
   Moon,
   Camera,
-  Utensils
+  Utensils,
+  Search,
 } from 'lucide-react';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import QRCode from 'qrcode';
@@ -32,14 +33,23 @@ import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerC
 import { exportStickerToPng } from '../../utils/stickerExporter';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import QRGenerationSequence from '../../components/qr-studio/QRGenerationSequence';
-import { themeFromPresetId } from '../../design-system/presets';
-import type { 
-  CoverSlot, 
-  DishCardSlot, 
-  NavSlot, 
-  SectionSlot, 
-  TextureId, 
-  MenuTheme 
+import {
+  PRESETS,
+  SHOWCASE_PRESETS,
+  DEFAULT_SHOWCASE_PRESET_ID,
+  themeFromPreset,
+  themeFromPresetId,
+  type Preset,
+} from '../../design-system/presets';
+import { derivePalette } from '../../design-system/palette';
+import { SIGNATURE_COVER_CAPS } from '../../components/menu-renderer/signature/registry';
+import type {
+  CoverSlot,
+  DishCardSlot,
+  NavSlot,
+  SectionSlot,
+  TextureId,
+  MenuTheme
 } from '../../design-system/theme.types';
 import type { Density } from '../../design-system/scales';
 import type { FontPairingId } from '../../design-system/fonts';
@@ -54,47 +64,89 @@ import {
   type ParsedCategory, 
   type ParsedMenuItem 
 } from '../../utils/excelMenuParser';
-import { 
-  createPermanentQr, 
-  getQr, 
-  getSubscription, 
-  getProfile, 
-  saveOnboarding, 
+import {
+  createPermanentQr,
+  getQr,
+  getSubscription,
+  getProfile,
+  saveOnboarding,
   publishTheme,
-  type AppQrData 
+  uploadImage,
+  resolveMenuImages,
+  type AppQrData
 } from '../app/appStore';
 import { useToast } from '../../components/feedback/ToastProvider';
+import LottieMoment from '../../components/common/LottieMoment';
+import { useOnboardingDraft } from './onboarding/useOnboardingDraft';
 
-// Reusable Image Selector Component (File Picker + Base64 Converter + URL Paste Fallback)
+// Reads a file as a data URL, then runs it through the real optimize+storage
+// pipeline (sharp resize, AVIF/WebP variants, durable storage driver) instead
+// of holding a raw base64 blob in component state — that pipeline already
+// exists (appStore.uploadImage -> POST /api/app/upload-image) but nothing in
+// this wizard called it before.
+async function uploadImageFile(file: File, category: 'dishes' | 'logos' | 'covers'): Promise<string> {
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error('Image file size must be less than 5MB');
+  }
+  const dataUri = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error || new Error('Could not read file'));
+    reader.readAsDataURL(file);
+  });
+  const result = await uploadImage(dataUri, category, 1200);
+  return result.url;
+}
+
+type RestaurantData = {
+  name: string;
+  tagline: string;
+  phone: string;
+  city: string;
+  address: string;
+  logoUrl: string;
+  templateId: string;
+  categories: ParsedCategory[];
+  items: ParsedMenuItem[];
+  orderingEnabled: boolean;
+  receptionDevice: string;
+  customSeedColor?: string;
+};
+
+// Reusable Image Selector Component (File Picker -> real optimize+upload pipeline, + URL Paste Fallback)
 function ImageSelector({
   label,
   value,
   onChange,
   placeholder = 'Select an image file or paste URL',
   compact = false,
+  category = 'logos',
 }: {
   label?: string;
   value: string;
   onChange: (val: string) => void;
   placeholder?: string;
   compact?: boolean;
+  category?: 'dishes' | 'logos' | 'covers';
 }) {
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [justUploaded, setJustUploaded] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Image file size must be less than 5MB');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          onChange(event.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const url = await uploadImageFile(file, category);
+      onChange(url);
+      setJustUploaded(true);
+    } catch (err: any) {
+      setUploadError(err?.message || 'Could not upload image. Please try again.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -102,7 +154,27 @@ function ImageSelector({
     <div className="space-y-2">
       {label && <label className="block text-xs font-semibold text-[#AAB7B2]">{label}</label>}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        {value ? (
+        {isUploading ? (
+          <div className={`${compact ? 'w-14 h-14' : 'w-20 h-20'} rounded-xl border-2 border-dashed border-[#E8783C]/40 bg-[#151C19] flex items-center justify-center shrink-0`}>
+            <LottieMoment moment="photo-matching" loop className="w-full h-full" />
+          </div>
+        ) : justUploaded ? (
+          <div className="relative shrink-0 self-start">
+            <img
+              src={value}
+              alt="Selected preview"
+              className={`${compact ? 'w-14 h-14' : 'w-20 h-20'} rounded-xl object-cover border-2 border-emerald-400 bg-black shadow-md`}
+              decoding="async"
+              loading="lazy"
+            />
+            <LottieMoment
+              moment="logo-upload-success"
+              loop={false}
+              onComplete={() => setJustUploaded(false)}
+              className="absolute -top-3 -right-3 w-8 h-8 pointer-events-none"
+            />
+          </div>
+        ) : value ? (
           <div className="relative group shrink-0 self-start">
             <img
               src={value}
@@ -133,8 +205,8 @@ function ImageSelector({
           <div className="flex items-center gap-2 flex-wrap">
             <label className="cursor-pointer bg-[#25322D] hover:bg-[#2A3832] border border-white/15 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl flex items-center gap-2 transition-colors shadow-sm">
               <Upload size={14} className="text-[#E8783C]" />
-              <span>{value ? 'Change Logo Image' : 'Choose Logo Image'}</span>
-              <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+              <span>{isUploading ? 'Uploading...' : value ? 'Change Logo Image' : 'Choose Logo Image'}</span>
+              <input type="file" accept="image/*" onChange={handleFileChange} disabled={isUploading} className="hidden" />
             </label>
             <button
               type="button"
@@ -152,6 +224,12 @@ function ImageSelector({
               placeholder={placeholder}
               className="w-full bg-[#151C19] border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C]"
             />
+          )}
+          {uploadError && (
+            <div className="flex items-center gap-1.5 text-[11px] text-rose-400">
+              <LottieMoment moment="error" loop={false} className="w-5 h-5" />
+              <span>{uploadError}</span>
+            </div>
           )}
         </div>
       </div>
@@ -269,9 +347,16 @@ export default function OnboardingWizard() {
   const [isPreloaded, setIsPreloaded] = useState(false);
   const [isEditingIdentity, setIsEditingIdentity] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isLogoUploading, setIsLogoUploading] = useState(false);
+  const [justUploadedLogo, setJustUploadedLogo] = useState(false);
+
+  // Local-only draft resume (same browser/device) — see useOnboardingDraft.
+  const [userId, setUserId] = useState<string | null>(null);
+  const { loadDraft, saveDraft, clearDraft } = useOnboardingDraft<RestaurantData>();
 
   // Excel Upload State
   const [isParsingExcel, setIsParsingExcel] = useState(false);
+  const [isResolvingImages, setIsResolvingImages] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [excelSummary, setExcelSummary] = useState<{
     totalDishes: number;
@@ -294,17 +379,30 @@ export default function OnboardingWizard() {
       if (subResult.status === 'fulfilled' && subResult.value?.planId) {
         setPlanId(subResult.value.planId.toUpperCase());
       }
-      if (profileResult.status === 'fulfilled' && profileResult.value) {
-        const p = profileResult.value;
-        if (p.businessName || p.phone || p.city || p.address) {
+
+      const profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
+      if (profile?.id) setUserId(profile.id);
+
+      // A local draft is a full, more-recent snapshot of this session's progress — prefer it
+      // over re-deriving the identity step from the profile alone when one exists.
+      const draft = profile?.id ? loadDraft(profile.id) : null;
+      if (draft) {
+        const isShowcase = SHOWCASE_PRESETS.some((p) => p.id === draft.restaurantData.templateId);
+        const safeTemplateId = isShowcase ? draft.restaurantData.templateId : DEFAULT_SHOWCASE_PRESET_ID;
+        setCurrentStepIdx(draft.currentStepIdx);
+        setRestaurantData({ ...draft.restaurantData, templateId: safeTemplateId });
+        setStudioTheme(isShowcase ? draft.studioTheme : themeFromPresetId(safeTemplateId));
+        if (draft.restaurantData.name || draft.restaurantData.phone) setIsPreloaded(true);
+      } else if (profile) {
+        if (profile.businessName || profile.phone || profile.city || profile.address) {
           setRestaurantData((prev) => ({
             ...prev,
-            name: p.businessName || prev.name,
-            tagline: p.tagline || prev.tagline,
-            phone: p.phone || prev.phone,
-            city: p.city || prev.city,
-            address: p.address || prev.address,
-            logoUrl: p.logoUrl || prev.logoUrl,
+            name: profile.businessName || prev.name,
+            tagline: profile.tagline || prev.tagline,
+            phone: profile.phone || prev.phone,
+            city: profile.city || prev.city,
+            address: profile.address || prev.address,
+            logoUrl: profile.logoUrl || prev.logoUrl,
           }));
           setIsPreloaded(true);
         }
@@ -314,6 +412,8 @@ export default function OnboardingWizard() {
       console.error(err);
       setIsLoadingProfile(false);
     });
+    // Runs once on mount — loadDraft is a stable useCallback, intentionally not re-triggering this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getSteps = () => {
@@ -324,27 +424,14 @@ export default function OnboardingWizard() {
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
   const currentStep = steps[currentStepIdx];
 
-  const [restaurantData, setRestaurantData] = useState<{
-    name: string;
-    tagline: string;
-    phone: string;
-    city: string;
-    address: string;
-    logoUrl: string;
-    templateId: string;
-    categories: ParsedCategory[];
-    items: ParsedMenuItem[];
-    orderingEnabled: boolean;
-    receptionDevice: string;
-    customSeedColor?: string;
-  }>({
+  const [restaurantData, setRestaurantData] = useState<RestaurantData>({
     name: '',
     tagline: '',
     phone: '',
     city: '',
     address: '',
     logoUrl: '',
-    templateId: 'signature-heritage-booklet', // Start with an art-directed Signature template
+    templateId: DEFAULT_SHOWCASE_PRESET_ID, // Start with Maison Noir Signature Edition
     categories: [],
     items: [],
     orderingEnabled: false,
@@ -352,22 +439,27 @@ export default function OnboardingWizard() {
     customSeedColor: '',
   });
 
-  const [studioSubTab, setStudioSubTab] = useState<'cover' | 'layout' | 'brand'>('cover');
+  const [studioSubTab, setStudioSubTab] = useState<'design' | 'cover' | 'layout' | 'brand'>('design');
+  const [designCategory, setDesignCategory] = useState<string>('all');
+  const [designSearch, setDesignSearch] = useState<string>('');
+  const [previewSection, setPreviewSection] = useState<'cover' | 'dishes'>('cover');
+  const phoneScrollRef = useRef<HTMLDivElement>(null);
   const [customHexInput, setCustomHexInput] = useState('');
 
   const [studioTheme, setStudioTheme] = useState<MenuTheme>(() => {
-    const base = themeFromPresetId('signature-heritage-booklet');
-    return {
-      ...base,
-      cover: {
-        imageUrl: '/assets/themes/variations/royal-darbar-facing.jpg',
-        focal: { x: 0.5, y: 0.5 },
-        overlayStrength: 0.55,
-        showCoverPage: true,
-      },
-      announcement: '✨ Welcome to our digital dining experience | Chef specials available',
-    };
+    return themeFromPresetId(DEFAULT_SHOWCASE_PRESET_ID);
   });
+
+  const scrollToSection = (section: 'cover' | 'dishes') => {
+    setPreviewSection(section);
+    if (phoneScrollRef.current) {
+      if (section === 'cover') {
+        phoneScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        phoneScrollRef.current.scrollTo({ top: 620, behavior: 'smooth' });
+      }
+    }
+  };
 
   // Sync logo when uploaded in Step 1 or Step 3
   useEffect(() => {
@@ -379,6 +471,45 @@ export default function OnboardingWizard() {
       },
     }));
   }, [restaurantData.logoUrl]);
+
+  // Switching the starting design resets every slot/style/colour field to that preset's defaults
+  // — "reset to preset" is the documented semantics of a preset (design-system/presets.ts) — while
+  // keeping the two things genuinely specific to this owner: their logo and announcement text.
+  const [justSelectedPresetId, setJustSelectedPresetId] = useState<string | null>(null);
+
+  const filteredPresets = useMemo(() => {
+    const q = designSearch.trim().toLowerCase();
+    return SHOWCASE_PRESETS.filter((preset) => {
+      const matchCat = designCategory === 'all' || preset.category === designCategory;
+      const matchSearch =
+        !q ||
+        [preset.label, preset.description, preset.audience, preset.id]
+          .join(' ')
+          .toLowerCase()
+          .includes(q);
+      return matchCat && matchSearch;
+    });
+  }, [designCategory, designSearch]);
+
+  const handleSelectPreset = useCallback((preset: Preset) => {
+    setRestaurantData((prev) => ({ ...prev, templateId: preset.id }));
+    setStudioTheme((prev) => {
+      const fresh = themeFromPreset(preset);
+      return {
+        ...fresh,
+        brand: { ...fresh.brand, logoUrl: prev.brand.logoUrl },
+        announcement: prev.announcement,
+      };
+    });
+    setJustSelectedPresetId(preset.id);
+  }, []);
+
+  // Local-only draft autosave (debounced inside the hook) — lets a refresh mid-wizard resume
+  // on the same browser instead of restarting at step 1.
+  useEffect(() => {
+    if (!userId) return;
+    saveDraft(userId, { currentStepIdx, restaurantData, studioTheme });
+  }, [userId, currentStepIdx, restaurantData, studioTheme, saveDraft]);
 
   const previewTheme = studioTheme;
 
@@ -453,6 +584,34 @@ export default function OnboardingWizard() {
   }, [qr?.qrId, restaurantData.name]);
 
   // Handle Excel / CSV File Drop or Select
+  // The spreadsheet never carries a photo for most rows. Without this, an onboarded-via-Excel
+  // menu stays photo-less forever — the Excel import done later from the Menu page already gets
+  // matched photos via the same resolveDishImage() this calls, so this closes that gap.
+  const resolveMissingPhotos = async (items: ParsedMenuItem[], categories: ParsedCategory[]): Promise<ParsedMenuItem[]> => {
+    const missing = items
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => !item.imageUrl);
+    if (missing.length === 0) return items;
+    setIsResolvingImages(true);
+    try {
+      const { matches } = await resolveMenuImages(
+        missing.map(({ item, index }) => ({
+          index,
+          name: item.name,
+          category: categories.find((c) => c.id === item.category)?.name || '',
+        }))
+      );
+      const byIndex = new Map(matches.map((m) => [m.index, m.imageUrl]));
+      return items.map((item, index) => (
+        !item.imageUrl && byIndex.has(index) ? { ...item, imageUrl: byIndex.get(index) as string } : item
+      ));
+    } catch {
+      return items; // Non-fatal — items simply keep rendering without a matched photo, as before.
+    } finally {
+      setIsResolvingImages(false);
+    }
+  };
+
   const handleFileUpload = async (file: File) => {
     const ext = file.name.split('.').pop()?.toLowerCase();
     if (!['xlsx', 'xls', 'csv'].includes(ext || '')) {
@@ -462,10 +621,11 @@ export default function OnboardingWizard() {
     setIsParsingExcel(true);
     try {
       const parsed = await parseExcelMenuFile(file);
+      const itemsWithPhotos = await resolveMissingPhotos(parsed.items, parsed.categories);
       setRestaurantData((prev) => ({
         ...prev,
         categories: parsed.categories,
-        items: parsed.items,
+        items: itemsWithPhotos,
       }));
       setUploadedFileName(file.name);
       setExcelSummary(parsed.summary);
@@ -505,12 +665,15 @@ export default function OnboardingWizard() {
     showToast('success', 'Your permanent QR sticker is ready to download or print.');
   }, [showToast]);
 
+  const [qrError, setQrError] = useState(false);
+
   const createFirstQr = async () => {
     if (!restaurantData.name.trim() || restaurantData.categories.length === 0 || restaurantData.items.length === 0) {
       showToast('error', 'Add your restaurant name and upload at least one menu item first.');
       return;
     }
     setIsSubmitting(true);
+    setQrError(false);
     try {
       await saveOnboarding({
         businessName: restaurantData.name,
@@ -550,6 +713,7 @@ export default function OnboardingWizard() {
 
       setIsPrinterOpen(true);
     } catch {
+      setQrError(true);
       showToast('error', 'We could not save your menu just now. Your details are still here; please try again.');
     } finally {
       setIsSubmitting(false);
@@ -561,6 +725,7 @@ export default function OnboardingWizard() {
       showToast('info', 'Save your menu and create its permanent QR before finishing setup.');
       return;
     }
+    if (userId) clearDraft(userId);
     navigate('/app/dashboard', { replace: true });
   };
 
@@ -619,9 +784,24 @@ export default function OnboardingWizard() {
 
                 {/* Preloaded Summary Card (Auto-filled from checkout) */}
                 {isLoadingProfile ? (
-                  <div className="p-8 rounded-2xl bg-[#151C19] border border-white/10 flex items-center justify-center gap-3 text-sm text-[#AAB7B2]">
-                    <div className="w-5 h-5 border-2 border-[#E8783C] border-t-transparent rounded-full animate-spin" />
-                    <span>Loading your registration details...</span>
+                  // Sub-second load — a skeleton reads as faster than a Lottie loop would here.
+                  <div className="bg-[#151C19] border border-white/10 rounded-2xl p-5 sm:p-6 space-y-5 animate-pulse" aria-hidden="true">
+                    <div className="flex items-center gap-2.5 pb-4 border-b border-white/10">
+                      <span className="w-7 h-7 rounded-full bg-white/10 shrink-0" />
+                      <div className="space-y-1.5">
+                        <div className="h-2.5 w-48 rounded bg-white/10" />
+                        <div className="h-2 w-64 rounded bg-white/5" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div key={i} className="bg-white/5 p-3.5 rounded-xl space-y-2">
+                          <div className="h-2 w-24 rounded bg-white/10" />
+                          <div className="h-3 w-32 rounded bg-white/10" />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="h-16 rounded-xl bg-white/5" />
                   </div>
                 ) : isPreloaded && !isEditingIdentity ? (
                   <div className="bg-[#151C19] border border-emerald-500/30 rounded-2xl p-5 sm:p-6 space-y-5 shadow-lg">
@@ -681,14 +861,28 @@ export default function OnboardingWizard() {
                     {/* Brand Logo Section in Preloaded View */}
                     <div className="p-4 bg-[#1D2723]/90 rounded-xl border border-white/10 flex items-center justify-between gap-3 flex-wrap">
                       <div className="flex items-center gap-3">
-                        {restaurantData.logoUrl ? (
-                          <img
-                            src={restaurantData.logoUrl}
-                            alt="Logo"
-                            className="w-14 h-14 rounded-xl object-contain bg-black/50 border-2 border-[#E8783C] shadow-md shrink-0"
-                            decoding="async"
-                            loading="lazy"
-                          />
+                        {isLogoUploading ? (
+                          <div className="w-14 h-14 rounded-xl border-2 border-dashed border-[#E8783C]/40 bg-[#151C19] flex items-center justify-center shrink-0">
+                            <LottieMoment moment="photo-matching" loop className="w-full h-full" />
+                          </div>
+                        ) : restaurantData.logoUrl ? (
+                          <div className="relative shrink-0">
+                            <img
+                              src={restaurantData.logoUrl}
+                              alt="Logo"
+                              className="w-14 h-14 rounded-xl object-contain bg-black/50 border-2 border-[#E8783C] shadow-md shrink-0"
+                              decoding="async"
+                              loading="lazy"
+                            />
+                            {justUploadedLogo && (
+                              <LottieMoment
+                                moment="logo-upload-success"
+                                loop={false}
+                                onComplete={() => setJustUploadedLogo(false)}
+                                className="absolute -top-2.5 -right-2.5 w-7 h-7 pointer-events-none"
+                              />
+                            )}
+                          </div>
                         ) : (
                           <div className="w-14 h-14 rounded-xl border-2 border-dashed border-white/20 bg-[#151C19] flex flex-col items-center justify-center text-[#AAB7B2] shrink-0">
                             <ImageIcon size={22} className="text-[#E8783C] opacity-70" />
@@ -705,24 +899,23 @@ export default function OnboardingWizard() {
                       <div className="flex items-center gap-2">
                         <label className="cursor-pointer bg-[#25322D] hover:bg-[#2A3832] border border-white/15 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
                           <Upload size={13} className="text-[#E8783C]" />
-                          <span>{restaurantData.logoUrl ? 'Change Logo' : 'Upload Logo'}</span>
+                          <span>{isLogoUploading ? 'Uploading...' : restaurantData.logoUrl ? 'Change Logo' : 'Upload Logo'}</span>
                           <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => {
+                            disabled={isLogoUploading}
+                            onChange={async (e) => {
                               const file = e.target.files?.[0];
-                              if (file) {
-                                if (file.size > 5 * 1024 * 1024) {
-                                  alert('File must be under 5MB');
-                                  return;
-                                }
-                                const r = new FileReader();
-                                r.onload = (ev) => {
-                                  if (ev.target?.result) {
-                                    setRestaurantData((prev) => ({ ...prev, logoUrl: ev.target?.result as string }));
-                                  }
-                                };
-                                r.readAsDataURL(file);
+                              if (!file) return;
+                              setIsLogoUploading(true);
+                              try {
+                                const url = await uploadImageFile(file, 'logos');
+                                setRestaurantData((prev) => ({ ...prev, logoUrl: url }));
+                                setJustUploadedLogo(true);
+                              } catch (err: any) {
+                                showToast('error', err?.message || 'Could not upload logo. Please try again.');
+                              } finally {
+                                setIsLogoUploading(false);
                               }
                             }}
                             className="hidden"
@@ -831,15 +1024,21 @@ export default function OnboardingWizard() {
                   />
 
                   <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E8783C]/15 text-[#E8783C] group-hover:scale-110 transition-transform">
-                    {isParsingExcel ? (
-                      <RefreshCw className="h-8 w-8 animate-spin" />
+                    {isParsingExcel || isResolvingImages ? (
+                      <LottieMoment moment="excel-parsing" loop className="w-12 h-12" />
+                    ) : restaurantData.items.length === 0 ? (
+                      <LottieMoment moment="upload-idle" loop className="w-12 h-12" />
                     ) : (
                       <FileSpreadsheet className="h-8 w-8" />
                     )}
                   </div>
 
                   <h3 className="mt-4 text-base sm:text-lg font-bold text-white">
-                    {isParsingExcel ? 'Parsing Spreadsheet...' : 'Drop your Excel menu file here, or click to browse'}
+                    {isParsingExcel
+                      ? 'Parsing Spreadsheet...'
+                      : isResolvingImages
+                      ? 'Matching Dish Photos...'
+                      : 'Drop your Excel menu file here, or click to browse'}
                   </h3>
                   <p className="mt-1 text-xs text-[#AAB7B2]">
                     Supports <span className="font-mono text-emerald-400 font-bold">.xlsx, .xls, .csv</span> formats
@@ -991,6 +1190,17 @@ export default function OnboardingWizard() {
                 <div className="flex flex-wrap items-center gap-2 p-1.5 bg-[#151C19] border border-white/10 rounded-2xl w-fit shadow-md">
                   <button
                     type="button"
+                    onClick={() => setStudioSubTab('design')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                      studioSubTab === 'design'
+                        ? 'bg-[#E8783C] text-white shadow-lg'
+                        : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Layers size={14} /> 1. Choose Design
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setStudioSubTab('cover')}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                       studioSubTab === 'cover'
@@ -998,7 +1208,7 @@ export default function OnboardingWizard() {
                         : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    <Camera size={14} /> 1. Cover Page & Photos
+                    <Camera size={14} /> 2. Cover Page & Photos
                     {studioTheme.cover.imageUrl && (
                       <span className="w-2 h-2 rounded-full bg-emerald-400" />
                     )}
@@ -1012,7 +1222,7 @@ export default function OnboardingWizard() {
                         : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    <Layout size={14} /> 2. Menu Layout & Cards
+                    <Layout size={14} /> 3. Menu Layout & Cards
                   </button>
                   <button
                     type="button"
@@ -1023,7 +1233,7 @@ export default function OnboardingWizard() {
                         : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    <Palette size={14} /> 3. Brand Colors & Logo
+                    <Palette size={14} /> 4. Brand Colors & Logo
                     <span className="w-2.5 h-2.5 rounded-full border border-white/30" style={{ backgroundColor: studioTheme.brand.seedColor }} />
                   </button>
                 </div>
@@ -1033,6 +1243,138 @@ export default function OnboardingWizard() {
                   {/* LEFT CONTROLS (7 COLS) */}
                   <div className="lg:col-span-7 space-y-5">
                     
+                    {/* TAB 0: CHOOSE STARTING DESIGN */}
+                    {studioSubTab === 'design' && (
+                      <div className="space-y-4">
+                        {/* Category Filter Pills & Search */}
+                        <div className="space-y-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                            <p className="text-xs text-[#AAB7B2]">
+                              Select from <span className="font-bold text-white">15 Art-Directed Signature Editions</span>. Each is an authentic restaurant publication with its own typography, architecture, and plating identity.
+                            </p>
+                            <div className="relative shrink-0">
+                              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                              <input
+                                type="text"
+                                placeholder="Search editions..."
+                                value={designSearch}
+                                onChange={(e) => setDesignSearch(e.target.value)}
+                                className="pl-8 pr-3 py-1.5 bg-[#151C19] border border-white/15 rounded-xl text-xs text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E8783C] w-full sm:w-48"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Category Filter Pills */}
+                          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                            {[
+                              { id: 'all', label: `All (${SHOWCASE_PRESETS.length})` },
+                              { id: 'fine-dining', label: 'Fine Dining' },
+                              { id: 'heritage', label: 'Heritage' },
+                              { id: 'cafe', label: 'Cafe & Bakery' },
+                              { id: 'contemporary', label: 'Contemporary' },
+                              { id: 'street', label: 'Street & Grill' },
+                            ].map((cat) => (
+                              <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => setDesignCategory(cat.id)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                                  designCategory === cat.id
+                                    ? 'bg-[#E8783C] text-white shadow-sm'
+                                    : 'bg-[#151C19] text-[#AAB7B2] border border-white/10 hover:text-white hover:bg-white/5'
+                                }`}
+                              >
+                                {cat.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Editions Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1 mq-showcase-preview-frame">
+                          {filteredPresets.map((preset) => {
+                            const active = restaurantData.templateId === preset.id;
+                            const justConfirmed = active && justSelectedPresetId === preset.id;
+                            const palette = derivePalette(preset.seedColor, preset.mode);
+                            const editionNum = String(
+                              SHOWCASE_PRESETS.findIndex((p) => p.id === preset.id) + 1
+                            ).padStart(2, '0');
+
+                            return (
+                              <button
+                                key={preset.id}
+                                type="button"
+                                onClick={() => handleSelectPreset(preset)}
+                                className={`relative p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                                  active
+                                    ? 'border-[#E8783C] bg-[#E8783C]/12 ring-2 ring-[#E8783C] shadow-xl'
+                                    : 'border-white/10 bg-[#151C19] hover:border-white/25 hover:bg-[#1a2320]'
+                                }`}
+                              >
+                                <div>
+                                  <div className="flex items-center justify-between gap-2 mb-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-white/90">
+                                        #{editionNum}
+                                      </span>
+                                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#AAB7B2]">
+                                        {preset.category}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5">
+                                      <span
+                                        className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                                        style={{ backgroundColor: palette.bg }}
+                                        title={`Background: ${palette.bg}`}
+                                      />
+                                      <span
+                                        className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                                        style={{ backgroundColor: preset.seedColor }}
+                                        title={`Accent: ${preset.seedColor}`}
+                                      />
+                                      <span
+                                        className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                                        style={{ backgroundColor: palette.heading }}
+                                        title={`Heading: ${palette.heading}`}
+                                      />
+
+                                      {active && (
+                                        justConfirmed ? (
+                                          <LottieMoment
+                                            moment="design-pick-confirm"
+                                            loop={false}
+                                            onComplete={() => setJustSelectedPresetId(null)}
+                                            className="w-5 h-5 ml-1 shrink-0"
+                                          />
+                                        ) : (
+                                          <span className="w-4 h-4 rounded-full bg-[#E8783C] text-white flex items-center justify-center shrink-0 ml-1">
+                                            <Check size={10} />
+                                          </span>
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <h4 className="text-sm font-bold text-white mb-1">{preset.label}</h4>
+                                  <p className="text-[11px] text-[#AAB7B2] leading-relaxed line-clamp-2">
+                                    {preset.description}
+                                  </p>
+                                </div>
+
+                                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-[#8EA298]">
+                                  <span className="truncate max-w-[170px]">{preset.audience}</span>
+                                  <span className="uppercase font-mono text-[9px] px-1.5 py-0.5 rounded bg-white/5 font-semibold text-white/70">
+                                    {preset.mode}
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {/* TAB 1: COVER PAGE & CHEF PHOTOGRAPHY */}
                     {studioSubTab === 'cover' && (
                       <div className="space-y-6">
@@ -1064,134 +1406,159 @@ export default function OnboardingWizard() {
                           </button>
                         </div>
 
-                        {/* Cover Style Picker */}
-                        <div className="space-y-2.5">
-                          <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                            <Layers size={13} className="text-[#E8783C]" /> Select Cover Architecture
-                          </label>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                            {COVER_STYLE_OPTIONS.map((opt) => {
-                              const active = studioTheme.slots.cover === opt.id;
-                              return (
-                                <button
-                                  key={opt.id}
-                                  type="button"
-                                  onClick={() => setStudioTheme((prev) => ({
-                                    ...prev,
-                                    slots: { ...prev.slots, cover: opt.id }
-                                  }))}
-                                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                                    active
-                                      ? 'border-[#E8783C] bg-[#E8783C]/12 ring-2 ring-[#E8783C] shadow-lg'
-                                      : 'border-white/10 bg-[#151C19] hover:border-white/25 hover:bg-[#1a2320]'
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                                      <span>{opt.icon}</span> {opt.label}
-                                    </span>
-                                    {active && (
-                                      <span className="w-4 h-4 rounded-full bg-[#E8783C] text-white flex items-center justify-center text-[10px]">
-                                        <Check size={10} />
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-[10px] text-[#AAB7B2] leading-relaxed">{opt.desc}</p>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        {/* Curated Ultra-HD Food Cover Photography */}
-                        <div className="space-y-2.5">
-                          <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                              <Camera size={13} className="text-[#E8783C]" /> Curated Chef Cover Photography (1-Click Apply)
-                            </label>
-                            <span className="text-[10px] font-mono text-[#E8783C] font-semibold">Ultra-HD Quality</span>
-                          </div>
-                          <p className="text-[11px] text-[#AAB7B2]">
-                            Select from our art-directed restaurant photography collection, or upload your own below.
-                          </p>
-
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                            {CURATED_COVER_PHOTOS.map((photo) => {
-                              const active = studioTheme.cover.imageUrl === photo.url;
-                              return (
-                                <button
-                                  key={photo.id}
-                                  type="button"
-                                  onClick={() => setStudioTheme((prev) => ({
-                                    ...prev,
-                                    cover: { ...prev.cover, imageUrl: photo.url }
-                                  }))}
-                                  className={`group relative rounded-2xl overflow-hidden border text-left transition-all cursor-pointer aspect-[4/3] ${
-                                    active
-                                      ? 'border-[#E8783C] ring-2 ring-[#E8783C] shadow-xl scale-[1.02]'
-                                      : 'border-white/10 hover:border-white/30 hover:scale-[1.01]'
-                                  }`}
-                                >
-                                  <img
-                                    src={photo.url}
-                                    alt={photo.title}
-                                    className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
-                                    loading="lazy"
-                                  />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent p-2 flex flex-col justify-end">
-                                    <p className="text-[10.5px] font-bold text-white truncate drop-shadow-sm">{photo.title}</p>
-                                    <p className="text-[8.5px] text-stone-300 truncate">{photo.cuisine}</p>
-                                  </div>
-                                  {active && (
-                                    <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#E8783C] text-white flex items-center justify-center shadow-md">
-                                      <Check size={11} />
-                                    </span>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-
-                          {/* Custom Cover Photo Uploader */}
-                          <div className="pt-2">
-                            <ImageSelector
-                              label="Or Upload Your Own Custom Restaurant Cover Photo"
-                              value={studioTheme.cover.imageUrl?.startsWith('/assets/') ? '' : (studioTheme.cover.imageUrl || '')}
-                              onChange={(val) => setStudioTheme((prev) => ({
-                                ...prev,
-                                cover: { ...prev.cover, imageUrl: val || '/assets/themes/variations/royal-darbar-facing.jpg' }
-                              }))}
-                              placeholder="https://example.com/restaurant-cover.jpg"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Scrim Overlay Slider & Announcement */}
-                        <div className="p-4 rounded-2xl bg-[#151C19] border border-white/10 space-y-4 shadow-sm">
-                          <div>
-                            <div className="flex items-center justify-between text-xs mb-1.5">
-                              <span className="font-semibold text-white">Cover Overlay Darkness</span>
-                              <span className="font-mono text-[#E8783C] font-bold">
-                                {Math.round(studioTheme.cover.overlayStrength * 100)}%
-                              </span>
-                            </div>
-                            <input
-                              type="range"
-                              min={10}
-                              max={90}
-                              value={Math.round(studioTheme.cover.overlayStrength * 100)}
-                              onChange={(e) => setStudioTheme((prev) => ({
-                                ...prev,
-                                cover: { ...prev.cover, overlayStrength: Number(e.target.value) / 100 }
-                              }))}
-                              className="w-full accent-[#E8783C] cursor-pointer"
-                            />
-                            <p className="text-[10px] text-stone-400 mt-1">
-                              Darkens the cover photo so your restaurant name and buttons stay crisp and easy to read.
+                        {studioTheme.signatureId ? (
+                          /* Signature compositions own their entire cover layout and always pull their
+                           * hero photo from the menu's own bestseller dish photos — they never read
+                           * theme.slots.cover or theme.cover.imageUrl, so an architecture/photo picker
+                           * here would silently do nothing. Say that plainly instead of faking a control. */
+                          <div className="p-4 rounded-2xl bg-[#1D2723] border border-[#E8783C]/30 space-y-1.5">
+                            <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                              <Layers size={13} className="text-[#E8783C]" />
+                              {PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'This Signature design'} has a fixed, art-directed cover
+                            </p>
+                            <p className="text-[11px] text-[#AAB7B2] leading-relaxed">
+                              {SIGNATURE_COVER_CAPS[studioTheme.signatureId].coverPhoto
+                                ? 'Its cover photo comes from your own menu — mark a dish as a bestseller and add a photo to it, and that photo becomes the hero image automatically.'
+                                : 'This design uses typography and ornament instead of a photo, so there is no cover photo to pick.'}
+                              {' '}Switch to a non-Signature design in "Choose Design" to pick a cover architecture and photo by hand.
                             </p>
                           </div>
+                        ) : (
+                          <>
+                            {/* Cover Style Picker */}
+                            <div className="space-y-2.5">
+                              <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                                <Layers size={13} className="text-[#E8783C]" /> Select Cover Architecture
+                              </label>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                {COVER_STYLE_OPTIONS.map((opt) => {
+                                  const active = studioTheme.slots.cover === opt.id;
+                                  return (
+                                    <button
+                                      key={opt.id}
+                                      type="button"
+                                      onClick={() => setStudioTheme((prev) => ({
+                                        ...prev,
+                                        slots: { ...prev.slots, cover: opt.id }
+                                      }))}
+                                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                                        active
+                                          ? 'border-[#E8783C] bg-[#E8783C]/12 ring-2 ring-[#E8783C] shadow-lg'
+                                          : 'border-white/10 bg-[#151C19] hover:border-white/25 hover:bg-[#1a2320]'
+                                      }`}
+                                    >
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                                          <span>{opt.icon}</span> {opt.label}
+                                        </span>
+                                        {active && (
+                                          <span className="w-4 h-4 rounded-full bg-[#E8783C] text-white flex items-center justify-center text-[10px]">
+                                            <Check size={10} />
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-[10px] text-[#AAB7B2] leading-relaxed">{opt.desc}</p>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
 
-                          <div className="pt-3 border-t border-white/5 space-y-1.5">
+                            {/* Curated Ultra-HD Food Cover Photography */}
+                            <div className="space-y-2.5">
+                              <div className="flex items-center justify-between">
+                                <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                                  <Camera size={13} className="text-[#E8783C]" /> Curated Chef Cover Photography (1-Click Apply)
+                                </label>
+                                <span className="text-[10px] font-mono text-[#E8783C] font-semibold">Ultra-HD Quality</span>
+                              </div>
+                              <p className="text-[11px] text-[#AAB7B2]">
+                                Select from our art-directed restaurant photography collection, or upload your own below.
+                              </p>
+
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                                {CURATED_COVER_PHOTOS.map((photo) => {
+                                  const active = studioTheme.cover.imageUrl === photo.url;
+                                  return (
+                                    <button
+                                      key={photo.id}
+                                      type="button"
+                                      onClick={() => setStudioTheme((prev) => ({
+                                        ...prev,
+                                        cover: { ...prev.cover, imageUrl: photo.url }
+                                      }))}
+                                      className={`group relative rounded-2xl overflow-hidden border text-left transition-all cursor-pointer aspect-[4/3] ${
+                                        active
+                                          ? 'border-[#E8783C] ring-2 ring-[#E8783C] shadow-xl scale-[1.02]'
+                                          : 'border-white/10 hover:border-white/30 hover:scale-[1.01]'
+                                      }`}
+                                    >
+                                      <img
+                                        src={photo.url}
+                                        alt={photo.title}
+                                        className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
+                                        loading="lazy"
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent p-2 flex flex-col justify-end">
+                                        <p className="text-[10.5px] font-bold text-white truncate drop-shadow-sm">{photo.title}</p>
+                                        <p className="text-[8.5px] text-stone-300 truncate">{photo.cuisine}</p>
+                                      </div>
+                                      {active && (
+                                        <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#E8783C] text-white flex items-center justify-center shadow-md">
+                                          <Check size={11} />
+                                        </span>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Custom Cover Photo Uploader */}
+                              <div className="pt-2">
+                                <ImageSelector
+                                  label="Or Upload Your Own Custom Restaurant Cover Photo"
+                                  value={studioTheme.cover.imageUrl?.startsWith('/assets/') ? '' : (studioTheme.cover.imageUrl || '')}
+                                  onChange={(val) => setStudioTheme((prev) => ({
+                                    ...prev,
+                                    cover: { ...prev.cover, imageUrl: val || '/assets/themes/variations/royal-darbar-facing.jpg' }
+                                  }))}
+                                  placeholder="https://example.com/restaurant-cover.jpg"
+                                  category="covers"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Scrim Overlay Slider */}
+                            <div className="p-4 rounded-2xl bg-[#151C19] border border-white/10 space-y-4 shadow-sm">
+                              <div>
+                                <div className="flex items-center justify-between text-xs mb-1.5">
+                                  <span className="font-semibold text-white">Cover Overlay Darkness</span>
+                                  <span className="font-mono text-[#E8783C] font-bold">
+                                    {Math.round(studioTheme.cover.overlayStrength * 100)}%
+                                  </span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min={10}
+                                  max={90}
+                                  value={Math.round(studioTheme.cover.overlayStrength * 100)}
+                                  onChange={(e) => setStudioTheme((prev) => ({
+                                    ...prev,
+                                    cover: { ...prev.cover, overlayStrength: Number(e.target.value) / 100 }
+                                  }))}
+                                  className="w-full accent-[#E8783C] cursor-pointer"
+                                />
+                                <p className="text-[10px] text-stone-400 mt-1">
+                                  Darkens the cover photo so your restaurant name and buttons stay crisp and easy to read.
+                                </p>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Announcement — read by every design, Signature included */}
+                        <div className="p-4 rounded-2xl bg-[#151C19] border border-white/10 shadow-sm">
+                          <div className="space-y-1.5">
                             <label className="text-xs font-semibold text-white">Cover Announcement Banner (Optional)</label>
                             <input
                               type="text"
@@ -1209,6 +1576,21 @@ export default function OnboardingWizard() {
                     {/* TAB 2: MENU LAYOUT & CARDS */}
                     {studioSubTab === 'layout' && (
                       <div className="space-y-6">
+                        {studioTheme.signatureId && (
+                          <div className="p-4 rounded-2xl bg-[#1D2723] border border-[#E8783C]/30 space-y-1.5">
+                            <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                              <Layout size={14} className="text-[#E8783C]" />
+                              {PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'This Signature design'} has a fixed menu layout
+                            </p>
+                            <p className="text-[11px] text-[#AAB7B2] leading-relaxed">
+                              Dish card style, navigation and section headers are part of its art direction and
+                              are not individually adjustable. Texture and typography below still apply.
+                            </p>
+                          </div>
+                        )}
+
+                        {!studioTheme.signatureId && (
+                        <>
                         {/* Dish Card Style */}
                         <div className="space-y-2.5">
                           <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
@@ -1304,6 +1686,8 @@ export default function OnboardingWizard() {
                             </div>
                           </div>
                         </div>
+                        </>
+                        )}
 
                         {/* Background Texture & Typography */}
                         <div className="space-y-4 pt-2 border-t border-white/10">
@@ -1558,37 +1942,66 @@ export default function OnboardingWizard() {
                       </span>
                       <div className="flex items-center gap-2 text-[10px]">
                         <span className="text-[#E8783C] font-bold uppercase">
-                          {COVER_STYLE_OPTIONS.find((o) => o.id === studioTheme.slots.cover)?.label || 'Cover'}
+                          {SHOWCASE_PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'Edition'}
                         </span>
                         <span className="text-stone-600">·</span>
-                        <span className="text-stone-300 uppercase">
-                          {DISH_CARD_OPTIONS.find((o) => o.id === studioTheme.slots.dishCard)?.label || 'Cards'}
+                        <span className="text-stone-300 uppercase font-mono">
+                          {studioTheme.mode}
                         </span>
                       </div>
                     </div>
 
+                    {/* Cover vs Menu Dishes Section Switcher */}
+                    <div className="w-full grid grid-cols-2 gap-1.5 mb-3 bg-[#1D2723] p-1 rounded-xl border border-white/10">
+                      <button
+                        type="button"
+                        onClick={() => scrollToSection('cover')}
+                        className={`py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          previewSection === 'cover'
+                            ? 'bg-[#E8783C] text-white shadow-xs'
+                            : 'text-[#AAB7B2] hover:text-white'
+                        }`}
+                      >
+                        <Eye size={12} /> Cover Page
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => scrollToSection('dishes')}
+                        className={`py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          previewSection === 'dishes'
+                            ? 'bg-[#E8783C] text-white shadow-xs'
+                            : 'text-[#AAB7B2] hover:text-white'
+                        }`}
+                      >
+                        <Utensils size={12} /> Menu Dishes
+                      </button>
+                    </div>
+
                     {/* Premium Realistic iPhone Mockup */}
-                    <div className="w-full flex justify-center py-2">
+                    <div className="w-full flex justify-center py-1">
                       <PremiumIPhoneMockup
-                        className="w-[270px] sm:w-[300px]"
+                        className="w-[285px] sm:w-[315px]"
                         statusBarTheme={studioTheme.mode === 'dark' ? 'light' : 'dark'}
                       >
-                        <div className="w-full h-full overflow-y-auto">
+                        <div
+                          ref={phoneScrollRef}
+                          className="w-full h-full overflow-y-auto mq-showcase-preview-frame"
+                        >
                           <MenuTemplateRenderer
                             templateId={restaurantData.templateId}
                             theme={studioTheme}
                             restaurant={{
                               name: restaurantData.name || 'Your Restaurant',
                               tagline: restaurantData.tagline || 'Exquisite Culinary Dining',
-                              cuisine: (restaurantData as any).cuisine || 'Multi-Cuisine',
+                              cuisine: (restaurantData as any).cuisine || 'North Indian • Mughlai • Tandoor',
                               phone: restaurantData.phone || '+91 98765 43210',
-                              address: restaurantData.address || 'Connaught Place, New Delhi',
+                              address: restaurantData.address || 'Diplomatic Enclave, Chanakyapuri, New Delhi',
                               city: restaurantData.city || 'New Delhi',
                               logo: restaurantData.logoUrl,
                             }}
                             categories={previewCategories}
                             items={previewItems}
-                            compact={true}
+                            compact={false}
                           />
                         </div>
                       </PremiumIPhoneMockup>
@@ -1596,7 +2009,7 @@ export default function OnboardingWizard() {
 
                     {/* Preview status info */}
                     <div className="mt-2 text-center text-[10px] text-stone-400">
-                      ✨ <span className="text-white font-medium">Chef Photography Active</span> · Changes reflect live in viewport
+                      ✨ <span className="text-white font-medium">Signature Edition Rendering</span> · Interactive Live Phone View
                     </div>
                   </div>
                 </div>
@@ -1620,6 +2033,7 @@ export default function OnboardingWizard() {
                     <div className="w-full flex items-center justify-between px-1">
                       <span className="text-xs font-mono uppercase text-[#E8783C] font-bold tracking-wider flex items-center gap-1.5">
                         <Sparkles size={14} /> Table Plaque Artwork
+                        {qrReady && <LottieMoment moment="qr-activation-success" loop={false} className="w-6 h-6" />}
                       </span>
                       {qrReady && (
                         <button
@@ -1698,6 +2112,12 @@ export default function OnboardingWizard() {
                         <p className="text-[11px] text-[#AAB7B2]">
                           Locks your dishes, prices, and activates your permanent table QR standee.
                         </p>
+                        {qrError && (
+                          <div className="flex items-center justify-center gap-1.5 text-[11px] text-rose-400 pt-1">
+                            <LottieMoment moment="error" loop={false} className="w-6 h-6" />
+                            <span>Could not save your menu. Your details are safe — please try again.</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1707,23 +2127,25 @@ export default function OnboardingWizard() {
                     <div className="w-full flex items-center justify-between px-1 text-xs font-mono text-[#AAB7B2]">
                       <span>LIVE CUSTOMER MENU</span>
                       <span className="text-[#E8783C] font-bold">
-                        {COVER_STYLE_OPTIONS.find((o) => o.id === studioTheme.slots.cover)?.label || 'Studio Design'}
+                        {studioTheme.signatureId
+                          ? (PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'Signature Design')
+                          : (COVER_STYLE_OPTIONS.find((o) => o.id === studioTheme.slots.cover)?.label || 'Studio Design')}
                       </span>
                     </div>
 
                     <div className="w-full flex justify-center py-1">
                       <PremiumIPhoneMockup
-                        className="w-[270px] sm:w-[300px]"
+                        className="w-[285px] sm:w-[315px]"
                         statusBarTheme={previewTheme.mode === 'dark' ? 'light' : 'dark'}
                       >
-                        <div className="w-full h-full overflow-y-auto">
+                        <div className="w-full h-full overflow-y-auto mq-showcase-preview-frame">
                           <MenuTemplateRenderer
                             templateId={restaurantData.templateId}
                             theme={previewTheme}
                             restaurant={{
                               name: restaurantData.name || 'Your Restaurant',
                               tagline: restaurantData.tagline,
-                              cuisine: (restaurantData as any).cuisine,
+                              cuisine: (restaurantData as any).cuisine || 'North Indian • Mughlai • Tandoor',
                               phone: restaurantData.phone,
                               address: restaurantData.address,
                               city: restaurantData.city,
@@ -1731,7 +2153,7 @@ export default function OnboardingWizard() {
                             }}
                             categories={previewCategories}
                             items={previewItems}
-                            compact={true}
+                            compact={false}
                           />
                         </div>
                       </PremiumIPhoneMockup>
