@@ -1,0 +1,46 @@
+# Production stack for the Oracle Always Free VM.
+#
+#   backend      the Node API (built from ../backend)
+#   cloudflared  outbound-only tunnel that publishes the API at api.menusqr.in
+#
+# The API port is never published on the host: only cloudflared can reach it, over the
+# compose network, so there is nothing to open in the VM firewall except SSH.
+#
+# Needs two env files on the VM (neither is committed):
+#   ../backend/.env   the API's environment (same variables Render had)
+#   .env              next to this file, containing TUNNEL_TOKEN=...
+
+services:
+  backend:
+    build: ../backend
+    container_name: menusqr-backend
+    restart: unless-stopped
+    env_file: ../backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      # Behind Cloudflare: rate limits and lockouts must key on the real client IP.
+      TRUST_PROXY: "true"
+    volumes:
+      # Legacy local uploads survive container rebuilds.
+      - menusqr-uploads:/app/uploads
+    expose:
+      - "3001"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: menusqr-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in deploy/.env}
+    depends_on:
+      - backend
+
+volumes:
+  menusqr-uploads:

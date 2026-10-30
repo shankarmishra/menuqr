@@ -144,6 +144,14 @@ test('Storage: S3 driver request signing', async (t) => {
     );
   });
 
+  await t.test('an endpoint with a path prefix (Supabase) is signed and requested with that prefix', () => {
+    const supabase = createS3Driver({ ...config, endpoint: 'https://proj.storage.supabase.co/storage/v1/s3/', region: 'ap-southeast-1' });
+    const req = supabase.buildSignedRequest('PUT', 'dishes/a.webp', { body: Buffer.from('x'), contentType: 'image/webp' });
+    assert.equal(req.url, 'https://proj.storage.supabase.co/storage/v1/s3/menuqr-assets/dishes/a.webp');
+    assert.equal(req.canonicalRequest.split('\n')[1], '/storage/v1/s3/menuqr-assets/dishes/a.webp');
+    assert.equal(req.headers.host, 'proj.storage.supabase.co');
+  });
+
   await t.test('public URLs encode path segments per RFC 3986', () => {
     assert.equal(driver.url('dishes/a b~c.webp'), 'https://cdn.example.com/dishes/a%20b~c.webp');
     assert.ok(!driver.url('dishes/a b.webp').includes('+'), 'space must encode as %20, never +');

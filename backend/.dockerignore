@@ -1,0 +1,7 @@
+node_modules
+.env
+.env.*
+test
+e2e_api_tests.mjs
+*.log
+README.md
