@@ -82,3 +82,15 @@ menusqr.in-audit/
 
 temp_otp_session.json
 !frontend/public/uploads/shobharam/
+
+# Deploy secrets and per-host files (the VM owns these; examples are committed)
+deploy/.env
+deploy/cloudflared/config.yml
+deploy/cloudflared/*.json
+*.pem
+.cloudflared/
+
+# Build and tooling artifacts
+*.tsbuildinfo
+.claude/
+pw-profile/
