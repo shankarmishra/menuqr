@@ -19,7 +19,7 @@ sudo usermod -aG docker "$USER"   # log out and back in afterwards
 mkdir -p ~/menuqr/backend ~/menuqr/deploy
 ```
 
-Create two files on the VM. Neither is committed to Git.
+Create these files on the VM. None are committed to Git.
 
 `~/menuqr/backend/.env` is the API environment. Copy every variable from the old host, then make
 sure these are set:
@@ -35,13 +35,22 @@ S3_SECRET_ACCESS_KEY=...
 ASSET_BASE_URL=...
 ```
 
-`~/menuqr/deploy/.env` holds the tunnel token from Cloudflare Zero Trust:
+The tunnel is created with the `cloudflared` CLI, so no Cloudflare payment method or Zero Trust
+subscription is needed:
 
-```
-TUNNEL_TOKEN=...
+```bash
+cloudflared tunnel login                              # authorize the menusqr.in zone in a browser
+cloudflared tunnel create menusqr-api                 # prints the tunnel id, writes ~/.cloudflared/<id>.json
+cloudflared tunnel route dns menusqr-api api-new.menusqr.in
+cp ~/menuqr/deploy/cloudflared/config.example.yml ~/menuqr/deploy/cloudflared/config.yml   # then put the id in
 ```
 
-In the tunnel's "Public Hostname" settings, route the hostname to `http://backend:3001`.
+## Cutover
+
+1. Start the stack and test `https://api-new.menusqr.in/api/health`.
+2. Add `api.menusqr.in` to `cloudflared/config.yml` ingress, run
+   `cloudflared tunnel route dns --overwrite-dns menusqr-api api.menusqr.in`, restart `cloudflared`.
+3. Keep the old host for a few days as a fallback.
 
 ## GitHub secrets
 

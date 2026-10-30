@@ -1,0 +1,10 @@
+# Copy to config.yml on the VM and replace TUNNEL_ID with the id printed by
+# `cloudflared tunnel create menusqr-api` (also the name of the .json credentials file).
+tunnel: TUNNEL_ID
+credentials-file: /etc/cloudflared/creds/TUNNEL_ID.json
+
+ingress:
+  # Cutover test hostname first; add api.menusqr.in here once it is verified.
+  - hostname: api-new.menusqr.in
+    service: http://backend:3001
+  - service: http_status:404

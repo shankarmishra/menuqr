@@ -4,11 +4,14 @@
 #   cloudflared  outbound-only tunnel that publishes the API at api.menusqr.in
 #
 # The API port is never published on the host: only cloudflared can reach it, over the
-# compose network, so there is nothing to open in the VM firewall except SSH.
+# compose network, so the only inbound port the VM needs is SSH.
 #
-# Needs two env files on the VM (neither is committed):
-#   ../backend/.env   the API's environment (same variables Render had)
-#   .env              next to this file, containing TUNNEL_TOKEN=...
+# The tunnel is "locally managed" (created with the cloudflared CLI), which works on a plain
+# free Cloudflare account without a Zero Trust subscription. Files needed on the VM, none of
+# them committed:
+#   ../backend/.env                 the API's environment (same variables Render had)
+#   ~/.cloudflared/<tunnel-id>.json the tunnel credentials written by `cloudflared tunnel create`
+#   ./cloudflared/config.yml        copy of cloudflared/config.example.yml with the tunnel id filled in
 
 services:
   backend:
@@ -21,11 +24,14 @@ services:
       PORT: "3001"
       # Behind Cloudflare: rate limits and lockouts must key on the real client IP.
       TRUST_PROXY: "true"
+      # The VM has 1 GB of RAM; keep Node's heap well inside it.
+      NODE_OPTIONS: "--max-old-space-size=384"
     volumes:
       # Legacy local uploads survive container rebuilds.
       - menusqr-uploads:/app/uploads
     expose:
       - "3001"
+    mem_limit: 640m
     logging:
       driver: json-file
       options:
@@ -36,9 +42,10 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: menusqr-tunnel
     restart: unless-stopped
-    command: tunnel --no-autoupdate run
-    environment:
-      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in deploy/.env}
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - ${HOME}/.cloudflared:/etc/cloudflared/creds:ro
     depends_on:
       - backend
 
