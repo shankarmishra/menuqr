@@ -454,6 +454,11 @@ function writeRoute(routePath, html) {
   fs.writeFileSync(htmlFilePath, html, 'utf-8');
 }
 
+// SSR pages without a hand-written entry above (generated landing pages) are still written out.
+Object.keys(ssrPages).forEach((p) => {
+  if (!routes.some((r) => r.path === p)) routes.push({ path: p });
+});
+
 // Process public routes
 routes.forEach((route) => {
   const canonicalUrl = `${DOMAIN}${route.path === '/' ? '' : route.path}`;

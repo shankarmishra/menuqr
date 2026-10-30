@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import SiteHeader from '../../components/marketing/SiteHeader';
+import { trackBeginCheckout } from '../../analytics/analytics';
 
 export default function PurchaseReviewPage() {
   const navigate = useNavigate();
@@ -22,6 +23,11 @@ export default function PurchaseReviewPage() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Order not found');
         setOrder(data);
+        const value = Number(data.amount);
+        if (Number.isFinite(value)) {
+          try { sessionStorage.setItem(`ga_value_${orderId}`, String(value)); } catch { /* optional */ }
+        }
+        trackBeginCheckout({ planId: String(data.plan_id || data.planId || 'plan') }, Number.isFinite(value) ? value : undefined);
       } catch (err: any) {
         setError(err.message);
       } finally {

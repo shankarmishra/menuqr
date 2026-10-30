@@ -6,6 +6,8 @@ import HomePage from './pages/HomePage';
 import PricingPage from './pages/purchase/PricingPage';
 import DigitalQrMenu from './pages/public/seo/DigitalQrMenu';
 import RestaurantQrMenu from './pages/public/seo/RestaurantQrMenu';
+import NichePage from './pages/public/seo/NichePage';
+import { NICHE_PAGES, nichePath } from './pages/public/seo/nichePages';
 import DigitalMenuForRestaurants from './pages/public/seo/DigitalMenuForRestaurants';
 import QrMenuForRestaurants from './pages/public/seo/QrMenuForRestaurants';
 import RestaurantDigitalMenu from './pages/public/seo/RestaurantDigitalMenu';
@@ -37,6 +39,8 @@ const pages: Record<string, () => ReactElement> = {
   '/terms': () => <TermsPage />,
   '/refund-cancellation': () => <RefundPolicyPage />,
 };
+
+for (const page of NICHE_PAGES) pages[nichePath(page.slug)] = () => <NichePage page={page} />;
 
 export const ssrPaths = Object.keys(pages);
 

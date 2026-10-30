@@ -12,6 +12,8 @@ import PricingPage from './pages/purchase/PricingPage';
 // SEO Landing Pages (Statically bundled for instant prerender hydration)
 import DigitalQrMenu from './pages/public/seo/DigitalQrMenu';
 import RestaurantQrMenu from './pages/public/seo/RestaurantQrMenu';
+import NichePage from './pages/public/seo/NichePage';
+import { NICHE_PAGES, nichePath } from './pages/public/seo/nichePages';
 import DigitalMenuForRestaurants from './pages/public/seo/DigitalMenuForRestaurants';
 import QrMenuForRestaurants from './pages/public/seo/QrMenuForRestaurants';
 import RestaurantDigitalMenu from './pages/public/seo/RestaurantDigitalMenu';
@@ -318,6 +320,9 @@ function PublicAppRoutes() {
         <Route path="/qr-menu-for-restaurants" element={<QrMenuForRestaurants />} />
         <Route path="/restaurant-digital-menu" element={<RestaurantDigitalMenu />} />
         <Route path="/qr-ordering-for-restaurants" element={<QrOrderingForRestaurants />} />
+        {NICHE_PAGES.map((page) => (
+          <Route key={page.slug} path={nichePath(page.slug)} element={<NichePage page={page} />} />
+        ))}
         
         {/* Pricing & Alias Routes */}
         <Route path="/plans" element={<PricingPage />} />

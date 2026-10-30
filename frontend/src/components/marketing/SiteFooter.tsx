@@ -17,6 +17,17 @@ const footerLinks = [
     ]
   },
   {
+    title: "Solutions",
+    links: [
+      { label: "QR Menu for Cafés", href: "/qr-menu-for-cafes" },
+      { label: "QR Menu for Dhabas", href: "/qr-menu-for-dhabas" },
+      { label: "QR Menu for Bars & Pubs", href: "/qr-menu-for-bars-and-pubs" },
+      { label: "QR Menu for Hotels", href: "/qr-menu-for-hotels" },
+      { label: "QR Menu for Bakeries", href: "/qr-menu-for-bakeries" },
+      { label: "QR Menu for Food Trucks", href: "/qr-menu-for-food-trucks" },
+    ]
+  },
+  {
     title: "Company",
     links: [
       { label: "About MenusQR", href: "/about" },
@@ -142,7 +153,7 @@ export default function SiteFooter() {
           </motion.div>
 
           {/* Links Grid */}
-          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-8">
             {footerLinks.map((column, idx) => (
               <motion.div key={idx} variants={itemVariants} className="flex flex-col">
                 <h4 className="font-semibold text-menusqr-white mb-6 tracking-wide">{column.title}</h4>
