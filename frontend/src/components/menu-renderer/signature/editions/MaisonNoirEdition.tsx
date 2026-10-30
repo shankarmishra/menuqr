@@ -523,25 +523,20 @@ const DecoMichelinSeal: React.FC<{ size?: number }> = ({ size = 110 }) => (
         return <circle key={deg} cx={x} cy={y} r="1.2" fill="url(#noirSealGold)" />;
       })}
 
-      {/* Motto Ribbon */}
+      {/* Motto Ribbon with 3 Faceted Diamond Jewels */}
       <path
         d="M 30 88 L 130 88 L 124 99 L 36 99 Z"
         fill="#0d0c10"
         stroke="url(#noirSealGold)"
         strokeWidth="0.8"
       />
-      <text
-        x="80"
-        y="95.5"
-        textAnchor="middle"
-        fill="url(#noirSealGold)"
-        fontFamily="var(--mq-font-display, serif)"
-        fontSize="5.5"
-        fontWeight="600"
-        letterSpacing="0.22em"
-      >
-        EXCELLENCE &amp; TRADITION
-      </text>
+      <g fill="url(#noirSealGold)">
+        <polygon points="80,91 83,94 80,97 77,94" />
+        <polygon points="64,91.5 66.5,94 64,96.5 61.5,94" opacity="0.8" />
+        <polygon points="96,91.5 98.5,94 96,96.5 93.5,94" opacity="0.8" />
+        <line x1="42" y1="94" x2="57" y2="94" stroke="url(#noirSealGold)" strokeWidth="0.6" opacity="0.6" />
+        <line x1="103" y1="94" x2="118" y2="94" stroke="url(#noirSealGold)" strokeWidth="0.6" opacity="0.6" />
+      </g>
     </svg>
   </div>
 );
@@ -606,10 +601,10 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
           </div>
 
           {/* STRICT DEDICATED LOCATION: Architectural Central Logo Cartouche directly above title */}
-          <DecoLogoCartouche size={compact ? 116 : undefined}>
+          <DecoLogoCartouche size={compact ? 130 : undefined}>
             <BrandMark
               restaurant={restaurant}
-              size={compact ? 72 : 100}
+              size={compact ? 84 : 116}
               className="mq-ed-mark-in-cartouche"
             />
           </DecoLogoCartouche>
@@ -704,7 +699,7 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
                     <div className="mq-ed-noir-card-header">
                       <div className="mq-ed-noir-card-identity">
                         <DietMark type={item.dietType} />
-                        <h3 className="mq-ed-noir-card-name">{item.name}</h3>
+                        <h3 className="mq-ed-noir-card-name mq-dish-name">{item.name}</h3>
                       </div>
                       <div className="mq-ed-noir-card-price-slot">
                         <DishPrice item={item} readOnly={readOnly} />
@@ -712,7 +707,7 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
                     </div>
 
                     {item.description && (
-                      <p className="mq-ed-noir-card-desc">{cleanDescription(item)}</p>
+                      <p className="mq-ed-noir-card-desc mq-dish-desc">{cleanDescription(item)}</p>
                     )}
 
                     {/* Sommelier wine pairing ribbon pinned to bottom of card */}

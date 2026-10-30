@@ -512,7 +512,7 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
                     <div className="mq-ed-herb-card-head">
                       <div className="mq-ed-herb-card-name-group">
                         <DietMark type={item.dietType} />
-                        <h3 className="mq-ed-herb-card-name">{item.name}</h3>
+                        <h3 className="mq-ed-herb-card-name mq-dish-name">{item.name}</h3>
                       </div>
                       <span className="mq-ed-herb-card-price">
                         <DishPrice item={item} readOnly={readOnly} />
@@ -520,7 +520,7 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
                     </div>
 
                     {item.description && (
-                      <p className="mq-ed-herb-card-desc">{cleanDescription(item)}</p>
+                      <p className="mq-ed-herb-card-desc mq-dish-desc">{cleanDescription(item)}</p>
                     )}
 
                     {/* Botanical infusion provenance tag */}

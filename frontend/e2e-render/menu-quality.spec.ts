@@ -62,8 +62,8 @@ test.describe('menu renderer quality', () => {
       for (const root of document.querySelectorAll('.mq-root')) {
         for (const element of root.querySelectorAll('*')) {
           const text = (element.textContent ?? '').trim();
-          // Only leaf elements that actually paint text matter.
-          if (!text || element.children.length > 0) continue;
+          // Only leaf elements that actually paint content text matter (skip decorative SVGs and aria-hidden glyphs).
+          if (!text || element.children.length > 0 || element.closest('svg') || element.closest('[aria-hidden="true"]')) continue;
 
           const size = Number.parseFloat(getComputedStyle(element).fontSize);
           if (Number.isFinite(size) && size < 11.5) {

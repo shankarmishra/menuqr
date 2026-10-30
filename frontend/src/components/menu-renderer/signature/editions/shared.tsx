@@ -84,11 +84,11 @@ export const Leader: React.FC<{
     <article className={['mq-ed-leader', className].filter(Boolean).join(' ')}>
       <div className="mq-ed-leader-head">
         {showDiet && <DietMark type={item.dietType} />}
-        <h4 className="mq-ed-leader-name">{item.name}</h4>
+        <h4 className="mq-ed-leader-name mq-dish-name">{item.name}</h4>
         <span className="mq-ed-leader-rule" aria-hidden="true" />
         <DishPrice item={item} readOnly={readOnly} />
       </div>
-      {description && <p className="mq-ed-leader-desc">{description}</p>}
+      {description && <p className="mq-ed-leader-desc mq-dish-desc">{description}</p>}
       {showFlags && (
         <div className="mq-ed-leader-flags">
           <DishFlags item={item} />
@@ -126,9 +126,9 @@ export const PhotoDish: React.FC<{
         {eyebrow && <span className="mq-ed-eyebrow">{eyebrow}</span>}
         <div className="mq-ed-photo-dish-title">
           <DietMark type={item.dietType} />
-          <h4 className="mq-ed-leader-name">{item.name}</h4>
+          <h4 className="mq-ed-leader-name mq-dish-name">{item.name}</h4>
         </div>
-        {description && <p className="mq-ed-leader-desc">{description}</p>}
+        {description && <p className="mq-ed-leader-desc mq-dish-desc">{description}</p>}
         <div className="mq-ed-photo-dish-foot">
           <DishPrice item={item} readOnly={readOnly} />
           <DishFlags item={item} />
@@ -176,7 +176,14 @@ export const BrandMark: React.FC<{
     data-testid="mq-cover-mark"
   >
     {restaurant.logoUrl ? (
-      <img src={restaurant.logoUrl} alt={restaurant.name} loading="eager" decoding="async" />
+      <img
+        src={restaurant.logoUrl}
+        alt={restaurant.name}
+        width={size}
+        height={size}
+        loading="eager"
+        decoding="async"
+      />
     ) : (
       <span className="mq-ed-mark-letters">{initials(restaurant.name)}</span>
     )}

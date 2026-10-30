@@ -437,14 +437,14 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
                       <div className="mq-ed-carta-showcase-top">
                         <div className="mq-ed-carta-showcase-identity">
                           <DietMark type={item.dietType} />
-                          <h4 className="mq-ed-carta-showcase-name">{item.name}</h4>
+                          <h4 className="mq-ed-carta-showcase-name mq-dish-name">{item.name}</h4>
                         </div>
                         <div className="mq-ed-carta-showcase-stamp">
                           <DishPrice item={item} readOnly={readOnly} />
                         </div>
                       </div>
 
-                      {desc && <p className="mq-ed-carta-showcase-desc">{desc}</p>}
+                      {desc && <p className="mq-ed-carta-showcase-desc mq-dish-desc">{desc}</p>}
 
                       <div className="mq-ed-carta-item-flags">
                         {item.isBestseller && (
@@ -502,10 +502,10 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
                         return (
                           <article key={item.id} className="mq-ed-carta-row">
                             {/* TIER 1: Name, Dot Leader Line, and Stamped Price Tag */}
-                            <div className="mq-ed-carta-row-header">
+                            <div className="mq-ed-row-header mq-ed-carta-row-header">
                               <div className="mq-ed-carta-row-identity">
                                 <DietMark type={item.dietType} />
-                                <h4 className="mq-ed-carta-item-name">{item.name}</h4>
+                                <h4 className="mq-ed-carta-item-name mq-dish-name">{item.name}</h4>
                               </div>
 
                               {/* Dotted Leader Line stretching between dish name and price */}
@@ -519,7 +519,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
 
                             {/* TIER 2: Full-width un-squashed description (never wrapped 1 word/line) */}
                             {description && (
-                              <p className="mq-ed-carta-item-desc">{description}</p>
+                              <p className="mq-ed-carta-item-desc mq-dish-desc">{description}</p>
                             )}
 
                             {/* TIER 3: Badges and Dietary Flags */}

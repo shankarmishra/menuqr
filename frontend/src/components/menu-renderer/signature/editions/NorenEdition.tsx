@@ -322,14 +322,14 @@ export const NorenEdition: React.FC<EditionProps> = ({
                     <div className="mq-ed-noren-card-head">
                       <div className="mq-ed-noren-card-name-group">
                         <DietMark type={dish.dietType} />
-                        <h4 className="mq-ed-noren-card-name">{dish.name}</h4>
+                        <h4 className="mq-ed-noren-card-name mq-dish-name">{dish.name}</h4>
                       </div>
                       <div className="mq-ed-noren-card-price">
                         <DishPrice item={dish} readOnly={readOnly} />
                       </div>
                     </div>
                     {cleanDescription(dish) && (
-                      <p className="mq-ed-noren-card-desc">{cleanDescription(dish)}</p>
+                      <p className="mq-ed-noren-card-desc mq-dish-desc">{cleanDescription(dish)}</p>
                     )}
                     <div className="mq-ed-noren-card-accent">
                       <span className="noren-pill-red">名物</span>
@@ -384,7 +384,7 @@ export const NorenEdition: React.FC<EditionProps> = ({
                         <div className="mq-ed-noren-row-head">
                           <div className="mq-ed-noren-row-identity">
                             <DietMark type={item.dietType} />
-                            <h4 className="mq-ed-noren-name">{item.name}</h4>
+                            <h4 className="mq-ed-noren-name mq-dish-name">{item.name}</h4>
                           </div>
                           <span className="mq-ed-noren-leader-hair" aria-hidden="true" />
                           <div className="mq-ed-noren-price">
@@ -392,7 +392,7 @@ export const NorenEdition: React.FC<EditionProps> = ({
                           </div>
                         </div>
 
-                        {description && <p className="mq-ed-noren-desc">{description}</p>}
+                        {description && <p className="mq-ed-noren-desc mq-dish-desc">{description}</p>}
 
                         {!compact && (
                           <div className="mq-ed-noren-tags">

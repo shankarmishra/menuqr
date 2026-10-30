@@ -116,7 +116,7 @@
   align-items: baseline;
   gap: var(--mq-space-2);
   margin: 0;
-  font-size: var(--mq-text-xs);
+  font-size: max(12px, var(--mq-text-xs));
   line-height: var(--mq-leading-relaxed);
   color: var(--mq-color-text-muted);
 }
@@ -124,6 +124,7 @@
 .mq-ed-contact-sep,
 .mq-ed-teaser-sep {
   opacity: 0.55;
+  font-size: max(12px, var(--mq-text-xs));
 }
 
 .mq-ed-teaser {
@@ -132,7 +133,7 @@
   justify-content: center;
   gap: var(--mq-space-2);
   margin: 0;
-  font-size: var(--mq-text-xs);
+  font-size: max(12px, var(--mq-text-xs));
   letter-spacing: var(--mq-tracking-caps);
   text-transform: uppercase;
   color: var(--mq-color-text-muted);
@@ -378,13 +379,13 @@
 }
 
 .mq-ed-noir-prestige-pip {
-  font-size: 0.5rem;
+  font-size: 0.75rem;
   color: #fcf6ba;
   opacity: 0.8;
 }
 
 .mq-ed-noir-edition-label {
-  font-size: var(--mq-text-xs);
+  font-size: max(12px, var(--mq-text-xs));
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--mq-color-accent);
@@ -393,7 +394,7 @@
 
 .mq-ed-noir-cuisine {
   margin: 0;
-  font-size: var(--mq-text-xs);
+  font-size: max(12px, var(--mq-text-xs));
   letter-spacing: var(--mq-tracking-caps);
   text-transform: uppercase;
   color: var(--mq-color-accent);
@@ -404,9 +405,9 @@
   position: relative;
   display: inline-grid;
   place-items: center;
-  margin-block: clamp(10px, 2.5cqw, 20px);
-  width: clamp(148px, 36cqw, 196px);
-  height: clamp(148px, 36cqw, 196px);
+  margin-block: clamp(12px, 3cqw, 24px);
+  width: clamp(164px, 40cqw, 216px);
+  height: clamp(164px, 40cqw, 216px);
 }
 
 .mq-ed-noir-cartouche-svg {
@@ -423,8 +424,8 @@
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 66%;
-  height: 66%;
+  width: 72%;
+  height: 72%;
   border-radius: 50%;
   overflow: hidden;
 }
@@ -573,7 +574,7 @@
 }
 
 .mq-ed-noir-teaser {
-  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
+  font-size: max(12px, clamp(0.75rem, 1.8cqw, 0.85rem));
   letter-spacing: clamp(0.06em, 0.6cqw, 0.16em);
   text-transform: uppercase;
   color: rgba(223, 219, 207, 0.7);
@@ -587,7 +588,7 @@
 .mq-ed-noir-contact {
   position: relative;
   z-index: 4;
-  font-size: clamp(0.6rem, 1.7cqw, 0.75rem);
+  font-size: max(12px, clamp(0.75rem, 1.8cqw, 0.85rem));
   letter-spacing: clamp(0.04em, 0.5cqw, 0.12em);
   text-transform: uppercase;
   color: rgba(223, 219, 207, 0.82);
@@ -685,7 +686,7 @@
 .mq-ed-noir-course-service-name {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: 0.65rem;
+  font-size: max(12px, 0.75rem);
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--noir-text-gold, #e5c158);
@@ -816,7 +817,7 @@
   right: var(--mq-space-2);
   padding: 3px 9px;
   font-family: var(--mq-font-display);
-  font-size: 0.625rem;
+  font-size: max(12px, 0.75rem);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   background: rgba(10, 12, 13, 0.92);
@@ -907,7 +908,7 @@
 
 .mq-ed-noir-ribbon-label {
   font-family: var(--mq-font-display);
-  font-size: 0.625rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -915,7 +916,7 @@
 }
 
 .mq-ed-noir-ribbon-badge {
-  font-size: 0.58rem;
+  font-size: max(12px, 0.75rem);
   padding: 1px 6px;
   background: rgba(212, 175, 55, 0.15);
   border: 1px solid rgba(252, 246, 186, 0.35);
@@ -927,7 +928,7 @@
 
 .mq-ed-noir-ribbon-text {
   margin: 0;
-  font-size: var(--mq-text-xs);
+  font-size: max(12px, var(--mq-text-xs));
   color: var(--noir-text-muted, rgba(223, 219, 207, 0.7));
   font-style: italic;
   line-height: 1.4;
@@ -1101,7 +1102,7 @@
 }
 
 .mq-ed-noir .mq-price-label {
-  font-size: 0.6875rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1128,7 +1129,7 @@
   gap: 5px;
   padding: 3px 10px;
   font-family: var(--mq-font-display);
-  font-size: 0.65rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1142,7 +1143,7 @@
 
 .mq-ed-noir .mq-badge::before {
   content: '★';
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   color: #d4af37;
 }
 
@@ -1154,7 +1155,7 @@
 
 .mq-ed-noir .mq-badge-quiet::before {
   content: '◈';
-  font-size: 0.55rem;
+  font-size: 0.75rem;
   color: rgba(212, 175, 55, 0.65);
 }
 
@@ -1214,7 +1215,7 @@
   align-items: center;
   gap: var(--mq-space-2);
   font-family: var(--mq-font-display);
-  font-size: 0.68rem;
+  font-size: max(12px, 0.75rem);
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--noir-text-gold, #e5c158);
@@ -1278,7 +1279,7 @@
 
 .mq-ed-noir-flight-vol {
   font-family: var(--mq-font-display);
-  font-size: 0.7rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   letter-spacing: 0.18em;
   color: var(--noir-text-gold, #e5c158);
@@ -1313,7 +1314,7 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: var(--mq-space-2) var(--mq-space-3);
-  font-size: 0.6875rem;
+  font-size: max(12px, 0.75rem);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--noir-text-gold, #e5c158);
@@ -1324,6 +1325,7 @@
 
 .mq-ed-noir-tasting-pill {
   white-space: nowrap;
+  font-size: max(12px, 0.75rem);
 }
 
 /* -----------------------------------------------------------------------------
@@ -1357,7 +1359,7 @@
 
 .mq-ed-noir-foot-sub {
   margin: 0;
-  font-size: var(--mq-text-xs);
+  font-size: max(12px, var(--mq-text-xs));
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--noir-text-gold, #e5c158);
@@ -1385,7 +1387,7 @@
 
 .mq-ed-noir-brigade-title {
   font-family: var(--mq-font-display);
-  font-size: 0.72rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1393,7 +1395,7 @@
 }
 
 .mq-ed-noir-brigade-role {
-  font-size: 0.65rem;
+  font-size: max(12px, 0.75rem);
   letter-spacing: 0.1em;
   color: var(--noir-text-muted, rgba(223, 219, 207, 0.65));
   font-style: italic;
@@ -1406,7 +1408,7 @@
   gap: var(--mq-space-2);
   max-width: 54ch;
   margin-top: var(--mq-space-3);
-  font-size: 0.75rem;
+  font-size: max(12px, 0.75rem);
   line-height: var(--mq-leading-relaxed);
   color: var(--noir-text-muted, rgba(223, 219, 207, 0.65));
 }
@@ -1414,6 +1416,7 @@
 .mq-ed-noir-disclosure-line {
   margin: 0;
   font-style: italic;
+  font-size: max(12px, 0.75rem);
 }
 
 .mq-ed-noir-disclosure-line strong {
@@ -1423,7 +1426,7 @@
 }
 
 .mq-ed-noir-provenance {
-  font-size: 0.6875rem;
+  font-size: max(12px, 0.75rem);
   opacity: 0.85;
 }
 
@@ -1879,7 +1882,7 @@
   background: rgba(250, 248, 242, 0.95);
   border: 1px solid rgba(53, 94, 59, 0.4);
   font-family: var(--mq-font-display);
-  font-size: 0.6rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1940,7 +1943,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.65rem;
+  font-size: max(12px, 0.75rem);
   color: #3e6347;
   font-style: italic;
 }
@@ -2017,7 +2020,7 @@
 
 .mq-ed-herb-section-count {
   font-family: var(--mq-font-body);
-  font-size: 0.65rem;
+  font-size: max(12px, 0.75rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #6b6255;
@@ -2147,7 +2150,7 @@
   gap: 5px;
   padding: 2px 8px;
   font-family: var(--mq-font-display);
-  font-size: 0.625rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -2187,7 +2190,7 @@
 
 .mq-ed-herb-conservatory-surtitle {
   font-family: var(--mq-font-display);
-  font-size: 0.65rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -2220,7 +2223,7 @@
 
 .mq-ed-herb-conservatory-tags .conservatory-pill {
   font-family: var(--mq-font-display);
-  font-size: 0.65rem;
+  font-size: max(12px, 0.75rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #2b5232;
@@ -2746,7 +2749,7 @@
   padding: 2px 7px;
   background: #c93a2a;
   color: #ffffff;
-  font-size: 0.65rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   border-radius: 2px;
   z-index: 3;
@@ -2811,7 +2814,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.65rem;
+  font-size: max(12px, 0.75rem);
   color: #57534e;
   font-style: italic;
 }
@@ -2824,7 +2827,7 @@
   color: #c93a2a;
   font-weight: 700;
   border-radius: 2px;
-  font-size: 0.6rem;
+  font-size: max(12px, 0.75rem);
   font-style: normal;
 }
 
