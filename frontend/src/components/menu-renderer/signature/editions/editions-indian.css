@@ -3361,15 +3361,39 @@
 
 
 /* ========================================================================================
-   E — BOMBAY CHOWK : Modern Indian Street Food
+   E — BOMBAY CHOWK : Modern Mumbai Street Food, Irani Cafe & Coastal Grill (Masterpiece)
    ======================================================================================== */
 
 .mq-ed-chowk {
-  background-color: var(--mq-color-bg, #161214);
-  color: var(--mq-color-text, #faf8f3);
+  --mq-chowk-bg: var(--mq-color-bg, #0f1318);
+  --mq-chowk-text: var(--mq-color-text, #faf8f3);
+  --mq-chowk-gold: #f59e0b;
+  --mq-chowk-gold-light: #fef08a;
+  --mq-chowk-red: #d83a2d;
+  --mq-chowk-red-dark: #9f1239;
+  --mq-chowk-card-bg: #14181f;
+  --mq-chowk-border: rgba(245, 158, 11, 0.35);
+
+  background-color: var(--mq-chowk-bg);
+  color: var(--mq-chowk-text);
   position: relative;
   container-name: chowk;
+  font-family: var(--mq-font-body, 'Plus Jakarta Sans', system-ui, sans-serif);
+  line-height: var(--mq-leading-normal, 1.5);
+  overflow-x: hidden;
 }
+
+/* Gold & Tomato Red Foil Text Shimmer */
+.mq-ed-chowk-foil-text {
+  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 45%, #ea580c 75%, #d83a2d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.65));
+}
+
+/* ========================================================================================
+   1. COVER: South Bombay Irani Cafe & Marine Drive Gateway
+   ======================================================================================== */
 
 .mq-ed-chowk-cover {
   container-type: inline-size;
@@ -3381,7 +3405,7 @@
   justify-content: space-between;
   align-items: center;
   min-height: min(100svh, 54rem);
-  padding: clamp(1.5rem, 4cqw, 2.5rem) clamp(1rem, 3cqw, 2rem);
+  padding: clamp(1.5rem, 4cqw, 2.75rem) clamp(1rem, 3.5cqw, 2.5rem);
   overflow: hidden;
   text-align: center;
   color: #faf8f3;
@@ -3394,13 +3418,35 @@
   z-index: 1;
   background:
     radial-gradient(
-      ellipse at 50% 38%,
-      rgba(24, 18, 22, 0.65) 0%,
-      rgba(18, 14, 16, 0.88) 65%,
-      #0e0a0c 100%
+      ellipse at 50% 35%,
+      rgba(15, 19, 24, 0.72) 0%,
+      rgba(10, 14, 18, 0.92) 65%,
+      #080a0d 100%
     );
   pointer-events: none;
 }
+
+/* Art Deco Checkerboard Outer Inset Border */
+.mq-ed-chowk-checker-border {
+  position: absolute;
+  inset: clamp(8px, 2cqw, 16px);
+  z-index: 2;
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+  border-radius: 4px;
+}
+
+/* Corner Stepped Ironwork Brackets */
+.mq-ed-chowk-corner {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+.mq-ed-chowk-corner.corner-tl { top: clamp(10px, 2.2cqw, 18px); left: clamp(10px, 2.2cqw, 18px); }
+.mq-ed-chowk-corner.corner-tr { top: clamp(10px, 2.2cqw, 18px); right: clamp(10px, 2.2cqw, 18px); }
+.mq-ed-chowk-corner.corner-bl { bottom: clamp(10px, 2.2cqw, 18px); left: clamp(10px, 2.2cqw, 18px); }
+.mq-ed-chowk-corner.corner-br { bottom: clamp(10px, 2.2cqw, 18px); right: clamp(10px, 2.2cqw, 18px); }
 
 .mq-ed-chowk-cover-body {
   position: relative;
@@ -3409,412 +3455,710 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(0.35rem, 1.8cqw, 0.95rem);
+  gap: clamp(0.5rem, 2cqw, 1.15rem);
   width: 100%;
-  max-width: min(34rem, 100%);
+  max-width: min(38rem, 100%);
   margin-block: auto;
   box-sizing: border-box;
 }
 
+/* Vintage Municipal Transit Stamp */
 .mq-ed-chowk-stamp {
-  display: inline-block;
-  padding: 4px 12px;
-  border: 2px dashed #d83a2d;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border: 1.5px dashed var(--mq-chowk-red);
   color: #fffbf5;
-  background-color: rgba(216, 58, 45, 0.3);
+  background-color: rgba(216, 58, 45, 0.25);
   font-weight: 800;
   text-transform: uppercase;
-  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
+  font-size: clamp(0.75rem, 1.8cqw, 0.82rem);
   letter-spacing: 0.12em;
-  transform: rotate(-1.5deg);
-  border-radius: 2px;
+  transform: rotate(-1deg);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
 }
 
-.mq-ed-chowk-crest {
+/* Cartouche Brand Container */
+.mq-ed-chowk-cartouche {
   position: relative;
   display: inline-grid;
   place-items: center;
-  width: clamp(62px, 15cqw, 92px);
-  height: clamp(62px, 15cqw, 92px);
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.9));
+  margin-block: clamp(0.25rem, 1.5cqw, 0.75rem);
+}
+.mq-ed-chowk-cartouche-logo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
 }
 
 .mq-ed-chowk-title {
   margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: clamp(1.35rem, 6.8cqw, 3.2rem);
+  font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
+  font-size: clamp(1.85rem, 7cqw, 3.4rem);
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #faf8f3;
-  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.85);
-  text-wrap: balance;
-  word-break: break-word;
-  max-width: min(32rem, 90%);
+  line-height: 1.1;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9);
+}
+
+.mq-ed-chowk-bilingual-slogan {
+  font-size: clamp(0.75rem, 1.9cqw, 0.92rem);
+  letter-spacing: 0.14em;
+  color: var(--mq-chowk-gold);
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .mq-ed-chowk-tagline {
   margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: clamp(0.74rem, 2.3cqw, 1.02rem);
+  font-size: clamp(0.82rem, 2.2cqw, 1.05rem);
+  color: rgba(250, 248, 243, 0.85);
+  line-height: var(--mq-leading-relaxed, 1.6);
+  max-width: 32rem;
   font-style: italic;
-  letter-spacing: 0.04em;
-  line-height: var(--mq-leading-relaxed);
-  color: #fcefe6;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-  max-width: min(25rem, 90%);
-  text-wrap: balance;
+}
+
+.mq-ed-chowk-cover-astragal {
+  margin-block: clamp(0.2rem, 1cqw, 0.5rem);
 }
 
 .mq-ed-chowk-teaser {
-  margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: clamp(0.58rem, 1.7cqw, 0.75rem);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #f09c2a;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
-  max-width: min(26rem, 90%);
+  font-size: clamp(0.75rem, 1.8cqw, 0.85rem);
+  letter-spacing: 0.1em;
+  color: var(--mq-chowk-gold);
 }
 
 .mq-ed-chowk-contact {
   position: relative;
   z-index: 4;
   margin-top: auto;
-  font-family: var(--mq-font-display);
-  font-size: clamp(0.6rem, 1.7cqw, 0.75rem);
-  letter-spacing: 0.12em;
-  color: #fcefe6;
-  opacity: 0.9;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  font-size: clamp(0.75rem, 1.8cqw, 0.85rem);
+  color: rgba(250, 248, 243, 0.75);
 }
+
+/* ========================================================================================
+   2. ANNOUNCEMENT & HERITAGE BANNER
+   ======================================================================================== */
+
+.mq-ed-chowk-announce {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #1a1612;
+  border-block: 1px solid var(--mq-chowk-border);
+  padding: 10px 16px;
+  text-align: center;
+  color: #fffbf5;
+  font-size: max(12px, 0.8rem);
+  font-weight: 600;
+}
+.mq-ed-chowk-announce-icon {
+  font-size: 1rem;
+}
+
+.mq-ed-chowk-heritage-banner {
+  background: linear-gradient(180deg, #161b22 0%, #10141a 100%);
+  border: 1px solid var(--mq-chowk-border);
+  border-radius: 8px;
+  padding: clamp(1.25rem, 3cqw, 2rem);
+  margin-bottom: var(--mq-space-8, 2rem);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  text-align: center;
+}
+.mq-ed-chowk-heritage-head {
+  max-width: 44rem;
+  margin: 0 auto clamp(1rem, 2cqw, 1.5rem);
+}
+.mq-ed-chowk-section-eyebrow {
+  display: block;
+  font-size: max(12px, 0.75rem);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mq-chowk-gold);
+  margin-bottom: 6px;
+}
+.mq-ed-chowk-heritage-title {
+  margin: 0 0 8px;
+  font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
+  font-size: clamp(1.15rem, 3.5cqw, 1.65rem);
+  color: #fffbf5;
+}
+.mq-ed-chowk-heritage-desc {
+  margin: 0;
+  font-size: max(12px, 0.85rem);
+  color: rgba(250, 248, 243, 0.78);
+  line-height: var(--mq-leading-relaxed, 1.6);
+}
+.mq-ed-chowk-heritage-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.mq-ed-chowk-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: max(12px, 0.78rem);
+  color: #fef08a;
+}
+.mq-ed-chowk-pill strong {
+  color: var(--mq-chowk-gold);
+}
+
+/* ========================================================================================
+   3. INTERIOR PLATE & MAIN SECTIONS
+   ======================================================================================== */
 
 .mq-ed-chowk-plate {
-  max-width: var(--mq-ed-measure);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 68rem;
   margin-inline: auto;
-  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-12);
+  padding: clamp(1.5rem, 4cqw, 3.5rem) clamp(1rem, 3.5cqw, 2.5rem);
 }
 
-.mq-ed-chowk-course {
+/* Astragal Divider */
+.mq-ed-chowk-astragal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-block: 1rem;
+}
+.mq-ed-chowk-astragal-line {
+  flex: 1;
+  max-width: 70px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.6), transparent);
+}
+.mq-ed-chowk-astragal.is-grand .mq-ed-chowk-astragal-line {
+  max-width: 120px;
+}
+
+/* ========================================================================================
+   4. SIGNATURE SHOWCASE CARDS (DUAL MASTERPIECES)
+   ======================================================================================== */
+
+.mq-ed-chowk-showcase {
+  margin-bottom: clamp(2.5rem, 6cqw, 4.5rem);
+}
+.mq-ed-chowk-showcase-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: clamp(1.5rem, 3cqw, 2.5rem);
+}
+.mq-ed-chowk-showcase-title {
+  margin: 0;
+  font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
+  font-size: clamp(1.4rem, 4cqw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.mq-ed-chowk-showcase-subtitle {
+  margin: 0;
+  max-width: 38rem;
+  font-size: max(12px, 0.88rem);
+  color: rgba(250, 248, 243, 0.8);
+  line-height: var(--mq-leading-relaxed, 1.6);
+}
+
+.mq-ed-chowk-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: clamp(1.25rem, 3cqw, 2rem);
+}
+
+.mq-ed-chowk-card {
   position: relative;
-  margin-bottom: var(--mq-space-10);
-  padding: clamp(1.25rem, 3.5cqw, 2.25rem) clamp(1rem, 3cqw, 2rem);
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(36, 26, 32, 0.6) 0%, rgba(18, 14, 16, 0.85) 85%),
-    #120e10;
-  border: 1px solid rgba(216, 58, 45, 0.35);
-  border-radius: 4px;
-  box-shadow:
-    inset 0 0 24px rgba(0, 0, 0, 0.65),
-    0 8px 32px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(180deg, #151a21 0%, #10141a 100%);
+  border: 1px solid var(--mq-chowk-border);
+  border-radius: 8px;
+  padding: clamp(1rem, 2.5cqw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
   box-sizing: border-box;
 }
 
-.mq-ed-chowk-course-header {
+/* Art Deco Corner Brackets on Card */
+.mq-ed-chowk-card-bracket {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+.mq-ed-chowk-card-bracket.bracket-tl { top: 6px; left: 6px; }
+.mq-ed-chowk-card-bracket.bracket-tr { top: 6px; right: 6px; }
+.mq-ed-chowk-card-bracket.bracket-bl { bottom: 6px; left: 6px; }
+.mq-ed-chowk-card-bracket.bracket-br { bottom: 6px; right: 6px; }
+
+.mq-ed-chowk-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.mq-ed-chowk-card-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(15, 19, 24, 0.88);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--mq-chowk-gold);
+  color: #fffbf5;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: max(12px, 0.75rem);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mq-ed-chowk-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex: 1;
+}
+.mq-ed-chowk-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.mq-ed-chowk-card-title-group {
   display: flex;
   align-items: center;
-  gap: var(--mq-space-3);
-  margin-bottom: clamp(1rem, 2.5cqw, 1.75rem);
-  border-bottom: 2px solid rgba(216, 58, 45, 0.45);
-  padding-bottom: var(--mq-space-2);
+  gap: 8px;
+  flex: 1;
+}
+.mq-ed-chowk-card-name {
+  margin: 0;
+  font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
+  font-size: clamp(1.1rem, 2.5cqw, 1.35rem);
+  font-weight: 800;
+  color: #fffbf5;
+}
+.mq-ed-chowk-card-price-slot {
+  font-family: var(--mq-font-display, 'Cinzel', serif);
+  font-size: clamp(1rem, 2.2cqw, 1.25rem);
+  font-weight: 800;
+  color: var(--mq-chowk-gold);
+  white-space: nowrap;
+}
+.mq-ed-chowk-card-desc {
+  margin: 0;
+  font-size: max(12px, 0.85rem);
+  color: rgba(250, 248, 243, 0.8);
+  line-height: var(--mq-leading-relaxed, 1.6);
 }
 
-.mq-ed-chowk-course-title {
+.mq-ed-chowk-pairing-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(216, 58, 45, 0.15);
+  border: 1px solid rgba(216, 58, 45, 0.35);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: max(12px, 0.78rem);
+  color: #fef08a;
+  line-height: 1.4;
+}
+
+.mq-ed-chowk-card-lore {
   margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: clamp(1.2rem, 4.2cqw, 1.95rem);
+  font-size: max(12px, 0.76rem);
+  color: rgba(250, 248, 243, 0.65);
+  line-height: 1.5;
+  border-top: 1px dashed rgba(245, 158, 11, 0.25);
+  padding-top: 8px;
+}
+.mq-ed-chowk-card-lore em {
+  color: var(--mq-chowk-gold);
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* ========================================================================================
+   5. EDITORIAL ASIDE PLAQUE: THE IRANI CAFE CODE & CHOWPATTY LORE
+   ======================================================================================== */
+
+.mq-ed-chowk-irani-plaque {
+  position: relative;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(26, 33, 42, 0.95) 0%, rgba(13, 17, 22, 0.98) 100%);
+  border: 1.5px solid var(--mq-chowk-gold);
+  border-radius: 10px;
+  padding: clamp(1.5rem, 4cqw, 3rem) clamp(1rem, 3.5cqw, 2.5rem);
+  margin-bottom: clamp(2.5rem, 6cqw, 4.5rem);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
+  text-align: center;
+}
+
+.mq-ed-chowk-plaque-bracket {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+.mq-ed-chowk-plaque-bracket.bracket-tl { top: 8px; left: 8px; }
+.mq-ed-chowk-plaque-bracket.bracket-tr { top: 8px; right: 8px; }
+.mq-ed-chowk-plaque-bracket.bracket-bl { bottom: 8px; left: 8px; }
+.mq-ed-chowk-plaque-bracket.bracket-br { bottom: 8px; right: 8px; }
+
+.mq-ed-chowk-plaque-title {
+  margin: 4px 0 8px;
+  font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
+  font-size: clamp(1.3rem, 3.8cqw, 2rem);
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #faf8f3;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+  color: #fffbf5;
+}
+.mq-ed-chowk-plaque-subtitle {
+  margin: 0 auto clamp(1.25rem, 3cqw, 2rem);
+  max-width: 40rem;
+  font-size: max(12px, 0.88rem);
+  color: rgba(250, 248, 243, 0.78);
+  font-style: italic;
 }
 
+.mq-ed-chowk-plaque-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: clamp(1rem, 2.5cqw, 1.75rem);
+  margin-bottom: clamp(1.25rem, 3cqw, 2rem);
+}
+.mq-ed-chowk-plaque-col {
+  background: rgba(10, 14, 18, 0.6);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 6px;
+  padding: clamp(1rem, 2cqw, 1.4rem);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mq-ed-chowk-col-badge {
+  font-size: max(12px, 0.75rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--mq-chowk-gold);
+  text-transform: uppercase;
+}
+.mq-ed-chowk-col-heading {
+  margin: 0;
+  font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
+  font-size: clamp(1rem, 2cqw, 1.15rem);
+  color: #fffbf5;
+}
+.mq-ed-chowk-col-desc {
+  margin: 0;
+  font-size: max(12px, 0.82rem);
+  color: rgba(250, 248, 243, 0.75);
+  line-height: var(--mq-leading-relaxed, 1.6);
+}
+
+.mq-ed-chowk-plaque-footer {
+  margin: 0;
+  font-size: max(12px, 0.82rem);
+  letter-spacing: 0.14em;
+  color: var(--mq-chowk-gold);
+  font-weight: 700;
+  text-transform: uppercase;
+  border-top: 1px solid rgba(245, 158, 11, 0.3);
+  padding-top: 1rem;
+}
+
+/* ========================================================================================
+   6. COURSES & DOTTED PRICE LEADER ROWS
+   ======================================================================================== */
+
+.mq-ed-chowk-course {
+  margin-bottom: clamp(2.5rem, 6cqw, 4rem);
+}
+.mq-ed-chowk-course-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  margin-bottom: clamp(1.25rem, 3cqw, 2rem);
+}
+.mq-ed-chowk-medallion {
+  display: inline-grid;
+  place-items: center;
+  margin-bottom: 4px;
+}
+.mq-ed-chowk-course-title-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.mq-ed-chowk-course-subtitle {
+  font-size: max(12px, 0.75rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--mq-chowk-gold);
+  text-transform: uppercase;
+}
+.mq-ed-chowk-course-title {
+  margin: 0;
+  font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
+  font-size: clamp(1.35rem, 4.5cqw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fffbf5;
+}
 .mq-ed-chowk-course-desc {
-  margin: var(--mq-space-2) 0;
-  max-width: 52ch;
-  font-size: clamp(0.78rem, 2cqw, 0.9rem);
-  color: #ded4cd;
-  font-style: italic;
-  line-height: var(--mq-leading-relaxed);
+  margin: 0;
+  max-width: 34rem;
+  font-size: max(12px, 0.85rem);
+  color: rgba(250, 248, 243, 0.75);
+  line-height: var(--mq-leading-relaxed, 1.6);
+}
+.mq-ed-chowk-course-divider {
+  margin-top: 6px;
 }
 
 .mq-ed-chowk-list {
   display: flex;
   flex-direction: column;
-  gap: clamp(0.75rem, 2cqw, 1.25rem);
-  margin-top: var(--mq-space-4);
+  gap: clamp(1rem, 2.5cqw, 1.5rem);
 }
 
-.mq-ed-chowk .mq-ed-leader {
-  display: block;
-  min-width: 0;
-  padding-bottom: clamp(0.4rem, 1.2cqw, 0.75rem);
-  border-bottom: 1px solid rgba(216, 58, 45, 0.15);
+.mq-ed-chowk-dish-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.15);
 }
 
-.mq-ed-chowk .mq-ed-leader:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.mq-ed-chowk .mq-ed-leader-head {
+.mq-ed-chowk-dish-head {
   display: flex;
   align-items: last baseline;
-  gap: clamp(0.35rem, 1.2cqw, 0.75rem);
-  min-width: 0;
+  gap: 10px;
   width: 100%;
 }
 
-.mq-ed-chowk .mq-ed-leader-name {
+.mq-ed-chowk-dish-name {
   margin: 0;
-  flex: 0 1 auto;
-  min-width: 0;
-  max-width: calc(100% - 4.5rem);
-  font-family: var(--mq-font-display);
-  font-size: clamp(0.92rem, 2.4cqw, 1.15rem);
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #faf8f3;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
-  overflow-wrap: break-word;
+  font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
+  font-size: clamp(0.95rem, 2.2cqw, 1.15rem);
+  font-weight: 700;
+  color: #fffbf5;
+  white-space: normal;
 }
 
-.mq-ed-chowk .mq-ed-leader-rule {
-  flex: 1 1 1.5rem;
-  min-width: 0.85rem;
-  height: 1px;
+/* Precision Dotted Leader Rule anchored to last baseline */
+.mq-ed-chowk-dish-rule {
+  flex: 1;
+  height: 2px;
   align-self: last baseline;
-  margin-bottom: 0.22em;
-  background-image: radial-gradient(
-    circle at center,
-    rgba(240, 156, 42, 0.75) 1px,
-    transparent 1.2px
-  );
-  background-size: 6px 1px;
+  background-image: radial-gradient(circle at center, rgba(245, 158, 11, 0.55) 1px, transparent 1.2px);
+  background-size: 8px 2px;
   background-repeat: repeat-x;
-  opacity: 0.85;
+  background-position: bottom;
+  margin-inline: 8px;
+  min-width: 24px;
 }
 
-.mq-ed-chowk .mq-price {
-  font-family: var(--mq-font-display);
-  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+.mq-ed-chowk-dish-price {
+  font-family: var(--mq-font-display, 'Cinzel', serif);
+  font-size: clamp(0.95rem, 2.2cqw, 1.15rem);
   font-weight: 800;
-  color: #f09c2a;
-  text-shadow: 0 0 10px rgba(240, 156, 42, 0.35);
+  color: var(--mq-chowk-gold);
   white-space: nowrap;
 }
 
-.mq-ed-chowk .mq-ed-leader-desc {
-  margin: var(--mq-space-1) 0 0;
-  max-width: 54ch;
-  font-size: clamp(0.8rem, 2cqw, 0.9rem);
-  line-height: var(--mq-leading-relaxed);
-  color: #ded4cd;
-  font-style: italic;
+.mq-ed-chowk-dish-desc {
+  margin: 0;
+  font-size: max(12px, 0.84rem);
+  color: rgba(250, 248, 243, 0.75);
+  line-height: var(--mq-leading-relaxed, 1.6);
+  max-width: 48rem;
 }
 
-.mq-ed-chowk .mq-badge {
+.mq-ed-chowk-dish-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.mq-ed-chowk-tag {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  font-family: var(--mq-font-display);
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  gap: 4px;
+  font-size: max(12px, 0.75rem);
+  font-weight: 700;
+  padding: 2px 8px;
   border-radius: 3px;
-  background: rgba(216, 58, 45, 0.3);
-  border: 1px dashed #d83a2d;
-  color: #fffbf5;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.mq-ed-chowk-tag.is-bestseller {
+  background: rgba(216, 58, 45, 0.2);
+  border: 1px solid rgba(216, 58, 45, 0.45);
+  color: #fca5a5;
+}
+.mq-ed-chowk-tag.is-special {
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fef08a;
+}
+.mq-ed-chowk-tag.is-spice {
+  background: rgba(185, 28, 28, 0.2);
+  border: 1px solid rgba(185, 28, 28, 0.45);
+  color: #f87171;
 }
 
-.mq-ed-chowk .mq-badge::before {
-  content: '⚡';
-  font-size: 0.65rem;
+/* ========================================================================================
+   7. ENAMEL TIN STAMP DIET MARKS
+   ======================================================================================== */
+
+.mq-ed-chowk-diet {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+  flex-shrink: 0;
 }
+.mq-ed-chowk-diet-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1.5px solid;
+  box-sizing: border-box;
+}
+.mq-ed-chowk-diet.is-veg .mq-ed-chowk-diet-badge {
+  border-color: #10b981;
+}
+.mq-ed-chowk-diet.is-nonveg .mq-ed-chowk-diet-badge {
+  border-color: #ef4444;
+}
+.mq-ed-chowk-diet-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+}
+.mq-ed-chowk-diet.is-veg .mq-ed-chowk-diet-dot {
+  background-color: #10b981;
+}
+.mq-ed-chowk-diet.is-nonveg .mq-ed-chowk-diet-dot {
+  background-color: #ef4444;
+}
+.mq-ed-chowk-diet-spice {
+  font-size: 11px;
+}
+
+/* ========================================================================================
+   8. FOOTER & BOMBAY CHOWK KITCHEN BRIGADE COLOPHON
+   ======================================================================================== */
 
 .mq-ed-chowk-foot {
-  padding: var(--mq-space-10) var(--mq-space-5);
+  background-color: #0c0f13;
+  border-top: 1.5px solid var(--mq-chowk-gold);
+  padding: clamp(2rem, 5cqw, 3.5rem) clamp(1rem, 3.5cqw, 2.5rem);
   text-align: center;
+  color: #faf8f3;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--mq-space-3);
-  border-top: 1px solid var(--mq-color-border);
+  gap: 12px;
 }
 
 .mq-ed-chowk-foot-name {
   margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-lg);
+  font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
+  font-size: clamp(1.2rem, 3.5cqw, 1.8rem);
   font-weight: 800;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--mq-color-heading);
+  letter-spacing: 0.06em;
 }
 
 .mq-ed-chowk-foot-sub {
   margin: 0;
-  font-size: var(--mq-text-sm);
-  color: var(--mq-color-text-muted);
+  font-size: max(12px, 0.85rem);
+  color: rgba(250, 248, 243, 0.75);
+  max-width: 36rem;
+}
+
+/* Traditional Bombay Chowk Culinary Brigade Hierarchy Grid */
+.mq-ed-chowk-brigade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: clamp(0.75rem, 2cqw, 1.5rem);
+  width: 100%;
+  max-width: 58rem;
+  margin-block: clamp(1rem, 2.5cqw, 1.75rem);
+  border-block: 1px solid rgba(245, 158, 11, 0.25);
+  padding-block: clamp(1rem, 2cqw, 1.5rem);
+}
+.mq-ed-chowk-brigade-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+  padding: 6px;
+}
+.mq-ed-chowk-brigade-title {
+  font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
+  font-size: max(12px, 0.88rem);
+  font-weight: 800;
+  color: var(--mq-chowk-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.mq-ed-chowk-brigade-role {
+  font-size: max(12px, 0.76rem);
+  color: rgba(250, 248, 243, 0.7);
+  line-height: 1.4;
 }
 
 /* ========================================================================================
-   DEDICATED SHOWCASE CARDS FOR INDIAN EDITIONS
+   CONTAINER QUERIES & MOBILE COMPACT MODE
    ======================================================================================== */
 
-
-
-
-/* Bombay Chowk Showcase */
-.mq-ed-chowk-showcase {
-  margin-bottom: var(--mq-space-12);
-}
-.mq-ed-chowk-showcase-head {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--mq-space-1);
-  margin-bottom: var(--mq-space-6);
-}
-.mq-ed-chowk-showcase-title {
-  margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-sm);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #f09c2a;
-  font-weight: 800;
-}
-.mq-ed-chowk-showcase-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-  gap: var(--mq-space-6);
-}
-.mq-ed-chowk-card {
-  position: relative;
-  background-color: #141416;
-  border: 1px solid rgba(216, 58, 45, 0.35);
-  padding: var(--mq-space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--mq-space-3);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  border-radius: 4px;
-}
-.mq-ed-chowk-card-media {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  border-radius: 2px;
-  overflow: hidden;
-  border: 1px solid rgba(216, 58, 45, 0.25);
-}
-.mq-ed-chowk-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mq-space-1);
-}
-.mq-ed-chowk-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--mq-space-2);
-}
-.mq-ed-chowk-card-name {
-  margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-lg);
-  font-weight: 800;
-  color: #fffbf5;
-}
-.mq-ed-chowk-card-price {
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-base);
-  font-weight: 800;
-  color: #f09c2a;
-}
-.mq-ed-chowk-card-desc {
-  margin: 0;
-  font-size: var(--mq-text-sm);
-  color: rgba(255, 251, 245, 0.75);
-  line-height: var(--mq-leading-relaxed);
+@container chowk (min-width: 680px) {
+  .mq-ed-chowk-dish-row {
+    padding-bottom: 14px;
+  }
 }
 
-/* Rang-e-Punjab Showcase */
-.mq-ed-punjab-showcase {
-  margin-bottom: var(--mq-space-12);
+.mq-ed-chowk.is-compact .mq-ed-chowk-cover {
+  min-height: auto;
+  padding: 1.5rem 1rem;
 }
-.mq-ed-punjab-showcase-head {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--mq-space-1);
-  margin-bottom: var(--mq-space-6);
+.mq-ed-chowk.is-compact .mq-ed-chowk-title {
+  font-size: 1.6rem;
 }
-.mq-ed-punjab-showcase-title {
-  margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-sm);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #e5a93c;
-  font-weight: 800;
-}
-.mq-ed-punjab-showcase-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-  gap: var(--mq-space-6);
-}
-.mq-ed-punjab-card {
-  position: relative;
-  background-color: #14100e;
-  border: 1px solid rgba(200, 50, 26, 0.35);
-  padding: var(--mq-space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--mq-space-3);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  border-radius: 4px;
-}
-.mq-ed-punjab-card-media {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  border-radius: 2px;
-  overflow: hidden;
-  border: 1px solid rgba(200, 50, 26, 0.25);
-}
-.mq-ed-punjab-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mq-space-1);
-}
-.mq-ed-punjab-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--mq-space-2);
-}
-.mq-ed-punjab-card-name {
-  margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-lg);
-  font-weight: 800;
-  color: #fffbf5;
-}
-.mq-ed-punjab-card-price {
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-base);
-  font-weight: 800;
-  color: #e5a93c;
-}
-.mq-ed-punjab-card-desc {
-  margin: 0;
-  font-size: var(--mq-text-sm);
-  color: rgba(255, 251, 245, 0.75);
-  line-height: var(--mq-leading-relaxed);
+.mq-ed-chowk.is-compact .mq-ed-chowk-plate {
+  padding: 1.5rem 1rem;
 }
