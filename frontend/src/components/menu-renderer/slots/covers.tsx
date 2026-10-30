@@ -11,6 +11,7 @@
 import React from 'react';
 import { useMenuTheme } from '../MenuThemeProvider.tsx';
 import { SmartImage } from '../primitives/SmartImage.tsx';
+import { DhabaMasterpieceCover } from './DhabaMasterpieceCover.tsx';
 import type { SlotProps } from '../types.ts';
 
 type CoverProps = SlotProps;
@@ -166,54 +167,12 @@ export const MonogramCover: React.FC<CoverProps> = ({ restaurant, compact }) => 
  * crisp at any density. The motif is the one piece of the old Rajasthani and Mughal templates
  * genuinely worth keeping; here it responds to the palette instead of being frozen in gold.
  */
-export const HeritageArchCover: React.FC<CoverProps> = ({ restaurant, categories, compact }) => {
-  return (
-    <header className="mq-cover" style={{ paddingBlock: compact ? 'var(--mq-space-6)' : 'var(--mq-space-12)' }}>
-    <div className="mq-cover-content" style={{ alignItems: 'center', textAlign: 'center' }}>
-      <svg
-        viewBox="0 0 200 120"
-        width={compact ? 150 : 230}
-        height={compact ? 90 : 138}
-        aria-hidden="true"
-        style={{ overflow: 'visible' }}
-      >
-        <path
-          d="M100 8 C140 8 170 38 170 78 L170 112 L30 112 L30 78 C30 38 60 8 100 8 Z"
-          fill="none"
-          stroke="var(--mq-color-accent)"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M100 20 C133 20 158 45 158 78 L158 100 L42 100 L42 78 C42 45 67 20 100 20 Z"
-          fill="none"
-          stroke="var(--mq-color-border-strong)"
-          strokeWidth="0.75"
-          strokeDasharray="3 3"
-        />
-        <circle cx="100" cy="78" r="2.5" fill="var(--mq-color-accent)" />
-      </svg>
-
-      <Announcement />
-      <h1 className="mq-display mq-display-lg">{restaurant.name}</h1>
-      {restaurant.tagline && <p className="mq-tagline">{restaurant.tagline}</p>}
-
-      {categories.length > 0 && (
-        <p className="mq-eyebrow" style={{ maxWidth: '32rem' }}>
-          {categories.slice(0, 5).map((category) => category.name).join(' · ')}
-        </p>
-      )}
-      <RestaurantMeta restaurant={restaurant} />
-    </div>
-  </header>
-  );
-};
+export const HeritageArchCover: React.FC<CoverProps> = (props) => <DhabaMasterpieceCover {...props} />;
 
 /**
  * Style D — Bento collage.
  *
  * Three real dish photographs plus the brand block. Pulls from the menu's own bestsellers, so a
- * client who has uploaded dish photos gets a cover for free without choosing one — and a client
- * with no photos falls back to the brand block alone rather than to empty frames.
  */
 export const BentoCollageCover: React.FC<CoverProps> = ({ restaurant, categories, compact }) => {
   const photographed = categories

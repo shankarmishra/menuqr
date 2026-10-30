@@ -46,6 +46,7 @@ function FacebookIcon({ size = 16, className = '' }: { size?: number; className?
 }
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { DEMO_RESTAURANT } from '../../data/menuTemplates';
 import { 
   getClientByMenuSlug, 
   submitCustomerOrder, 
@@ -570,6 +571,40 @@ export default function MenuPage() {
   useEffect(() => {
     let isCurrent = true;
     if (!slug) return;
+    if (slug === 'demo' || slug === 'template-1' || slug === 'rajasthani-heritage') {
+      const demoClient: PublicMenuRecord = {
+        businessName: DEMO_RESTAURANT.name,
+        tagline: DEMO_RESTAURANT.tagline,
+        cuisine: DEMO_RESTAURANT.cuisine,
+        category: 'fine-dining' as any,
+        phone: DEMO_RESTAURANT.phone,
+        address: DEMO_RESTAURANT.address,
+        city: 'New Delhi',
+        state: 'Delhi',
+        website: 'https://menusqr.in',
+        openingHours: '12:00 PM – 11:30 PM',
+        services: ['Dine-In', 'Takeaway'],
+        logoUrl: DEMO_RESTAURANT.logo,
+        templateId: 'rajasthani-heritage',
+        plan: 'PREMIUM',
+        orderingEnabled: true,
+        categories: DEMO_RESTAURANT.categories,
+        menuItems: DEMO_RESTAURANT.items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          price: String(item.price),
+          category: item.category,
+          dietType: item.dietType,
+          available: item.available,
+          image: item.image || '',
+          tags: item.isBestseller ? { allergens: [], badges: ['bestseller'], spice: 0, jain: false, eggless: false } : null,
+        })),
+      };
+      setMenuResult({ slug, client: demoClient });
+      return () => { isCurrent = false; };
+    }
+
     const initialMenu = (location.state as { publicMenu?: PublicMenuRecord } | null)?.publicMenu;
     if (initialMenu) {
       setMenuResult({ slug, client: initialMenu });
@@ -840,6 +875,9 @@ export default function MenuPage() {
             address: client.address,
             city: client.city,
             logo: client.logoUrl,
+            website: client.website,
+            instagram: client.instagram,
+            facebook: (client as any).facebook,
           }}
           categories={categoriesForRenderer}
           items={itemsForRenderer}

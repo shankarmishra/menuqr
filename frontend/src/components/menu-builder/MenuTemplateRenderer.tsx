@@ -39,6 +39,9 @@ export interface MenuTemplateRendererProps {
     state?: string;
     openingHours?: string;
     logo?: string;
+    website?: string;
+    instagram?: string;
+    facebook?: string;
   };
   categories: Array<{ id: string; name: string; order?: number }>;
   items: Array<{
@@ -186,6 +189,9 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
           state: restaurant.state,
           openingHours: restaurant.openingHours,
           logoUrl: restaurant.logo,
+          website: (restaurant as any).website,
+          instagram: (restaurant as any).instagram,
+          facebook: (restaurant as any).facebook,
         }}
         categories={renderCategories}
         compact={compact}

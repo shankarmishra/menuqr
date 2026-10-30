@@ -80,6 +80,7 @@ export type RenderRestaurant = {
   openingHours?: string;
   website?: string;
   instagram?: string;
+  facebook?: string;
   logoUrl?: string;
 };
 

@@ -1,0 +1,27 @@
+<svg width="400" height="260" viewBox="0 0 400 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="plaque3dShadow" x="-10%" y="-10%" width="125%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000000" flood-opacity="0.45" />
+    </filter>
+    <linearGradient id="dhabaGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082" />
+      <stop offset="25%" stop-color="#FFA000" />
+      <stop offset="50%" stop-color="#FFD54F" />
+      <stop offset="75%" stop-color="#FF8F00" />
+      <stop offset="100%" stop-color="#FFA000" />
+    </linearGradient>
+    <linearGradient id="plaqueFillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#232725" />
+      <stop offset="100%" stop-color="#141715" />
+    </linearGradient>
+  </defs>
+  <g opacity="0.95">
+    <rect x="0" y="112" width="400" height="36" fill="#181B19" />
+    <line x1="0" y1="112" x2="400" y2="112" stroke="#FFA000" stroke-width="2" />
+    <line x1="0" y1="148" x2="400" y2="148" stroke="#FFA000" stroke-width="2" />
+    <path d="M 0 130 Q 10 116 20 130 T 40 130 T 60 130 T 80 130 T 100 130 T 120 130 T 140 130 T 160 130 T 180 130 T 200 130 T 220 130 T 240 130 T 260 130 T 280 130 T 300 130 T 320 130 T 340 130 T 360 130 T 380 130 T 400 130 M 0 130 Q 10 144 20 130 T 40 130 T 60 130 T 80 130 T 100 130 T 120 130 T 140 130 T 160 130 T 180 130 T 200 130 T 220 130 T 240 130 T 260 130 T 280 130 T 300 130 T 320 130 T 340 130 T 360 130 T 380 130 T 400 130" stroke="#FFA000" stroke-width="1.2" fill="none" opacity="0.75" />
+  </g>
+  <path d="M 200 20 C 230 20, 255 26, 275 34 C 285 26, 302 26, 314 36 C 330 50, 340 70, 332 87 C 348 100, 354 117, 345 132 C 354 147, 348 164, 332 177 C 340 194, 330 214, 314 228 C 302 238, 285 238, 275 230 C 255 238, 230 244, 200 244 C 170 244, 145 238, 125 230 C 115 238, 98 238, 86 228 C 70 214, 60 194, 68 177 C 52 164, 46 147, 55 132 C 46 117, 52 100, 68 87 C 60 70, 70 50, 86 36 C 98 26, 115 26, 125 34 C 145 26, 170 20, 200 20 Z" fill="url(#plaqueFillGrad)" stroke="url(#dhabaGoldGrad)" stroke-width="4.5" filter="url(#plaque3dShadow)" />
+  <path d="M 200 28 C 228 28, 251 33, 269 41 C 278 34, 292 34, 303 42 C 317 54, 325 71, 318 86 C 332 97, 337 113, 329 126 C 337 139, 332 155, 318 166 C 325 181, 317 198, 303 210 C 292 218, 278 218, 269 211 C 251 219, 228 224, 200 224 C 172 224, 149 219, 131 211 C 122 218, 108 218, 97 210 C 83 198, 75 181, 82 166 C 68 155, 63 139, 71 126 C 63 113, 68 97, 82 86 C 75 71, 83 54, 97 42 C 108 34, 122 34, 131 41 C 149 33, 172 28, 200 28 Z" fill="none" stroke="#FFD54F" stroke-width="1.8" stroke-dasharray="3 3.5" opacity="0.9" />
+  <path d="M 200 34 C 225 34, 246 39, 262 46 C 270 40, 283 40, 292 48 C 304 58, 311 73, 305 86 C 318 96, 322 110, 315 121 C 322 132, 318 146, 305 156 C 311 169, 304 184, 292 194 C 283 202, 270 202, 262 196 C 246 203, 225 208, 200 208 C 175 208, 154 203, 138 196 C 130 202, 117 202, 108 194 C 96 184, 89 169, 95 156 C 82 146, 78 132, 85 121 C 78 110, 82 96, 95 86 C 89 73, 96 58, 108 48 C 117 40, 130 40, 138 46 C 154 39, 175 34, 200 34 Z" fill="none" stroke="#FFA000" stroke-width="1.2" opacity="0.75" />
+</svg>
