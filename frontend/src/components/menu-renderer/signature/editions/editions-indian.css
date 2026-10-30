@@ -49,17 +49,22 @@
 
 
 /* ========================================================================================
-   A — MAHARAJA'S TABLE : Indian Royal Dining
+   A — MAHARAJA'S TABLE : Imperial Indian Royal Dining (Ultra-Detailed Masterpiece)
    ======================================================================================== */
 
 .mq-ed-maharaja {
   --royal-arch-inset: clamp(10px, 3cqw, 24px);
-  background-color: var(--mq-color-bg, #081a12);
-  color: var(--mq-color-text, #fbf8f0);
+  --royal-emerald-base: #081a12;
+  --royal-parchment-pure: #fbf8f0;
+  --royal-ivory-dim: #ecdcb9;
+  --royal-gold-foil: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #8a6117 100%);
+  background-color: var(--royal-emerald-base, #081a12);
+  color: var(--royal-parchment-pure, #fbf8f0);
   position: relative;
   container-name: maharaja;
 }
 
+/* --- Cover Page --- */
 .mq-ed-maharaja-cover {
   container-type: inline-size;
   container-name: maharaja-cover;
@@ -69,11 +74,10 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  min-height: min(100svh, 54rem);
-  padding: calc(var(--royal-arch-inset) + clamp(0.75rem, 2.5cqw, 1.75rem)) calc(var(--royal-arch-inset) + clamp(0.5rem, 2cqw, 1.5rem));
+  min-height: min(100svh, 56rem);
+  padding: calc(var(--royal-arch-inset) + clamp(1rem, 3cqw, 2rem)) calc(var(--royal-arch-inset) + clamp(0.75rem, 2.5cqw, 1.75rem));
   overflow: hidden;
   text-align: center;
-  color: #fbf8f0;
   box-sizing: border-box;
 }
 
@@ -83,10 +87,10 @@
   z-index: 1;
   background:
     radial-gradient(
-      ellipse at 50% 38%,
-      rgba(10, 32, 22, 0.68) 0%,
-      rgba(8, 25, 17, 0.88) 60%,
-      #040f0a 100%
+      ellipse at 50% 36%,
+      rgba(12, 38, 26, 0.72) 0%,
+      rgba(6, 21, 14, 0.92) 65%,
+      #030c07 100%
     );
   pointer-events: none;
 }
@@ -95,30 +99,40 @@
   position: absolute;
   inset: var(--royal-arch-inset);
   z-index: 2;
-  border: 1px solid rgba(212, 175, 55, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.65);
   box-shadow:
-    inset 0 0 24px rgba(0, 0, 0, 0.75),
-    0 0 16px rgba(212, 175, 55, 0.15);
+    inset 0 0 30px rgba(0, 0, 0, 0.85),
+    0 0 20px rgba(212, 175, 55, 0.15);
   pointer-events: none;
 }
 
 .mq-ed-maharaja-arch-frame::after {
   content: '';
   position: absolute;
-  inset: 5px;
-  border: 1px solid rgba(212, 175, 55, 0.32);
+  inset: 6px;
+  border: 1px solid rgba(212, 175, 55, 0.28);
 }
+
+.mq-ed-maharaja-corner {
+  position: absolute;
+  z-index: 3;
+  color: #d4af37;
+  line-height: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.85));
+}
+.mq-ed-maharaja-corner-tl { top: calc(var(--royal-arch-inset) + 2px); left: calc(var(--royal-arch-inset) + 2px); }
+.mq-ed-maharaja-corner-tr { top: calc(var(--royal-arch-inset) + 2px); right: calc(var(--royal-arch-inset) + 2px); transform: scaleX(-1); }
+.mq-ed-maharaja-corner-bl { bottom: calc(var(--royal-arch-inset) + 2px); left: calc(var(--royal-arch-inset) + 2px); transform: scaleY(-1); }
+.mq-ed-maharaja-corner-br { bottom: calc(var(--royal-arch-inset) + 2px); right: calc(var(--royal-arch-inset) + 2px); transform: scale(-1); }
 
 .mq-ed-maharaja-jali-watermark {
   position: absolute;
   inset: 0;
   z-index: 2;
-  opacity: 0.07;
-  background-image: radial-gradient(
-    rgba(212, 175, 55, 0.8) 1px,
-    transparent 1px
-  );
-  background-size: 26px 26px;
+  opacity: 0.085;
+  background-image: url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M24 6 L29 18 L42 18 L32 25 L36 38 L24 30 L12 38 L16 25 L6 18 L19 18 Z' fill='none' stroke='%23d4af37' stroke-width='0.75'/%3E%3Cpolygon points='24,0 48,24 24,48 0,24' fill='none' stroke='%23d4af37' stroke-width='0.6'/%3E%3C/svg%3E");
+  background-size: 48px 48px;
   pointer-events: none;
 }
 
@@ -129,7 +143,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(0.35rem, 1.6cqw, 0.95rem);
+  gap: clamp(0.4rem, 1.6cqw, 0.95rem);
   width: 100%;
   max-width: min(34rem, 100%);
   margin-block: auto;
@@ -140,105 +154,102 @@
   display: inline-flex;
   align-items: center;
   gap: var(--mq-space-2);
-  padding: 3px 14px;
+  padding: 4px 16px;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
-  letter-spacing: clamp(0.08em, 0.3cqw, 0.16em);
+  font-size: clamp(0.6rem, 1.6cqw, 0.75rem);
+  letter-spacing: clamp(0.1em, 0.3cqw, 0.18em);
   text-transform: uppercase;
   color: #ecdcb9;
-  border: 1px solid rgba(212, 175, 55, 0.55);
+  border: 1px solid rgba(212, 175, 55, 0.6);
   border-radius: 9999px;
-  background-color: rgba(10, 32, 22, 0.75);
-  backdrop-filter: blur(4px);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  background-color: rgba(10, 32, 22, 0.85);
+  backdrop-filter: blur(6px);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
 }
 
-.mq-ed-maharaja-crest {
+/* --- Cartouche & BrandMark --- */
+.mq-ed-maharaja-cartouche {
   position: relative;
   display: inline-grid;
   place-items: center;
-  width: clamp(74px, 18cqw, 108px);
-  height: clamp(74px, 18cqw, 108px);
+  margin-block: clamp(0.5rem, 2cqw, 1.25rem);
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 16px rgba(212, 175, 55, 0.35));
+}
+.mq-ed-maharaja-cartouche > * { grid-area: 1 / 1; }
+.mq-ed-maharaja-cartouche-svg { width: 100%; height: 100%; }
+.mq-ed-maharaja-cartouche-logo {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 68%;
+  height: 68%;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+/* --- Foil Text & Typography --- */
+.mq-ed-maharaja-foil-text {
+  background-image: var(--royal-gold-foil);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   color: #d4af37;
-  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.7));
-}
-
-.mq-ed-maharaja-crest > * {
-  grid-area: 1 / 1;
-}
-
-.mq-ed-maharaja-crest > svg {
-  width: 100%;
-  height: 100%;
-}
-
-.mq-ed-maharaja-crest .mq-ed-mark {
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid rgba(212, 175, 55, 0.6);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
-}
-
-.mq-ed-mark-bare {
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.65);
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(4px);
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.9));
 }
 
 .mq-ed-maharaja-title {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(1.2rem, 5.8cqw, 2.75rem);
+  font-size: clamp(1.4rem, 6.2cqw, 3rem);
   font-weight: 600;
-  letter-spacing: clamp(0.04em, 0.8cqw, 0.14em);
+  letter-spacing: clamp(0.06em, 0.8cqw, 0.16em);
   text-transform: uppercase;
-  color: #fbf8f0;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8);
   text-wrap: balance;
   word-break: break-word;
-  max-width: min(32rem, 90%);
+  max-width: min(34rem, 95%);
 }
 
-.mq-ed-maharaja-divider {
+.mq-ed-maharaja-astragal {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--mq-space-3);
-  width: min(20rem, 80%);
-  color: #d4af37;
+  width: min(24rem, 85%);
+  margin: clamp(0.35rem, 1.2cqw, 0.75rem) auto;
 }
-
-.mq-ed-maharaja-divider-line {
+.mq-ed-maharaja-astragal.is-grand {
+  width: min(28rem, 90%);
+}
+.mq-ed-maharaja-astragal-rail {
   flex: 1 1 auto;
   height: 1px;
-  background: linear-gradient(90deg, transparent, currentColor 50%, transparent);
+  background: linear-gradient(90deg, transparent, #d4af37 60%, transparent);
 }
+.mq-ed-maharaja-astragal-svg { flex-shrink: 0; }
 
 .mq-ed-maharaja-tagline {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.72rem, 2.2cqw, 1rem);
+  font-size: clamp(0.76rem, 2.2cqw, 1.05rem);
   font-style: italic;
   letter-spacing: clamp(0.02em, 0.4cqw, 0.06em);
   line-height: var(--mq-leading-relaxed);
   color: #ecdcb9;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
-  max-width: min(25rem, 90%);
+  max-width: min(28rem, 90%);
   text-wrap: balance;
 }
 
 .mq-ed-maharaja-teaser {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
+  font-size: max(12px, clamp(0.6rem, 1.6cqw, 0.76rem));
   letter-spacing: clamp(0.06em, 0.3cqw, 0.14em);
   text-transform: uppercase;
   color: #d4af37;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
-  max-width: min(26rem, 90%);
+  max-width: min(28rem, 90%);
 }
 
 .mq-ed-maharaja-contact {
@@ -246,64 +257,133 @@
   z-index: 4;
   margin-top: auto;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.6rem, 1.7cqw, 0.75rem);
+  font-size: max(12px, clamp(0.65rem, 1.7cqw, 0.8rem));
   letter-spacing: 0.12em;
   color: #ecdcb9;
-  opacity: 0.88;
+  opacity: 0.9;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+/* --- Royal Diet Mark --- */
+.mq-ed-royal-diet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.9));
+}
+
+/* --- Course Ordering Medallion --- */
+.mq-ed-maharaja-medallion {
+  display: inline-grid;
+  place-items: center;
+  margin-bottom: var(--mq-space-2);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
 }
 
 .mq-ed-maharaja-plate {
   max-width: var(--mq-ed-measure);
   margin-inline: auto;
-  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-12);
+  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-14);
 }
 
-/* Shahi Showcase Cards */
+/* --- Shahi Showcase --- */
 .mq-ed-maharaja-showcase {
-  margin-bottom: var(--mq-space-12);
+  margin-bottom: var(--mq-space-14);
+}
+
+.mq-ed-maharaja-showcase-header {
+  text-align: center;
+  margin-bottom: var(--mq-space-8);
+}
+
+.mq-ed-maharaja-section-eyebrow {
+  display: block;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, var(--mq-text-xs));
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #d4af37;
+  margin-bottom: 4px;
 }
 
 .mq-ed-maharaja-showcase-title {
-  text-align: center;
+  margin: 0 0 6px;
   font-family: var(--mq-font-display);
-  font-size: var(--mq-text-sm);
-  letter-spacing: 0.18em;
+  font-size: clamp(1.4rem, 4cqw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--mq-color-accent);
-  margin-bottom: var(--mq-space-6);
+}
+
+.mq-ed-maharaja-showcase-subtitle {
+  margin: 0 auto;
+  max-width: 48ch;
+  font-size: clamp(0.8rem, 2cqw, 0.95rem);
+  font-style: italic;
+  color: rgba(236, 220, 185, 0.85);
 }
 
 .mq-ed-maharaja-showcase-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   gap: var(--mq-space-6);
 }
 
 .mq-ed-maharaja-card {
   position: relative;
-  background-color: var(--mq-color-surface);
-  border: 1px solid color-mix(in oklab, var(--mq-color-accent) 40%, transparent);
-  padding: var(--mq-space-4);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(20, 58, 38, 0.6) 0%, rgba(7, 22, 15, 0.95) 85%),
+    #05140d;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 4px;
+  padding: clamp(1rem, 2.5cqw, 1.5rem);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65), inset 0 0 20px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   gap: var(--mq-space-3);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  border-radius: 4px;
 }
+
+.mq-ed-maharaja-card-bracket {
+  position: absolute;
+  color: #d4af37;
+  pointer-events: none;
+}
+.mq-ed-maharaja-card-bracket.bracket-tl { top: 4px; left: 4px; }
+.mq-ed-maharaja-card-bracket.bracket-tr { top: 4px; right: 4px; transform: scaleX(-1); }
+.mq-ed-maharaja-card-bracket.bracket-bl { bottom: 4px; left: 4px; transform: scaleY(-1); }
+.mq-ed-maharaja-card-bracket.bracket-br { bottom: 4px; right: 4px; transform: scale(-1); }
 
 .mq-ed-maharaja-card-media {
   position: relative;
   aspect-ratio: 16 / 10;
   border-radius: 2px;
   overflow: hidden;
-  border: 1px solid color-mix(in oklab, var(--mq-color-accent) 25%, transparent);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+.mq-ed-maharaja-card-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 3px 10px;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fcf6ba;
+  background: rgba(4, 16, 11, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  border-radius: 2px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 .mq-ed-maharaja-card-body {
   display: flex;
   flex-direction: column;
-  gap: var(--mq-space-1);
+  gap: var(--mq-space-2);
 }
 
 .mq-ed-maharaja-card-head {
@@ -313,43 +393,161 @@
   gap: var(--mq-space-2);
 }
 
+.mq-ed-maharaja-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .mq-ed-maharaja-card-name {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: var(--mq-text-lg);
+  font-size: clamp(1rem, 2.5cqw, 1.25rem);
   font-weight: 600;
-  color: var(--mq-color-heading);
+  color: #fbf8f0;
 }
 
-.mq-ed-maharaja-card-price {
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-base);
-  font-weight: 700;
-  color: var(--mq-color-accent);
+.mq-ed-maharaja-card-price-slot {
+  flex-shrink: 0;
 }
 
 .mq-ed-maharaja-card-desc {
   margin: 0;
-  font-size: var(--mq-text-sm);
-  color: var(--mq-color-text-muted);
+  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+  color: rgba(236, 220, 185, 0.85);
   line-height: var(--mq-leading-relaxed);
 }
 
-/* ========================================================================================
-   A — MAHARAJA'S TABLE : Shahi Banquet Sections & Leaders
-   ======================================================================================== */
+.mq-ed-maharaja-pairing-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 4px 10px;
+  background: rgba(212, 175, 55, 0.1);
+  border-left: 2px solid #d4af37;
+  font-size: max(12px, 0.75rem);
+  color: #ecdcb9;
+  font-style: italic;
+}
 
+.mq-ed-maharaja-card-lore {
+  margin: 4px 0 0;
+  font-size: max(12px, 0.72rem);
+  line-height: 1.5;
+  color: rgba(236, 220, 185, 0.75);
+  border-top: 1px dashed rgba(212, 175, 55, 0.25);
+  padding-top: 6px;
+}
+
+/* --- The Nawab's Dastarkhwan Protocol (Aside Plaque) --- */
+.mq-ed-maharaja-dastarkhwan-plaque {
+  position: relative;
+  margin: clamp(2rem, 5cqw, 4rem) 0;
+  padding: clamp(1.5rem, 4cqw, 3rem) clamp(1rem, 3cqw, 2.5rem);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(26, 75, 49, 0.5) 0%, rgba(6, 20, 14, 0.95) 80%),
+    #04100b;
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  box-shadow: inset 0 0 32px rgba(0, 0, 0, 0.85), 0 16px 48px rgba(0, 0, 0, 0.55);
+  text-align: center;
+  border-radius: 4px;
+}
+
+.mq-ed-maharaja-plaque-bracket {
+  position: absolute;
+  color: #d4af37;
+  pointer-events: none;
+}
+.mq-ed-maharaja-plaque-bracket-tl { top: 6px; left: 6px; }
+.mq-ed-maharaja-plaque-bracket-tr { top: 6px; right: 6px; transform: scaleX(-1); }
+.mq-ed-maharaja-plaque-bracket-bl { bottom: 6px; left: 6px; transform: scaleY(-1); }
+.mq-ed-maharaja-plaque-bracket-br { bottom: 6px; right: 6px; transform: scale(-1); }
+
+.mq-ed-maharaja-plaque-title {
+  margin: 0 0 8px;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.3rem, 3.8cqw, 2rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mq-ed-maharaja-plaque-prose {
+  margin: 0 auto 12px;
+  max-width: 58ch;
+  font-size: clamp(0.82rem, 2cqw, 0.95rem);
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+  color: #ecdcb9;
+}
+
+.mq-ed-maharaja-plaque-pillars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-4);
+  margin: var(--mq-space-6) 0;
+  text-align: left;
+}
+
+@container (min-width: 540px) {
+  .mq-ed-maharaja-plaque-pillars {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.mq-ed-maharaja-plaque-col {
+  flex: 1 1 0;
+  padding: var(--mq-space-3);
+  background: rgba(10, 32, 22, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 2px;
+}
+
+.mq-ed-maharaja-plaque-sep {
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(212, 175, 55, 0.5), transparent);
+}
+
+.mq-ed-maharaja-col-title {
+  margin: 0 0 6px;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.78rem);
+  letter-spacing: 0.12em;
+  color: #d4af37;
+  text-transform: uppercase;
+}
+
+.mq-ed-maharaja-col-desc {
+  margin: 0;
+  font-size: max(12px, 0.8rem);
+  line-height: 1.5;
+  color: rgba(236, 220, 185, 0.85);
+}
+
+.mq-ed-maharaja-plaque-footer {
+  margin: var(--mq-space-4) 0 0;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.75rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #d4af37;
+}
+
+/* --- Course Section Container --- */
 .mq-ed-maharaja-course {
   position: relative;
-  margin-bottom: var(--mq-space-10);
-  padding: clamp(1.25rem, 3.5cqw, 2.25rem) clamp(1rem, 3cqw, 2rem);
+  margin-bottom: var(--mq-space-12);
+  padding: clamp(1.25rem, 3.5cqw, 2.5rem) clamp(1rem, 3cqw, 2.25rem);
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(18, 48, 32, 0.5) 0%, rgba(8, 24, 16, 0.8) 85%),
+    radial-gradient(ellipse at 50% 0%, rgba(18, 48, 32, 0.55) 0%, rgba(8, 24, 16, 0.85) 85%),
     #06150e;
-  border: 1px solid rgba(212, 175, 55, 0.28);
+  border: 1px solid rgba(212, 175, 55, 0.35);
   border-radius: 4px;
   box-shadow:
-    inset 0 0 24px rgba(0, 0, 0, 0.65),
+    inset 0 0 28px rgba(0, 0, 0, 0.7),
     0 8px 32px rgba(0, 0, 0, 0.45);
   box-sizing: border-box;
 }
@@ -357,8 +555,8 @@
 .mq-ed-maharaja-course::after {
   content: '';
   position: absolute;
-  inset: 4px;
-  border: 1px solid rgba(212, 175, 55, 0.1);
+  inset: 5px;
+  border: 1px solid rgba(212, 175, 55, 0.12);
   pointer-events: none;
 }
 
@@ -370,26 +568,40 @@
   margin-bottom: clamp(1rem, 2.5cqw, 1.75rem);
 }
 
-.mq-ed-maharaja-course-title {
-  margin: var(--mq-space-2) 0;
+.mq-ed-maharaja-course-title-wrap {
+  margin: 4px 0 8px;
+}
+
+.mq-ed-maharaja-course-subtitle {
+  display: block;
   font-family: var(--mq-font-display);
-  font-size: clamp(1.2rem, 4cqw, 1.85rem);
+  font-size: max(12px, 0.75rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #d4af37;
+  opacity: 0.9;
+}
+
+.mq-ed-maharaja-course-title {
+  margin: 2px 0 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.3rem, 4cqw, 2rem);
   font-weight: 600;
   letter-spacing: clamp(0.06em, 0.6cqw, 0.14em);
-  color: #fbf8f0;
   text-transform: uppercase;
-  text-wrap: balance;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
 }
 
 .mq-ed-maharaja-course-desc {
   margin: 0 auto;
-  max-width: 48ch;
-  font-size: clamp(0.78rem, 2cqw, 0.9rem);
+  max-width: 50ch;
+  font-size: clamp(0.8rem, 2cqw, 0.92rem);
   color: rgba(236, 220, 185, 0.85);
   font-style: italic;
   line-height: var(--mq-leading-relaxed);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-maharaja-course-divider {
+  margin-top: 8px;
 }
 
 .mq-ed-maharaja-list {
@@ -399,168 +611,163 @@
   margin-top: var(--mq-space-4);
 }
 
-.mq-ed-maharaja .mq-ed-leader {
-  display: block;
-  min-width: 0;
-  padding-bottom: clamp(0.4rem, 1.2cqw, 0.75rem);
-  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
-  transition: background-color 0.2s ease;
+/* --- Dotted Leaders with Precision Last-Baseline Anchoring --- */
+.mq-ed-maharaja-dish-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: clamp(0.5rem, 1.5cqw, 0.85rem);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.14);
 }
 
-.mq-ed-maharaja .mq-ed-leader:last-child {
+.mq-ed-maharaja-dish-row:last-child {
   border-bottom: none;
   padding-bottom: 0;
 }
 
-.mq-ed-maharaja .mq-ed-leader-head {
+.mq-ed-maharaja-dish-head {
   display: flex;
   align-items: last baseline;
-  gap: clamp(0.35rem, 1.2cqw, 0.75rem);
-  min-width: 0;
+  gap: clamp(0.4rem, 1.2cqw, 0.75rem);
   width: 100%;
 }
 
-.mq-ed-maharaja .mq-diet {
-  flex-shrink: 0;
-  margin-top: 0.12em;
-  align-self: center;
-  border-radius: 2px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
-}
-
-.mq-ed-maharaja .mq-ed-leader-name {
+.mq-ed-maharaja-dish-name {
   margin: 0;
-  flex: 0 1 auto;
-  min-width: 0;
-  max-width: calc(100% - 4.5rem);
   font-family: var(--mq-font-display);
-  font-size: clamp(0.92rem, 2.4cqw, 1.12rem);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
   font-weight: 600;
   letter-spacing: 0.04em;
-  line-height: 1.35;
   text-transform: uppercase;
   color: #fbf8f0;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
-  overflow-wrap: break-word;
-  word-break: normal;
-  text-wrap: pretty;
 }
 
-.mq-ed-maharaja .mq-ed-leader-rule {
-  flex: 1 1 1.5rem;
-  min-width: 0.85rem;
+.mq-ed-maharaja-dish-rule {
+  flex: 1 1 2rem;
+  min-width: 1rem;
   height: 1px;
   align-self: last baseline;
   margin-bottom: 0.22em;
-  background-image: radial-gradient(
-    circle at center,
-    rgba(212, 175, 55, 0.75) 1px,
-    transparent 1.2px
-  );
-  background-size: 6px 1px;
+  background-image: radial-gradient(circle at center, rgba(212, 175, 55, 0.8) 1.2px, transparent 1.5px);
+  background-size: 7px 1px;
   background-repeat: repeat-x;
-  opacity: 0.85;
 }
 
-.mq-ed-maharaja .mq-ed-leader-head .mq-row,
-.mq-ed-maharaja .mq-ed-leader-head .mq-stack {
-  flex-shrink: 0;
-  margin-left: auto;
-  align-self: last baseline;
-}
-
-.mq-ed-maharaja .mq-price {
+.mq-ed-maharaja-dish-price {
   font-family: var(--mq-font-display);
   font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
   color: #d4af37;
-  text-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
   white-space: nowrap;
 }
 
-.mq-ed-maharaja .mq-price-label {
-  font-size: max(12px, 0.75rem);
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #ecdcb9;
-  opacity: 0.85;
-  white-space: nowrap;
-  margin-right: 4px;
-}
-
-.mq-ed-maharaja .mq-ed-leader-desc {
-  margin: var(--mq-space-1) 0 0;
+.mq-ed-maharaja-dish-desc {
+  margin: 2px 0 0;
   max-width: 54ch;
   font-size: clamp(0.8rem, 2cqw, 0.9rem);
   line-height: var(--mq-leading-relaxed);
-  color: rgba(236, 220, 185, 0.82);
+  color: rgba(236, 220, 185, 0.85);
   font-style: italic;
-  overflow-wrap: break-word;
 }
 
-.mq-ed-maharaja .mq-badge {
+.mq-ed-maharaja-dish-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.mq-ed-maharaja-tag {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
+  gap: 4px;
+  padding: 2px 8px;
   font-family: var(--mq-font-display);
-  font-size: max(12px, 0.75rem);
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-size: max(12px, 0.72rem);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   border-radius: 2px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: rgba(10, 32, 22, 0.6);
+  color: #ecdcb9;
+}
+
+.mq-ed-maharaja-tag.is-bestseller {
+  border-color: rgba(212, 175, 55, 0.7);
   background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.08) 100%);
-  border: 1px solid rgba(212, 175, 55, 0.6);
-  color: #ecdcb9;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+  color: #fcf6ba;
 }
 
-.mq-ed-maharaja .mq-badge::before {
-  content: '⚜';
-  font-size: 0.75rem;
-  color: #d4af37;
+.mq-ed-maharaja-tag.is-special {
+  border-color: rgba(236, 220, 185, 0.5);
+  color: #fbf8f0;
 }
 
-.mq-ed-maharaja .mq-badge-quiet {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  color: #ecdcb9;
+.mq-ed-maharaja-tag.is-spice {
+  border-color: rgba(185, 28, 28, 0.6);
+  background: rgba(46, 11, 18, 0.6);
+  color: #fca5a5;
 }
 
-.mq-ed-maharaja .mq-badge-quiet::before {
-  content: '◆';
-  font-size: 0.75rem;
-  color: rgba(212, 175, 55, 0.65);
-}
-
+/* --- Footer & Imperial Brigade Hierarchy --- */
 .mq-ed-maharaja-foot {
-  padding: var(--mq-space-10) var(--mq-space-5);
+  padding: var(--mq-space-12) var(--mq-space-5) var(--mq-space-10);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--mq-space-3);
-  border-top: 1px solid var(--mq-color-border);
+  border-top: 1px solid rgba(212, 175, 55, 0.35);
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(18, 48, 32, 0.45) 0%, rgba(6, 21, 14, 0.95) 80%),
+    #04100b;
 }
 
 .mq-ed-maharaja-foot-name {
-  margin: 0;
+  margin: var(--mq-space-2) 0 0;
   font-family: var(--mq-font-display);
-  font-size: var(--mq-text-lg);
+  font-size: var(--mq-text-xl);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--mq-color-heading);
 }
 
 .mq-ed-maharaja-foot-sub {
   margin: 0;
-  font-size: var(--mq-text-sm);
+  font-size: max(12px, var(--mq-text-sm));
   font-style: italic;
-  color: var(--mq-color-text-muted);
+  color: rgba(236, 220, 185, 0.8);
+}
+
+.mq-ed-maharaja-brigade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--mq-space-4);
+  width: min(40rem, 100%);
+  margin: var(--mq-space-6) 0;
+  padding: var(--mq-space-5) 0;
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.mq-ed-maharaja-brigade-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mq-ed-maharaja-brigade-title {
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.75rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d4af37;
+}
+
+.mq-ed-maharaja-brigade-role {
+  font-size: max(12px, 0.7rem);
+  color: rgba(236, 220, 185, 0.7);
+  font-style: italic;
 }
 
 
