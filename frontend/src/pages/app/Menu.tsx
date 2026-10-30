@@ -38,6 +38,7 @@ import {
 } from './appStore';
 import { SmartImportWizard } from '../../components/menu-builder/SmartImportWizard';
 import type { ItemTags } from '../../components/menu-renderer/types';
+import CategorySchedulePicker, { type CategorySchedule } from '../../components/menu-builder/CategorySchedulePicker';
 
 const EMPTY_TAGS: ItemTags = { allergens: [], badges: [], spice: 0, jain: false, eggless: false };
 const TAG_BADGES: Array<[string, string]> = [['bestseller', 'Bestseller'], ['special', "Chef's Special"], ['new', 'New']];
@@ -141,7 +142,7 @@ export default function Menu() {
   });
 
   // Form States (Category)
-  const [categoryForm, setCategoryForm] = useState({ name: '', description: '' });
+  const [categoryForm, setCategoryForm] = useState<{ name: string; description: string; schedule: CategorySchedule | null }>({ name: '', description: '', schedule: null });
 
   async function loadMenuData() {
     try {
@@ -410,13 +411,13 @@ export default function Menu() {
   };
 
   // Category Modal Handlers
-  const openCategoryModal = (cat?: { id: string; name: string; description?: string }) => {
+  const openCategoryModal = (cat?: { id: string; name: string; description?: string; schedule?: CategorySchedule | null }) => {
     if (cat) {
       setEditingCategory(cat);
-      setCategoryForm({ name: cat.name, description: cat.description || '' });
+      setCategoryForm({ name: cat.name, description: cat.description || '', schedule: cat.schedule ?? null });
     } else {
       setEditingCategory(null);
-      setCategoryForm({ name: '', description: '' });
+      setCategoryForm({ name: '', description: '', schedule: null });
     }
     setIsCategoryModalOpen(true);
   };
@@ -427,9 +428,9 @@ export default function Menu() {
 
     let success = false;
     if (editingCategory) {
-      success = await runMutation(() => updateMenuCategory(editingCategory.id, { name: categoryForm.name.trim(), description: categoryForm.description.trim() }), 'Category updated.');
+      success = await runMutation(() => updateMenuCategory(editingCategory.id, { name: categoryForm.name.trim(), description: categoryForm.description.trim(), schedule: categoryForm.schedule }), 'Category updated.');
     } else {
-      success = await runMutation(() => createMenuCategory({ menuId: menuData.menu!.id, name: categoryForm.name.trim(), description: categoryForm.description.trim() }), 'Category created.');
+      success = await runMutation(() => createMenuCategory({ menuId: menuData.menu!.id, name: categoryForm.name.trim(), description: categoryForm.description.trim(), schedule: categoryForm.schedule }), 'Category created.');
     }
     if (success) setIsCategoryModalOpen(false);
   };
@@ -1259,6 +1260,8 @@ export default function Menu() {
                   className="mt-1 w-full rounded-xl border border-[#384841] bg-[#151c19] px-3.5 py-2 text-sm text-white focus:border-[#e8783c] focus:outline-none"
                 />
               </div>
+
+              <CategorySchedulePicker value={categoryForm.schedule} onChange={(schedule) => setCategoryForm({ ...categoryForm, schedule })} />
 
               <div className="flex justify-end gap-3 pt-2">
                 <button

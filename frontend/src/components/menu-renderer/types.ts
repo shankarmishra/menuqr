@@ -47,6 +47,8 @@ export type RenderMenuItem = {
   tags?: ItemTags | null;
   /** True while the owner has marked the dish sold out for today. */
   soldOut?: boolean;
+  /** Set while the dish's category is outside its serving window; replaces the price controls. */
+  availabilityNote?: string | null;
 
   imageUrl?: string;
   /**

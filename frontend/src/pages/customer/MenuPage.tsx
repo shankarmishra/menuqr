@@ -635,6 +635,7 @@ export default function MenuPage() {
     focalY: item.focalY ?? undefined,
     tags: item.tags ?? null,
     soldOut: item.soldOut ?? false,
+    availabilityNote: item.availabilityNote ?? null,
     isBestseller: Boolean(item.tags?.badges?.includes('bestseller')),
     isSpecial: Boolean(item.tags?.badges?.includes('special')),
   }));

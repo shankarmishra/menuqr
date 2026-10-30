@@ -349,11 +349,11 @@ export function createPermanentQr(): Promise<AppQrData> {
   return request<AppQrData>('/qr', { method: 'POST', body: '{}' });
 }
 
-export function createMenuCategory(data: { name: string; description?: string; menuId: string }): Promise<{ id: string; name: string }> {
+export function createMenuCategory(data: { name: string; description?: string; menuId: string; schedule?: { from: string; to: string; days?: number[] } | null }): Promise<{ id: string; name: string }> {
   return request<{ id: string; name: string }>('/categories', { method: 'POST', body: JSON.stringify(data) });
 }
 
-export function updateMenuCategory(categoryId: string, data: { name: string; description?: string }): Promise<{ id: string; name: string }> {
+export function updateMenuCategory(categoryId: string, data: { name: string; description?: string; schedule?: { from: string; to: string; days?: number[] } | null }): Promise<{ id: string; name: string }> {
   return request<{ id: string; name: string }>(`/categories/${encodeURIComponent(categoryId)}`, { method: 'PUT', body: JSON.stringify(data) });
 }
 

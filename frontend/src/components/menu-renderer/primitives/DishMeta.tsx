@@ -93,6 +93,10 @@ export const DishPrice: React.FC<DishPriceProps> = ({ item, readOnly = false }) 
     return <span className="mq-unavailable">Sold out today</span>;
   }
 
+  if (item.availabilityNote) {
+    return <span className="mq-unavailable">{item.availabilityNote}</span>;
+  }
+
   if (item.available === false) {
     return <span className="mq-unavailable">Currently unavailable</span>;
   }
