@@ -1672,15 +1672,40 @@
 
 
 /* ========================================================================================
-   C — DAKSHIN : South Indian Heritage
+   C — DAKSHIN : South Indian Heritage Masterpiece Edition
+   Inspired by the grand dining halls of Madurai, Chettinad, and Thanjavur
+   Palette: Deep Temple Teak (#101c13, #18281c, #0a130c), Plantain Green (#15803d, #22c55e),
+            Kumbakonam Brass & Turmeric (#eab308, #fef08a, #ca8a04), Coconut Ivory (#fefce8)
    ======================================================================================== */
 
 .mq-ed-dakshin {
-  background-color: var(--mq-color-bg, #f4f8f3);
+  background-color: var(--mq-color-bg, #f7faf6);
   color: var(--mq-color-text, #142417);
   position: relative;
   container-name: dakshin;
+  font-family: var(--mq-font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
 }
+
+/* Gold Foil Gradient Typography */
+.mq-ed-dakshin-foil-text {
+  background: linear-gradient(
+    135deg,
+    #fef08a 0%,
+    #eab308 28%,
+    #ca8a04 55%,
+    #fef08a 82%,
+    #a16207 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+/* =========================================================================
+   COVER : Dravidian Temple Gateway & Kuthu Vilakku Cartouche
+   ========================================================================= */
 
 .mq-ed-dakshin-cover {
   container-type: inline-size;
@@ -1691,37 +1716,64 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  min-height: min(100svh, 54rem);
-  padding: clamp(1.5rem, 4cqw, 2.5rem) clamp(1rem, 3cqw, 2rem);
+  min-height: min(100svh, 56rem);
+  padding: clamp(1.75rem, 4.5cqw, 3rem) clamp(1rem, 3.5cqw, 2.5rem);
   overflow: hidden;
   text-align: center;
-  color: #faf8f2;
+  color: #fefce8;
   box-sizing: border-box;
 }
 
-/* Deep Banana-Leaf Emerald Night Overlay Scrim ensures 100% crystal-clear contrast over bright dosa photography */
+/* Deep Banana-Leaf Emerald Night Overlay Scrim ensures 100% crystal contrast over bright photography */
 .mq-ed-dakshin-veil {
   position: absolute;
   inset: 0;
   z-index: 1;
   background:
-    linear-gradient(
-      180deg,
-      rgba(10, 36, 18, 0.72) 0%,
-      rgba(8, 28, 14, 0.88) 55%,
-      rgba(4, 18, 9, 0.97) 100%
+    radial-gradient(
+      ellipse at center,
+      rgba(16, 28, 19, 0.72) 0%,
+      rgba(10, 20, 13, 0.88) 60%,
+      rgba(6, 14, 9, 0.96) 100%
     );
   pointer-events: none;
 }
 
-/* Kolam border ornament */
+/* Sikku Kolam dashed border ornament */
 .mq-ed-dakshin-kolam-border {
   position: absolute;
-  inset: clamp(10px, 3cqw, 20px);
+  inset: clamp(12px, 3.2cqw, 24px);
   z-index: 2;
-  border: 1px dashed rgba(212, 160, 23, 0.65);
+  border: 1.5px dashed rgba(234, 179, 8, 0.55);
   border-radius: 8px;
   pointer-events: none;
+}
+
+/* 4 Threshold Corners for Sikku Kolam Brackets */
+.mq-ed-dakshin-corner {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.mq-ed-dakshin-corner.corner-tl {
+  top: clamp(14px, 3.5cqw, 26px);
+  left: clamp(14px, 3.5cqw, 26px);
+}
+
+.mq-ed-dakshin-corner.corner-tr {
+  top: clamp(14px, 3.5cqw, 26px);
+  right: clamp(14px, 3.5cqw, 26px);
+}
+
+.mq-ed-dakshin-corner.corner-bl {
+  bottom: clamp(14px, 3.5cqw, 26px);
+  left: clamp(14px, 3.5cqw, 26px);
+}
+
+.mq-ed-dakshin-corner.corner-br {
+  bottom: clamp(14px, 3.5cqw, 26px);
+  right: clamp(14px, 3.5cqw, 26px);
 }
 
 .mq-ed-dakshin-cover-body {
@@ -1731,74 +1783,89 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(0.35rem, 1.8cqw, 0.95rem);
+  gap: clamp(0.45rem, 1.8cqw, 1rem);
   width: 100%;
-  max-width: min(34rem, 100%);
+  max-width: min(38rem, 100%);
   margin-block: auto;
   box-sizing: border-box;
 }
 
-.mq-ed-dakshin-banner-badge {
+.mq-ed-dakshin-heritage-badge {
   display: inline-flex;
   align-items: center;
   gap: var(--mq-space-2);
-  padding: 3px 14px;
+  padding: 4px 16px;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
-  letter-spacing: clamp(0.06em, 0.3cqw, 0.14em);
+  font-size: clamp(0.75rem, 1.6cqw, 0.82rem);
+  letter-spacing: clamp(0.08em, 0.3cqw, 0.16em);
   text-transform: uppercase;
-  color: #faf8f2;
-  background-color: rgba(22, 68, 38, 0.85);
-  border: 1px solid rgba(212, 160, 23, 0.5);
+  color: #fef08a;
+  background-color: rgba(22, 68, 38, 0.88);
+  border: 1px solid rgba(234, 179, 8, 0.6);
   border-radius: 9999px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.55);
 }
 
-.mq-ed-dakshin-crest {
+/* Kuthu Vilakku Lamp Cartouche */
+.mq-ed-dakshin-cartouche {
   position: relative;
-  display: inline-grid;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-block: clamp(0.25rem, 1cqw, 0.75rem);
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.7));
+}
+
+.mq-ed-dakshin-cartouche-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.mq-ed-dakshin-cartouche-logo {
+  position: relative;
+  z-index: 2;
+  display: grid;
   place-items: center;
-  width: clamp(62px, 15cqw, 92px);
-  height: clamp(62px, 15cqw, 92px);
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
 }
 
 .mq-ed-dakshin-title {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(1.2rem, 5.8cqw, 2.75rem);
-  font-weight: 600;
-  letter-spacing: clamp(0.04em, 0.8cqw, 0.12em);
+  font-size: clamp(1.6rem, 6cqw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: clamp(0.04em, 0.8cqw, 0.14em);
   text-transform: uppercase;
-  color: #faf8f2;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
   text-wrap: balance;
   word-break: break-word;
-  max-width: min(32rem, 90%);
+  max-width: min(34rem, 92%);
+  line-height: 1.15;
 }
 
 .mq-ed-dakshin-tagline {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.72rem, 2.2cqw, 1rem);
+  font-size: clamp(0.85rem, 2.2cqw, 1.1rem);
   font-style: italic;
   letter-spacing: clamp(0.02em, 0.4cqw, 0.06em);
   line-height: var(--mq-leading-relaxed);
-  color: #f2eee3;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-  max-width: min(25rem, 90%);
+  color: #fefce8;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+  max-width: min(30rem, 92%);
   text-wrap: balance;
 }
 
 .mq-ed-dakshin-teaser {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.58rem, 1.7cqw, 0.75rem);
-  letter-spacing: 0.12em;
+  font-size: clamp(0.75rem, 1.7cqw, 0.82rem);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #d4a017;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
-  max-width: min(26rem, 90%);
+  color: #fef08a;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
+  max-width: min(30rem, 92%);
 }
 
 .mq-ed-dakshin-contact {
@@ -1806,17 +1873,74 @@
   z-index: 4;
   margin-top: auto;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.6rem, 1.7cqw, 0.75rem);
+  font-size: clamp(0.75rem, 1.8cqw, 0.85rem);
   letter-spacing: 0.12em;
-  color: #f2eee3;
-  opacity: 0.9;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  color: #fefce8;
+  opacity: 0.95;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
 }
 
-.mq-ed-dakshin-plate {
-  max-width: var(--mq-ed-measure);
+/* =========================================================================
+   ASTRAGALS & ORNAMENTS (Banana Leaf Vazhai Ilai Dividers)
+   ========================================================================= */
+
+.mq-ed-dakshin-astragal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 32rem;
   margin-inline: auto;
-  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-12);
+  margin-block: clamp(0.4rem, 1cqw, 0.85rem);
+}
+
+.mq-ed-dakshin-astragal-rail {
+  flex: 1 1 2rem;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(234, 179, 8, 0.6) 50%,
+    transparent 100%
+  );
+}
+
+.mq-ed-dakshin-astragal-svg {
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
+.mq-ed-dakshin-astragal.is-grand {
+  max-width: 38rem;
+  margin-block: clamp(0.6rem, 1.5cqw, 1.25rem);
+}
+
+/* =========================================================================
+   DIET MARKS (Chettinad Saivam Plantain Sprout vs Asaivam Uruli Flame)
+   ========================================================================= */
+
+.mq-ed-dakshin-diet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.mq-ed-dakshin-diet svg {
+  display: block;
+}
+
+/* =========================================================================
+   INTERIOR : Plantain Leaf Banquet Plate (Main Content)
+   ========================================================================= */
+
+.mq-ed-dakshin-plate {
+  max-width: min(var(--mq-ed-measure, 54rem), 94vw);
+  margin-inline: auto;
+  padding: var(--mq-space-8) var(--mq-space-4) var(--mq-space-12);
+  box-sizing: border-box;
 }
 
 .mq-ed-dakshin-leaf-banner {
@@ -1825,24 +1949,318 @@
   justify-content: center;
   gap: var(--mq-space-3);
   margin-bottom: var(--mq-space-8);
-  padding: var(--mq-space-3) var(--mq-space-4);
-  background-color: color-mix(in oklab, var(--mq-color-accent) 12%, transparent);
-  border-radius: 6px;
-  color: var(--mq-color-accent-text, #164426);
-  font-size: var(--mq-text-sm);
+  padding: 0.65rem 1.25rem;
+  background-color: rgba(22, 101, 52, 0.08);
+  border: 1px solid rgba(22, 101, 52, 0.25);
+  border-radius: 8px;
+  color: #14532d;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.85rem);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-align: center;
 }
 
+/* =========================================================================
+   1. SIGNATURE TIFFIN & ROAST SHOWCASE CARDS
+   ========================================================================= */
+
+.mq-ed-dakshin-showcase {
+  margin-bottom: clamp(2.5rem, 6cqw, 4rem);
+  padding: clamp(1.25rem, 3cqw, 2rem);
+  background: linear-gradient(180deg, #ffffff 0%, #f4f8f3 100%);
+  border: 1.5px solid rgba(202, 138, 4, 0.35);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(16, 28, 19, 0.08);
+  position: relative;
+}
+
+.mq-ed-dakshin-showcase-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: clamp(1.25rem, 3cqw, 2rem);
+}
+
+.mq-ed-dakshin-section-eyebrow {
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.82rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #ca8a04;
+}
+
+.mq-ed-dakshin-showcase-title {
+  margin: 0.25rem 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.4rem, 4.5cqw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mq-ed-dakshin-showcase-subtitle {
+  margin: 0;
+  max-width: 54ch;
+  font-size: max(12px, 0.88rem);
+  color: #4b5563;
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+}
+
+.mq-ed-dakshin-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: clamp(1.25rem, 3cqw, 2rem);
+}
+
+.mq-ed-dakshin-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid rgba(22, 68, 38, 0.18);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(16, 28, 19, 0.06);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.mq-ed-dakshin-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(16, 28, 19, 0.12);
+}
+
+.mq-ed-dakshin-card-bracket {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.mq-ed-dakshin-card-bracket.bracket-tl { top: 6px; left: 6px; }
+.mq-ed-dakshin-card-bracket.bracket-tr { top: 6px; right: 6px; }
+.mq-ed-dakshin-card-bracket.bracket-bl { bottom: 6px; left: 6px; }
+.mq-ed-dakshin-card-bracket.bracket-br { bottom: 6px; right: 6px; }
+
+.mq-ed-dakshin-card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #101c13;
+}
+
+.mq-ed-dakshin-card-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  padding: 3px 12px;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.75rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(16, 28, 19, 0.88);
+  border: 1px solid rgba(234, 179, 8, 0.7);
+  border-radius: 9999px;
+  color: #fef08a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.mq-ed-dakshin-card-body {
+  padding: clamp(1rem, 2.5cqw, 1.4rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex: 1;
+}
+
+.mq-ed-dakshin-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.mq-ed-dakshin-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.mq-ed-dakshin-card-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.05rem, 2.5cqw, 1.3rem);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #142417;
+}
+
+.mq-ed-dakshin-card-price-slot {
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.05rem, 2.5cqw, 1.3rem);
+  font-weight: 700;
+  color: #15803d;
+  white-space: nowrap;
+}
+
+.mq-ed-dakshin-card-desc {
+  margin: 0;
+  font-size: max(12px, 0.85rem);
+  line-height: var(--mq-leading-relaxed);
+  color: #374151;
+  font-style: italic;
+}
+
+.mq-ed-dakshin-pairing-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  background: rgba(22, 101, 52, 0.06);
+  border-left: 2.5px solid #15803d;
+  border-radius: 0 4px 4px 0;
+  font-size: max(12px, 0.78rem);
+  color: #166534;
+  font-weight: 500;
+}
+
+.mq-ed-dakshin-card-lore {
+  margin: 0;
+  font-size: max(12px, 0.76rem);
+  color: #854d0e;
+  line-height: 1.45;
+  border-top: 1px dashed rgba(202, 138, 4, 0.25);
+  padding-top: 0.5rem;
+}
+
+/* =========================================================================
+   2. "VAZHAI ILAI VIRUNDHU" EDITORIAL PLAQUE ASIDE
+   ========================================================================= */
+
+.mq-ed-dakshin-virundhu-plaque {
+  position: relative;
+  margin-bottom: clamp(2.5rem, 6cqw, 4rem);
+  padding: clamp(1.5rem, 4cqw, 2.75rem);
+  background: linear-gradient(180deg, #122016 0%, #0d1710 100%);
+  border: 1.5px solid rgba(234, 179, 8, 0.45);
+  border-radius: 12px;
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  color: #fefce8;
+  overflow: hidden;
+}
+
+.mq-ed-dakshin-plaque-bracket {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.mq-ed-dakshin-plaque-bracket.bracket-tl { top: 8px; left: 8px; }
+.mq-ed-dakshin-plaque-bracket.bracket-tr { top: 8px; right: 8px; }
+.mq-ed-dakshin-plaque-bracket.bracket-bl { bottom: 8px; left: 8px; }
+.mq-ed-dakshin-plaque-bracket.bracket-br { bottom: 8px; right: 8px; }
+
+.mq-ed-dakshin-plaque-title {
+  margin: 0.35rem 0 0.85rem;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.35rem, 4.2cqw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mq-ed-dakshin-plaque-prose {
+  margin: 0 auto;
+  max-width: 66ch;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.92rem);
+  font-style: italic;
+  line-height: 1.75;
+  color: #fefce8;
+  opacity: 0.95;
+}
+
+.mq-ed-dakshin-plaque-pillars {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: clamp(1rem, 3cqw, 2rem);
+  margin-top: 1.25rem;
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .mq-ed-dakshin-plaque-pillars {
+    flex-direction: column;
+  }
+}
+
+.mq-ed-dakshin-plaque-col {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  border-radius: 6px;
+}
+
+.mq-ed-dakshin-col-title {
+  margin: 0 0 0.35rem;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.78rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fef08a;
+}
+
+.mq-ed-dakshin-col-desc {
+  margin: 0;
+  font-size: max(12px, 0.82rem);
+  line-height: 1.55;
+  color: #cbd5e1;
+}
+
+.mq-ed-dakshin-plaque-sep {
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(234, 179, 8, 0.4), transparent);
+}
+
+@media (max-width: 640px) {
+  .mq-ed-dakshin-plaque-sep {
+    display: none;
+  }
+}
+
+.mq-ed-dakshin-plaque-footer {
+  margin: 1.25rem 0 0;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.8rem);
+  letter-spacing: 0.1em;
+  color: #fef08a;
+  opacity: 0.9;
+}
+
+/* =========================================================================
+   3. DAKSHIN COURSES WITH TAMIL MEDALLIONS & PRECISION DOTTED LEADERS
+   ========================================================================= */
+
 .mq-ed-dakshin-course {
   position: relative;
-  margin-bottom: var(--mq-space-10);
+  margin-bottom: clamp(2rem, 5cqw, 3.5rem);
   padding: clamp(1.25rem, 3.5cqw, 2.25rem) clamp(1rem, 3cqw, 2rem);
   background: #ffffff;
-  border: 1px solid rgba(22, 68, 38, 0.2);
-  border-radius: 6px;
-  box-shadow: 0 6px 24px rgba(22, 68, 38, 0.08);
+  border: 1px solid rgba(22, 68, 38, 0.16);
+  border-left: 4px solid #15803d;
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(22, 68, 38, 0.06);
   box-sizing: border-box;
 }
 
@@ -1851,58 +2269,74 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0.35rem;
   margin-bottom: clamp(1rem, 2.5cqw, 1.75rem);
 }
 
-.mq-ed-dakshin-course-title {
-  margin: var(--mq-space-2) 0;
+.mq-ed-dakshin-course-arch {
+  margin-bottom: -0.25rem;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+}
+
+.mq-ed-dakshin-medallion {
+  display: inline-grid;
+  place-items: center;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+}
+
+.mq-ed-dakshin-course-subtitle {
   font-family: var(--mq-font-display);
-  font-size: clamp(1.2rem, 4cqw, 1.85rem);
+  font-size: max(12px, 0.78rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ca8a04;
+}
+
+.mq-ed-dakshin-course-title {
+  margin: var(--mq-space-1) 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.25rem, 4cqw, 1.95rem);
   font-weight: 700;
   letter-spacing: clamp(0.06em, 0.6cqw, 0.12em);
-  color: #12381b;
   text-transform: uppercase;
   text-wrap: balance;
 }
 
-.mq-ed-dakshin-course-title::after {
-  content: '';
-  display: block;
-  width: 48px;
-  height: 2px;
-  margin: var(--mq-space-2) auto 0;
-  background-color: #d4a017;
-}
-
 .mq-ed-dakshin-course-desc {
-  margin: var(--mq-space-2) auto 0;
+  margin: var(--mq-space-1) auto 0;
   max-width: 48ch;
-  font-size: clamp(0.78rem, 2cqw, 0.9rem);
-  color: #4a5d4e;
+  font-size: max(12px, 0.85rem);
+  color: #4b5563;
   font-style: italic;
   line-height: var(--mq-leading-relaxed);
+}
+
+.mq-ed-dakshin-course-divider {
+  margin-top: 0.5rem;
 }
 
 .mq-ed-dakshin-list {
   display: flex;
   flex-direction: column;
-  gap: clamp(0.75rem, 2cqw, 1.25rem);
+  gap: clamp(0.85rem, 2cqw, 1.35rem);
   margin-top: var(--mq-space-4);
 }
 
-.mq-ed-dakshin .mq-ed-leader {
+/* Precision Dotted Leader Row anchored to last baseline */
+.mq-ed-dakshin-dish-row {
   display: block;
   min-width: 0;
-  padding-bottom: clamp(0.4rem, 1.2cqw, 0.75rem);
-  border-bottom: 1px dashed rgba(22, 68, 38, 0.16);
+  padding-bottom: clamp(0.5rem, 1.3cqw, 0.85rem);
+  border-bottom: 1px dashed rgba(22, 68, 38, 0.15);
 }
 
-.mq-ed-dakshin .mq-ed-leader:last-child {
+.mq-ed-dakshin-dish-row:last-child {
   border-bottom: none;
   padding-bottom: 0;
 }
 
-.mq-ed-dakshin .mq-ed-leader-head {
+.mq-ed-dakshin-dish-head {
   display: flex;
   align-items: last baseline;
   gap: clamp(0.35rem, 1.2cqw, 0.75rem);
@@ -1910,21 +2344,21 @@
   width: 100%;
 }
 
-.mq-ed-dakshin .mq-ed-leader-name {
+.mq-ed-dakshin-dish-name {
   margin: 0;
   flex: 0 1 auto;
   min-width: 0;
-  max-width: calc(100% - 4.5rem);
+  max-width: calc(100% - 5rem);
   font-family: var(--mq-font-display);
-  font-size: clamp(0.92rem, 2.4cqw, 1.12rem);
+  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: #142417;
   overflow-wrap: break-word;
 }
 
-.mq-ed-dakshin .mq-ed-leader-rule {
+.mq-ed-dakshin-dish-rule {
   flex: 1 1 1.5rem;
   min-width: 0.85rem;
   height: 1px;
@@ -1932,50 +2366,72 @@
   margin-bottom: 0.22em;
   background-image: radial-gradient(
     circle at center,
-    rgba(22, 68, 38, 0.5) 1px,
+    rgba(202, 138, 4, 0.65) 1px,
     transparent 1.2px
   );
   background-size: 6px 1px;
   background-repeat: repeat-x;
 }
 
-.mq-ed-dakshin .mq-price {
+.mq-ed-dakshin-dish-price {
   font-family: var(--mq-font-display);
-  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-size: clamp(0.95rem, 2.4cqw, 1.18rem);
   font-weight: 700;
-  color: #164426;
+  color: #15803d;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.mq-ed-dakshin .mq-ed-leader-desc {
+.mq-ed-dakshin-dish-desc {
   margin: var(--mq-space-1) 0 0;
-  max-width: 54ch;
-  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+  max-width: 56ch;
+  font-size: max(12px, 0.84rem);
   line-height: var(--mq-leading-relaxed);
-  color: #4a5d4e;
+  color: #4b5563;
   font-style: italic;
 }
 
-.mq-ed-dakshin .mq-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  font-family: var(--mq-font-display);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  border-radius: 4px;
-  background: rgba(22, 68, 38, 0.1);
-  border: 1px solid rgba(22, 68, 38, 0.35);
-  color: #164426;
+.mq-ed-dakshin-dish-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.4rem;
 }
 
-.mq-ed-dakshin .mq-badge::before {
-  content: '🌿';
-  font-size: 0.65rem;
+.mq-ed-dakshin-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 4px;
 }
+
+.mq-ed-dakshin-tag.is-bestseller {
+  background: rgba(22, 101, 52, 0.1);
+  border: 1px solid rgba(22, 101, 52, 0.35);
+  color: #15803d;
+}
+
+.mq-ed-dakshin-tag.is-special {
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  color: #854d0e;
+}
+
+.mq-ed-dakshin-tag.is-spice {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #991b1b;
+}
+
+/* =========================================================================
+   FOOTER & SOUTH INDIAN BRIGADE COLOPHON
+   ========================================================================= */
 
 .mq-ed-dakshin-foot {
   padding: var(--mq-space-10) var(--mq-space-5);
@@ -1984,25 +2440,63 @@
   flex-direction: column;
   align-items: center;
   gap: var(--mq-space-3);
-  border-top: 1px solid var(--mq-color-border);
+  border-top: 1.5px solid rgba(202, 138, 4, 0.35);
+  background: #ffffff;
 }
 
 .mq-ed-dakshin-foot-name {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: var(--mq-text-lg);
-  font-weight: 600;
+  font-size: clamp(1.2rem, 3.5cqw, 1.85rem);
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--mq-color-heading);
 }
 
 .mq-ed-dakshin-foot-sub {
   margin: 0;
-  font-size: var(--mq-text-sm);
+  font-size: max(12px, 0.85rem);
   font-style: italic;
-  color: var(--mq-color-text-muted);
+  color: #4b5563;
 }
+
+.mq-ed-dakshin-brigade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 52rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.mq-ed-dakshin-brigade-item {
+  border: 1px solid rgba(202, 138, 4, 0.25);
+  background: rgba(22, 101, 52, 0.04);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.mq-ed-dakshin-brigade-title {
+  font-family: var(--mq-font-display);
+  font-weight: 700;
+  font-size: max(12px, 0.82rem);
+  color: #15803d;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.mq-ed-dakshin-brigade-role {
+  font-style: italic;
+  font-size: max(12px, 0.78rem);
+  color: #4b5563;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
 
 
 /* ========================================================================================
@@ -2643,80 +3137,7 @@
    DEDICATED SHOWCASE CARDS FOR INDIAN EDITIONS
    ======================================================================================== */
 
-/* Dakshin Showcase */
-.mq-ed-dakshin-showcase {
-  margin-bottom: var(--mq-space-12);
-}
-.mq-ed-dakshin-showcase-head {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--mq-space-1);
-  margin-bottom: var(--mq-space-6);
-}
-.mq-ed-dakshin-showcase-title {
-  margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-sm);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #164426;
-  font-weight: 700;
-}
-.mq-ed-dakshin-showcase-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-  gap: var(--mq-space-6);
-}
-.mq-ed-dakshin-card {
-  position: relative;
-  background-color: #ffffff;
-  border: 1px solid rgba(22, 68, 38, 0.2);
-  padding: var(--mq-space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--mq-space-3);
-  box-shadow: 0 8px 24px rgba(22, 68, 38, 0.08);
-  border-radius: 6px;
-}
-.mq-ed-dakshin-card-media {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid rgba(22, 68, 38, 0.15);
-}
-.mq-ed-dakshin-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mq-space-1);
-}
-.mq-ed-dakshin-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--mq-space-2);
-}
-.mq-ed-dakshin-card-name {
-  margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-lg);
-  font-weight: 700;
-  color: #12381b;
-}
-.mq-ed-dakshin-card-price {
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-base);
-  font-weight: 800;
-  color: #d4a017;
-}
-.mq-ed-dakshin-card-desc {
-  margin: 0;
-  font-size: var(--mq-text-sm);
-  color: #4a5d4e;
-  line-height: var(--mq-leading-relaxed);
-}
+
 
 /* Thali & Co. Showcase */
 .mq-ed-thali-showcase {
