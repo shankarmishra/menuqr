@@ -140,6 +140,24 @@ export default function SiteFooter() {
                   support@menusqr.in
                 </a>
               </div>
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+                  </svg>
+                </span>
+                <span className="text-white/60 text-xs">Instagram:</span>
+                <a
+                  href="https://www.instagram.com/menusqr.in/"
+                  target="_blank"
+                  rel="noopener noreferrer me"
+                  className="font-semibold text-white hover:text-menusqr-orange transition-colors"
+                >
+                  @menusqr.in
+                </a>
+              </div>
             </div>
 
             <div className="flex gap-4">

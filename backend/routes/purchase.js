@@ -268,7 +268,9 @@ export async function processOrderPaymentAndProvision({
       verifiedTxId = razorpayPaymentId;
     } else if (process.env.NODE_ENV !== 'production' && mockSuccess) {
       verifiedGateway = 'mock';
-    } else if (!cashfreeConfigured && !razorpayConfigured && (isCashfreeRedirect || (isWebhook && webhookVerified) || mockSuccess)) {
+    } else if (process.env.NODE_ENV !== 'production' && !cashfreeConfigured && !razorpayConfigured && (isCashfreeRedirect || (isWebhook && webhookVerified) || mockSuccess)) {
+      // Sandbox convenience only. In production a missing gateway key must never turn an unverified
+      // request into a PAID order, so it falls through to the 400 below instead.
       verifiedGateway = 'cashfree_sandbox';
     } else {
       throw apiError(400, 'Payment verification data missing or invalid.');
