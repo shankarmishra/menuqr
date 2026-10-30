@@ -53,6 +53,9 @@ jobs:
       # (verified: the fixture is absent, not gitignored). Pre-existing, unrelated to this gate.
       - name: Backend unit tests (pure logic, no database required)
         working-directory: backend
+        env:
+          NODE_ENV: test
+          JWT_SECRET: ci-test-jwt-secret-not-for-production-min-32-chars
         run: >
           node --test
           test/storage.test.js

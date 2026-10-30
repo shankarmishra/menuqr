@@ -7,7 +7,7 @@ import { pool, queryPortable } from './db.js';
 const pbkdf2Async = promisify(pbkdf2);
 
 // Use a secure JWT secret from env or generate a temporary one (not ideal for production restarts, but safe for dev)
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'test' ? 'test-jwt-secret-for-testing-only-min-32-characters' : undefined);
 if (!JWT_SECRET) {
   console.error("FATAL: JWT_SECRET environment variable is missing.");
   process.exit(1);
