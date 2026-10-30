@@ -364,7 +364,7 @@ export default function Settings() {
                 required
                 value={profileForm.businessName}
                 onChange={(e) => setProfileForm({ ...profileForm, businessName: e.target.value })}
-                placeholder="e.g. Mannat Restaurant & Dhaba"
+                placeholder="e.g. Spice Garden Restaurant"
                 className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#e8783c] transition-all"
               />
             </div>

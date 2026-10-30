@@ -232,7 +232,7 @@ export function deterministicPdfExtraction(rawText, filename, inspectedData = {}
 
   // Derive high-fidelity DesignSpecification fallback
   const isFineDining = categories.some(c => /royal|mughlai|heritage|wine|banquet|gourmet/i.test(c.name));
-  const isChalkboard = /steak|chalk|bbq|grill|clipboard/i.test(inspectedData.rawText) || /chalkboard|clipboard|yoursteak/i.test(filename);
+  const isChalkboard = /steak|chalk|bbq|grill|clipboard/i.test(inspectedData.rawText) || /chalkboard|clipboard/i.test(filename);
   const composition = isChalkboard ? 'parametric-artboard' : (isFineDining ? 'editorial' : (categories.length > 4 ? 'compact-bistro' : 'image-showcase'));
   const rawName = typeof filename === 'string' ? filename : (inspectedData?.fileName || inspectedData?.filename || 'Restaurant Menu');
   const cleanFilename = rawName.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
@@ -292,7 +292,7 @@ export function deterministicPdfExtraction(rawText, filename, inspectedData = {}
           { label: 'OPEN HOUR', value: '8AM' },
           { label: 'LIVE MUSIC', value: '6PM' },
         ],
-        footerText: 'WWW.YOURSTEAK.COM',
+        footerText: '',
       },
       pageLayout: { columns: 2, columnBalance: 'equal' },
       categoryStyle: { badgeType: 'banner-ribbon' },
@@ -492,7 +492,7 @@ OUTPUT FORMAT: Return ONLY a valid JSON object matching this exact structure:
         "ribbonText": "FOOD",
         "heroPlatter": true,
         "badges": [{"label": "OPEN HOUR", "value": "8AM"}, {"label": "LIVE MUSIC", "value": "6PM"}],
-        "footerText": "WWW.YOURSTEAK.COM"
+        "footerText": ""
       },
       "pageLayout": {
         "columns": 2,

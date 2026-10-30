@@ -560,14 +560,12 @@ export default function MenuPage() {
     return () => { isCurrent = false; };
   }, [location.state, slug]);
 
-  // Hooks must run on every render, so this lives above the early returns below. Placing it after
-  // them made the first loaded render call one more hook than the loading render and crashed the page.
-  const isShobharam = Boolean(client?.businessName?.toLowerCase().includes('shobharam'));
   const bespokeColors = (client?.accentConfiguration as { colors?: { bg?: string; text?: string } } | undefined)?.colors;
-  const effectiveBg = isShobharam ? '#090C0B' : (bespokeColors?.bg || pagePalette.bg);
-  const effectiveText = isShobharam ? '#F3F4F6' : (bespokeColors?.text || pagePalette.text);
+  const effectiveBg = bespokeColors?.bg || pagePalette.bg;
+  const effectiveText = bespokeColors?.text || pagePalette.text;
 
-  // Prevent white overscroll / bottom strip on dark themed menus
+  // Hooks must run on every render, so this lives above the early returns below. Placed after
+  // them, the first loaded render called one more hook than the loading render and crashed the page.
   useEffect(() => {
     const originalBg = document.body.style.backgroundColor;
     document.body.style.backgroundColor = effectiveBg;
@@ -699,28 +697,15 @@ export default function MenuPage() {
   return (
     <div className="min-h-screen flex flex-col font-sans transition-colors duration-300" style={{ backgroundColor: effectiveBg, color: effectiveText }}>
       <SEO 
-        title={isShobharam ? (client?.businessName || "Shobharam's Pure Veg") : `${client?.businessName || 'Restaurant Menu'} | MenusQR`} 
+        title={`${client?.businessName || 'Restaurant Menu'} | MenusQR`} 
         description={`Digital QR menu for ${client?.businessName || 'this restaurant'}.`} 
         canonicalUrl={`/menu/${slug}`} 
         index={false} 
       />
       <header className="px-4 py-3 border-b border-white/10 flex items-center justify-between backdrop-blur-md relative z-30 bg-black/40">
-        {isShobharam ? (
-          <div className="flex items-center gap-2.5">
-            <img
-              src={client?.logoUrl || '/uploads/shobharam/shobharam_logo_transparent.webp'}
-              alt={client?.businessName || "Shobharam's"}
-              className="h-8 w-auto max-h-8 object-contain filter drop-shadow"
-            />
-            <span className="font-serif font-black tracking-wider text-amber-300 text-sm sm:text-base">
-              {client?.businessName || "Shobharam's"}
-            </span>
-          </div>
-        ) : (
-          <Link className="menu-wordmark flex items-center gap-2" to={`/menu/${slug}`} aria-label="MenusQR menu">
-            <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
-          </Link>
-        )}
+        <Link className="menu-wordmark flex items-center gap-2" to={`/menu/${slug}`} aria-label="MenusQR menu">
+          <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
+        </Link>
         <div className="flex items-center gap-3">
           {(client?.instagram || client?.facebook || client?.website) && (
             <div className="flex items-center gap-1.5 mr-1">
