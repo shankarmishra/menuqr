@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
+import { Camera, ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
 import type { ParsedCategory, ParsedMenuItem } from '../../../../utils/excelMenuParser';
 import { OB, inputStyle } from '../chrome';
 
@@ -174,6 +174,7 @@ export default function MenuTableEditor({
             <thead className="sticky top-0 z-10" style={{ background: OB.panelRaised, color: OB.inkMuted }}>
               <tr className="font-mono text-[10px] uppercase tracking-wider">
                 <th className="px-2 py-2.5">Veg</th>
+                <th className="px-2 py-2.5 text-center">Photo</th>
                 <th className="px-2 py-2.5">Section</th>
                 <th className="px-2 py-2.5">Dish name</th>
                 <th className="px-2 py-2.5 text-right">Single</th>
@@ -199,6 +200,29 @@ export default function MenuTableEditor({
                         style={{ background: item.dietType === 'veg' ? OB.ok : OB.danger }}
                       />
                     </button>
+                  </td>
+                  <td className="px-2 py-1.5 text-center">
+                    {item.imageUrl ? (
+                      <div
+                        className="relative mx-auto h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-[#D4AF37]/40 bg-black/60 shadow-sm"
+                        title={item.name ? `${item.name} photo` : 'Dish photo'}
+                      >
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className="mx-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-dashed border-[#D4AF37]/20 bg-[#120F0B] text-[#766A58]"
+                        title="No photo yet (Excel or Step 3)"
+                      >
+                        <Camera size={13} className="opacity-40" />
+                      </div>
+                    )}
                   </td>
                   <td className="px-2 py-1.5">
                     <select
@@ -229,6 +253,16 @@ export default function MenuTableEditor({
                         {item.description}
                       </span>
                     )}
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <input
+                        value={item.imageUrl || ''}
+                        placeholder="Image URL (optional)"
+                        onChange={(e) => patchItem(index, { imageUrl: e.target.value.trim() })}
+                        className="w-full rounded-md border px-1.5 py-0.5 font-mono text-[10px] text-[#D4AF37] placeholder:text-[#534738] focus:outline-none"
+                        style={inputStyle}
+                        aria-label={`Image URL for ${item.name || 'dish'}`}
+                      />
+                    </div>
                   </td>
                   {(['price', 'halfPrice', 'fullPrice'] as const).map((field) => (
                     <td key={field} className="px-2 py-1.5 text-right">

@@ -58,7 +58,41 @@ const COLUMN_ALIASES: Record<string, string[]> = {
   fullPrice: ['full price', 'full', 'full rate', 'full amount', 'full_price', 'large price', 'large', 'full_rate', 'price (full)'],
   dietType: ['veg', 'vegetarian', 'food type', 'diet', 'diet type', 'diet_type', 'type (veg/non-veg)', 'is veg', 'veg/non-veg', 'veg or non-veg'],
   available: ['available', 'status', 'is available', 'in stock', 'active'],
-  imageUrl: ['image', 'image url', 'photo', 'picture', 'photo url', 'image_url'],
+  imageUrl: [
+    'image',
+    'image url',
+    'image_url',
+    'image link',
+    'image_link',
+    'image uri',
+    'image_uri',
+    'photo',
+    'photo url',
+    'photo_url',
+    'photo link',
+    'photo_link',
+    'dish image',
+    'dish_image',
+    'dish image url',
+    'dish_image_url',
+    'dish photo',
+    'dish_photo',
+    'dish photo url',
+    'dish_photo_url',
+    'picture',
+    'picture url',
+    'picture_url',
+    'pic',
+    'img',
+    'img url',
+    'img_url',
+    'item image',
+    'item_image',
+    'food image',
+    'food_image',
+    'dish img',
+    'dish_img',
+  ],
   bestseller: ['bestseller', 'best seller', 'popular', 'featured', 'star', 'chef special', 'highlight', 'is_bestseller'],
 };
 
@@ -73,6 +107,41 @@ function parseFlag(val: unknown): boolean {
 function cleanString(val: unknown): string {
   if (val === null || val === undefined) return '';
   return String(val).trim();
+}
+
+/** Robustly extracts and normalizes an image URL from an Excel cell */
+export function parseImageUrl(val: unknown): string {
+  if (val === null || val === undefined) return '';
+  let str = String(val).trim();
+  if (!str) return '';
+
+  // Extract from =HYPERLINK("https://...", "...") Excel formula if present
+  const hyperlinkMatch = str.match(/=HYPERLINK\(\s*["']([^"']+)["']/i);
+  if (hyperlinkMatch && hyperlinkMatch[1]) {
+    str = hyperlinkMatch[1].trim();
+  }
+
+  // Remove surrounding quotes
+  str = str.replace(/^["']|["']$/g, '').trim();
+
+  // If already full protocol URL or data URL or root path
+  if (
+    str.startsWith('http://') ||
+    str.startsWith('https://') ||
+    str.startsWith('data:image/') ||
+    str.startsWith('/uploads/') ||
+    str.startsWith('/img/') ||
+    str.startsWith('/assets/')
+  ) {
+    return str;
+  }
+
+  // Common web image formats without protocol prefix (e.g. images.unsplash.com/...)
+  if (/^[\w.-]+\.[a-z]{2,}(\/.*)?$/i.test(str)) {
+    return `https://${str}`;
+  }
+
+  return str;
 }
 
 export function parseDietType(val: unknown): 'veg' | 'non-veg' | 'vegan' {
@@ -125,12 +194,22 @@ export async function parseExcelMenuFile(file: File): Promise<ParseResult> {
   const matchedFields = new Set<string>();
 
   headerRow.forEach((h, colIdx) => {
-    const cleanHeader = h.toLowerCase();
+    const rawHeader = h.toLowerCase().trim();
+    // Normalize header: strip parenthetical notes e.g. "(Optional)", "(Half)", normalize dashes/underscores
+    const strippedHeader = rawHeader.replace(/\s*\([^)]*\)/g, '').trim();
+    const normalizedHeader = strippedHeader.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
+
     for (const [field, aliases] of Object.entries(COLUMN_ALIASES)) {
-      if (!matchedFields.has(field) && aliases.includes(cleanHeader)) {
-        columnMap[colIdx] = field;
-        matchedFields.add(field);
-        break;
+      if (!matchedFields.has(field)) {
+        const matches = aliases.some((a) => {
+          const normA = a.toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
+          return rawHeader === a || strippedHeader === a || normalizedHeader === normA;
+        });
+        if (matches) {
+          columnMap[colIdx] = field;
+          matchedFields.add(field);
+          break;
+        }
       }
     }
   });
@@ -194,7 +273,7 @@ export async function parseExcelMenuFile(file: File): Promise<ParseResult> {
       category: cat.id,
       dietType,
       available: true,
-      imageUrl: cleanString(rowObj.imageUrl),
+      imageUrl: parseImageUrl(rowObj.imageUrl),
       isBestseller: parseFlag(rowObj.bestseller),
     });
   }
@@ -242,7 +321,8 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_starters',
       dietType: 'veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1567184109191-37a69f369f24?w=600&auto=format&fit=crop&q=80',
+      isBestseller: true,
     },
     {
       id: 'demo_2',
@@ -252,7 +332,7 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_starters',
       dietType: 'veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=600&auto=format&fit=crop&q=80',
     },
     {
       id: 'demo_3',
@@ -264,7 +344,7 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_starters',
       dietType: 'non-veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?w=600&auto=format&fit=crop&q=80',
     },
     {
       id: 'demo_4',
@@ -274,7 +354,7 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_starters',
       dietType: 'non-veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=600&auto=format&fit=crop&q=80',
     },
 
     // Mains
@@ -288,7 +368,8 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_mains',
       dietType: 'veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80',
+      isBestseller: true,
     },
     {
       id: 'demo_6',
@@ -300,7 +381,7 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_mains',
       dietType: 'veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&auto=format&fit=crop&q=80',
     },
     {
       id: 'demo_7',
@@ -312,7 +393,8 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_mains',
       dietType: 'non-veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=600&auto=format&fit=crop&q=80',
+      isBestseller: true,
     },
     {
       id: 'demo_8',
@@ -324,7 +406,7 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_mains',
       dietType: 'non-veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1545247181-516773cae754?w=600&auto=format&fit=crop&q=80',
     },
 
     // Breads & Rice
@@ -336,7 +418,7 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_breads_rice',
       dietType: 'veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&auto=format&fit=crop&q=80',
     },
     {
       id: 'demo_10',
@@ -348,7 +430,7 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_breads_rice',
       dietType: 'veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80',
     },
 
     // Beverages
@@ -360,7 +442,7 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_beverages',
       dietType: 'veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&auto=format&fit=crop&q=80',
     },
     {
       id: 'demo_12',
@@ -370,7 +452,7 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_beverages',
       dietType: 'veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=600&auto=format&fit=crop&q=80',
     },
 
     // Desserts
@@ -382,7 +464,7 @@ export function getDemoMenuData(): ParseResult {
       category: 'cat_desserts',
       dietType: 'veg',
       available: true,
-      imageUrl: '',
+      imageUrl: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=600&auto=format&fit=crop&q=80',
     },
   ];
 
@@ -494,13 +576,25 @@ export async function downloadSampleMenuExcel(): Promise<void> {
     },
   ];
 
-  // Both optional columns are declared on every row (blank where unused) so the header row always
-  // carries them — `json_to_sheet` derives headers from the keys it sees, and the parser maps
-  // "Image URL" and "Bestseller" back onto the dish.
+  // Both optional columns are declared on every row (with representative URLs where appropriate)
+  // so the header row always carries them — `json_to_sheet` derives headers from the keys it sees,
+  // and the parser maps "Image URL" and "Bestseller" back onto the dish.
   const BESTSELLERS = new Set(['Paneer Tikka Angara', 'Butter Chicken Delhi Style']);
+  const SAMPLE_IMAGES: Record<string, string> = {
+    'Paneer Tikka Angara': 'https://images.unsplash.com/photo-1567184109191-37a69f369f24?w=600&auto=format&fit=crop&q=80',
+    'Crispy Corn Salt & Pepper': 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=600&auto=format&fit=crop&q=80',
+    'Murgh Malai Kebab': 'https://images.unsplash.com/photo-1626074353765-517a681e40be?w=600&auto=format&fit=crop&q=80',
+    'Dal Makhani Bukhara': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80',
+    'Paneer Butter Masala': 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&auto=format&fit=crop&q=80',
+    'Butter Chicken Delhi Style': 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=600&auto=format&fit=crop&q=80',
+    'Garlic Butter Naan': 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&auto=format&fit=crop&q=80',
+    'Fresh Lime Soda': 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&auto=format&fit=crop&q=80',
+    'Gulab Jamun with Rabri': 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=600&auto=format&fit=crop&q=80',
+  };
+
   const rowsWithOptionalColumns = sampleRows.map((row) => ({
     ...row,
-    'Image URL': '',
+    'Image URL': SAMPLE_IMAGES[row['Dish Name']] || '',
     Bestseller: BESTSELLERS.has(row['Dish Name']) ? 'Yes' : '',
   }));
 

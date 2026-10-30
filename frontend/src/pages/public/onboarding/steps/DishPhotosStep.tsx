@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Camera, ImageIcon, RefreshCw, Sparkles, Star, Trash2, Upload } from 'lucide-react';
+import { Camera, Check, ImageIcon, Link, RefreshCw, Sparkles, Star, Trash2, Upload, X } from 'lucide-react';
 import type { ParsedCategory, ParsedMenuItem } from '../../../../utils/excelMenuParser';
 import LottieMoment from '../../../../components/common/LottieMoment';
 import { OB } from '../chrome';
@@ -50,6 +50,8 @@ export default function DishPhotosStep({
   const [justUploadedIndex, setJustUploadedIndex] = useState<number | null>(null);
   const [justStarredIndex, setJustStarredIndex] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [editingUrlIndex, setEditingUrlIndex] = useState<number | null>(null);
+  const [urlDraft, setUrlDraft] = useState<string>('');
 
   const categoryName = (id: string) => categories.find((category) => category.id === id)?.name || 'General';
 
@@ -82,6 +84,19 @@ export default function DishPhotosStep({
       setUploadingIndex(null);
       pendingIndexRef.current = null;
     }
+  };
+
+  const startUrlEdit = (index: number) => {
+    setEditingUrlIndex(index);
+    setUrlDraft(items[index]?.imageUrl || '');
+  };
+
+  const saveUrlDraft = (index: number) => {
+    const trimmed = urlDraft.trim();
+    patch(index, { imageUrl: trimmed, focalX: 0.5, focalY: 0.5 });
+    setEditingUrlIndex(null);
+    setUrlDraft('');
+    if (trimmed) setJustUploadedIndex(index);
   };
 
   const toggleStar = (index: number) => {
@@ -126,126 +141,236 @@ export default function DishPhotosStep({
     );
   }
 
-  const row = ({ item, index }: { item: ParsedMenuItem; index: number }) => (
-    <div
-      key={item.id || index}
-      className="flex items-center gap-3 rounded-2xl border p-2.5"
-      style={{ background: OB.panelRaised, borderColor: OB.goldLineSoft }}
-    >
-      {/* Thumbnail / focal picker */}
-      {uploadingIndex === index ? (
-        <div
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-dashed"
-          style={{ borderColor: OB.goldLine, background: OB.canvasDeep }}
-        >
-          <LottieMoment moment="photo-matching" loop className="h-full w-full" />
-        </div>
-      ) : item.imageUrl ? (
-        <div
-          role="presentation"
-          onClick={(event) => setFocalFromClick(index, event)}
-          className="relative h-14 w-14 shrink-0 cursor-crosshair overflow-hidden rounded-xl border"
-          style={{ borderColor: OB.gold }}
-          title="Click to set the crop centre"
-        >
-          <img
-            src={item.imageUrl}
-            alt={item.name}
-            className="h-full w-full object-cover"
-            style={{ objectPosition: `${(item.focalX ?? 0.5) * 100}% ${(item.focalY ?? 0.5) * 100}%` }}
-            loading="lazy"
-            decoding="async"
-          />
-          <span
-            className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/80"
-            style={{
-              left: `${(item.focalX ?? 0.5) * 100}%`,
-              top: `${(item.focalY ?? 0.5) * 100}%`,
-              background: OB.gold,
-            }}
-          />
-          {justUploadedIndex === index && (
-            <LottieMoment
-              moment="photo-attached"
-              loop={false}
-              onComplete={() => setJustUploadedIndex(null)}
-              className="pointer-events-none absolute -right-2 -top-2 h-7 w-7"
-            />
-          )}
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => pickFileFor(index)}
-          className="flex h-14 w-14 shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl border border-dashed transition-colors"
-          style={{ borderColor: OB.goldLineSoft, background: OB.canvasDeep, color: OB.inkFaint }}
-        >
-          <ImageIcon size={18} style={{ color: OB.gold }} />
-          <span className="text-[9px]">Add</span>
-        </button>
-      )}
+  const row = ({ item, index }: { item: ParsedMenuItem; index: number }) => {
+    const isVeg = item.dietType === 'veg' || item.dietType === 'vegan';
+    const isEditingUrl = editingUrlIndex === index;
 
-      {/* Name & section */}
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold" style={{ color: OB.ink }}>
-          {item.name || 'Untitled dish'}
-        </p>
-        <p className="truncate text-[11px]" style={{ color: OB.inkFaint }}>
-          {categoryName(item.category)}
-          {item.imageUrl && <span> · tap the photo to re-centre the crop</span>}
-        </p>
-      </div>
-
-      {/* Highlight */}
-      <button
-        type="button"
-        onClick={() => toggleStar(index)}
-        className="relative flex shrink-0 cursor-pointer items-center gap-1 rounded-xl border px-2.5 py-1.5 text-[11px] font-bold transition-colors"
-        style={{
-          borderColor: item.isBestseller ? OB.gold : OB.goldLineSoft,
-          background: item.isBestseller ? OB.goldWash : 'transparent',
-          color: item.isBestseller ? OB.gold : OB.inkMuted,
-        }}
-        title="Bestsellers get a badge, and Editions use them for the cover hero"
+    return (
+      <div
+        key={item.id || index}
+        className="flex flex-col gap-2 rounded-2xl border p-3 transition-colors"
+        style={{ background: OB.panelRaised, borderColor: OB.goldLineSoft }}
       >
-        <Star size={12} fill={item.isBestseller ? OB.gold : 'none'} />
-        <span className="hidden sm:inline">{item.isBestseller ? 'Bestseller' : 'Mark'}</span>
-        {justStarredIndex === index && (
-          <LottieMoment
-            moment="bestseller-mark"
-            loop={false}
-            onComplete={() => setJustStarredIndex(null)}
-            className="pointer-events-none absolute -inset-1"
-          />
-        )}
-      </button>
+        <div className="flex items-center gap-3">
+          {/* 1. CHOT ME LEFT ME PHOTO THUMBNAIL */}
+          {uploadingIndex === index ? (
+            <div
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-dashed"
+              style={{ borderColor: OB.goldLine, background: OB.canvasDeep }}
+            >
+              <LottieMoment moment="photo-matching" loop className="h-full w-full" />
+            </div>
+          ) : item.imageUrl ? (
+            <div
+              role="presentation"
+              onClick={(event) => setFocalFromClick(index, event)}
+              className="group relative h-14 w-14 shrink-0 cursor-crosshair overflow-hidden rounded-xl border border-[#D4AF37]/50 bg-black/60 shadow-md"
+              title="Tap/click photo to set the crop centre"
+            >
+              <img
+                src={item.imageUrl}
+                alt={item.name}
+                className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                style={{ objectPosition: `${(item.focalX ?? 0.5) * 100}% ${(item.focalY ?? 0.5) * 100}%` }}
+                loading="lazy"
+                decoding="async"
+              />
+              <span
+                className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/90 shadow-sm"
+                style={{
+                  left: `${(item.focalX ?? 0.5) * 100}%`,
+                  top: `${(item.focalY ?? 0.5) * 100}%`,
+                  background: OB.gold,
+                }}
+              />
+              {justUploadedIndex === index && (
+                <LottieMoment
+                  moment="photo-attached"
+                  loop={false}
+                  onComplete={() => setJustUploadedIndex(null)}
+                  className="pointer-events-none absolute -right-2 -top-2 h-7 w-7"
+                />
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => pickFileFor(index)}
+              className="flex h-14 w-14 shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl border border-dashed transition-colors hover:border-[#D4AF37]"
+              style={{ borderColor: OB.goldLineSoft, background: OB.canvasDeep, color: OB.inkFaint }}
+              title="Add a photo file for this dish"
+            >
+              <ImageIcon size={18} style={{ color: OB.gold }} />
+              <span className="text-[9px] font-bold">Add</span>
+            </button>
+          )}
 
-      {/* Photo actions */}
-      <div className="flex shrink-0 items-center gap-1">
-        <button
-          type="button"
-          onClick={() => pickFileFor(index)}
-          disabled={uploadingIndex !== null}
-          className="flex cursor-pointer items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-[11px] font-bold transition-colors disabled:opacity-50"
-          style={{ borderColor: OB.goldLineSoft, color: OB.ink }}
-        >
-          <Upload size={12} style={{ color: OB.gold }} />
-          <span className="hidden sm:inline">{item.imageUrl ? 'Replace' : 'Upload'}</span>
-        </button>
-        {item.imageUrl && (
-          <button
-            type="button"
-            onClick={() => patch(index, { imageUrl: '', focalX: undefined, focalY: undefined })}
-            className="cursor-pointer p-1.5 hover:opacity-80"
-            style={{ color: OB.danger }}
-            aria-label={`Remove photo from ${item.name}`}
+          {/* 2. THEN NAAM & DETAILS (Beside the photo) */}
+          <div className="min-w-0 flex-1 pr-2">
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-xs border ${
+                  isVeg ? 'border-emerald-500 bg-emerald-950/40' : 'border-rose-500 bg-rose-950/40'
+                }`}
+                title={isVeg ? 'Vegetarian' : 'Non-Vegetarian'}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${isVeg ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+              </span>
+              <p className="truncate text-sm font-bold text-[#F6F0E4]" title={item.name}>
+                {item.name || 'Untitled dish'}
+              </p>
+            </div>
+
+            <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px]" style={{ color: OB.inkFaint }}>
+              <span className="font-medium text-[#A3957E]">{categoryName(item.category)}</span>
+              {item.imageUrl ? (
+                <span className="inline-flex items-center gap-0.5 rounded-md bg-emerald-950/50 px-1.5 py-0.2 text-[9px] font-bold text-emerald-400 border border-emerald-500/30">
+                  ✓ Photo Ready
+                </span>
+              ) : (
+                <span className="text-[10px] text-[#766A58] italic">No photo attached</span>
+              )}
+            </div>
+
+            {item.description && (
+              <p className="mt-0.5 line-clamp-1 text-[10px] text-[#8C8070] italic">
+                {item.description}
+              </p>
+            )}
+          </div>
+
+          {/* 3. PURA RIGHT ME PRICE ACCHASE + QUICK ACTIONS */}
+          <div className="flex shrink-0 flex-col items-end gap-1.5 pl-2">
+            {/* Price display: High contrast, elegant typography */}
+            <div className="text-right">
+              {item.halfPrice !== undefined || item.fullPrice !== undefined ? (
+                <div className="flex flex-col items-end leading-tight">
+                  {item.halfPrice !== undefined && (
+                    <span className="font-mono text-xs font-bold text-[#D4AF37]/90">
+                      <span className="mr-1 font-sans text-[9px] uppercase tracking-wider text-[#A3957E]">Half</span>
+                      ₹{item.halfPrice}
+                    </span>
+                  )}
+                  {item.fullPrice !== undefined && (
+                    <span className="font-mono text-sm sm:text-base font-black text-[#F6F0E4]">
+                      <span className="mr-1 font-sans text-[9px] uppercase tracking-wider text-[#A3957E]">Full</span>
+                      ₹{item.fullPrice}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <div className="font-mono text-base sm:text-lg font-black tracking-tight" style={{ color: OB.gold }}>
+                  ₹{item.price}
+                </div>
+              )}
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-1">
+              {/* Highlight / Bestseller Star */}
+              <button
+                type="button"
+                onClick={() => toggleStar(index)}
+                className="relative flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-bold transition-colors"
+                style={{
+                  borderColor: item.isBestseller ? OB.gold : OB.goldLineSoft,
+                  background: item.isBestseller ? OB.goldWash : 'transparent',
+                  color: item.isBestseller ? OB.gold : OB.inkMuted,
+                }}
+                title="Bestsellers get a badge and Editions use them on the cover"
+              >
+                <Star size={11} fill={item.isBestseller ? OB.gold : 'none'} />
+                <span className="hidden sm:inline">{item.isBestseller ? 'Star' : 'Star'}</span>
+                {justStarredIndex === index && (
+                  <LottieMoment
+                    moment="bestseller-mark"
+                    loop={false}
+                    onComplete={() => setJustStarredIndex(null)}
+                    className="pointer-events-none absolute -inset-1"
+                  />
+                )}
+              </button>
+
+              {/* Upload photo button */}
+              <button
+                type="button"
+                onClick={() => pickFileFor(index)}
+                disabled={uploadingIndex !== null}
+                className="flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-bold transition-colors disabled:opacity-50"
+                style={{ borderColor: OB.goldLineSoft, color: OB.ink }}
+                title="Upload image from computer"
+              >
+                <Upload size={11} style={{ color: OB.gold }} />
+                <span className="hidden md:inline">{item.imageUrl ? 'Replace' : 'Upload'}</span>
+              </button>
+
+              {/* URL paste toggle */}
+              <button
+                type="button"
+                onClick={() => (isEditingUrl ? setEditingUrlIndex(null) : startUrlEdit(index))}
+                className="flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-bold transition-colors"
+                style={{
+                  borderColor: isEditingUrl ? OB.gold : OB.goldLineSoft,
+                  color: isEditingUrl ? OB.gold : OB.inkMuted,
+                }}
+                title="Paste web URL for dish image"
+              >
+                <Link size={11} />
+                <span className="hidden md:inline">URL</span>
+              </button>
+
+              {/* Delete photo button */}
+              {item.imageUrl && (
+                <button
+                  type="button"
+                  onClick={() => patch(index, { imageUrl: '', focalX: undefined, focalY: undefined })}
+                  className="cursor-pointer p-1 hover:opacity-80"
+                  style={{ color: OB.danger }}
+                  aria-label={`Remove photo from ${item.name}`}
+                  title="Remove photo"
+                >
+                  <Trash2 size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Inline URL paste bar if toggled */}
+        {isEditingUrl && (
+          <div
+            className="flex items-center gap-2 rounded-xl border p-2 animate-fadeIn"
+            style={{ background: OB.canvasDeep, borderColor: OB.goldLineSoft }}
           >
-            <Trash2 size={13} />
-          </button>
+            <input
+              type="url"
+              value={urlDraft}
+              onChange={(e) => setUrlDraft(e.target.value)}
+              placeholder="Paste image web link (e.g. https://... or Google Drive direct link)"
+              className="flex-1 rounded-lg border px-2.5 py-1 text-xs text-[#F6F0E4] placeholder:text-[#534738] focus:outline-none"
+              style={{ background: OB.panelRaised, borderColor: OB.goldLine }}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => saveUrlDraft(index)}
+              className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold text-white cursor-pointer"
+              style={{ background: OB.cta }}
+            >
+              <Check size={12} /> Save
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingUrlIndex(null)}
+              className="p-1 text-[#A3957E] hover:text-white cursor-pointer"
+            >
+              <X size={14} />
+            </button>
+          </div>
         )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-5">
