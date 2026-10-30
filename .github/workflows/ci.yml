@@ -49,6 +49,10 @@ jobs:
 
       - name: Backend unit tests (pure logic, no database required)
         working-directory: backend
+        env:
+          # Some modules read these at import time. They are throwaway values for tests only.
+          NODE_ENV: test
+          JWT_SECRET: ci-only-not-a-real-secret
         run: >
           node --test
           test/storage.test.js
