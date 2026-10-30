@@ -122,6 +122,11 @@ export interface OnboardingPayload {
     imageUrl?: string;
     dietType?: string;
     available?: boolean;
+    /** Saved as `metadata.tags.badges: ['bestseller']` — what the Editions read for a hero dish. */
+    isBestseller?: boolean;
+    /** Photo crop centre, 0..1; saved as `metadata.focal`. */
+    focalX?: number;
+    focalY?: number;
   }>;
 }
 

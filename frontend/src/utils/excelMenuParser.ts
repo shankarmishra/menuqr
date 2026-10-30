@@ -23,6 +23,11 @@ export interface ParsedMenuItem {
   dietType: 'veg' | 'non-veg' | 'vegan';
   available: boolean;
   imageUrl: string;
+  /** Owner highlight — stored as `metadata.tags.badges: ['bestseller']` once the menu is saved. */
+  isBestseller?: boolean;
+  /** Photo crop centre, 0..1. Carried through to `RenderMenuItem.focal`. */
+  focalX?: number;
+  focalY?: number;
 }
 
 export interface ParsedCategory {
@@ -54,7 +59,16 @@ const COLUMN_ALIASES: Record<string, string[]> = {
   dietType: ['veg', 'vegetarian', 'food type', 'diet', 'diet type', 'diet_type', 'type (veg/non-veg)', 'is veg', 'veg/non-veg', 'veg or non-veg'],
   available: ['available', 'status', 'is available', 'in stock', 'active'],
   imageUrl: ['image', 'image url', 'photo', 'picture', 'photo url', 'image_url'],
+  bestseller: ['bestseller', 'best seller', 'popular', 'featured', 'star', 'chef special', 'highlight', 'is_bestseller'],
 };
+
+/** Truthy spreadsheet cell: `yes`, `y`, `true`, `1`, `x`, `★`. Anything else is false. */
+function parseFlag(val: unknown): boolean {
+  if (val === true) return true;
+  if (typeof val === 'number') return val === 1;
+  const str = String(val ?? '').trim().toLowerCase();
+  return ['yes', 'y', 'true', '1', 'x', '✓', '★', 'bestseller'].includes(str);
+}
 
 function cleanString(val: unknown): string {
   if (val === null || val === undefined) return '';
@@ -181,6 +195,7 @@ export async function parseExcelMenuFile(file: File): Promise<ParseResult> {
       dietType,
       available: true,
       imageUrl: cleanString(rowObj.imageUrl),
+      isBestseller: parseFlag(rowObj.bestseller),
     });
   }
 
@@ -479,7 +494,17 @@ export async function downloadSampleMenuExcel(): Promise<void> {
     },
   ];
 
-  const worksheet = XLSX.utils.json_to_sheet(sampleRows);
+  // Both optional columns are declared on every row (blank where unused) so the header row always
+  // carries them — `json_to_sheet` derives headers from the keys it sees, and the parser maps
+  // "Image URL" and "Bestseller" back onto the dish.
+  const BESTSELLERS = new Set(['Paneer Tikka Angara', 'Butter Chicken Delhi Style']);
+  const rowsWithOptionalColumns = sampleRows.map((row) => ({
+    ...row,
+    'Image URL': '',
+    Bestseller: BESTSELLERS.has(row['Dish Name']) ? 'Yes' : '',
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(rowsWithOptionalColumns);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Menu');
 

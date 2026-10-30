@@ -68,8 +68,10 @@ export const SIGNATURE_COMPONENTS: Record<SignatureCompositionId, React.FC<Signa
  * composition paints `theme.cover.imageUrl` at all; the ones marked false build their imagery
  * from the menu's own dish photographs instead.
  *
- * The Design Studio reads this to decide which controls to show, so an owner is never offered a
- * dial that does nothing.
+ * The Design Studio and the onboarding wizard both read this to decide which controls to show, so
+ * an owner is never offered a dial that does nothing — and, just as importantly, is never denied
+ * one that works. It is the single source of truth for that decision: when a composition starts or
+ * stops reading `theme.cover.imageUrl`, update its row here in the same change.
  */
 export const SIGNATURE_COVER_CAPS: Record<
   SignatureCompositionId,
@@ -80,8 +82,10 @@ export const SIGNATURE_COVER_CAPS: Record<
   'chalkboard-clipboard': { coverPhoto: false, dishPhotos: true },
 
   'maison-noir': { coverPhoto: true, dishPhotos: true },
-  herbarium: { coverPhoto: false, dishPhotos: true },
-  noren: { coverPhoto: false, dishPhotos: true },
+  // Both paint `tokens.cover.imageUrl` over their own hero fallback — HerbariumEdition.tsx and
+  // NorenEdition.tsx — so the picker must be offered.
+  herbarium: { coverPhoto: true, dishPhotos: true },
+  noren: { coverPhoto: true, dishPhotos: true },
   'carta-rustica': { coverPhoto: false, dishPhotos: true },
   darbar: { coverPhoto: true, dishPhotos: true },
   'chalk-house': { coverPhoto: false, dishPhotos: true },

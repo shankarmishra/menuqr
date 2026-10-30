@@ -7,7 +7,13 @@ import type { MenuTheme } from '../../../design-system/theme.types';
  * two different logged-in sessions on one shared browser never read each
  * other's in-progress menu.
  */
-const DRAFT_PREFIX = 'mq_onboarding_draft_v1_';
+/**
+ * v2 because the wizard gained a fifth step ("Dish Photos") between Menu and Design: a stored v1
+ * `currentStepIdx` points at a different screen now, so those drafts are dropped rather than
+ * resumed onto the wrong one.
+ */
+const DRAFT_PREFIX = 'mq_onboarding_draft_v2_';
+const LEGACY_DRAFT_PREFIXES = ['mq_onboarding_draft_v1_'];
 const DEBOUNCE_MS = 400;
 
 export type OnboardingDraft<TRestaurantData> = {
@@ -21,6 +27,8 @@ export function useOnboardingDraft<TRestaurantData>() {
 
   const loadDraft = useCallback((userId: string): OnboardingDraft<TRestaurantData> | null => {
     try {
+      // Sweep superseded drafts so a stale one can never be read and never lingers in storage.
+      LEGACY_DRAFT_PREFIXES.forEach((prefix) => localStorage.removeItem(prefix + userId));
       const raw = localStorage.getItem(DRAFT_PREFIX + userId);
       if (!raw) return null;
       const parsed = JSON.parse(raw);

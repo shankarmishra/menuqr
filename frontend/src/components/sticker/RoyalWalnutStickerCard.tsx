@@ -279,6 +279,11 @@ export const STICKER_THEMES: Record<StickerThemeId, ThemeConfig> = {
 
 export interface RoyalWalnutStickerCardProps {
   restaurantName: string;
+  /**
+   * The owner's brand mark, shown as a gold-framed medallion above the name. Optional on purpose:
+   * without it the plaque keeps its purely typographic lock, which is how it has always looked.
+   */
+  logoUrl?: string;
   category?: string;
   tagline?: string;
   menuUrl: string;
@@ -1008,6 +1013,7 @@ function SculptedTablePlaque({
 // -------------------------------------------------------------
 export default function RoyalWalnutStickerCard({
   restaurantName,
+  logoUrl,
   category = 'FINE DINING & CULINARY EXCELLENCE',
   tagline,
   menuUrl,
@@ -1114,6 +1120,30 @@ export default function RoyalWalnutStickerCard({
 
           {/* --- RESTAURANT BRANDING HEADER --- */}
           <div className="relative z-10 flex flex-col items-center pt-1 text-center w-full">
+            {/* Brand Medallion — the owner's own logo, set in a minted gold bezel */}
+            {logoUrl && (
+              <div
+                className="relative mb-2 flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 p-1.5"
+                style={{
+                  borderColor: theme.accentGold,
+                  background: theme.qrBezelBg,
+                  boxShadow: `0 4px 12px rgba(60,40,15,0.2), inset 0 0 0 1px ${theme.accentGoldLight}`,
+                }}
+              >
+                <img
+                  src={logoUrl}
+                  alt=""
+                  crossOrigin="anonymous"
+                  className="h-full w-full object-contain"
+                  // A logo served without permissive CORS headers cannot be inlined by the PNG
+                  // exporter; hiding it keeps the plaque clean instead of showing a broken frame.
+                  onError={(event) => {
+                    (event.currentTarget.parentElement as HTMLElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+
             {/* Restaurant Name in Deep Ebony-Bronze Serif (Ultra High Contrast on Light Background) */}
             <h2
               className={`font-black tracking-tight leading-snug w-full max-w-[350px] px-2 break-words text-center uppercase h-auto min-h-0 ${

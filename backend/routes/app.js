@@ -195,6 +195,16 @@ export default async function appRoutes(request, response, url) {
       if (!inputText(item?.name, 255) || !Number.isInteger(categoryIndex) || categoryIndex < 0 || categoryIndex >= normalizedCategories.length || price < 0 || price > 10000000) {
         throw apiError(400, 'Check each menu item name, category, and price.');
       }
+      // Highlights set during onboarding live in the same `metadata` shape the item editor writes
+      // (see the POST /api/app/items branch), so the public menu reads them through one code path.
+      const focal = inputFocalPoint(
+        Number.isFinite(Number(item?.focalX)) && Number.isFinite(Number(item?.focalY))
+          ? { x: Number(item.focalX), y: Number(item.focalY) }
+          : null
+      );
+      const tags = item?.isBestseller === true ? inputItemTags({ badges: ['bestseller'] }) : null;
+      const metadata = { ...(focal ? { focal } : {}), ...(tags ? { tags } : {}) };
+
       return {
         categoryIndex,
         name: inputText(item.name, 255),
@@ -205,6 +215,7 @@ export default async function appRoutes(request, response, url) {
         imageUrl: inputText(item.imageUrl, 2048),
         dietType: ['veg', 'non-veg', 'vegan'].includes(String(item.dietType).toLowerCase()) ? String(item.dietType).toLowerCase() : 'veg',
         available: item.available !== false,
+        metadata: Object.keys(metadata).length ? JSON.stringify(metadata) : null,
       };
     });
 
@@ -250,8 +261,8 @@ export default async function appRoutes(request, response, url) {
       for (let index = 0; index < normalizedItems.length; index += 1) {
         const item = normalizedItems[index];
         await queryPortable(client,
-          'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, half_price, full_price, image_url, diet_type, is_available, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [randomUUID(), createdMenuId, user.tenantId, categoryIds[item.categoryIndex], item.name, item.description || null, item.price, item.halfPrice, item.fullPrice, item.imageUrl || null, item.dietType, item.available, index + 1]
+          'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, half_price, full_price, image_url, diet_type, is_available, sort_order, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [randomUUID(), createdMenuId, user.tenantId, categoryIds[item.categoryIndex], item.name, item.description || null, item.price, item.halfPrice, item.fullPrice, item.imageUrl || null, item.dietType, item.available, index + 1, item.metadata]
         );
       }
 

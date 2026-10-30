@@ -15,6 +15,9 @@ export type LottieMomentKey =
   | 'photo-matching'
   | 'empty-state'
   | 'qr-activation-success'
+  | 'step-complete'
+  | 'bestseller-mark'
+  | 'photo-attached'
   | 'error';
 
 // Each entry is its own dynamic import, so Vite gives it its own chunk — a
@@ -27,6 +30,9 @@ const MOMENT_LOADERS: Record<LottieMomentKey, () => Promise<{ default: object }>
   'photo-matching': () => import('../../assets/lottie/processing-scan.json'),
   'empty-state': () => import('../../assets/lottie/empty-state.json'),
   'qr-activation-success': () => import('../../assets/lottie/qr-success-burst.json'),
+  'step-complete': () => import('../../assets/lottie/step-stamp.json'),
+  'bestseller-mark': () => import('../../assets/lottie/sparkle-star.json'),
+  'photo-attached': () => import('../../assets/lottie/success-check.json'),
   error: () => import('../../assets/lottie/error-pulse.json'),
 };
 

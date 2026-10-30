@@ -1,11 +1,11 @@
 import { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Check, 
-  ArrowRight, 
-  ArrowLeft, 
-  Store, 
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  Store,
   Sparkles, 
   Smartphone, 
   Upload, 
@@ -27,7 +27,6 @@ import {
   Utensils,
   Search,
 } from 'lucide-react';
-import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import QRCode from 'qrcode';
 import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerCard';
 import { exportStickerToPng } from '../../utils/stickerExporter';
@@ -78,6 +77,10 @@ import {
 import { useToast } from '../../components/feedback/ToastProvider';
 import LottieMoment from '../../components/common/LottieMoment';
 import { useOnboardingDraft } from './onboarding/useOnboardingDraft';
+import OnboardingShell, { type ShellStep } from './onboarding/OnboardingShell';
+import DishPhotosStep from './onboarding/steps/DishPhotosStep';
+import MenuTableEditor from './onboarding/steps/MenuTableEditor';
+import { OB, DISPLAY } from './onboarding/chrome';
 
 // Reads a file as a data URL, then runs it through the real optimize+storage
 // pipeline (sharp resize, AVIF/WebP variants, durable storage driver) instead
@@ -108,9 +111,6 @@ type RestaurantData = {
   templateId: string;
   categories: ParsedCategory[];
   items: ParsedMenuItem[];
-  orderingEnabled: boolean;
-  receptionDevice: string;
-  customSeedColor?: string;
 };
 
 // Reusable Image Selector Component (File Picker -> real optimize+upload pipeline, + URL Paste Fallback)
@@ -129,6 +129,10 @@ function ImageSelector({
   compact?: boolean;
   category?: 'dishes' | 'logos' | 'covers';
 }) {
+  // The button used to say "Choose Logo Image" whatever it was picking, which is why the cover
+  // photo uploader never read as one.
+  const noun = category === 'covers' ? 'Cover Photo' : category === 'dishes' ? 'Dish Photo' : 'Logo Image';
+
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -152,10 +156,10 @@ function ImageSelector({
 
   return (
     <div className="space-y-2">
-      {label && <label className="block text-xs font-semibold text-[#AAB7B2]">{label}</label>}
+      {label && <label className="block text-xs font-semibold text-[#A3957E]">{label}</label>}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         {isUploading ? (
-          <div className={`${compact ? 'w-14 h-14' : 'w-20 h-20'} rounded-xl border-2 border-dashed border-[#E8783C]/40 bg-[#151C19] flex items-center justify-center shrink-0`}>
+          <div className={`${compact ? 'w-14 h-14' : 'w-20 h-20'} rounded-xl border-2 border-dashed border-[#D4AF37]/40 bg-[#0E0C09] flex items-center justify-center shrink-0`}>
             <LottieMoment moment="photo-matching" loop className="w-full h-full" />
           </div>
         ) : justUploaded ? (
@@ -179,7 +183,7 @@ function ImageSelector({
             <img
               src={value}
               alt="Selected preview"
-              className={`${compact ? 'w-14 h-14' : 'w-20 h-20'} rounded-xl object-cover border-2 border-[#E8783C] bg-black shadow-md`}
+              className={`${compact ? 'w-14 h-14' : 'w-20 h-20'} rounded-xl object-cover border-2 border-[#D4AF37] bg-black shadow-md`}
               decoding="async"
               loading="lazy"
             />
@@ -194,24 +198,24 @@ function ImageSelector({
           </div>
         ) : (
           <div
-            className={`${compact ? 'w-14 h-14' : 'w-20 h-20'} rounded-xl border-2 border-dashed border-white/20 bg-[#151C19] flex flex-col items-center justify-center text-[#AAB7B2] shrink-0`}
+            className={`${compact ? 'w-14 h-14' : 'w-20 h-20'} rounded-xl border-2 border-dashed border-[#D4AF37]/25 bg-[#0E0C09] flex flex-col items-center justify-center text-[#A3957E] shrink-0`}
           >
-            <ImageIcon size={compact ? 20 : 26} className="opacity-50 text-[#E8783C]" />
-            {!compact && <span className="text-[10px] mt-1 opacity-60">No logo</span>}
+            <ImageIcon size={compact ? 20 : 26} className="opacity-50 text-[#D4AF37]" />
+            {!compact && <span className="text-[10px] mt-1 opacity-60">No {noun.toLowerCase()}</span>}
           </div>
         )}
 
         <div className="flex-1 flex flex-col gap-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <label className="cursor-pointer bg-[#25322D] hover:bg-[#2A3832] border border-white/15 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl flex items-center gap-2 transition-colors shadow-sm">
-              <Upload size={14} className="text-[#E8783C]" />
-              <span>{isUploading ? 'Uploading...' : value ? 'Change Logo Image' : 'Choose Logo Image'}</span>
+            <label className="cursor-pointer bg-[#2B251D] hover:bg-[#332C22] border border-[#D4AF37]/20 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl flex items-center gap-2 transition-colors shadow-sm">
+              <Upload size={14} className="text-[#D4AF37]" />
+              <span>{isUploading ? 'Uploading...' : `${value ? 'Change' : 'Choose'} ${noun}`}</span>
               <input type="file" accept="image/*" onChange={handleFileChange} disabled={isUploading} className="hidden" />
             </label>
             <button
               type="button"
               onClick={() => setShowUrlInput(!showUrlInput)}
-              className="text-xs text-[#AAB7B2] hover:text-white underline decoration-dashed transition-colors py-1 px-2 cursor-pointer"
+              className="text-xs text-[#A3957E] hover:text-white underline decoration-dashed transition-colors py-1 px-2 cursor-pointer"
             >
               {showUrlInput ? 'Hide URL input' : 'Paste web URL'}
             </button>
@@ -222,7 +226,7 @@ function ImageSelector({
               value={value.startsWith('data:') ? '' : value}
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder}
-              className="w-full bg-[#151C19] border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C]"
+              className="w-full bg-[#0E0C09] border border-[#D4AF37]/20 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-[#D4AF37]"
             />
           )}
           {uploadError && (
@@ -233,6 +237,42 @@ function ImageSelector({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * How the brand mark will actually sit on the cover.
+ *
+ * A logo is never just a file in a form — shown in its cartouche, an owner can tell straight away
+ * whether their PNG has a white box behind it, and sees that the cover is never blank without one
+ * (the Editions set the initials in their own display face, via `editions/shared.tsx`'s BrandMark).
+ */
+function BrandLockPreview({ logoUrl, name }: { logoUrl: string; name: string }) {
+  const initials = (name || 'MQ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join('') || 'MQ';
+
+  return (
+    <div className="flex flex-col items-center gap-2 rounded-xl border border-[#D4AF37]/15 bg-[#0E0C09] p-4">
+      <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#A3957E]">On your menu cover</span>
+      <div className="flex h-20 w-20 items-center justify-center rounded-full border border-[#D4AF37]/50 bg-[#141009] p-2.5 shadow-inner">
+        {logoUrl ? (
+          <img src={logoUrl} alt="" className="h-full w-full object-contain" decoding="async" />
+        ) : (
+          <span className="text-xl tracking-[0.12em] text-[#D4AF37]" style={{ fontFamily: DISPLAY }}>
+            {initials}
+          </span>
+        )}
+      </div>
+      <p className="max-w-xs text-center text-[10px] leading-relaxed text-[#766A58]">
+        {logoUrl
+          ? 'A transparent PNG sits best on the darker Editions — anything else shows its own background.'
+          : 'Without a logo your initials are set in the Edition’s display face, so the cover is never blank.'}
+      </p>
     </div>
   );
 }
@@ -343,7 +383,7 @@ export default function OnboardingWizard() {
   const showToast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [_planId, setPlanId] = useState('PREMIUM');
+  const [planId, setPlanId] = useState('PREMIUM');
   const [isPreloaded, setIsPreloaded] = useState(false);
   const [isEditingIdentity, setIsEditingIdentity] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -416,8 +456,9 @@ export default function OnboardingWizard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // `dish-photos` is new; the other four ids are unchanged so nothing downstream shifts.
   const getSteps = () => {
-    return ['identity', 'excel-upload', 'templates', 'preview'];
+    return ['identity', 'excel-upload', 'dish-photos', 'templates', 'preview'];
   };
 
   const steps = getSteps();
@@ -434,9 +475,6 @@ export default function OnboardingWizard() {
     templateId: DEFAULT_SHOWCASE_PRESET_ID, // Start with Maison Noir Signature Edition
     categories: [],
     items: [],
-    orderingEnabled: false,
-    receptionDevice: 'none',
-    customSeedColor: '',
   });
 
   const [studioSubTab, setStudioSubTab] = useState<'design' | 'cover' | 'layout' | 'brand'>('design');
@@ -513,28 +551,26 @@ export default function OnboardingWizard() {
 
   const previewTheme = studioTheme;
 
+  // Which cover controls this design can honestly offer. An Edition's architecture is fixed, but
+  // most Editions do read `theme.cover.imageUrl` — SIGNATURE_COVER_CAPS is the source of truth.
+  const canPickCoverPhoto =
+    !studioTheme.signatureId || Boolean(SIGNATURE_COVER_CAPS[studioTheme.signatureId]?.coverPhoto);
+
   const previewCategories = restaurantData.categories.length > 0
     ? restaurantData.categories
     : DEMO_RESTAURANT.categories;
 
+  // The preview shows exactly what will be published — no stand-in photography. Substituting stock
+  // images here used to make Steps 4 and 5 look finished while the live menu came out bare; dish
+  // photos are now chosen explicitly in Step 3 (including an opt-in stock set).
   const previewItems = useMemo(() => {
     const raw = restaurantData.items.length > 0
       ? (restaurantData.items as any[])
       : DEMO_RESTAURANT.items;
 
-    const CULINARY_PHOTOS = [
-      '/img/photos/photo-1567184109191-37a69f369f24-w500.webp', // Paneer Tikka
-      '/img/photos/photo-1599488615731-7e5c2823ff28-w500.webp', // Tandoori Chicken
-      '/img/photos/photo-1546833999-b9f581a1996d-w500.webp', // Dal Makhani
-      '/img/photos/photo-1563379091339-03b21ab4a4f8-w500.webp', // Dum Biryani
-      '/img/photos/photo-1626074353765-517a681e40be-w500.webp', // Garlic Naan
-      '/img/photos/photo-1601050690597-df0568f70950-w500.webp', // Saffron Gulab Jamun
-      '/img/photos/photo-1576092768241-dec231879fc3-w500.webp', // Masala Chai
-    ];
-
-    return raw.map((item, idx) => ({
+    return raw.map((item) => ({
       ...item,
-      imageUrl: item.imageUrl || item.image || CULINARY_PHOTOS[idx % CULINARY_PHOTOS.length],
+      imageUrl: item.imageUrl || item.image || '',
     }));
   }, [restaurantData.items]);
 
@@ -552,20 +588,69 @@ export default function OnboardingWizard() {
 
   const prevStep = () => setCurrentStepIdx((prev) => Math.max(prev - 1, 0));
 
-  const getStepTitle = (stepId: string) => {
-    switch(stepId) {
-      case 'identity': return 'Restaurant Identity & Logo';
-      case 'excel-upload': return 'Menu Spreadsheet Upload';
-      case 'templates': return 'Menu Design Studio (Cover & Layout)';
-      case 'preview': return 'Preview & Permanent QR';
-      default: return '';
-    }
-  };
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [qr, setQr] = useState<AppQrData | null>(null);
   const [isPrinterOpen, setIsPrinterOpen] = useState(false);
   const [qrReady, setQrReady] = useState(false);
+
+  const photographedCount = restaurantData.items.filter((item) => item.imageUrl).length;
+
+  const shellSteps: ShellStep[] = [
+    { id: 'identity', label: 'Identity', hint: restaurantData.name || undefined },
+    {
+      id: 'excel-upload',
+      label: 'Menu',
+      hint: restaurantData.items.length
+        ? `${restaurantData.items.length} dishes · ${restaurantData.categories.length} sections`
+        : undefined,
+    },
+    {
+      id: 'dish-photos',
+      label: 'Photos',
+      hint: restaurantData.items.length ? `${photographedCount}/${restaurantData.items.length} photographed` : undefined,
+    },
+    {
+      id: 'templates',
+      label: 'Design',
+      hint: SHOWCASE_PRESETS.find((preset) => preset.id === restaurantData.templateId)?.label,
+    },
+    { id: 'preview', label: 'Activate', hint: qrReady ? 'QR live' : undefined },
+  ];
+
+  const stepCopy: Record<string, { eyebrow: string; title: string; description: string }> = {
+    identity: {
+      eyebrow: 'Step 1 · Identity',
+      title: 'Your restaurant, on the cover',
+      description:
+        'The name, contact details and logo that print on your menu cover and on the table plaque. A PNG logo with a transparent background sits best on the darker Editions.',
+    },
+    'excel-upload': {
+      eyebrow: 'Step 2 · The Menu',
+      title: 'Bring in your menu',
+      description:
+        'Upload your spreadsheet and every section, dish, description and Half/Full price is read automatically — then correct anything that came through wrong, right here.',
+    },
+    'dish-photos': {
+      eyebrow: 'Step 3 · Photography',
+      title: 'Dish photos & highlights',
+      description:
+        'We have already matched photos to the dishes we recognised. Replace any of them with your own, and star the dishes you want shown as bestsellers — the Editions use those for the cover.',
+    },
+    templates: {
+      eyebrow: 'Step 4 · Design Studio',
+      title: 'Choose your Edition',
+      description:
+        'Fifteen art-directed Signature Editions, each a complete restaurant publication. Pick one, then set its cover photograph, typography and brand colour.',
+    },
+    preview: {
+      eyebrow: 'Step 5 · Activate',
+      title: 'Your plaque & permanent QR',
+      description:
+        'Your 24K gold and marble table plaque, and the permanent QR behind it. The link never changes — update the menu any time and every printed plaque stays correct.',
+    },
+  };
+
+  const liveMenuUrl = qr?.qrId ? `${window.location.origin}/qr/${encodeURIComponent(qr.qrId)}` : '';
 
   useEffect(() => {
     const slug = restaurantData.name ? restaurantData.name.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'demo';
@@ -612,6 +697,12 @@ export default function OnboardingWizard() {
     }
   };
 
+  // Step 3's "Auto-match the rest" — same matcher, run on demand for whatever is still missing.
+  const resolveRemainingPhotos = async () => {
+    const withPhotos = await resolveMissingPhotos(restaurantData.items, restaurantData.categories);
+    setRestaurantData((prev) => ({ ...prev, items: withPhotos }));
+  };
+
   const handleFileUpload = async (file: File) => {
     const ext = file.name.split('.').pop()?.toLowerCase();
     if (!['xlsx', 'xls', 'csv'].includes(ext || '')) {
@@ -637,8 +728,9 @@ export default function OnboardingWizard() {
     }
   };
 
-  // Quick Demo Menu Loader
-  const handleLoadDemoMenu = () => {
+  // Quick Demo Menu Loader — runs the same photo matching as a real spreadsheet upload, so both
+  // entry points reach Step 3 with photos already attached.
+  const handleLoadDemoMenu = async () => {
     const demo = getDemoMenuData();
     setRestaurantData((prev) => ({
       ...prev,
@@ -648,6 +740,9 @@ export default function OnboardingWizard() {
     setUploadedFileName('Demo Authentic Restaurant Menu (13 Dishes)');
     setExcelSummary(demo.summary);
     showToast('success', 'Loaded authentic demo menu with Starters, Mains, Breads, Beverages and Half/Full pricing.');
+
+    const withPhotos = await resolveMissingPhotos(demo.items, demo.categories);
+    setRestaurantData((prev) => ({ ...prev, items: withPhotos }));
   };
 
   // Download Sample Template
@@ -695,6 +790,9 @@ export default function OnboardingWizard() {
           imageUrl: item.imageUrl,
           dietType: item.dietType,
           available: item.available,
+          isBestseller: item.isBestseller,
+          focalX: item.focalX,
+          focalY: item.focalY,
         })),
       });
       let currentQr = await getQr();
@@ -729,64 +827,39 @@ export default function OnboardingWizard() {
     navigate('/app/dashboard', { replace: true });
   };
 
+  const isFinalStep = currentStepIdx === steps.length - 1;
+
   return (
-    <div className="min-h-screen bg-[#151C19] text-white font-sans flex flex-col justify-between selection:bg-[#E8783C] selection:text-white">
-      <header className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-[#1D2723]/80 backdrop-blur-md sticky top-0 z-50">
-        <MenusQRBrand size="sm" variant="light" />
-        <div className="flex items-center gap-2 text-xs font-mono text-[#AAB7B2]">
-          <span>Step {currentStepIdx + 1} of {steps.length}</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#E8783C]" />
-          <span className="font-bold text-white uppercase tracking-wider">
-            {getStepTitle(currentStep)}
-          </span>
-        </div>
-        <button onClick={() => navigate('/app/dashboard')} className="text-xs text-[#AAB7B2] hover:text-white transition-colors cursor-pointer">
-          Skip Setup
-        </button>
-      </header>
-
-      <main className="flex-1 max-w-[1240px] w-full mx-auto p-4 sm:p-6 flex flex-col justify-center my-auto">
-        {/* Progress Tracker Dots */}
-        <div className="flex items-center justify-between mb-8 max-w-xl mx-auto w-full">
-          {steps.map((step, idx) => (
-            <div key={step} className="flex items-center gap-2">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
-                  idx === currentStepIdx
-                    ? 'bg-[#E8783C] text-white ring-4 ring-[#E8783C]/20 shadow-lg'
-                    : idx < currentStepIdx
-                    ? 'bg-[#34B56A] text-white'
-                    : 'bg-[#1D2723] text-[#AAB7B2] border border-white/10'
-                }`}
-              >
-                {idx < currentStepIdx ? <Check size={14} /> : idx + 1}
-              </div>
-              {idx < steps.length - 1 && <div className={`w-4 sm:w-10 h-0.5 ${idx < currentStepIdx ? 'bg-[#34B56A]' : 'bg-white/10'}`} />}
-            </div>
-          ))}
-        </div>
-
-        <div className="bg-[#1D2723] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl">
+    <OnboardingShell
+      steps={shellSteps}
+      currentStepIdx={currentStepIdx}
+      eyebrow={stepCopy[currentStep]?.eyebrow}
+      title={stepCopy[currentStep]?.title || ''}
+      description={stepCopy[currentStep]?.description}
+      onSkip={() => navigate('/app/dashboard')}
+      onBack={currentStepIdx > 0 ? prevStep : undefined}
+      onNext={isFinalStep ? handleComplete : nextStep}
+      nextDisabled={isSubmitting}
+      isFinalStep={isFinalStep}
+      onStepSelect={setCurrentStepIdx}
+      nextLabel={
+        isFinalStep
+          ? isSubmitting
+            ? 'Saving…'
+            : 'Go to Dashboard'
+          : `Continue to ${shellSteps[currentStepIdx + 1].label}`
+      }
+    >
           <AnimatePresence mode="wait">
             
             {/* STEP 1: IDENTITY */}
             {currentStep === 'identity' && (
               <motion.div key="step-identity" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-                <div className="space-y-2">
-                  <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5"><Store size={14} /> Step 1</span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white">Restaurant Identity</h2>
-                  <p className="text-xs sm:text-sm text-[#AAB7B2]">
-                    {isPreloaded && !isEditingIdentity
-                      ? 'Your restaurant details are already saved from registration. Review below or proceed.'
-                      : 'Enter basic restaurant details to customize your QR menu.'}
-                  </p>
-                </div>
-
                 {/* Preloaded Summary Card (Auto-filled from checkout) */}
                 {isLoadingProfile ? (
                   // Sub-second load — a skeleton reads as faster than a Lottie loop would here.
-                  <div className="bg-[#151C19] border border-white/10 rounded-2xl p-5 sm:p-6 space-y-5 animate-pulse" aria-hidden="true">
-                    <div className="flex items-center gap-2.5 pb-4 border-b border-white/10">
+                  <div className="bg-[#0E0C09] border border-[#D4AF37]/15 rounded-2xl p-5 sm:p-6 space-y-5 animate-pulse" aria-hidden="true">
+                    <div className="flex items-center gap-2.5 pb-4 border-b border-[#D4AF37]/15">
                       <span className="w-7 h-7 rounded-full bg-white/10 shrink-0" />
                       <div className="space-y-1.5">
                         <div className="h-2.5 w-48 rounded bg-white/10" />
@@ -804,8 +877,8 @@ export default function OnboardingWizard() {
                     <div className="h-16 rounded-xl bg-white/5" />
                   </div>
                 ) : isPreloaded && !isEditingIdentity ? (
-                  <div className="bg-[#151C19] border border-emerald-500/30 rounded-2xl p-5 sm:p-6 space-y-5 shadow-lg">
-                    <div className="flex items-center justify-between pb-4 border-b border-white/10 flex-wrap gap-2">
+                  <div className="bg-[#0E0C09] border border-emerald-500/30 rounded-2xl p-5 sm:p-6 space-y-5 shadow-lg">
+                    <div className="flex items-center justify-between pb-4 border-b border-[#D4AF37]/15 flex-wrap gap-2">
                       <div className="flex items-center gap-2.5">
                         <span className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
                           <CheckCircle2 size={16} />
@@ -818,51 +891,53 @@ export default function OnboardingWizard() {
                       <button
                         type="button"
                         onClick={() => setIsEditingIdentity(true)}
-                        className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors border border-white/10 cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors border border-[#D4AF37]/15 cursor-pointer"
                       >
-                        <Edit3 size={13} className="text-[#E8783C]" /> Edit Details
+                        <Edit3 size={13} className="text-[#D4AF37]" /> Edit Details
                       </button>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                      <div className="bg-[#1D2723]/70 p-3.5 rounded-xl border border-white/5">
-                        <span className="text-[10px] font-mono text-[#AAB7B2] uppercase tracking-wider block mb-1">Restaurant / Business Name</span>
+                      <div className="bg-[#231E18]/70 p-3.5 rounded-xl border border-[#D4AF37]/10">
+                        <span className="text-[10px] font-mono text-[#A3957E] uppercase tracking-wider block mb-1">Restaurant / Business Name</span>
                         <span className="font-bold text-white text-base flex items-center gap-1.5">
-                          <Store size={15} className="text-[#E8783C] shrink-0" />
+                          <Store size={15} className="text-[#D4AF37] shrink-0" />
                           {restaurantData.name || 'Not provided'}
                         </span>
                       </div>
-                      <div className="bg-[#1D2723]/70 p-3.5 rounded-xl border border-white/5">
-                        <span className="text-[10px] font-mono text-[#AAB7B2] uppercase tracking-wider block mb-1">Phone Number</span>
+                      <div className="bg-[#231E18]/70 p-3.5 rounded-xl border border-[#D4AF37]/10">
+                        <span className="text-[10px] font-mono text-[#A3957E] uppercase tracking-wider block mb-1">Phone Number</span>
                         <span className="font-semibold text-white">
                           {restaurantData.phone || <span className="text-white/40 italic">Not provided</span>}
                         </span>
                       </div>
-                      <div className="bg-[#1D2723]/70 p-3.5 rounded-xl border border-white/5">
-                        <span className="text-[10px] font-mono text-[#AAB7B2] uppercase tracking-wider block mb-1">City / Location</span>
+                      <div className="bg-[#231E18]/70 p-3.5 rounded-xl border border-[#D4AF37]/10">
+                        <span className="text-[10px] font-mono text-[#A3957E] uppercase tracking-wider block mb-1">City / Location</span>
                         <span className="font-semibold text-white">
                           {restaurantData.city || <span className="text-white/40 italic">Not provided</span>}
                         </span>
                       </div>
-                      <div className="bg-[#1D2723]/70 p-3.5 rounded-xl border border-white/5">
-                        <span className="text-[10px] font-mono text-[#AAB7B2] uppercase tracking-wider block mb-1">Full Address</span>
+                      <div className="bg-[#231E18]/70 p-3.5 rounded-xl border border-[#D4AF37]/10">
+                        <span className="text-[10px] font-mono text-[#A3957E] uppercase tracking-wider block mb-1">Full Address</span>
                         <span className="font-semibold text-white">
                           {restaurantData.address || <span className="text-white/40 italic">Not provided</span>}
                         </span>
                       </div>
                       {restaurantData.tagline && (
-                        <div className="sm:col-span-2 bg-[#1D2723]/70 p-3.5 rounded-xl border border-white/5">
-                          <span className="text-[10px] font-mono text-[#AAB7B2] uppercase tracking-wider block mb-1">Tagline</span>
+                        <div className="sm:col-span-2 bg-[#231E18]/70 p-3.5 rounded-xl border border-[#D4AF37]/10">
+                          <span className="text-[10px] font-mono text-[#A3957E] uppercase tracking-wider block mb-1">Tagline</span>
                           <span className="text-white italic">"{restaurantData.tagline}"</span>
                         </div>
                       )}
                     </div>
 
+                    <BrandLockPreview logoUrl={restaurantData.logoUrl} name={restaurantData.name} />
+
                     {/* Brand Logo Section in Preloaded View */}
-                    <div className="p-4 bg-[#1D2723]/90 rounded-xl border border-white/10 flex items-center justify-between gap-3 flex-wrap">
+                    <div className="p-4 bg-[#231E18]/90 rounded-xl border border-[#D4AF37]/15 flex items-center justify-between gap-3 flex-wrap">
                       <div className="flex items-center gap-3">
                         {isLogoUploading ? (
-                          <div className="w-14 h-14 rounded-xl border-2 border-dashed border-[#E8783C]/40 bg-[#151C19] flex items-center justify-center shrink-0">
+                          <div className="w-14 h-14 rounded-xl border-2 border-dashed border-[#D4AF37]/40 bg-[#0E0C09] flex items-center justify-center shrink-0">
                             <LottieMoment moment="photo-matching" loop className="w-full h-full" />
                           </div>
                         ) : restaurantData.logoUrl ? (
@@ -870,7 +945,7 @@ export default function OnboardingWizard() {
                             <img
                               src={restaurantData.logoUrl}
                               alt="Logo"
-                              className="w-14 h-14 rounded-xl object-contain bg-black/50 border-2 border-[#E8783C] shadow-md shrink-0"
+                              className="w-14 h-14 rounded-xl object-contain bg-black/50 border-2 border-[#D4AF37] shadow-md shrink-0"
                               decoding="async"
                               loading="lazy"
                             />
@@ -884,21 +959,21 @@ export default function OnboardingWizard() {
                             )}
                           </div>
                         ) : (
-                          <div className="w-14 h-14 rounded-xl border-2 border-dashed border-white/20 bg-[#151C19] flex flex-col items-center justify-center text-[#AAB7B2] shrink-0">
-                            <ImageIcon size={22} className="text-[#E8783C] opacity-70" />
+                          <div className="w-14 h-14 rounded-xl border-2 border-dashed border-[#D4AF37]/25 bg-[#0E0C09] flex flex-col items-center justify-center text-[#A3957E] shrink-0">
+                            <ImageIcon size={22} className="text-[#D4AF37] opacity-70" />
                             <span className="text-[9px] mt-0.5 opacity-60">No logo</span>
                           </div>
                         )}
                         <div>
                           <p className="text-xs font-bold text-white">Brand Logo / Crest</p>
-                          <p className="text-[11px] text-[#AAB7B2]">
+                          <p className="text-[11px] text-[#A3957E]">
                             {restaurantData.logoUrl ? 'Active on menu cover & table standee.' : 'Upload your logo to print on the menu cover & permanent standee.'}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <label className="cursor-pointer bg-[#25322D] hover:bg-[#2A3832] border border-white/15 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
-                          <Upload size={13} className="text-[#E8783C]" />
+                        <label className="cursor-pointer bg-[#2B251D] hover:bg-[#332C22] border border-[#D4AF37]/20 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
+                          <Upload size={13} className="text-[#D4AF37]" />
                           <span>{isLogoUploading ? 'Uploading...' : restaurantData.logoUrl ? 'Change Logo' : 'Upload Logo'}</span>
                           <input
                             type="file"
@@ -937,14 +1012,14 @@ export default function OnboardingWizard() {
                   /* Editable Form Inputs */
                   <div className="space-y-4">
                     {isPreloaded && (
-                      <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
-                        <span className="text-xs text-[#AAB7B2] flex items-center gap-1.5">
-                          <Edit3 size={12} className="text-[#E8783C]" /> Editing restaurant details
+                      <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-[#D4AF37]/15">
+                        <span className="text-xs text-[#A3957E] flex items-center gap-1.5">
+                          <Edit3 size={12} className="text-[#D4AF37]" /> Editing restaurant details
                         </span>
                         <button
                           type="button"
                           onClick={() => setIsEditingIdentity(false)}
-                          className="text-xs text-[#E8783C] hover:underline font-semibold cursor-pointer"
+                          className="text-xs text-[#D4AF37] hover:underline font-semibold cursor-pointer"
                         >
                           Keep Details / Done Editing &times;
                         </button>
@@ -952,33 +1027,34 @@ export default function OnboardingWizard() {
                     )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div className="space-y-1.5">
-                        <label className="block text-xs font-semibold text-[#AAB7B2]">Restaurant / Business Name *</label>
-                        <input type="text" aria-label="Restaurant name" placeholder="e.g. Royal Punjab Dhaba" value={restaurantData.name} onChange={(e) => setRestaurantData({ ...restaurantData, name: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                        <label className="block text-xs font-semibold text-[#A3957E]">Restaurant / Business Name *</label>
+                        <input type="text" aria-label="Restaurant name" placeholder="e.g. Royal Punjab Dhaba" value={restaurantData.name} onChange={(e) => setRestaurantData({ ...restaurantData, name: e.target.value })} className="w-full bg-[#0E0C09] border border-[#D4AF37]/20 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#D4AF37] transition-colors" />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="block text-xs font-semibold text-[#AAB7B2]">Tagline / Subtitle</label>
-                        <input type="text" placeholder="e.g. Authentic Flavours Since 1998" value={restaurantData.tagline} onChange={(e) => setRestaurantData({ ...restaurantData, tagline: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                        <label className="block text-xs font-semibold text-[#A3957E]">Tagline / Subtitle</label>
+                        <input type="text" placeholder="e.g. Authentic Flavours Since 1998" value={restaurantData.tagline} onChange={(e) => setRestaurantData({ ...restaurantData, tagline: e.target.value })} className="w-full bg-[#0E0C09] border border-[#D4AF37]/20 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#D4AF37] transition-colors" />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="block text-xs font-semibold text-[#AAB7B2]">Phone Number</label>
-                        <input type="tel" aria-label="Restaurant phone" placeholder="e.g. +91 98XXXXXXXX" value={restaurantData.phone} onChange={(e) => setRestaurantData({ ...restaurantData, phone: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                        <label className="block text-xs font-semibold text-[#A3957E]">Phone Number</label>
+                        <input type="tel" aria-label="Restaurant phone" placeholder="e.g. +91 98XXXXXXXX" value={restaurantData.phone} onChange={(e) => setRestaurantData({ ...restaurantData, phone: e.target.value })} className="w-full bg-[#0E0C09] border border-[#D4AF37]/20 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#D4AF37] transition-colors" />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="block text-xs font-semibold text-[#AAB7B2]">City / Location</label>
-                        <input type="text" aria-label="Restaurant city" placeholder="e.g. Mumbai" value={restaurantData.city} onChange={(e) => setRestaurantData({ ...restaurantData, city: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                        <label className="block text-xs font-semibold text-[#A3957E]">City / Location</label>
+                        <input type="text" aria-label="Restaurant city" placeholder="e.g. Mumbai" value={restaurantData.city} onChange={(e) => setRestaurantData({ ...restaurantData, city: e.target.value })} className="w-full bg-[#0E0C09] border border-[#D4AF37]/20 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#D4AF37] transition-colors" />
                       </div>
                       <div className="sm:col-span-2 space-y-1.5">
-                        <label className="block text-xs font-semibold text-[#AAB7B2]">Full Address</label>
-                        <input type="text" aria-label="Restaurant address" placeholder="e.g. Shop 12, Main Street, Bandra West, Mumbai" value={restaurantData.address} onChange={(e) => setRestaurantData({ ...restaurantData, address: e.target.value })} className="w-full bg-[#151C19] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E8783C] transition-colors" />
+                        <label className="block text-xs font-semibold text-[#A3957E]">Full Address</label>
+                        <input type="text" aria-label="Restaurant address" placeholder="e.g. Shop 12, Main Street, Bandra West, Mumbai" value={restaurantData.address} onChange={(e) => setRestaurantData({ ...restaurantData, address: e.target.value })} className="w-full bg-[#0E0C09] border border-[#D4AF37]/20 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#D4AF37] transition-colors" />
                       </div>
 
-                      <div className="sm:col-span-2 pt-3 border-t border-white/10">
+                      <div className="sm:col-span-2 grid grid-cols-1 gap-4 border-t border-[#D4AF37]/15 pt-3 sm:grid-cols-[1fr_auto] sm:items-start">
                         <ImageSelector
                           label="Restaurant Logo / Brand Mark (Recommended)"
                           value={restaurantData.logoUrl}
                           onChange={(val) => setRestaurantData((prev) => ({ ...prev, logoUrl: val }))}
                           placeholder="https://example.com/logo.png"
                         />
+                        <BrandLockPreview logoUrl={restaurantData.logoUrl} name={restaurantData.name} />
                       </div>
                     </div>
                   </div>
@@ -989,16 +1065,6 @@ export default function OnboardingWizard() {
             {/* STEP 2: EXCEL MENU SPREADSHEET UPLOAD */}
             {currentStep === 'excel-upload' && (
               <motion.div key="step-excel-upload" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-                <div className="space-y-2">
-                  <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5">
-                    <FileSpreadsheet size={14} /> Step 2
-                  </span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white">Upload Menu Spreadsheet</h2>
-                  <p className="text-xs sm:text-sm text-[#AAB7B2]">
-                    Upload your complete restaurant menu via Excel or CSV. Categories, dish names, descriptions, and Half/Full prices are automatically extracted.
-                  </p>
-                </div>
-
                 {/* Drag & Drop Upload Zone */}
                 <div
                   onDragOver={(e) => e.preventDefault()}
@@ -1009,7 +1075,7 @@ export default function OnboardingWizard() {
                     }
                   }}
                   onClick={() => fileInputRef.current?.click()}
-                  className="group relative cursor-pointer rounded-3xl border-2 border-dashed border-[#E8783C]/40 hover:border-[#E8783C] bg-[#151C19]/80 hover:bg-[#151C19] p-8 sm:p-12 text-center transition-all duration-300 shadow-xl"
+                  className="group relative cursor-pointer rounded-3xl border-2 border-dashed border-[#D4AF37]/40 hover:border-[#D4AF37] bg-[#0E0C09]/80 hover:bg-[#0E0C09] p-8 sm:p-12 text-center transition-all duration-300 shadow-xl"
                 >
                   <input
                     ref={fileInputRef}
@@ -1023,7 +1089,7 @@ export default function OnboardingWizard() {
                     }}
                   />
 
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E8783C]/15 text-[#E8783C] group-hover:scale-110 transition-transform">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#D4AF37]/15 text-[#D4AF37] group-hover:scale-110 transition-transform">
                     {isParsingExcel || isResolvingImages ? (
                       <LottieMoment moment="excel-parsing" loop className="w-12 h-12" />
                     ) : restaurantData.items.length === 0 ? (
@@ -1033,39 +1099,39 @@ export default function OnboardingWizard() {
                     )}
                   </div>
 
-                  <h3 className="mt-4 text-base sm:text-lg font-bold text-white">
+                  <h3 className="mt-4 text-lg sm:text-xl text-white" style={{ fontFamily: DISPLAY }}>
                     {isParsingExcel
                       ? 'Parsing Spreadsheet...'
                       : isResolvingImages
                       ? 'Matching Dish Photos...'
                       : 'Drop your Excel menu file here, or click to browse'}
                   </h3>
-                  <p className="mt-1 text-xs text-[#AAB7B2]">
+                  <p className="mt-1 text-xs text-[#A3957E]">
                     Supports <span className="font-mono text-emerald-400 font-bold">.xlsx, .xls, .csv</span> formats
                   </p>
                   <p className="mt-2 text-[11px] text-stone-400">
-                    Auto-maps: Category • Dish Name • Single Price • Half Price • Full Price • Description • Veg/Non-Veg
+                    Auto-maps: Category • Dish Name • Single Price • Half Price • Full Price • Description • Veg/Non-Veg • Image URL • Bestseller
                   </p>
                 </div>
 
                 {/* Quick Action Helpers: Download Template or 1-Click Demo */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-[#151C19] border border-white/10 text-xs">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-[#0E0C09] border border-[#D4AF37]/15 text-xs">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#E8783C]" />
-                    <span className="text-[#AAB7B2]">Need a pre-formatted template or want to test instantly?</span>
+                    <span className="text-[#A3957E]">Need a pre-formatted template or want to test instantly?</span>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       type="button"
                       onClick={handleDownloadSample}
-                      className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold flex items-center gap-1.5 transition-colors border border-white/10 cursor-pointer"
+                      className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold flex items-center gap-1.5 transition-colors border border-[#D4AF37]/15 cursor-pointer"
                     >
-                      <Download size={13} className="text-[#E8783C]" /> Download Sample (.xlsx)
+                      <Download size={13} className="text-[#D4AF37]" /> Download Sample (.xlsx)
                     </button>
                     <button
                       type="button"
                       onClick={handleLoadDemoMenu}
-                      className="px-3.5 py-2 rounded-xl bg-[#E8783C]/20 hover:bg-[#E8783C]/30 text-[#E8783C] font-bold flex items-center gap-1.5 transition-colors border border-[#E8783C]/30 cursor-pointer"
+                      className="px-3.5 py-2 rounded-xl bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 text-[#D4AF37] font-bold flex items-center gap-1.5 transition-colors border border-[#D4AF37]/30 cursor-pointer"
                     >
                       <Sparkles size={13} /> Load Demo Menu (1-Click)
                     </button>
@@ -1075,7 +1141,7 @@ export default function OnboardingWizard() {
                 {/* Parsed Results Summary & Items Table */}
                 {restaurantData.items.length > 0 && excelSummary && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between pb-2 border-b border-white/10 flex-wrap gap-2">
+                    <div className="flex items-center justify-between pb-2 border-b border-[#D4AF37]/15 flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <CheckCircle2 size={16} className="text-emerald-400" />
                         <span className="text-xs font-bold text-white uppercase tracking-wider">
@@ -1085,7 +1151,7 @@ export default function OnboardingWizard() {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="text-xs text-[#E8783C] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                        className="text-xs text-[#D4AF37] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                       >
                         <RefreshCw size={11} /> Replace Spreadsheet
                       </button>
@@ -1093,108 +1159,84 @@ export default function OnboardingWizard() {
 
                     {/* Stat Badges */}
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
-                      <div className="bg-[#151C19] p-3 rounded-xl border border-white/10">
-                        <span className="text-[10px] text-[#AAB7B2] font-mono block">TOTAL DISHES</span>
+                      <div className="bg-[#0E0C09] p-3 rounded-xl border border-[#D4AF37]/15">
+                        <span className="text-[10px] text-[#A3957E] font-mono block">TOTAL DISHES</span>
                         <span className="text-lg font-black text-white">{excelSummary.totalDishes}</span>
                       </div>
-                      <div className="bg-[#151C19] p-3 rounded-xl border border-white/10">
-                        <span className="text-[10px] text-[#AAB7B2] font-mono block">CATEGORIES</span>
+                      <div className="bg-[#0E0C09] p-3 rounded-xl border border-[#D4AF37]/15">
+                        <span className="text-[10px] text-[#A3957E] font-mono block">CATEGORIES</span>
                         <span className="text-lg font-black text-white">{excelSummary.categoriesCount}</span>
                       </div>
-                      <div className="bg-[#151C19] p-3 rounded-xl border border-white/10">
+                      <div className="bg-[#0E0C09] p-3 rounded-xl border border-[#D4AF37]/15">
                         <span className="text-[10px] text-emerald-400 font-mono block">PURE VEG</span>
                         <span className="text-lg font-black text-emerald-400">{excelSummary.vegCount}</span>
                       </div>
-                      <div className="bg-[#151C19] p-3 rounded-xl border border-white/10">
+                      <div className="bg-[#0E0C09] p-3 rounded-xl border border-[#D4AF37]/15">
                         <span className="text-[10px] text-rose-400 font-mono block">NON-VEG</span>
                         <span className="text-lg font-black text-rose-400">{excelSummary.nonVegCount}</span>
                       </div>
-                      <div className="col-span-2 sm:col-span-1 bg-[#151C19] p-3 rounded-xl border border-white/10">
+                      <div className="col-span-2 sm:col-span-1 bg-[#0E0C09] p-3 rounded-xl border border-[#D4AF37]/15">
                         <span className="text-[10px] text-amber-400 font-mono block">HALF / FULL</span>
                         <span className="text-lg font-black text-amber-400">{excelSummary.dualPriceCount}</span>
                       </div>
                     </div>
 
-                    {/* Scrollable Preview Table of Parsed Dishes */}
-                    <div className="max-h-[260px] overflow-y-auto rounded-2xl border border-white/10 bg-[#151C19]">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead className="bg-[#1D2723] sticky top-0 border-b border-white/10 text-stone-300 font-mono text-[10px] uppercase">
-                          <tr>
-                            <th className="py-2.5 px-3">Type</th>
-                            <th className="py-2.5 px-3">Category</th>
-                            <th className="py-2.5 px-3">Dish Name</th>
-                            <th className="py-2.5 px-3 text-right">Pricing</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 text-stone-200">
-                          {restaurantData.items.map((item, idx) => {
-                            const cat = restaurantData.categories.find((c) => c.id === item.category);
-                            return (
-                              <tr key={idx} className="hover:bg-white/5">
-                                <td className="py-2 px-3">
-                                  <span
-                                    className={`inline-block w-2.5 h-2.5 rounded-full ${
-                                      item.dietType === 'veg' ? 'bg-emerald-500' : 'bg-rose-500'
-                                    }`}
-                                  />
-                                </td>
-                                <td className="py-2 px-3 text-[#AAB7B2] font-semibold">
-                                  {cat?.name || 'General'}
-                                </td>
-                                <td className="py-2 px-3 font-medium text-white">
-                                  {item.name}
-                                  {item.description && (
-                                    <span className="block text-[10px] text-stone-400 line-clamp-1 italic">
-                                      {item.description}
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="py-2 px-3 text-right font-mono font-bold">
-                                  {item.halfPrice || item.fullPrice ? (
-                                    <span className="text-amber-400">
-                                      {item.halfPrice ? `H:₹${item.halfPrice} ` : ''}
-                                      {item.fullPrice ? `F:₹${item.fullPrice}` : ''}
-                                    </span>
-                                  ) : (
-                                    <span className="text-emerald-400">₹{item.price}</span>
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
+                    {/* Editable grid — a real spreadsheet always needs a correction or two. */}
+                    <MenuTableEditor
+                      categories={restaurantData.categories}
+                      items={restaurantData.items}
+                      onChange={({ categories, items }) =>
+                        setRestaurantData((prev) => ({ ...prev, categories, items }))
+                      }
+                    />
+                  </div>
+                )}
+
+                {/* Nothing parsed yet — say what the sheet needs instead of showing a blank panel. */}
+                {restaurantData.items.length === 0 && !isParsingExcel && (
+                  <div className="flex flex-col items-center gap-3 rounded-2xl border border-[#D4AF37]/15 bg-[#0E0C09] p-6 text-center">
+                    <LottieMoment moment="empty-state" loop className="h-24 w-24" />
+                    <p className="text-sm font-bold text-white">No dishes read yet</p>
+                    <p className="max-w-md text-xs leading-relaxed text-[#A3957E]">
+                      Your sheet needs one row per dish, with a header row naming the columns. Only two
+                      are required — <span className="font-mono text-[#D4AF37]">Category</span> and{' '}
+                      <span className="font-mono text-[#D4AF37]">Dish Name</span>. Optional:{' '}
+                      <span className="font-mono">Single Price</span>, <span className="font-mono">Half Price</span>,{' '}
+                      <span className="font-mono">Full Price</span>, <span className="font-mono">Description</span>,{' '}
+                      <span className="font-mono">Diet Type</span>, <span className="font-mono">Image URL</span>,{' '}
+                      <span className="font-mono">Bestseller</span>. Download the sample above for the exact layout.
+                    </p>
                   </div>
                 )}
               </motion.div>
             )}
 
-            {/* STEP 3: MENU DESIGN STUDIO */}
+            {/* STEP 3: DISH PHOTOS & HIGHLIGHTS */}
+            {currentStep === 'dish-photos' && (
+              <motion.div key="step-dish-photos" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                <DishPhotosStep
+                  items={restaurantData.items}
+                  categories={restaurantData.categories}
+                  onItemsChange={(items) => setRestaurantData((prev) => ({ ...prev, items }))}
+                  uploadFile={(file) => uploadImageFile(file, 'dishes')}
+                  onResolveRemaining={() => void resolveRemainingPhotos()}
+                  isResolving={isResolvingImages}
+                />
+              </motion.div>
+            )}
+
+            {/* STEP 4: MENU DESIGN STUDIO */}
             {currentStep === 'templates' && (
               <motion.div key="step-templates" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-                {/* STUDIO HEADER */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <span className="text-xs font-mono text-[#E8783C] uppercase tracking-widest flex items-center gap-1.5 font-bold">
-                      <Sparkles size={14} /> Step 3 · Menu Design Studio
-                    </span>
-                    <h2 className="text-2xl sm:text-3xl font-black text-white">Design Your Cover & Menu Layout</h2>
-                    <p className="text-xs sm:text-sm text-[#AAB7B2]">
-                      Style your welcome cover page with chef photography, tailor dish cards, choose typography, and customize brand colors.
-                    </p>
-                  </div>
-                </div>
-
                 {/* STUDIO NAVIGATION SUB-TABS */}
-                <div className="flex flex-wrap items-center gap-2 p-1.5 bg-[#151C19] border border-white/10 rounded-2xl w-fit shadow-md">
+                <div className="flex flex-wrap items-center gap-2 p-1.5 bg-[#0E0C09] border border-[#D4AF37]/15 rounded-2xl w-fit shadow-md">
                   <button
                     type="button"
                     onClick={() => setStudioSubTab('design')}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                       studioSubTab === 'design'
                         ? 'bg-[#E8783C] text-white shadow-lg'
-                        : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
+                        : 'text-[#A3957E] hover:text-white hover:bg-white/5'
                     }`}
                   >
                     <Layers size={14} /> 1. Choose Design
@@ -1205,7 +1247,7 @@ export default function OnboardingWizard() {
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                       studioSubTab === 'cover'
                         ? 'bg-[#E8783C] text-white shadow-lg'
-                        : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
+                        : 'text-[#A3957E] hover:text-white hover:bg-white/5'
                     }`}
                   >
                     <Camera size={14} /> 2. Cover Page & Photos
@@ -1219,7 +1261,7 @@ export default function OnboardingWizard() {
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                       studioSubTab === 'layout'
                         ? 'bg-[#E8783C] text-white shadow-lg'
-                        : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
+                        : 'text-[#A3957E] hover:text-white hover:bg-white/5'
                     }`}
                   >
                     <Layout size={14} /> 3. Menu Layout & Cards
@@ -1230,11 +1272,11 @@ export default function OnboardingWizard() {
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                       studioSubTab === 'brand'
                         ? 'bg-[#E8783C] text-white shadow-lg'
-                        : 'text-[#AAB7B2] hover:text-white hover:bg-white/5'
+                        : 'text-[#A3957E] hover:text-white hover:bg-white/5'
                     }`}
                   >
                     <Palette size={14} /> 4. Brand Colors & Logo
-                    <span className="w-2.5 h-2.5 rounded-full border border-white/30" style={{ backgroundColor: studioTheme.brand.seedColor }} />
+                    <span className="w-2.5 h-2.5 rounded-full border border-[#D4AF37]/35" style={{ backgroundColor: studioTheme.brand.seedColor }} />
                   </button>
                 </div>
 
@@ -1249,7 +1291,7 @@ export default function OnboardingWizard() {
                         {/* Category Filter Pills & Search */}
                         <div className="space-y-3">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                            <p className="text-xs text-[#AAB7B2]">
+                            <p className="text-xs text-[#A3957E]">
                               Select from <span className="font-bold text-white">15 Art-Directed Signature Editions</span>. Each is an authentic restaurant publication with its own typography, architecture, and plating identity.
                             </p>
                             <div className="relative shrink-0">
@@ -1259,7 +1301,7 @@ export default function OnboardingWizard() {
                                 placeholder="Search editions..."
                                 value={designSearch}
                                 onChange={(e) => setDesignSearch(e.target.value)}
-                                className="pl-8 pr-3 py-1.5 bg-[#151C19] border border-white/15 rounded-xl text-xs text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E8783C] w-full sm:w-48"
+                                className="pl-8 pr-3 py-1.5 bg-[#0E0C09] border border-[#D4AF37]/20 rounded-xl text-xs text-white placeholder:text-stone-500 focus:outline-none focus:border-[#D4AF37] w-full sm:w-48"
                               />
                             </div>
                           </div>
@@ -1281,7 +1323,7 @@ export default function OnboardingWizard() {
                                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                                   designCategory === cat.id
                                     ? 'bg-[#E8783C] text-white shadow-sm'
-                                    : 'bg-[#151C19] text-[#AAB7B2] border border-white/10 hover:text-white hover:bg-white/5'
+                                    : 'bg-[#0E0C09] text-[#A3957E] border border-[#D4AF37]/15 hover:text-white hover:bg-white/5'
                                 }`}
                               >
                                 {cat.label}
@@ -1307,8 +1349,8 @@ export default function OnboardingWizard() {
                                 onClick={() => handleSelectPreset(preset)}
                                 className={`relative p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-3 ${
                                   active
-                                    ? 'border-[#E8783C] bg-[#E8783C]/12 ring-2 ring-[#E8783C] shadow-xl'
-                                    : 'border-white/10 bg-[#151C19] hover:border-white/25 hover:bg-[#1a2320]'
+                                    ? 'border-[#D4AF37] bg-[#D4AF37]/12 ring-2 ring-[#D4AF37] shadow-xl'
+                                    : 'border-[#D4AF37]/15 bg-[#0E0C09] hover:border-[#D4AF37]/30 hover:bg-[#2B251D]'
                                 }`}
                               >
                                 <div>
@@ -1317,24 +1359,24 @@ export default function OnboardingWizard() {
                                       <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-white/90">
                                         #{editionNum}
                                       </span>
-                                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#AAB7B2]">
+                                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#A3957E]">
                                         {preset.category}
                                       </span>
                                     </div>
 
                                     <div className="flex items-center gap-1.5">
                                       <span
-                                        className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                                        className="w-3.5 h-3.5 rounded-full border border-[#D4AF37]/25 shadow-xs"
                                         style={{ backgroundColor: palette.bg }}
                                         title={`Background: ${palette.bg}`}
                                       />
                                       <span
-                                        className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                                        className="w-3.5 h-3.5 rounded-full border border-[#D4AF37]/25 shadow-xs"
                                         style={{ backgroundColor: preset.seedColor }}
                                         title={`Accent: ${preset.seedColor}`}
                                       />
                                       <span
-                                        className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                                        className="w-3.5 h-3.5 rounded-full border border-[#D4AF37]/25 shadow-xs"
                                         style={{ backgroundColor: palette.heading }}
                                         title={`Heading: ${palette.heading}`}
                                       />
@@ -1357,12 +1399,12 @@ export default function OnboardingWizard() {
                                   </div>
 
                                   <h4 className="text-sm font-bold text-white mb-1">{preset.label}</h4>
-                                  <p className="text-[11px] text-[#AAB7B2] leading-relaxed line-clamp-2">
+                                  <p className="text-[11px] text-[#A3957E] leading-relaxed line-clamp-2">
                                     {preset.description}
                                   </p>
                                 </div>
 
-                                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-[#8EA298]">
+                                <div className="pt-2 border-t border-[#D4AF37]/10 flex items-center justify-between text-[10px] text-[#998A72]">
                                   <span className="truncate max-w-[170px]">{preset.audience}</span>
                                   <span className="uppercase font-mono text-[9px] px-1.5 py-0.5 rounded bg-white/5 font-semibold text-white/70">
                                     {preset.mode}
@@ -1379,12 +1421,12 @@ export default function OnboardingWizard() {
                     {studioSubTab === 'cover' && (
                       <div className="space-y-6">
                         {/* Cover Page Enable Toggle */}
-                        <div className="p-4 rounded-2xl bg-[#1D2723] border border-white/10 flex items-center justify-between shadow-xs">
+                        <div className="p-4 rounded-2xl bg-[#231E18] border border-[#D4AF37]/15 flex items-center justify-between shadow-xs">
                           <div>
                             <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                              <Eye size={14} className="text-[#E8783C]" /> Show Dedicated Cover Screen
+                              <Eye size={14} className="text-[#D4AF37]" /> Show Dedicated Cover Screen
                             </h4>
-                            <p className="text-[11px] text-[#AAB7B2] mt-0.5">
+                            <p className="text-[11px] text-[#A3957E] mt-0.5">
                               Display an immersive full-screen welcome cover before opening the menu
                             </p>
                           </div>
@@ -1395,7 +1437,7 @@ export default function OnboardingWizard() {
                               cover: { ...prev.cover, showCoverPage: !prev.cover.showCoverPage }
                             }))}
                             className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                              studioTheme.cover.showCoverPage ? 'bg-[#E8783C]' : 'bg-[#2A3832]'
+                              studioTheme.cover.showCoverPage ? 'bg-[#E8783C]' : 'bg-[#332C22]'
                             }`}
                           >
                             <span
@@ -1406,29 +1448,39 @@ export default function OnboardingWizard() {
                           </button>
                         </div>
 
-                        {studioTheme.signatureId ? (
-                          /* Signature compositions own their entire cover layout and always pull their
-                           * hero photo from the menu's own bestseller dish photos — they never read
-                           * theme.slots.cover or theme.cover.imageUrl, so an architecture/photo picker
-                           * here would silently do nothing. Say that plainly instead of faking a control. */
-                          <div className="p-4 rounded-2xl bg-[#1D2723] border border-[#E8783C]/30 space-y-1.5">
+                        {/* An Edition owns its cover *architecture* — that part really is fixed. Most of
+                          * them still paint `theme.cover.imageUrl` over their own hero fallback, and
+                          * SIGNATURE_COVER_CAPS records exactly which, so the photo picker below is
+                          * offered on capability rather than hidden for every Edition alike. */}
+                        {studioTheme.signatureId && (
+                          <div className="p-4 rounded-2xl bg-[#231E18] border border-[#D4AF37]/30 space-y-2">
                             <p className="text-xs font-bold text-white flex items-center gap-1.5">
-                              <Layers size={13} className="text-[#E8783C]" />
-                              {PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'This Signature design'} has a fixed, art-directed cover
+                              <Layers size={13} className="text-[#D4AF37]" />
+                              {PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'This Signature design'} has a fixed, art-directed cover layout
                             </p>
-                            <p className="text-[11px] text-[#AAB7B2] leading-relaxed">
-                              {SIGNATURE_COVER_CAPS[studioTheme.signatureId].coverPhoto
-                                ? 'Its cover photo comes from your own menu — mark a dish as a bestseller and add a photo to it, and that photo becomes the hero image automatically.'
-                                : 'This design uses typography and ornament instead of a photo, so there is no cover photo to pick.'}
-                              {' '}Switch to a non-Signature design in "Choose Design" to pick a cover architecture and photo by hand.
+                            <p className="text-[11px] text-[#A3957E] leading-relaxed">
+                              {canPickCoverPhoto
+                                ? 'Its composition, ornament and type are part of the Edition — but the cover photograph is yours. Pick one below, or upload your own.'
+                                : 'This Edition builds its cover from typography and ornament instead of a photograph, so there is no cover image to pick. Its feature imagery comes from your own dish photos — star a dish as a bestseller and give it a photo.'}
                             </p>
+                            {!canPickCoverPhoto && (
+                              <button
+                                type="button"
+                                onClick={() => setCurrentStepIdx(steps.indexOf('dish-photos'))}
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-[#D4AF37]/35 px-3 py-1.5 text-[11px] font-bold text-[#D4AF37] transition-colors hover:bg-[#D4AF37]/10 cursor-pointer"
+                              >
+                                <Camera size={12} /> Go to Dish Photos
+                              </button>
+                            )}
                           </div>
-                        ) : (
+                        )}
+
+                        {!studioTheme.signatureId && (
                           <>
                             {/* Cover Style Picker */}
                             <div className="space-y-2.5">
                               <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                                <Layers size={13} className="text-[#E8783C]" /> Select Cover Architecture
+                                <Layers size={13} className="text-[#D4AF37]" /> Select Cover Architecture
                               </label>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                 {COVER_STYLE_OPTIONS.map((opt) => {
@@ -1443,8 +1495,8 @@ export default function OnboardingWizard() {
                                       }))}
                                       className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                                         active
-                                          ? 'border-[#E8783C] bg-[#E8783C]/12 ring-2 ring-[#E8783C] shadow-lg'
-                                          : 'border-white/10 bg-[#151C19] hover:border-white/25 hover:bg-[#1a2320]'
+                                          ? 'border-[#D4AF37] bg-[#D4AF37]/12 ring-2 ring-[#D4AF37] shadow-lg'
+                                          : 'border-[#D4AF37]/15 bg-[#0E0C09] hover:border-[#D4AF37]/30 hover:bg-[#2B251D]'
                                       }`}
                                     >
                                       <div className="flex items-center justify-between mb-1">
@@ -1457,22 +1509,26 @@ export default function OnboardingWizard() {
                                           </span>
                                         )}
                                       </div>
-                                      <p className="text-[10px] text-[#AAB7B2] leading-relaxed">{opt.desc}</p>
+                                      <p className="text-[10px] text-[#A3957E] leading-relaxed">{opt.desc}</p>
                                     </button>
                                   );
                                 })}
                               </div>
                             </div>
+                          </>
+                        )}
 
+                        {canPickCoverPhoto && (
+                          <>
                             {/* Curated Ultra-HD Food Cover Photography */}
                             <div className="space-y-2.5">
                               <div className="flex items-center justify-between">
                                 <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                                  <Camera size={13} className="text-[#E8783C]" /> Curated Chef Cover Photography (1-Click Apply)
+                                  <Camera size={13} className="text-[#D4AF37]" /> Cover Photograph (1-Click Apply)
                                 </label>
-                                <span className="text-[10px] font-mono text-[#E8783C] font-semibold">Ultra-HD Quality</span>
+                                <span className="text-[10px] font-mono text-[#D4AF37] font-semibold">Ultra-HD Quality</span>
                               </div>
-                              <p className="text-[11px] text-[#AAB7B2]">
+                              <p className="text-[11px] text-[#A3957E]">
                                 Select from our art-directed restaurant photography collection, or upload your own below.
                               </p>
 
@@ -1489,8 +1545,8 @@ export default function OnboardingWizard() {
                                       }))}
                                       className={`group relative rounded-2xl overflow-hidden border text-left transition-all cursor-pointer aspect-[4/3] ${
                                         active
-                                          ? 'border-[#E8783C] ring-2 ring-[#E8783C] shadow-xl scale-[1.02]'
-                                          : 'border-white/10 hover:border-white/30 hover:scale-[1.01]'
+                                          ? 'border-[#D4AF37] ring-2 ring-[#D4AF37] shadow-xl scale-[1.02]'
+                                          : 'border-[#D4AF37]/15 hover:border-[#D4AF37]/35 hover:scale-[1.01]'
                                       }`}
                                     >
                                       <img
@@ -1529,11 +1585,11 @@ export default function OnboardingWizard() {
                             </div>
 
                             {/* Scrim Overlay Slider */}
-                            <div className="p-4 rounded-2xl bg-[#151C19] border border-white/10 space-y-4 shadow-sm">
+                            <div className="p-4 rounded-2xl bg-[#0E0C09] border border-[#D4AF37]/15 space-y-4 shadow-sm">
                               <div>
                                 <div className="flex items-center justify-between text-xs mb-1.5">
                                   <span className="font-semibold text-white">Cover Overlay Darkness</span>
-                                  <span className="font-mono text-[#E8783C] font-bold">
+                                  <span className="font-mono text-[#D4AF37] font-bold">
                                     {Math.round(studioTheme.cover.overlayStrength * 100)}%
                                   </span>
                                 </div>
@@ -1546,7 +1602,7 @@ export default function OnboardingWizard() {
                                     ...prev,
                                     cover: { ...prev.cover, overlayStrength: Number(e.target.value) / 100 }
                                   }))}
-                                  className="w-full accent-[#E8783C] cursor-pointer"
+                                  className="w-full accent-[#D4AF37] cursor-pointer"
                                 />
                                 <p className="text-[10px] text-stone-400 mt-1">
                                   Darkens the cover photo so your restaurant name and buttons stay crisp and easy to read.
@@ -1557,7 +1613,7 @@ export default function OnboardingWizard() {
                         )}
 
                         {/* Announcement — read by every design, Signature included */}
-                        <div className="p-4 rounded-2xl bg-[#151C19] border border-white/10 shadow-sm">
+                        <div className="p-4 rounded-2xl bg-[#0E0C09] border border-[#D4AF37]/15 shadow-sm">
                           <div className="space-y-1.5">
                             <label className="text-xs font-semibold text-white">Cover Announcement Banner (Optional)</label>
                             <input
@@ -1566,7 +1622,7 @@ export default function OnboardingWizard() {
                               onChange={(e) => setStudioTheme((prev) => ({ ...prev, announcement: e.target.value || null }))}
                               placeholder="e.g. ✨ Chef's Tasting Menu Live | Flat 15% Off on Dine-In"
                               maxLength={120}
-                              className="w-full bg-[#1D2723] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E8783C]"
+                              className="w-full bg-[#231E18] border border-[#D4AF37]/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-stone-500 focus:outline-none focus:border-[#D4AF37]"
                             />
                           </div>
                         </div>
@@ -1577,12 +1633,12 @@ export default function OnboardingWizard() {
                     {studioSubTab === 'layout' && (
                       <div className="space-y-6">
                         {studioTheme.signatureId && (
-                          <div className="p-4 rounded-2xl bg-[#1D2723] border border-[#E8783C]/30 space-y-1.5">
+                          <div className="p-4 rounded-2xl bg-[#231E18] border border-[#D4AF37]/30 space-y-1.5">
                             <p className="text-xs font-bold text-white flex items-center gap-1.5">
-                              <Layout size={14} className="text-[#E8783C]" />
+                              <Layout size={14} className="text-[#D4AF37]" />
                               {PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'This Signature design'} has a fixed menu layout
                             </p>
-                            <p className="text-[11px] text-[#AAB7B2] leading-relaxed">
+                            <p className="text-[11px] text-[#A3957E] leading-relaxed">
                               Dish card style, navigation and section headers are part of its art direction and
                               are not individually adjustable. Texture and typography below still apply.
                             </p>
@@ -1594,7 +1650,7 @@ export default function OnboardingWizard() {
                         {/* Dish Card Style */}
                         <div className="space-y-2.5">
                           <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                            <Utensils size={13} className="text-[#E8783C]" /> Dish Card Presentation Style
+                            <Utensils size={13} className="text-[#D4AF37]" /> Dish Card Presentation Style
                           </label>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             {DISH_CARD_OPTIONS.map((opt) => {
@@ -1609,8 +1665,8 @@ export default function OnboardingWizard() {
                                   }))}
                                   className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                                     active
-                                      ? 'border-[#E8783C] bg-[#E8783C]/12 ring-2 ring-[#E8783C] shadow-lg'
-                                      : 'border-white/10 bg-[#151C19] hover:border-white/25 hover:bg-[#1a2320]'
+                                      ? 'border-[#D4AF37] bg-[#D4AF37]/12 ring-2 ring-[#D4AF37] shadow-lg'
+                                      : 'border-[#D4AF37]/15 bg-[#0E0C09] hover:border-[#D4AF37]/30 hover:bg-[#2B251D]'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between mb-1">
@@ -1623,7 +1679,7 @@ export default function OnboardingWizard() {
                                       </span>
                                     )}
                                   </div>
-                                  <p className="text-[10px] text-[#AAB7B2] leading-relaxed">{opt.desc}</p>
+                                  <p className="text-[10px] text-[#A3957E] leading-relaxed">{opt.desc}</p>
                                 </button>
                               );
                             })}
@@ -1648,12 +1704,12 @@ export default function OnboardingWizard() {
                                   }))}
                                   className={`w-full p-2.5 rounded-xl border text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
                                     studioTheme.slots.nav === opt.id
-                                      ? 'border-[#E8783C] bg-[#E8783C]/15 text-white'
-                                      : 'border-white/10 bg-[#151C19] text-[#AAB7B2] hover:text-white'
+                                      ? 'border-[#D4AF37] bg-[#D4AF37]/15 text-white'
+                                      : 'border-[#D4AF37]/15 bg-[#0E0C09] text-[#A3957E] hover:text-white'
                                   }`}
                                 >
                                   <span>{opt.icon} {opt.label}</span>
-                                  {studioTheme.slots.nav === opt.id && <Check size={12} className="text-[#E8783C]" />}
+                                  {studioTheme.slots.nav === opt.id && <Check size={12} className="text-[#D4AF37]" />}
                                 </button>
                               ))}
                             </div>
@@ -1675,12 +1731,12 @@ export default function OnboardingWizard() {
                                   }))}
                                   className={`w-full p-2.5 rounded-xl border text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
                                     studioTheme.slots.section === opt.id
-                                      ? 'border-[#E8783C] bg-[#E8783C]/15 text-white'
-                                      : 'border-white/10 bg-[#151C19] text-[#AAB7B2] hover:text-white'
+                                      ? 'border-[#D4AF37] bg-[#D4AF37]/15 text-white'
+                                      : 'border-[#D4AF37]/15 bg-[#0E0C09] text-[#A3957E] hover:text-white'
                                   }`}
                                 >
                                   <span>{opt.icon} {opt.label}</span>
-                                  {studioTheme.slots.section === opt.id && <Check size={12} className="text-[#E8783C]" />}
+                                  {studioTheme.slots.section === opt.id && <Check size={12} className="text-[#D4AF37]" />}
                                 </button>
                               ))}
                             </div>
@@ -1690,7 +1746,7 @@ export default function OnboardingWizard() {
                         )}
 
                         {/* Background Texture & Typography */}
-                        <div className="space-y-4 pt-2 border-t border-white/10">
+                        <div className="space-y-4 pt-2 border-t border-[#D4AF37]/15">
                           {/* Background Texture */}
                           <div className="space-y-2">
                             <label className="text-xs font-bold text-white uppercase tracking-wider">
@@ -1704,8 +1760,8 @@ export default function OnboardingWizard() {
                                   onClick={() => setStudioTheme((prev) => ({ ...prev, texture: tex.id }))}
                                   className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all flex items-center gap-2 cursor-pointer ${
                                     studioTheme.texture === tex.id
-                                      ? 'border-[#E8783C] bg-[#E8783C]/15 text-white'
-                                      : 'border-white/10 bg-[#151C19] text-[#AAB7B2] hover:text-white'
+                                      ? 'border-[#D4AF37] bg-[#D4AF37]/15 text-white'
+                                      : 'border-[#D4AF37]/15 bg-[#0E0C09] text-[#A3957E] hover:text-white'
                                   }`}
                                 >
                                   <span>{tex.icon}</span>
@@ -1718,7 +1774,7 @@ export default function OnboardingWizard() {
                           {/* Typography Pairing */}
                           <div className="space-y-2">
                             <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                              <Type size={13} className="text-[#E8783C]" /> Typography Pairings
+                              <Type size={13} className="text-[#D4AF37]" /> Typography Pairings
                             </label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                               {TYPOGRAPHY_OPTIONS.map((font) => (
@@ -1728,8 +1784,8 @@ export default function OnboardingWizard() {
                                   onClick={() => setStudioTheme((prev) => ({ ...prev, typePair: font.id }))}
                                   className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                                     studioTheme.typePair === font.id
-                                      ? 'border-[#E8783C] bg-[#E8783C]/12 text-white ring-1 ring-[#E8783C]'
-                                      : 'border-white/10 bg-[#151C19] text-[#AAB7B2] hover:text-white'
+                                      ? 'border-[#D4AF37] bg-[#D4AF37]/12 text-white ring-1 ring-[#D4AF37]'
+                                      : 'border-[#D4AF37]/15 bg-[#0E0C09] text-[#A3957E] hover:text-white'
                                   }`}
                                 >
                                   <p className="text-xs font-bold text-white">{font.label}</p>
@@ -1752,8 +1808,8 @@ export default function OnboardingWizard() {
                                   onClick={() => setStudioTheme((prev) => ({ ...prev, density: d.id }))}
                                   className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                                     studioTheme.density === d.id
-                                      ? 'border-[#E8783C] bg-[#E8783C] text-white shadow-sm'
-                                      : 'border-white/10 bg-[#151C19] text-[#AAB7B2] hover:text-white'
+                                      ? 'border-[#D4AF37] bg-[#E8783C] text-white shadow-sm'
+                                      : 'border-[#D4AF37]/15 bg-[#0E0C09] text-[#A3957E] hover:text-white'
                                   }`}
                                 >
                                   {d.label}
@@ -1767,7 +1823,7 @@ export default function OnboardingWizard() {
 
                     {/* TAB 3: BRAND COLORS & LOGO */}
                     {studioSubTab === 'brand' && (
-                      <div className="p-5 rounded-3xl bg-[#151C19] border border-white/10 space-y-6 shadow-xl">
+                      <div className="p-5 rounded-3xl bg-[#0E0C09] border border-[#D4AF37]/15 space-y-6 shadow-xl">
                         {/* Page Mode: Light vs Dark */}
                         <div>
                           <label className="text-xs font-bold text-white uppercase tracking-wider block mb-2">
@@ -1779,8 +1835,8 @@ export default function OnboardingWizard() {
                               onClick={() => setStudioTheme((prev) => ({ ...prev, mode: 'light' }))}
                               className={`p-3 rounded-2xl border text-left transition-all flex items-center gap-2.5 cursor-pointer ${
                                 studioTheme.mode === 'light'
-                                  ? 'border-[#E8783C] bg-white/15 text-white ring-2 ring-[#E8783C]'
-                                  : 'border-white/10 bg-[#1D2723] text-[#AAB7B2] hover:border-white/30'
+                                  ? 'border-[#D4AF37] bg-white/15 text-white ring-2 ring-[#D4AF37]'
+                                  : 'border-[#D4AF37]/15 bg-[#231E18] text-[#A3957E] hover:border-[#D4AF37]/35'
                               }`}
                             >
                               <Sun size={16} className="text-amber-400" />
@@ -1794,8 +1850,8 @@ export default function OnboardingWizard() {
                               onClick={() => setStudioTheme((prev) => ({ ...prev, mode: 'dark' }))}
                               className={`p-3 rounded-2xl border text-left transition-all flex items-center gap-2.5 cursor-pointer ${
                                 studioTheme.mode === 'dark'
-                                  ? 'border-[#E8783C] bg-white/15 text-white ring-2 ring-[#E8783C]'
-                                  : 'border-white/10 bg-[#1D2723] text-[#AAB7B2] hover:border-white/30'
+                                  ? 'border-[#D4AF37] bg-white/15 text-white ring-2 ring-[#D4AF37]'
+                                  : 'border-[#D4AF37]/15 bg-[#231E18] text-[#A3957E] hover:border-[#D4AF37]/35'
                               }`}
                             >
                               <Moon size={16} className="text-indigo-400" />
@@ -1808,7 +1864,7 @@ export default function OnboardingWizard() {
                         </div>
 
                         {/* Curated Seeds */}
-                        <div className="space-y-2.5 pt-2 border-t border-white/10">
+                        <div className="space-y-2.5 pt-2 border-t border-[#D4AF37]/15">
                           <label className="text-xs font-bold text-white uppercase tracking-wider block">
                             Curated Designer Brand Accents
                           </label>
@@ -1825,15 +1881,14 @@ export default function OnboardingWizard() {
                                       brand: { ...prev.brand, seedColor: seed.seed },
                                       mode: seed.mode,
                                     }));
-                                    setRestaurantData((prev) => ({ ...prev, customSeedColor: seed.seed }));
                                   }}
                                   className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
                                     active
-                                      ? 'border-[#E8783C] bg-white/10 ring-2 ring-[#E8783C]'
-                                      : 'border-white/10 bg-[#1D2723] hover:border-white/30'
+                                      ? 'border-[#D4AF37] bg-white/10 ring-2 ring-[#D4AF37]'
+                                      : 'border-[#D4AF37]/15 bg-[#231E18] hover:border-[#D4AF37]/35'
                                   }`}
                                 >
-                                  <span className="w-5 h-5 rounded-full border border-white/30 shrink-0 shadow-xs" style={{ backgroundColor: seed.seed }} />
+                                  <span className="w-5 h-5 rounded-full border border-[#D4AF37]/35 shrink-0 shadow-xs" style={{ backgroundColor: seed.seed }} />
                                   <div className="min-w-0">
                                     <p className="text-[11px] font-bold text-white truncate">{seed.label}</p>
                                     <p className="text-[9px] font-mono text-stone-400 uppercase">{seed.seed}</p>
@@ -1845,7 +1900,7 @@ export default function OnboardingWizard() {
                         </div>
 
                         {/* Custom Hex / Color Input */}
-                        <div className="pt-2 border-t border-white/10 space-y-2">
+                        <div className="pt-2 border-t border-[#D4AF37]/15 space-y-2">
                           <label className="text-xs font-semibold text-stone-300">Custom Brand Color Hex</label>
                           <div className="flex items-center gap-3">
                             <input
@@ -1855,7 +1910,6 @@ export default function OnboardingWizard() {
                                 const val = e.target.value;
                                 setCustomHexInput(val);
                                 setStudioTheme((prev) => ({ ...prev, brand: { ...prev.brand, seedColor: val } }));
-                                setRestaurantData((prev) => ({ ...prev, customSeedColor: val }));
                               }}
                               className="w-10 h-10 rounded-xl cursor-pointer bg-transparent border-0 p-0"
                               title="Choose brand color"
@@ -1870,10 +1924,9 @@ export default function OnboardingWizard() {
                                   setCustomHexInput(val);
                                   if (isValidHex(val)) {
                                     setStudioTheme((prev) => ({ ...prev, brand: { ...prev.brand, seedColor: val } }));
-                                    setRestaurantData((prev) => ({ ...prev, customSeedColor: val }));
                                   }
                                 }}
-                                className="w-36 bg-[#1D2723] border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E8783C]"
+                                className="w-36 bg-[#231E18] border border-[#D4AF37]/20 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-stone-500 focus:outline-none focus:border-[#D4AF37]"
                               />
                               <span className="text-[11px] text-stone-400 flex items-center gap-1">
                                 <CheckCircle2 size={13} className="text-emerald-400" /> Auto WCAG AAA Contrast
@@ -1883,7 +1936,7 @@ export default function OnboardingWizard() {
                         </div>
 
                         {/* Brand Logo & Shape */}
-                        <div className="pt-3 border-t border-white/10 space-y-4">
+                        <div className="pt-3 border-t border-[#D4AF37]/15 space-y-4">
                           <ImageSelector
                             label="Restaurant Logo (Cover & Header)"
                             value={restaurantData.logoUrl}
@@ -1909,7 +1962,7 @@ export default function OnboardingWizard() {
                                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer ${
                                     studioTheme.brand.logoShape === shape
                                       ? 'bg-[#E8783C] text-white shadow-xs'
-                                      : 'bg-[#1D2723] text-[#AAB7B2] border border-white/10 hover:text-white'
+                                      : 'bg-[#231E18] text-[#A3957E] border border-[#D4AF37]/15 hover:text-white'
                                   }`}
                                 >
                                   {shape}
@@ -1926,7 +1979,7 @@ export default function OnboardingWizard() {
                               value={restaurantData.tagline}
                               onChange={(e) => setRestaurantData((prev) => ({ ...prev, tagline: e.target.value }))}
                               placeholder="e.g. Authentic Royal Mughlai & Artisanal Flavours"
-                              className="w-full bg-[#1D2723] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E8783C]"
+                              className="w-full bg-[#231E18] border border-[#D4AF37]/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-stone-500 focus:outline-none focus:border-[#D4AF37]"
                             />
                           </div>
                         </div>
@@ -1935,13 +1988,13 @@ export default function OnboardingWizard() {
                   </div>
 
                   {/* RIGHT COLUMN: REALISTIC LIVE IPHONE MOCKUP (5 COLS) */}
-                  <div className="lg:col-span-5 bg-[#151C19] p-4 rounded-3xl border border-white/10 shadow-2xl flex flex-col items-center">
-                    <div className="w-full flex items-center justify-between pb-3 px-1 text-[11px] font-mono text-[#AAB7B2] border-b border-white/5 mb-3">
+                  <div className="lg:col-span-5 bg-[#0E0C09] p-4 rounded-3xl border border-[#D4AF37]/15 shadow-2xl flex flex-col items-center">
+                    <div className="w-full flex items-center justify-between pb-3 px-1 text-[11px] font-mono text-[#A3957E] border-b border-[#D4AF37]/10 mb-3">
                       <span className="flex items-center gap-1.5 font-bold tracking-wider text-white">
-                        <Smartphone size={13} className="text-[#E8783C]" /> LIVE PHONE VIEW
+                        <Smartphone size={13} className="text-[#D4AF37]" /> LIVE PHONE VIEW
                       </span>
                       <div className="flex items-center gap-2 text-[10px]">
-                        <span className="text-[#E8783C] font-bold uppercase">
+                        <span className="text-[#D4AF37] font-bold uppercase">
                           {SHOWCASE_PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'Edition'}
                         </span>
                         <span className="text-stone-600">·</span>
@@ -1952,14 +2005,14 @@ export default function OnboardingWizard() {
                     </div>
 
                     {/* Cover vs Menu Dishes Section Switcher */}
-                    <div className="w-full grid grid-cols-2 gap-1.5 mb-3 bg-[#1D2723] p-1 rounded-xl border border-white/10">
+                    <div className="w-full grid grid-cols-2 gap-1.5 mb-3 bg-[#231E18] p-1 rounded-xl border border-[#D4AF37]/15">
                       <button
                         type="button"
                         onClick={() => scrollToSection('cover')}
                         className={`py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                           previewSection === 'cover'
                             ? 'bg-[#E8783C] text-white shadow-xs'
-                            : 'text-[#AAB7B2] hover:text-white'
+                            : 'text-[#A3957E] hover:text-white'
                         }`}
                       >
                         <Eye size={12} /> Cover Page
@@ -1970,7 +2023,7 @@ export default function OnboardingWizard() {
                         className={`py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                           previewSection === 'dishes'
                             ? 'bg-[#E8783C] text-white shadow-xs'
-                            : 'text-[#AAB7B2] hover:text-white'
+                            : 'text-[#A3957E] hover:text-white'
                         }`}
                       >
                         <Utensils size={12} /> Menu Dishes
@@ -2019,19 +2072,11 @@ export default function OnboardingWizard() {
             {/* STEP 4: PREVIEW & PERMANENT QR */}
             {currentStep === 'preview' && (
               <motion.div key="step-preview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-                <div className="space-y-2 text-center">
-                  <span className="text-xs font-mono text-[#34B56A] uppercase tracking-widest flex items-center justify-center gap-1.5"><Check size={14} /> Step 4 (Final)</span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white">Your Official Table Stand & Permanent QR Menu</h2>
-                  <p className="text-xs sm:text-sm text-[#AAB7B2]">
-                    Here is your custom 24K gold & marble table plaque sticker artwork alongside your live digital menu.
-                  </p>
-                </div>
-
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
                   {/* Left Column (6 cols): LUXURY PRINT-READY STICKER CARD */}
                   <div className="lg:col-span-6 flex flex-col items-center space-y-4">
                     <div className="w-full flex items-center justify-between px-1">
-                      <span className="text-xs font-mono uppercase text-[#E8783C] font-bold tracking-wider flex items-center gap-1.5">
+                      <span className="text-xs font-mono uppercase text-[#D4AF37] font-bold tracking-wider flex items-center gap-1.5">
                         <Sparkles size={14} /> Table Plaque Artwork
                         {qrReady && <LottieMoment moment="qr-activation-success" loop={false} className="w-6 h-6" />}
                       </span>
@@ -2065,6 +2110,7 @@ export default function OnboardingWizard() {
                       <RoyalWalnutStickerCard
                         stickerRef={stickerCardRef}
                         restaurantName={restaurantData.name || 'Your Restaurant'}
+                        logoUrl={restaurantData.logoUrl || undefined}
                         category={restaurantData.tagline || 'FINE DINING & CULINARY EXCELLENCE'}
                         menuUrl={
                           qr?.qrId
@@ -2081,22 +2127,67 @@ export default function OnboardingWizard() {
                       />
                     </div>
 
-                    {/* Optional Direct Table Ordering Toggle */}
-                    <div className="w-full max-w-sm p-3.5 rounded-2xl bg-[#151C19] border border-white/10 flex items-center justify-between shadow-md">
+                    {/* Table ordering is granted by the plan's `customer_ordering` entitlement, not by a
+                      * per-restaurant setting — this used to be a switch that saved nowhere, so it now
+                      * reports the real state instead of pretending to change it. */}
+                    <div className="w-full max-w-sm p-3.5 rounded-2xl bg-[#0E0C09] border border-[#D4AF37]/15 flex items-center justify-between gap-3 shadow-md">
                       <div>
                         <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
-                          <Smartphone size={13} className="text-[#E8783C]" /> Direct Table QR Ordering
+                          <Smartphone size={13} className="text-[#D4AF37]" /> Direct Table QR Ordering
                         </h4>
-                        <p className="text-[10px] text-[#AAB7B2]">Let customers place orders directly from their phones</p>
+                        <p className="text-[10px] text-[#A3957E]">
+                          {planId === 'PREMIUM'
+                            ? 'Included on your plan — guests can order straight from this QR.'
+                            : 'Your plan shows the menu only. Upgrade to Premium to take orders from the table.'}
+                        </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setRestaurantData((prev) => ({ ...prev, orderingEnabled: !prev.orderingEnabled }))}
-                        className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer shrink-0 ${restaurantData.orderingEnabled ? 'bg-[#E8783C]' : 'bg-[#2A3832]'}`}
+                      <span
+                        className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+                        style={{
+                          background: planId === 'PREMIUM' ? 'rgba(52,181,106,0.16)' : 'rgba(212,175,55,0.12)',
+                          color: planId === 'PREMIUM' ? OB.ok : OB.gold,
+                        }}
                       >
-                        <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${restaurantData.orderingEnabled ? 'left-5' : 'left-0.5'}`} />
-                      </button>
+                        {planId === 'PREMIUM' ? 'Active' : 'Menu only'}
+                      </span>
                     </div>
+
+                    {/* The live link, once the QR exists */}
+                    {qrReady && liveMenuUrl && (
+                      <div className="w-full max-w-sm space-y-2.5 rounded-2xl border border-[#D4AF37]/15 bg-[#0E0C09] p-3.5 shadow-md">
+                        <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-[#A3957E]">Your permanent menu link</p>
+                        <p className="truncate font-mono text-[11px] text-white">{liveMenuUrl}</p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(liveMenuUrl);
+                                showToast('success', 'Menu link copied.');
+                              } catch {
+                                showToast('error', 'Could not copy — select the link and copy it manually.');
+                              }
+                            }}
+                            className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-[#D4AF37]/25 px-3 py-2 text-[11px] font-bold text-white transition-colors hover:bg-[#D4AF37]/10"
+                          >
+                            <Copy size={12} className="text-[#D4AF37]" /> Copy link
+                          </button>
+                          <a
+                            href={liveMenuUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#D4AF37]/25 px-3 py-2 text-[11px] font-bold text-white transition-colors hover:bg-[#D4AF37]/10"
+                          >
+                            <ExternalLink size={12} className="text-[#D4AF37]" /> Open live menu
+                          </a>
+                        </div>
+                        <p className="text-[10px] leading-relaxed text-[#766A58]">
+                          Print the plaque at 100% on A5 or larger — the QR stays scannable down to about
+                          3&nbsp;cm wide. This link never changes, so edits to your menu reach every printed
+                          plaque instantly.
+                        </p>
+                      </div>
+                    )}
 
                     {!qrReady && (
                       <div className="w-full max-w-sm pt-1 text-center space-y-2">
@@ -2109,7 +2200,7 @@ export default function OnboardingWizard() {
                           <Sparkles size={16} />
                           {isSubmitting ? 'Saving Menu & Activating QR...' : 'Lock & Activate Permanent QR'}
                         </button>
-                        <p className="text-[11px] text-[#AAB7B2]">
+                        <p className="text-[11px] text-[#A3957E]">
                           Locks your dishes, prices, and activates your permanent table QR standee.
                         </p>
                         {qrError && (
@@ -2124,9 +2215,9 @@ export default function OnboardingWizard() {
 
                   {/* Right Column (6 cols): LIVE CUSTOMER MENU MOCKUP */}
                   <div className="lg:col-span-6 flex flex-col items-center space-y-3">
-                    <div className="w-full flex items-center justify-between px-1 text-xs font-mono text-[#AAB7B2]">
+                    <div className="w-full flex items-center justify-between px-1 text-xs font-mono text-[#A3957E]">
                       <span>LIVE CUSTOMER MENU</span>
-                      <span className="text-[#E8783C] font-bold">
+                      <span className="text-[#D4AF37] font-bold">
                         {studioTheme.signatureId
                           ? (PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'Signature Design')
                           : (COVER_STYLE_OPTIONS.find((o) => o.id === studioTheme.slots.cover)?.label || 'Studio Design')}
@@ -2165,27 +2256,6 @@ export default function OnboardingWizard() {
 
           </AnimatePresence>
 
-          {/* NAV CONTROLS */}
-          <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
-            {currentStepIdx > 0 ? (
-              <button onClick={prevStep} className="px-5 py-2.5 rounded-xl border border-white/15 text-xs font-bold text-white hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer">
-                <ArrowLeft size={14} /> Back
-              </button>
-            ) : <div />}
-
-            {currentStepIdx < steps.length - 1 ? (
-              <button onClick={nextStep} className="px-6 py-2.5 rounded-xl bg-[#E8783C] text-xs font-bold text-white hover:bg-[#f08b55] flex items-center gap-2 shadow-md transition-colors cursor-pointer">
-                {currentStep === 'identity' && isPreloaded && !isEditingIdentity ? 'Confirm & Continue' : 'Continue'} <ArrowRight size={14} />
-              </button>
-            ) : (
-              <button onClick={handleComplete} disabled={isSubmitting} className="px-7 py-3 rounded-xl bg-[#34B56A] text-xs font-bold text-white hover:bg-emerald-600 flex items-center gap-2 shadow-lg disabled:opacity-70 transition-colors cursor-pointer">
-                {isSubmitting ? 'Saving...' : 'Go to Dashboard'} <Check size={15} />
-              </button>
-            )}
-          </div>
-        </div>
-      </main>
-
       {isPrinterOpen && qr?.qrId && (
         <QRGenerationSequence
           restaurantName={restaurantData.name}
@@ -2197,6 +2267,6 @@ export default function OnboardingWizard() {
           onComplete={handlePrinterComplete}
         />
       )}
-    </div>
+    </OnboardingShell>
   );
 }

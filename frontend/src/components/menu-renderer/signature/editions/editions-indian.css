@@ -772,16 +772,18 @@
 
 
 /* ========================================================================================
-   B — RANG-E-PUNJAB : Premium Punjabi Restaurant
+   B — RANG-E-PUNJAB : Grand Highway Dhaba & Royal Punjabi Dining (Masterpiece Edition)
    ======================================================================================== */
 
 .mq-ed-punjab {
-  background-color: var(--mq-color-bg, #141010);
-  color: var(--mq-color-text, #fffbf5);
+  background-color: var(--mq-color-bg, #120a08);
+  color: var(--mq-color-text, #fff8ed);
   position: relative;
   container-name: punjab;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
+/* --- Cover Header : Grand Tandoor Gateway --- */
 .mq-ed-punjab-cover {
   container-type: inline-size;
   container-name: punjab-cover;
@@ -792,11 +794,12 @@
   justify-content: space-between;
   align-items: center;
   min-height: min(100svh, 54rem);
-  padding: clamp(1.5rem, 4cqw, 2.5rem) clamp(1rem, 3cqw, 2rem);
+  padding: clamp(1.75rem, 4cqw, 3rem) clamp(1rem, 3cqw, 2.25rem);
   overflow: hidden;
   text-align: center;
-  color: #fffbf5;
+  color: #fff8ed;
   box-sizing: border-box;
+  background-color: #0d0605;
 }
 
 .mq-ed-punjab-veil {
@@ -805,37 +808,145 @@
   z-index: 1;
   background:
     radial-gradient(
-      ellipse at 50% 38%,
-      rgba(26, 18, 18, 0.65) 0%,
-      rgba(20, 14, 14, 0.88) 65%,
-      #0e0909 100%
+      ellipse at 50% 36%,
+      rgba(40, 18, 12, 0.6) 0%,
+      rgba(24, 10, 7, 0.88) 60%,
+      #0d0605 100%
     );
   pointer-events: none;
 }
 
-/* Geometric Phulkari embroidered border fringe */
+/* Embroidered Phulkari Silk-Thread Top and Bottom Fringes */
 .mq-ed-punjab-phulkari-strip {
   position: absolute;
   left: 0;
   right: 0;
-  height: 12px;
+  height: 14px;
   z-index: 3;
   background-image: repeating-linear-gradient(
     45deg,
     #c8321a 0,
-    #c8321a 8px,
-    #e5a93c 8px,
-    #e5a93c 16px,
-    #221616 16px,
-    #221616 24px
+    #c8321a 9px,
+    #f59e0b 9px,
+    #f59e0b 18px,
+    #2a120b 18px,
+    #2a120b 27px,
+    #ffd875 27px,
+    #ffd875 36px
   );
-  opacity: 0.92;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  opacity: 0.95;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.7);
 }
 
-.mq-ed-punjab-phulkari-top { top: 0; }
-.mq-ed-punjab-phulkari-bottom { bottom: 0; }
+.mq-ed-punjab-phulkari-top {
+  top: 0;
+  border-bottom: 1px solid rgba(255, 216, 117, 0.4);
+}
 
+.mq-ed-punjab-phulkari-bottom {
+  bottom: 0;
+  border-top: 1px solid rgba(255, 216, 117, 0.4);
+}
+
+/* Phulkari Stepped Corner Brackets */
+.mq-ed-punjab-phulkari-corner {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+}
+
+.mq-ed-punjab-phulkari-corner.is-top-left {
+  top: 18px;
+  left: 18px;
+}
+
+.mq-ed-punjab-phulkari-corner.is-top-right {
+  top: 18px;
+  right: 18px;
+}
+
+.mq-ed-punjab-phulkari-corner.is-bottom-left {
+  bottom: 18px;
+  left: 18px;
+}
+
+.mq-ed-punjab-phulkari-corner.is-bottom-right {
+  bottom: 18px;
+  right: 18px;
+}
+
+/* NH 1 Grand Trunk Road Milestone Heritage Badge */
+.mq-ed-punjab-milestone {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 14px 14px 4px 4px;
+  overflow: hidden;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(245, 158, 11, 0.4);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  margin-bottom: var(--mq-space-2);
+}
+
+.mq-ed-punjab-milestone-top {
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+  padding: 3px 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mq-ed-punjab-milestone-route {
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.68rem);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #1a0b06;
+}
+
+.mq-ed-punjab-milestone-base {
+  background: #fdfaf3;
+  padding: 3px 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mq-ed-punjab-milestone-edition {
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.64rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #991b1b;
+}
+
+/* Hammered Peetal (Brass) Degchi Logo Cartouche */
+.mq-ed-punjab-degchi-cartouche {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: var(--mq-space-2) auto;
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.85));
+}
+
+.mq-ed-punjab-degchi-svg {
+  position: absolute;
+  inset: 0;
+}
+
+.mq-ed-punjab-degchi-brand {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+/* Cover Body Typography */
 .mq-ed-punjab-cover-body {
   position: relative;
   z-index: 4;
@@ -843,75 +954,85 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(0.35rem, 1.8cqw, 0.95rem);
+  gap: clamp(0.4rem, 1.8cqw, 0.95rem);
   width: 100%;
-  max-width: min(34rem, 100%);
+  max-width: min(38rem, 100%);
   margin-block: auto;
   box-sizing: border-box;
-}
-
-.mq-ed-punjab-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--mq-space-2);
-  padding: 4px 14px;
-  font-family: var(--mq-font-display);
-  font-size: clamp(0.56rem, 1.6cqw, 0.72rem);
-  font-weight: 700;
-  letter-spacing: clamp(0.08em, 0.3cqw, 0.16em);
-  text-transform: uppercase;
-  color: #fffbf5;
-  background-color: #c8321a;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(200, 50, 26, 0.4);
-}
-
-.mq-ed-punjab-crest {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  width: clamp(62px, 15cqw, 92px);
-  height: clamp(62px, 15cqw, 92px);
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
 }
 
 .mq-ed-punjab-title {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(1.35rem, 6.8cqw, 3.2rem);
-  font-weight: 800;
-  line-height: 1.06;
+  font-size: clamp(1.6rem, 7.5cqw, 3.6rem);
+  font-weight: 900;
+  line-height: 1.05;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #fffbf5;
-  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.85);
+  color: #fff8ed;
+  text-shadow:
+    0 3px 20px rgba(0, 0, 0, 0.95),
+    0 1px 2px rgba(245, 158, 11, 0.6);
   text-wrap: balance;
   word-break: break-word;
-  max-width: min(32rem, 90%);
+}
+
+.mq-ed-punjab-gurmukhi-epithet {
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.82rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #f59e0b;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
 }
 
 .mq-ed-punjab-tagline {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.74rem, 2.3cqw, 1.05rem);
+  font-size: clamp(0.82rem, 2.4cqw, 1.12rem);
   font-style: italic;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   line-height: var(--mq-leading-relaxed);
   color: #f5ebe6;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-  max-width: min(25rem, 90%);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+  max-width: min(28rem, 90%);
   text-wrap: balance;
+}
+
+/* Astragal Divider */
+.mq-ed-punjab-astragal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-3);
+  width: min(24rem, 90%);
+  margin: var(--mq-space-2) 0;
+}
+
+.mq-ed-punjab-astragal-stem {
+  flex: 1 1 2rem;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(245, 158, 11, 0.65) 50%,
+    transparent 100%
+  );
+}
+
+.mq-ed-punjab-cover-astragal {
+  margin: var(--mq-space-2) 0;
 }
 
 .mq-ed-punjab-teaser {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.58rem, 1.7cqw, 0.75rem);
+  font-size: max(12px, clamp(0.65rem, 1.8cqw, 0.8rem));
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #e5a93c;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
-  max-width: min(26rem, 90%);
+  color: #f59e0b;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+  max-width: min(28rem, 90%);
 }
 
 .mq-ed-punjab-contact {
@@ -919,58 +1040,394 @@
   z-index: 4;
   margin-top: auto;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.6rem, 1.7cqw, 0.75rem);
+  font-size: max(12px, clamp(0.65rem, 1.8cqw, 0.8rem));
   letter-spacing: 0.12em;
   color: #f5ebe6;
-  opacity: 0.9;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  opacity: 0.92;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
 }
 
+/* Announcement Banner */
+.mq-ed-punjab-announce {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-3);
+  padding: clamp(0.6rem, 1.8cqw, 0.85rem) var(--mq-space-4);
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(200, 50, 26, 0.35) 0%, rgba(32, 14, 10, 0.95) 100%),
+    #180a06;
+  border-top: 1px solid rgba(245, 158, 11, 0.45);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.45);
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.7);
+  text-align: center;
+}
+
+.mq-ed-punjab-announce-icon {
+  font-size: 1.1rem;
+}
+
+.mq-ed-punjab-announce-text {
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.82rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffd875;
+}
+
+/* Interior Plate Container */
 .mq-ed-punjab-plate {
   max-width: var(--mq-ed-measure);
   margin-inline: auto;
-  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-12);
+  padding: var(--mq-space-10) var(--mq-space-5) var(--mq-space-14);
 }
 
-.mq-ed-punjab-course {
-  position: relative;
-  margin-bottom: var(--mq-space-10);
-  padding: clamp(1.25rem, 3.5cqw, 2.25rem) clamp(1rem, 3cqw, 2rem);
+/* --- 1. Bhatthi Da Swaad Showcase --- */
+.mq-ed-punjab-showcase {
+  margin-bottom: var(--mq-space-12);
+  padding: clamp(1.25rem, 3.5cqw, 2.5rem);
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(32, 22, 22, 0.5) 0%, rgba(20, 14, 14, 0.8) 85%),
-    #120d0d;
-  border: 1px solid rgba(200, 50, 26, 0.35);
-  border-left: 5px solid #c8321a;
+    radial-gradient(ellipse at 50% 0%, rgba(48, 18, 12, 0.55) 0%, rgba(22, 10, 8, 0.95) 85%),
+    #140806;
+  border: 1px solid rgba(245, 158, 11, 0.38);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 32px rgba(0, 0, 0, 0.8),
+    0 10px 36px rgba(0, 0, 0, 0.55);
+}
+
+.mq-ed-punjab-showcase-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-2);
+  margin-bottom: clamp(1.25rem, 3cqw, 2rem);
+}
+
+.mq-ed-punjab-showcase-kicker {
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #f59e0b;
+}
+
+.mq-ed-punjab-showcase-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.4rem, 4.5cqw, 2.2rem);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff8ed;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+}
+
+.mq-ed-punjab-showcase-sub {
+  margin: 0;
+  max-width: 54ch;
+  font-size: max(12px, clamp(0.8rem, 2cqw, 0.92rem));
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+  color: #f5ebe6;
+  opacity: 0.9;
+}
+
+.mq-ed-punjab-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(1rem, 2.5cqw, 1.75rem);
+}
+
+.mq-ed-punjab-showcase-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #1e0d09;
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.mq-ed-punjab-showcase-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(245, 158, 11, 0.55);
+}
+
+.mq-ed-punjab-showcase-media {
+  position: relative;
+  overflow: hidden;
+  background: #0d0605;
+}
+
+.mq-ed-punjab-showcase-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: #991b1b;
+  border: 1px solid #ffd875;
+  border-radius: 3px;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.65rem);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff8ed;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.mq-ed-punjab-showcase-badge-fire {
+  font-size: 0.85rem;
+}
+
+.mq-ed-punjab-showcase-content {
+  padding: clamp(0.9rem, 2cqw, 1.35rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+  flex: 1;
+}
+
+.mq-ed-punjab-showcase-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-punjab-showcase-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-punjab-showcase-dish-name {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1rem, 2.5cqw, 1.25rem);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff8ed;
+}
+
+.mq-ed-punjab-showcase-price {
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.05rem, 2.6cqw, 1.3rem);
+  font-weight: 900;
+  color: #ffd875;
+  white-space: nowrap;
+}
+
+.mq-ed-punjab-showcase-desc {
+  margin: 0;
+  font-size: max(12px, clamp(0.8rem, 2cqw, 0.9rem));
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+  color: #f5ebe6;
+  opacity: 0.88;
+}
+
+.mq-ed-punjab-showcase-footer {
+  margin-top: auto;
+  padding-top: var(--mq-space-2);
+  border-top: 1px dashed rgba(245, 158, 11, 0.2);
+}
+
+.mq-ed-punjab-showcase-prep {
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.7rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f59e0b;
+}
+
+/* --- 2. Cultural Aside Plaque --- */
+.mq-ed-punjab-plaque {
+  position: relative;
+  margin-bottom: var(--mq-space-12);
+  padding: clamp(1.5rem, 4cqw, 2.5rem);
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(42, 18, 14, 0.95) 0%, rgba(20, 9, 7, 0.98) 100%),
+    #120806;
+  border: 2px solid rgba(245, 158, 11, 0.4);
   border-radius: 4px;
   box-shadow:
-    inset 0 0 24px rgba(0, 0, 0, 0.65),
+    inset 0 0 28px rgba(0, 0, 0, 0.8),
+    0 8px 30px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+
+.mq-ed-punjab-plaque::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px dashed rgba(245, 158, 11, 0.25);
+  pointer-events: none;
+}
+
+.mq-ed-punjab-plaque-inner {
+  position: relative;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-punjab-plaque-seal {
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #c8321a 0%, #7c1a0e 100%);
+  border: 2px solid #ffd875;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+  font-family: var(--mq-font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff8ed;
+  margin-bottom: var(--mq-space-1);
+}
+
+.mq-ed-punjab-plaque-kicker {
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f59e0b;
+}
+
+.mq-ed-punjab-plaque-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.3rem, 4cqw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff8ed;
+}
+
+.mq-ed-punjab-plaque-text {
+  margin: var(--mq-space-2) 0;
+  max-width: 58ch;
+  font-size: max(12px, clamp(0.82rem, 2cqw, 0.94rem));
+  font-style: italic;
+  line-height: var(--mq-leading-relaxed);
+  color: #f5ebe6;
+  opacity: 0.92;
+}
+
+.mq-ed-punjab-plaque-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.72rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffd875;
+}
+
+/* --- 3. Dhaba Course Cards & Dotted Leaders --- */
+.mq-ed-punjab-course {
+  position: relative;
+  margin-bottom: var(--mq-space-12);
+  padding: clamp(1.25rem, 3.5cqw, 2.5rem) clamp(1rem, 3cqw, 2.25rem);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(38, 16, 12, 0.55) 0%, rgba(18, 8, 6, 0.88) 85%),
+    #120806;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-left: 6px solid #c8321a;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 28px rgba(0, 0, 0, 0.7),
     0 8px 32px rgba(0, 0, 0, 0.45);
   box-sizing: border-box;
 }
 
 .mq-ed-punjab-course-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-bottom: clamp(1rem, 2.5cqw, 1.75rem);
 }
 
-.mq-ed-punjab-course-title {
-  margin: 0 0 var(--mq-space-2);
+.mq-ed-punjab-medallion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: var(--mq-space-2);
+}
+
+.mq-ed-punjab-medallion-ring {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+  border: 2px solid #ffd875;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.mq-ed-punjab-medallion-gurmukhi {
   font-family: var(--mq-font-display);
-  font-size: clamp(1.2rem, 4.2cqw, 1.95rem);
+  font-size: 1.15rem;
   font-weight: 800;
+  color: #1a0b06;
+}
+
+.mq-ed-punjab-medallion-label {
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.68rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  color: #f59e0b;
+}
+
+.mq-ed-punjab-course-title-wrap {
+  margin: 2px 0 6px;
+}
+
+.mq-ed-punjab-course-title {
+  margin: 0;
+  font-family: var(--mq-font-display);
+  font-size: clamp(1.35rem, 4.2cqw, 2.1rem);
+  font-weight: 900;
   letter-spacing: 0.05em;
-  color: #fffbf5;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+  text-transform: uppercase;
+  color: #fff8ed;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
 }
 
 .mq-ed-punjab-course-desc {
-  margin: 0;
+  margin: 0 auto;
   max-width: 52ch;
-  font-size: clamp(0.78rem, 2cqw, 0.9rem);
+  font-size: max(12px, clamp(0.8rem, 2cqw, 0.92rem));
   color: #f5ebe6;
-  opacity: 0.88;
+  opacity: 0.9;
   font-style: italic;
   line-height: var(--mq-leading-relaxed);
+}
+
+.mq-ed-punjab-course-divider {
+  margin-top: var(--mq-space-2);
 }
 
 .mq-ed-punjab-list {
@@ -980,50 +1437,47 @@
   margin-top: var(--mq-space-4);
 }
 
-.mq-ed-punjab .mq-ed-leader {
-  display: block;
-  min-width: 0;
-  padding-bottom: clamp(0.4rem, 1.2cqw, 0.75rem);
-  border-bottom: 1px solid rgba(200, 50, 26, 0.12);
+/* --- Dotted Leaders with Precision Last-Baseline Anchoring --- */
+.mq-ed-punjab-dish-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: clamp(0.5rem, 1.5cqw, 0.85rem);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.16);
 }
 
-.mq-ed-punjab .mq-ed-leader:last-child {
+.mq-ed-punjab-dish-row:last-child {
   border-bottom: none;
   padding-bottom: 0;
 }
 
-.mq-ed-punjab .mq-ed-leader-head {
+.mq-ed-punjab-dish-head {
   display: flex;
   align-items: last baseline;
-  gap: clamp(0.35rem, 1.2cqw, 0.75rem);
-  min-width: 0;
+  gap: clamp(0.4rem, 1.2cqw, 0.75rem);
   width: 100%;
 }
 
-.mq-ed-punjab .mq-ed-leader-name {
+.mq-ed-punjab-dish-name {
   margin: 0;
-  flex: 0 1 auto;
-  min-width: 0;
-  max-width: calc(100% - 4.5rem);
   font-family: var(--mq-font-display);
-  font-size: clamp(0.92rem, 2.4cqw, 1.15rem);
+  font-size: clamp(0.95rem, 2.4cqw, 1.18rem);
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #fffbf5;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
-  overflow-wrap: break-word;
+  color: #fff8ed;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
 }
 
-.mq-ed-punjab .mq-ed-leader-rule {
-  flex: 1 1 1.5rem;
-  min-width: 0.85rem;
+.mq-ed-punjab-dish-rule {
+  flex: 1 1 2rem;
+  min-width: 1rem;
   height: 1px;
   align-self: last baseline;
   margin-bottom: 0.22em;
   background-image: radial-gradient(
     circle at center,
-    rgba(229, 169, 60, 0.75) 1px,
+    rgba(245, 158, 11, 0.75) 1px,
     transparent 1.2px
   );
   background-size: 6px 1px;
@@ -1031,72 +1485,189 @@
   opacity: 0.85;
 }
 
-.mq-ed-punjab .mq-price {
+.mq-ed-punjab-dish-price {
   font-family: var(--mq-font-display);
-  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
-  font-weight: 800;
-  color: #e5a93c;
-  text-shadow: 0 0 10px rgba(229, 169, 60, 0.35);
+  font-size: clamp(0.95rem, 2.4cqw, 1.18rem);
+  font-weight: 900;
+  color: #ffd875;
   white-space: nowrap;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
 }
 
-.mq-ed-punjab .mq-ed-leader-desc {
-  margin: var(--mq-space-1) 0 0;
-  max-width: 54ch;
-  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+.mq-ed-punjab-dish-desc {
+  margin: 2px 0 0;
+  max-width: 56ch;
+  font-size: max(12px, clamp(0.8rem, 2cqw, 0.9rem));
+  font-style: italic;
   line-height: var(--mq-leading-relaxed);
   color: #f5ebe6;
-  opacity: 0.82;
-  font-style: italic;
+  opacity: 0.86;
 }
 
-.mq-ed-punjab .mq-badge {
+/* Authentic Clay-Hearth Diet Mark */
+.mq-ed-punjab-diet {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
+  gap: 4px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.mq-ed-punjab-diet-rim {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid #d97706;
+  background: #1e0d09;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.mq-ed-punjab-diet.is-veg .mq-ed-punjab-diet-core {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16a34a;
+  box-shadow: 0 0 4px #22c55e;
+}
+
+.mq-ed-punjab-diet.is-nonveg .mq-ed-punjab-diet-core {
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: #dc2626;
+  box-shadow: 0 0 4px #ef4444;
+}
+
+.mq-ed-punjab-diet-chilli {
+  font-size: 0.75rem;
+}
+
+/* Dhaba Tags */
+.mq-ed-punjab-dish-tags {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.mq-ed-punjab-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
   font-family: var(--mq-font-display);
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-size: max(12px, 0.65rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   border-radius: 3px;
-  background: #c8321a;
-  border: 1px solid rgba(229, 169, 60, 0.6);
-  color: #fffbf5;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: rgba(30, 13, 9, 0.8);
+  color: #ffd875;
 }
 
-.mq-ed-punjab .mq-badge::before {
-  content: '★';
-  font-size: 0.6rem;
-  color: #e5a93c;
+.mq-ed-punjab-tag.is-signature {
+  background: linear-gradient(135deg, rgba(200, 50, 26, 0.8) 0%, rgba(153, 27, 27, 0.8) 100%);
+  border-color: #ffd875;
+  color: #fff8ed;
 }
 
+.mq-ed-punjab-tag.is-popular {
+  border-color: rgba(245, 158, 11, 0.6);
+  color: #fef3c7;
+}
+
+.mq-ed-punjab-tag.is-seasonal {
+  border-color: rgba(22, 163, 74, 0.6);
+  background: rgba(20, 40, 20, 0.6);
+  color: #86efac;
+}
+
+.mq-ed-punjab-tag.is-spiced {
+  border-color: rgba(220, 38, 38, 0.6);
+  background: rgba(45, 12, 10, 0.6);
+  color: #fca5a5;
+}
+
+/* --- Footer & Dhaba Brigade Hierarchy --- */
 .mq-ed-punjab-foot {
-  padding: var(--mq-space-10) var(--mq-space-5);
+  padding: var(--mq-space-12) var(--mq-space-5) var(--mq-space-10);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--mq-space-3);
-  border-top: 1px solid var(--mq-color-border);
+  border-top: 1px solid rgba(245, 158, 11, 0.35);
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(38, 16, 12, 0.55) 0%, rgba(14, 6, 5, 0.98) 80%),
+    #0d0605;
+}
+
+.mq-ed-punjab-foot-crest {
+  margin-bottom: var(--mq-space-1);
 }
 
 .mq-ed-punjab-foot-name {
-  margin: 0;
+  margin: var(--mq-space-1) 0 0;
   font-family: var(--mq-font-display);
-  font-size: var(--mq-text-lg);
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: var(--mq-text-xl);
+  font-weight: 900;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--mq-color-heading);
+  color: #fff8ed;
 }
 
 .mq-ed-punjab-foot-sub {
   margin: 0;
-  font-size: var(--mq-text-sm);
-  color: var(--mq-color-text-muted);
+  font-size: max(12px, var(--mq-text-sm));
+  font-style: italic;
+  color: #f5ebe6;
+  opacity: 0.85;
+}
+
+.mq-ed-punjab-brigade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--mq-space-4);
+  width: min(44rem, 100%);
+  margin: var(--mq-space-6) 0;
+  padding: var(--mq-space-5) 0;
+  border-top: 1px solid rgba(245, 158, 11, 0.22);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.22);
+}
+
+.mq-ed-punjab-brigade-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mq-ed-punjab-brigade-title {
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.75rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffd875;
+}
+
+.mq-ed-punjab-brigade-role {
+  font-size: max(12px, 0.7rem);
+  color: #f5ebe6;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.mq-ed-punjab-foot-colophon {
+  margin: var(--mq-space-2) 0;
+  font-family: var(--mq-font-display);
+  font-size: max(12px, 0.78rem);
+  font-style: italic;
+  color: #f59e0b;
+  opacity: 0.9;
 }
 
 
