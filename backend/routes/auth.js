@@ -142,7 +142,6 @@ export default async function authRoutes(request, response, url) {
     
     const result = await requestAdminOtp(email, address);
     if (result) {
-      console.log(`[admin auth] Generated Admin OTP for ${email}: ${result.otp}`);
       const emailRes = await sendAdminLoginOtpEmail({ email, otp: result.otp });
       if (!emailRes.ok) {
         console.warn('[admin auth] OTP email delivery failed:', emailRes.error);

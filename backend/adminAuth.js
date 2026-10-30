@@ -1,5 +1,6 @@
 import { randomBytes, randomInt, createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { pool } from './db.js';
+import { getAdminSessionTtlSeconds } from './adminSessionCookie.js';
 
 const OTP_TTL_MS = 5 * 60 * 1000;
 const MAX_OTP_ATTEMPTS = 5;
@@ -10,7 +11,10 @@ export function getAdminOtpSecret() {
   }
   return secret || 'test-mock-admin-otp-pepper-key';
 }
-const defaultAdmins = ['xshankarmishra@gmail.com', 'qevnaro@gmail.com', 'menusqr.in@gmail.com'];
+// Production reads admins only from APPROVED_ADMIN_EMAILS. These defaults exist for local dev and tests.
+const defaultAdmins = process.env.NODE_ENV === 'production'
+  ? []
+  : ['xshankarmishra@gmail.com', 'qevnaro@gmail.com', 'menusqr.in@gmail.com'];
 const envAdmins = process.env.APPROVED_ADMIN_EMAILS
   ? process.env.APPROVED_ADMIN_EMAILS.split(',').map(e => e.replace(/["']/g, '').trim().toLowerCase()).filter(Boolean)
   : [];
@@ -201,7 +205,7 @@ export async function verifyAdminOtp(email, otp, ip) {
     const adminId = dbUser.rows[0].id;
     const token = randomBytes(32).toString('hex');
     const tokenHash = createHash('sha256').update(token).digest('hex');
-    const sessionExpiresAt = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000); // 15 days
+    const sessionExpiresAt = new Date(Date.now() + getAdminSessionTtlSeconds() * 1000);
     const sessionId = randomBytes(16).toString('hex');
     await client.query(
       'INSERT INTO admin_sessions (id, admin_id, token_hash, expires_at, ip_address) VALUES ($1, $2, $3, $4, $5)',
