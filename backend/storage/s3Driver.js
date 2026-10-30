@@ -58,13 +58,17 @@ export function createS3Driver(config) {
     throw new Error('S3 storage driver requires ASSET_BASE_URL (the public read URL for the bucket).');
   }
 
-  const host = new URL(endpoint).host;
+  const endpointUrl = new URL(endpoint);
+  const host = endpointUrl.host;
+  // Some providers (Supabase: /storage/v1/s3) serve the S3 API under a path prefix. That prefix is
+  // part of the request path, so it must be part of the signed canonical URI too.
+  const basePath = endpointUrl.pathname.replace(/\/+$/, '');
   // Injectable so request signing is verifiable against fixed AWS test vectors.
   const clock = config.clock || (() => new Date());
 
   /** Builds the signed request without issuing it — the unit-testable core of the driver. */
   function buildSignedRequest(method, key, { body, contentType, cacheControl } = {}) {
-    const canonicalUri = `/${encodePath(bucket)}/${encodePath(key)}`;
+    const canonicalUri = `${basePath}/${encodePath(bucket)}/${encodePath(key)}`;
     const payloadHash = body ? sha256Hex(body) : sha256Hex('');
     const { amzDate, dateStamp } = amzDates(clock());
 
@@ -99,7 +103,7 @@ export function createS3Driver(config) {
     headers.Authorization =
       `${ALGORITHM} Credential=${accessKeyId}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
-    return { url: `${endpoint}${canonicalUri}`, method, headers, body, canonicalRequest, stringToSign, signature };
+    return { url: `${endpointUrl.origin}${canonicalUri}`, method, headers, body, canonicalRequest, stringToSign, signature };
   }
 
   async function signedFetch(method, key, opts = {}) {

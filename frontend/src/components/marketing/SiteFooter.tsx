@@ -17,6 +17,17 @@ const footerLinks = [
     ]
   },
   {
+    title: "Solutions",
+    links: [
+      { label: "QR Menu for Cafés", href: "/qr-menu-for-cafes" },
+      { label: "QR Menu for Dhabas", href: "/qr-menu-for-dhabas" },
+      { label: "QR Menu for Bars & Pubs", href: "/qr-menu-for-bars-and-pubs" },
+      { label: "QR Menu for Hotels", href: "/qr-menu-for-hotels" },
+      { label: "QR Menu for Bakeries", href: "/qr-menu-for-bakeries" },
+      { label: "QR Menu for Food Trucks", href: "/qr-menu-for-food-trucks" },
+    ]
+  },
+  {
     title: "Company",
     links: [
       { label: "About MenusQR", href: "/about" },
@@ -129,6 +140,24 @@ export default function SiteFooter() {
                   support@menusqr.in
                 </a>
               </div>
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+                  </svg>
+                </span>
+                <span className="text-white/60 text-xs">Instagram:</span>
+                <a
+                  href="https://www.instagram.com/menusqr.in/"
+                  target="_blank"
+                  rel="noopener noreferrer me"
+                  className="font-semibold text-white hover:text-menusqr-orange transition-colors"
+                >
+                  @menusqr.in
+                </a>
+              </div>
             </div>
 
             <div className="flex gap-4">
@@ -142,7 +171,7 @@ export default function SiteFooter() {
           </motion.div>
 
           {/* Links Grid */}
-          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-8">
             {footerLinks.map((column, idx) => (
               <motion.div key={idx} variants={itemVariants} className="flex flex-col">
                 <h4 className="font-semibold text-menusqr-white mb-6 tracking-wide">{column.title}</h4>

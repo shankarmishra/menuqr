@@ -282,10 +282,6 @@ export default async function publicRoutes(request, response, url) {
     const slug = decodeURIComponent(publicMenuMatch[1]);
     const clientRes = await pool.query('SELECT id FROM clients WHERE menu_slug = $1 OR public_id = $1 OR id = $1', [slug]);
     let client = clientRes.rows[0];
-    if (!client && (slug === 'mannat-tandoori-junction' || slug === 'shankar-dhaba')) {
-      const aliasRes = await pool.query("SELECT id FROM clients WHERE menu_slug IN ('shankar-dhaba', 'mannat-tandoori-junction') LIMIT 1");
-      client = aliasRes.rows[0];
-    }
     if (!client) {
       throw apiError(404, 'This menu was not found.');
     }
@@ -379,10 +375,6 @@ export default async function publicRoutes(request, response, url) {
       ? await pool.query('SELECT c.id FROM qr_codes q JOIN clients c ON c.id = q.tenant_id WHERE q.qr_id = $1 AND q.is_active = true', [decodeURIComponent(qrOrderMatch[1])])
       : await pool.query('SELECT id FROM clients WHERE menu_slug = $1', [slug]);
     let client = clientRes.rows[0];
-    if (!client && (slug === 'mannat-tandoori-junction' || slug === 'shankar-dhaba')) {
-      const aliasRes = await pool.query("SELECT id FROM clients WHERE menu_slug IN ('shankar-dhaba', 'mannat-tandoori-junction') LIMIT 1");
-      client = aliasRes.rows[0];
-    }
     if (!client) {
       throw apiError(404, 'Menu not found.');
     }

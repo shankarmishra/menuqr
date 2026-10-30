@@ -26,8 +26,6 @@ import { themeFromPresetId } from '../../design-system/presets.ts';
 import { coerceTheme } from '../../design-system/validateTheme.ts';
 import type { MenuTheme } from '../../design-system/theme.types.ts';
 import type { RenderCategory, RenderMenuItem } from '../menu-renderer/types.ts';
-import { ShobharamBookletSpread } from './templates/bespoke/ShobharamBookletSpread';
-import type { CategoryGroup, MenuItem } from './templates/types';
 
 export interface MenuTemplateRendererProps {
   templateId: string;
@@ -171,67 +169,6 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
     }),
     [isPremium, onAddToCart, onRemoveFromCart, getItemQuantity]
   );
-
-  // Bespoke Tenant Isolation for Shobharam's
-  if (restaurant.name?.toLowerCase().includes('shobharam')) {
-    const toMenuItem = (item: MenuTemplateRendererProps['items'][number]): MenuItem => ({
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      price: item.price,
-      halfPrice: item.halfPrice,
-      fullPrice: item.fullPrice,
-      regPrice: item.regPrice,
-      medPrice: item.medPrice,
-      largePrice: item.largePrice,
-      pricingType: item.pricingType,
-      dietType: item.dietType,
-      available: item.available,
-      isBestseller: item.isBestseller,
-      image: item.imageUrl ?? item.image,
-      variants: item.variants,
-    });
-
-    const ordered = [...categories].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    let groupedCategories: CategoryGroup[] = ordered.map((category) => ({
-      id: category.id,
-      name: category.name,
-      items: items.filter((item) => item.category === category.id || item.category === category.name).map(toMenuItem),
-    }));
-
-    if (!groupedCategories.some((c) => c.items.length > 0)) {
-      const uniqueCats = [...new Set(items.map((item) => item.category))].filter(Boolean);
-      groupedCategories = uniqueCats.map((name, idx) => ({
-        id: `derived-shobharam-${idx}`,
-        name: String(name),
-        items: items.filter((item) => item.category === name).map(toMenuItem),
-      }));
-    }
-
-    return (
-      <MenuCartContext.Provider value={cartValue}>
-        <ShobharamBookletSpread
-          template={{} as any}
-          restaurant={{
-            name: restaurant.name,
-            tagline: restaurant.tagline,
-            cuisine: restaurant.cuisine,
-            phone: restaurant.phone,
-            address: restaurant.address,
-            city: restaurant.city,
-            logo: restaurant.logo,
-          }}
-          categories={groupedCategories}
-          rawCategories={groupedCategories}
-          compact={compact}
-          onAddToCart={isPremium ? onAddToCart : undefined}
-          isPremium={isPremium}
-          activeCategory="all"
-          setActiveCategory={() => {}}
-        />
-      </MenuCartContext.Provider>
-    );
-  }
 
   return (
     <MenuCartContext.Provider value={cartValue}>

@@ -20,6 +20,29 @@ function normalizeOrigin(value) {
   }
 }
 
+/**
+ * Origins allowed to call the admin APIs (/api/auth/admin/*, /api/admin/*). Narrower than the
+ * general CORS list on purpose: the restaurant site (menusqr.in) must never be able to drive the
+ * admin API, so a script injected there cannot reach it from a browser.
+ */
+export function createAdminOriginChecker(environment = process.env) {
+  const production = environment.NODE_ENV === 'production' || environment.COOKIE_SECURE === 'true';
+  const configured = (environment.ADMIN_FRONTEND_ORIGIN || (production ? 'https://admin.menusqr.in' : ''))
+    .split(',')
+    .map(normalizeOrigin)
+    .filter(Boolean);
+  const allowed = new Set(configured);
+  const general = createCorsOriginChecker(environment);
+
+  return (origin) => {
+    if (!origin) return true; // non-browser callers carry no Origin; the session and CSRF checks still apply
+    const normalized = normalizeOrigin(origin);
+    if (!normalized) return false;
+    if (allowed.size > 0) return allowed.has(normalized);
+    return general(origin); // development/test with no admin origin configured
+  };
+}
+
 export function createCorsOriginChecker(environment = process.env) {
   const allowedOrigins = [
     environment.FRONTEND_ORIGINS,

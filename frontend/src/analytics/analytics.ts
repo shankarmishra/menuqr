@@ -60,3 +60,32 @@ export function trackEvent(name: string, params?: Record<string, unknown>) {
   if (!initialized || !window.gtag) return;
   window.gtag('event', name, params);
 }
+
+// Checkout funnel, using GA4's standard e-commerce events so the built-in funnel and revenue
+// reports work without custom dimensions.
+type PlanItem = { planId: string; billing?: string | null; price?: number };
+const planItem = ({ planId, billing, price }: PlanItem) => ({
+  item_id: planId.toLowerCase(),
+  item_name: `MenusQR ${planId.charAt(0).toUpperCase()}${planId.slice(1).toLowerCase()}`,
+  item_variant: billing ?? undefined,
+  price,
+  quantity: 1,
+});
+
+export const trackSelectPlan = (plan: PlanItem) =>
+  trackEvent('select_item', { item_list_name: 'pricing', items: [planItem(plan)] });
+
+export const trackBeginCheckout = (plan: PlanItem, value?: number) =>
+  trackEvent('begin_checkout', { currency: 'INR', value, items: [planItem(plan)] });
+
+/** Fires once per order even if the success page is reloaded. */
+export function trackPurchaseOnce(orderId: string, value?: number) {
+  const key = `ga_purchase_${orderId}`;
+  try {
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+  } catch {
+    // private mode: accept a possible duplicate rather than losing the conversion
+  }
+  trackEvent('purchase', { transaction_id: orderId, currency: 'INR', value });
+}

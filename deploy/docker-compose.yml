@@ -1,0 +1,55 @@
+# Production stack for the Oracle Always Free VM.
+#
+#   backend      the Node API (built from ../backend)
+#   cloudflared  outbound-only tunnel that publishes the API at api.menusqr.in
+#
+# The API port is never published on the host: only cloudflared can reach it, over the
+# compose network, so the only inbound port the VM needs is SSH.
+#
+# The tunnel is "locally managed" (created with the cloudflared CLI), which works on a plain
+# free Cloudflare account without a Zero Trust subscription. Files needed on the VM, none of
+# them committed:
+#   ../backend/.env                 the API's environment (same variables Render had)
+#   ~/.cloudflared/<tunnel-id>.json the tunnel credentials written by `cloudflared tunnel create`
+#   ./cloudflared/config.yml        copy of cloudflared/config.example.yml with the tunnel id filled in
+
+services:
+  backend:
+    build: ../backend
+    container_name: menusqr-backend
+    restart: unless-stopped
+    env_file: ../backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      # Behind Cloudflare: rate limits and lockouts must key on the real client IP.
+      TRUST_PROXY: "true"
+      # The VM has 1 GB of RAM; keep Node's heap well inside it.
+      NODE_OPTIONS: "--max-old-space-size=384"
+    volumes:
+      # Legacy local uploads survive container rebuilds.
+      - menusqr-uploads:/app/uploads
+    expose:
+      - "3001"
+    mem_limit: 640m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: menusqr-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      # Only the tunnel credentials, not cert.pem. Under sudo ${HOME} is /root, so the directory
+      # is a variable with the Oracle VM default.
+      - ${CLOUDFLARED_DIR:-/home/ubuntu/.cloudflared}:/etc/cloudflared/creds:ro
+    depends_on:
+      - backend
+
+volumes:
+  menusqr-uploads:

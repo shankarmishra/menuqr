@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { trackSelectPlan } from '../../analytics/analytics';
 import SiteHeader from '../../components/marketing/SiteHeader';
 import SiteFooter from '../../components/marketing/SiteFooter';
 import { Check, Sparkles } from 'lucide-react';
@@ -197,6 +198,7 @@ export default function PricingPage() {
 
                   <Link
                     to={`/purchase/details?plan=${plan.id}&billing=${billingCycle}`}
+                    onClick={() => trackSelectPlan({ planId: plan.id, billing: billingCycle })}
                     className={`block w-full text-center py-4 rounded-2xl font-bold text-lg transition-colors mt-auto ${
                       plan.highlight 
                         ? 'bg-[#E8783C] hover:bg-[#d66a30] text-white' 

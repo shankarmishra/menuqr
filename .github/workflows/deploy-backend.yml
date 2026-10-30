@@ -1,0 +1,68 @@
+name: Deploy Backend
+
+# Pushes the backend to the Oracle VM and rebuilds the containers. The VM never needs Git
+# credentials: this job copies the files over SSH.
+#
+# Required repository secrets:
+#   ORACLE_HOST      public IP or hostname of the VM
+#   ORACLE_USER      SSH user (ubuntu)
+#   ORACLE_SSH_KEY   private key whose public half is in the VM's authorized_keys
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "deploy/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Off until the VM exists: set the repository variable ORACLE_DEPLOY to "true" to enable it.
+    if: ${{ vars.ORACLE_DEPLOY == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        env:
+          ORACLE_HOST: ${{ secrets.ORACLE_HOST }}
+          ORACLE_SSH_KEY: ${{ secrets.ORACLE_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$ORACLE_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$ORACLE_HOST" >> ~/.ssh/known_hosts
+
+      - name: Copy files
+        env:
+          TARGET: ${{ secrets.ORACLE_USER }}@${{ secrets.ORACLE_HOST }}
+        run: |
+          ssh "$TARGET" 'mkdir -p ~/menuqr/backend ~/menuqr/deploy'
+          # --exclude keeps the VM-only secrets and uploaded files out of the sync.
+          rsync -az --delete --exclude node_modules --exclude .env --exclude uploads/ backend/ "$TARGET:~/menuqr/backend/"
+          rsync -az --exclude .env deploy/ "$TARGET:~/menuqr/deploy/"
+
+      - name: Rebuild and restart
+        env:
+          TARGET: ${{ secrets.ORACLE_USER }}@${{ secrets.ORACLE_HOST }}
+        run: |
+          ssh "$TARGET" 'cd ~/menuqr/deploy && docker compose up -d --build --remove-orphans && docker image prune -f'
+
+      - name: Wait for the API to report healthy
+        env:
+          TARGET: ${{ secrets.ORACLE_USER }}@${{ secrets.ORACLE_HOST }}
+        run: |
+          for i in $(seq 1 24); do
+            status=$(ssh "$TARGET" "docker inspect -f '{{.State.Health.Status}}' menusqr-backend" || true)
+            echo "attempt $i: $status"
+            [ "$status" = "healthy" ] && exit 0
+            sleep 5
+          done
+          ssh "$TARGET" 'docker logs --tail 80 menusqr-backend' || true
+          exit 1

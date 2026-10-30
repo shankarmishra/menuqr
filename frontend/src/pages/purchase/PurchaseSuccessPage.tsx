@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import SiteHeader from '../../components/marketing/SiteHeader';
+import { trackPurchaseOnce } from '../../analytics/analytics';
 import { CheckCircle2, ShieldCheck, Zap, Mail, ArrowRight, XCircle, AlertTriangle } from 'lucide-react';
 
 export default function PurchaseSuccessPage() {
@@ -46,6 +47,12 @@ export default function PurchaseSuccessPage() {
 
         if (isMounted) {
           setEmailSent(data.emailSent === true);
+          let value: number | undefined;
+          try {
+            const stored = Number(sessionStorage.getItem(`ga_value_${orderId}`));
+            if (Number.isFinite(stored) && stored > 0) value = stored;
+          } catch { /* optional */ }
+          trackPurchaseOnce(orderId, value);
           setError('');
           setVerifying(false);
         }

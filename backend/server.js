@@ -21,7 +21,7 @@ process.on('unhandledRejection', (reason) => {
 import { connectDB, pool } from './db.js';
 import { apiError, sendJson } from './utils.js';
 import { getSystemHealth, captureException } from './observability.js';
-import { createCorsOriginChecker } from './cors.js';
+import { createCorsOriginChecker, createAdminOriginChecker } from './cors.js';
 import { startOutboxWorker, getEmailConfig } from './email.js';
 import { getStorage, storageInfo } from './storage/index.js';
 
@@ -38,6 +38,7 @@ import { verifyCsrfToken } from './csrf.js';
 
 const port = Number(process.env.PORT || process.env.API_PORT || 3001);
 const isAllowedOrigin = createCorsOriginChecker(process.env);
+const isAdminOrigin = createAdminOriginChecker(process.env);
 
 export function checkPaymentGatewayConfig() {
   const appId = process.env.CASHFREE_APP_ID;
@@ -111,6 +112,17 @@ const server = createServer(async (request, response) => {
   } else if (requestOrigin && !originAllowed && !url.pathname.startsWith('/api/webhooks/')) {
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
       sendJson(response, 403, { error: 'Forbidden: Request origin is not allowed.' });
+      return;
+    }
+  }
+
+  // Admin APIs answer only to the admin site, never to the restaurant site or any other origin.
+  if (url.pathname.startsWith('/api/auth/admin/') || url.pathname.startsWith('/api/admin/')) {
+    response.setHeader('Cache-Control', 'no-store');
+    let refererOrigin = '';
+    try { refererOrigin = referer ? new URL(referer).origin : ''; } catch { refererOrigin = 'invalid'; }
+    if (!isAdminOrigin(requestOrigin) || (refererOrigin && !isAdminOrigin(refererOrigin))) {
+      sendJson(response, 403, { error: 'Forbidden: admin access is only available from the admin site.' });
       return;
     }
   }

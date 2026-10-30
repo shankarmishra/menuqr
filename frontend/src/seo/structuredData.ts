@@ -18,7 +18,7 @@ export const getOrganizationSchema = () => {
       "areaServed": "IN",
       "availableLanguage": ["English", "Hindi"]
     }],
-    // Add "sameAs" with the brand's real social/profile URLs once confirmed (unverified links hurt entity trust).
+    "sameAs": ["https://www.instagram.com/menusqr.in/"],
     "alternateName": ["Menus QR", "MenusQR.in"]
   };
 };
