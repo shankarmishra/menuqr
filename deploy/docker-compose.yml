@@ -45,7 +45,9 @@ services:
     command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
     volumes:
       - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
-      - ${HOME}/.cloudflared:/etc/cloudflared/creds:ro
+      # Only the tunnel credentials, not cert.pem. Under sudo ${HOME} is /root, so the directory
+      # is a variable with the Oracle VM default.
+      - ${CLOUDFLARED_DIR:-/home/ubuntu/.cloudflared}:/etc/cloudflared/creds:ro
     depends_on:
       - backend
 

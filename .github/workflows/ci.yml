@@ -47,10 +47,6 @@ jobs:
         working-directory: frontend
         run: npm run test:unit
 
-      # pdf_digital_twin_11_out_of_10.test.js is deliberately excluded: one of its cases reads
-      # backend/test-fixtures/pdf-menus/01_designed_cafe_multicolumn.pdf, a binary fixture that
-      # was never committed to the repo, so that file cannot pass from a fresh checkout anywhere
-      # (verified: the fixture is absent, not gitignored). Pre-existing, unrelated to this gate.
       - name: Backend unit tests (pure logic, no database required)
         working-directory: backend
         run: >
