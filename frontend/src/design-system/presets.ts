@@ -535,6 +535,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'spacious',
     radius: 'xl',
     shadow: 'subtle',
+    cover: { imageUrl: '/assets/themes/atelier-pastel-hero.webp', overlayStrength: 0.25 },
   },
   {
     id: 'edition-presse-brut',

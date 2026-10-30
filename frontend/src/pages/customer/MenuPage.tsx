@@ -23,7 +23,8 @@ import {
   Droplets,
   Receipt,
   ConciergeBell,
-  HandPlatter
+  HandPlatter,
+  MessageCircle,
 } from 'lucide-react';
 
 function InstagramIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
@@ -136,7 +137,24 @@ export default function MenuPage() {
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [isSendingService, setIsSendingService] = useState(false);
   const [lastServiceSentAt, setLastServiceSentAt] = useState<number>(0);
-  
+
+  // Text-size accessibility control (owner-toggleable, see menuFeatures.accessibilityControls).
+  // A per-device preference, not a diner identity — same localStorage convention as menuHit.ts's
+  // dedupe key, just persisted across visits rather than once a day.
+  const A11Y_STEPS = [1, 1.15, 1.3] as const;
+  const [a11yStepIndex, setA11yStepIndex] = useState(0);
+  useEffect(() => {
+    try {
+      const saved = Number(localStorage.getItem('mq-a11y-step'));
+      if (Number.isInteger(saved) && saved >= 0 && saved < A11Y_STEPS.length) setA11yStepIndex(saved);
+    } catch { /* private browsing or storage disabled — stays at the default step */ }
+  }, []);
+  const setA11yStep = (next: number) => {
+    const clamped = Math.min(A11Y_STEPS.length - 1, Math.max(0, next));
+    setA11yStepIndex(clamped);
+    try { localStorage.setItem('mq-a11y-step', String(clamped)); } catch { /* best-effort only */ }
+  };
+
 
   const currentMenuResult = menuResult?.slug === slug ? menuResult : undefined;
   const client = currentMenuResult?.client;
@@ -152,6 +170,14 @@ export default function MenuPage() {
 
   // Strict plan gating: Customer ordering is exclusive to highest plan (Premium)
   const isPremium = Boolean(client?.orderingEnabled ?? (client?.plan?.toUpperCase() === 'PREMIUM'));
+  // Absent `menuFeatures` (an older cached payload, or a request that predates this panel) reads
+  // as "everything on" — the same defaults `backend/menuFeatures.js` applies, so a client never
+  // sees a feature vanish just because this field happened to be missing from one response.
+  const menuFeatures = client?.menuFeatures;
+  const callWaiterEnabled = menuFeatures ? menuFeatures.callWaiter.enabled : true;
+  const callWaiterTypes = menuFeatures?.callWaiter.types ?? ['WATER', 'WAITER', 'BILL'];
+  const whatsappNumber = menuFeatures?.whatsappChat.enabled ? menuFeatures.whatsappChat.resolvedNumber : null;
+  const accessibilityEnabled = menuFeatures ? menuFeatures.accessibilityControls.enabled : true;
   const loadError = currentMenuResult?.error ?? '';
   const isLoading = Boolean(slug) && !currentMenuResult;
 
@@ -634,11 +660,19 @@ export default function MenuPage() {
     image: item.image,
     focalX: item.focalX ?? undefined,
     focalY: item.focalY ?? undefined,
-    tags: item.tags ?? null,
+    // When the owner has turned a filter off (menuFeatures.allergenFilter/spiceFilter), the
+    // matching data is stripped here, once, before it ever reaches the renderer — every dish-card
+    // slot and all 15 Editions already hide an empty chip row / zero-badge automatically, so this
+    // one spot is the only place the toggle needs to be applied.
+    tags: item.tags
+      ? { ...item.tags, allergens: menuFeatures?.allergenFilter.enabled === false ? [] : item.tags.allergens, spice: menuFeatures?.spiceFilter.enabled === false ? 0 : item.tags.spice }
+      : null,
+    spicyLevel: menuFeatures?.spiceFilter.enabled === false ? 0 : undefined,
     soldOut: item.soldOut ?? false,
     availabilityNote: item.availabilityNote ?? null,
     isBestseller: Boolean(item.tags?.badges?.includes('bestseller')),
     isSpecial: Boolean(item.tags?.badges?.includes('special')),
+    trending: menuFeatures?.trending.enabled === false ? false : item.trending,
   }));
 
   const cartTotalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -749,6 +783,38 @@ export default function MenuPage() {
           {client?.city && (
             <span className="text-xs font-mono opacity-80 flex items-center gap-1"><MapPin size={12} />{[client.city, client.state].filter(Boolean).join(', ')}</span>
           )}
+          {whatsappNumber && (
+            <a
+              href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi, I'm looking at the ${client.businessName || ''} menu`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="header-whatsapp-chip"
+              aria-label="Chat with the restaurant on WhatsApp"
+            >
+              <MessageCircle size={13} />
+              <span>WhatsApp</span>
+            </a>
+          )}
+          {accessibilityEnabled && (
+            <div className="a11y-text-size" role="group" aria-label="Menu text size">
+              <button
+                type="button"
+                onClick={() => setA11yStep(a11yStepIndex - 1)}
+                disabled={a11yStepIndex === 0}
+                aria-label="Decrease menu text size"
+              >
+                A−
+              </button>
+              <button
+                type="button"
+                onClick={() => setA11yStep(a11yStepIndex + 1)}
+                disabled={a11yStepIndex === A11Y_STEPS.length - 1}
+                aria-label="Increase menu text size"
+              >
+                A+
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -760,7 +826,10 @@ export default function MenuPage() {
         />
       )}
 
-      <main className="flex-1 pb-28">
+      {/* `zoom` (not `transform: scale`) so the menu's own layout reflows at the larger size
+        * instead of just stretching — and it degrades safely: a browser without `zoom` support
+        * simply ignores the property and the menu renders at its normal size. */}
+      <main className="flex-1 pb-28" style={a11yStepIndex > 0 ? { zoom: A11Y_STEPS[a11yStepIndex] } : undefined}>
         <MenuTemplateRenderer
           templateId={client.templateId || 'royal-maharaja'}
           restaurant={{
@@ -914,7 +983,7 @@ export default function MenuPage() {
       )}
 
       {/* Floating Table Service Bell (Water / Waiter / Bill) */}
-      {isPremium && (
+      {isPremium && callWaiterEnabled && (
         <button
           type="button"
           onClick={() => setIsServiceModalOpen(true)}
@@ -925,6 +994,7 @@ export default function MenuPage() {
           <span>Call Waiter / Water</span>
         </button>
       )}
+
 
       {/* Modern Floating Bottom Cart Bar */}
       {isPremium && cart.length > 0 && !isCartOpen && (
@@ -1454,8 +1524,9 @@ export default function MenuPage() {
                   </div>
                 </div>
 
-                {/* Service Options */}
+                {/* Service Options — each only offered when the owner has it switched on */}
                 <div className="grid grid-cols-1 gap-2.5">
+                  {callWaiterTypes.includes('WATER') && (
                   <button
                     type="button"
                     disabled={isSendingService}
@@ -1475,7 +1546,9 @@ export default function MenuPage() {
                       Request 💧
                     </span>
                   </button>
+                  )}
 
+                  {callWaiterTypes.includes('WAITER') && (
                   <button
                     type="button"
                     disabled={isSendingService}
@@ -1495,7 +1568,9 @@ export default function MenuPage() {
                       Call 🙋
                     </span>
                   </button>
+                  )}
 
+                  {callWaiterTypes.includes('BILL') && (
                   <button
                     type="button"
                     disabled={isSendingService}
@@ -1515,6 +1590,7 @@ export default function MenuPage() {
                       Bill 🧾
                     </span>
                   </button>
+                  )}
                 </div>
 
                 <div className="text-center text-[11px] text-slate-400">

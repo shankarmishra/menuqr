@@ -598,8 +598,7 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery } =
-    useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
   const signatures = useFeatured(categories, 2);
   const sections = liveCategories(visible);
 
@@ -704,6 +703,10 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
             dietFilter={dietFilter}
             onDietFilterChange={setDietFilter}
             counts={counts}
+            allergenFilter={allergenFilter}
+            onAllergenFilterChange={setAllergenFilter}
+            spiceFilter={spiceFilter}
+            onSpiceFilterChange={setSpiceFilter}
           />
         </>
       )}

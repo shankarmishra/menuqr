@@ -7,8 +7,10 @@ import {
   deleteGoogleReviewsAddon,
   saveVoiceGreeting,
   previewVoiceGreeting,
+  saveMenuFeatures,
   type AppProfile,
   type GoogleReviewsAddonStatus,
+  type MenuFeaturesInput,
 } from './appStore';
 import {
   Star,
@@ -31,6 +33,13 @@ import {
   Globe,
   Loader2,
   Share2,
+  BellRing,
+  MessageCircle,
+  Filter,
+  Flame,
+  Languages,
+  Type,
+  ToggleLeft,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../components/feedback/ToastProvider';
@@ -88,6 +97,21 @@ export default function Settings() {
   const [activeVoiceUrl, setActiveVoiceUrl] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Menu Features — one toggle panel for every optional customer-facing control, including the
+  // existing Call Waiter button down to its individual request types. Defaults mirror
+  // `backend/menuFeatures.js`'s DEFAULT_MENU_FEATURES exactly, so the panel never flashes a
+  // different state than what the server will return once `getProfile()` resolves.
+  const [menuFeatures, setMenuFeatures] = useState<MenuFeaturesInput>({
+    callWaiter: { enabled: true, types: ['WATER', 'WAITER', 'BILL'] },
+    whatsappChat: { enabled: false, number: null },
+    allergenFilter: { enabled: true },
+    spiceFilter: { enabled: true },
+    trending: { enabled: true },
+    multiLanguage: { enabled: false },
+    accessibilityControls: { enabled: true },
+  });
+  const [savingMenuFeatures, setSavingMenuFeatures] = useState(false);
+
   // Review URL form state
   const [reviewUrlInput, setReviewUrlInput] = useState('');
   const [isEditingReview, setIsEditingReview] = useState(false);
@@ -110,6 +134,23 @@ export default function Settings() {
             setVoiceCustomText(vg.customText || '');
             setVoiceGender(vg.voiceGender || 'female');
             setActiveVoiceUrl(vg.audioUrl || null);
+          }
+          const mf = (prof.accentConfiguration as any)?.menuFeatures;
+          if (mf) {
+            setMenuFeatures({
+              callWaiter: {
+                enabled: mf.callWaiter?.enabled !== false,
+                types: Array.isArray(mf.callWaiter?.types) && mf.callWaiter.types.length > 0
+                  ? mf.callWaiter.types
+                  : ['WATER', 'WAITER', 'BILL'],
+              },
+              whatsappChat: { enabled: Boolean(mf.whatsappChat?.enabled), number: mf.whatsappChat?.number ?? null },
+              allergenFilter: { enabled: mf.allergenFilter?.enabled !== false },
+              spiceFilter: { enabled: mf.spiceFilter?.enabled !== false },
+              trending: { enabled: mf.trending?.enabled !== false },
+              multiLanguage: { enabled: Boolean(mf.multiLanguage?.enabled) },
+              accessibilityControls: { enabled: mf.accessibilityControls?.enabled !== false },
+            });
           }
           setProfileForm({
             businessName: prof.businessName || '',
@@ -176,6 +217,28 @@ export default function Settings() {
     } finally {
       setSavingVoice(false);
     }
+  };
+
+  const handleSaveMenuFeatures = async () => {
+    setSavingMenuFeatures(true);
+    try {
+      await saveMenuFeatures(menuFeatures);
+      showToast('success', 'Menu feature settings saved.');
+    } catch (err: any) {
+      showToast('error', err.message || 'Failed to update menu features.');
+    } finally {
+      setSavingMenuFeatures(false);
+    }
+  };
+
+  const toggleCallWaiterType = (type: 'WATER' | 'WAITER' | 'BILL') => {
+    setMenuFeatures((prev) => {
+      const has = prev.callWaiter.types.includes(type);
+      const nextTypes = has ? prev.callWaiter.types.filter((t) => t !== type) : [...prev.callWaiter.types, type];
+      // Never leave zero types selected while the feature itself is on — that would silently
+      // break the customer-facing modal rather than communicate "off".
+      return { ...prev, callWaiter: { ...prev.callWaiter, types: nextTypes.length > 0 ? nextTypes : prev.callWaiter.types } };
+    });
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -808,6 +871,144 @@ export default function Settings() {
             </button>
           </div>
         )}
+      </div>
+
+      {/* ── 2.5 Menu Features — pick what's live on the customer menu ──────────────── */}
+      <div className="bg-[#1d2723] rounded-2xl p-6 md:p-8 border border-[#2a3832] space-y-5">
+        <div className="flex items-start gap-3 pb-5 border-b border-[#2a3832]">
+          <div className="p-2.5 rounded-xl bg-sky-400/10 text-sky-400 border border-sky-400/20 shrink-0 mt-0.5">
+            <ToggleLeft className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-white tracking-tight">Menu Features</h2>
+            <p className="text-xs text-[#849a90] mt-1 leading-relaxed max-w-xl">
+              Turn each customer-facing control on or off. Defaults match what your menu already
+              does — nothing changes here until you flip a switch.
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {/* Call Waiter — the one existing feature this panel also now controls */}
+          <div className="rounded-xl border border-[#2a3832] bg-[#151c19] p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <BellRing size={16} className="text-[#e8783c] shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-white">Call Waiter / Request Bill</p>
+                  <p className="text-[11px] text-[#849a90]">Floating button on the customer menu for table service requests.</p>
+                </div>
+              </div>
+              <label className="inline-flex items-center cursor-pointer select-none shrink-0">
+                <input
+                  type="checkbox"
+                  checked={menuFeatures.callWaiter.enabled}
+                  onChange={(e) => setMenuFeatures((p) => ({ ...p, callWaiter: { ...p.callWaiter, enabled: e.target.checked } }))}
+                  className="sr-only peer"
+                />
+                <div className="relative w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#e8783c]" />
+              </label>
+            </div>
+            {menuFeatures.callWaiter.enabled && (
+              <div className="flex flex-wrap gap-2 pl-7">
+                {([
+                  ['WATER', '💧 Water'],
+                  ['WAITER', '🙋 Waiter'],
+                  ['BILL', '🧾 Bill'],
+                ] as const).map(([type, label]) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => toggleCallWaiterType(type)}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                      menuFeatures.callWaiter.types.includes(type)
+                        ? 'border-[#e8783c] bg-[#e8783c]/15 text-[#e8783c]'
+                        : 'border-[#2a3832] bg-[#151c19] text-[#849a90]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* WhatsApp Chat */}
+          <div className="rounded-xl border border-[#2a3832] bg-[#151c19] p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <MessageCircle size={16} className="text-emerald-400 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-white">Chat on WhatsApp</p>
+                  <p className="text-[11px] text-[#849a90]">A direct WhatsApp link on your menu, using your phone number unless you set one below.</p>
+                </div>
+              </div>
+              <label className="inline-flex items-center cursor-pointer select-none shrink-0">
+                <input
+                  type="checkbox"
+                  checked={menuFeatures.whatsappChat.enabled}
+                  onChange={(e) => setMenuFeatures((p) => ({ ...p, whatsappChat: { ...p.whatsappChat, enabled: e.target.checked } }))}
+                  className="sr-only peer"
+                />
+                <div className="relative w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500" />
+              </label>
+            </div>
+            {menuFeatures.whatsappChat.enabled && (
+              <div className="pl-7">
+                <input
+                  type="tel"
+                  value={menuFeatures.whatsappChat.number ?? ''}
+                  onChange={(e) => setMenuFeatures((p) => ({ ...p, whatsappChat: { ...p.whatsappChat, number: e.target.value || null } }))}
+                  placeholder={`Optional override — defaults to ${profileForm.phone || 'your profile phone'}`}
+                  className="w-full max-w-sm bg-[#1d2723] border border-[#2a3832] rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-400"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Simple on/off rows for the rest. Icon colour classes are written out in full below
+            * (not built from a template string) because Tailwind's build-time scanner can only
+            * keep classes it can see as literal text — an interpolated `text-${color}-400` would
+            * silently be missing from the shipped CSS. */}
+          {([
+            ['allergenFilter', Filter, 'text-sky-400', 'Allergen filter', 'Lets guests filter out dishes containing an allergen you’ve tagged.'],
+            ['spiceFilter', Flame, 'text-rose-400', 'Spice-level filter', 'Lets guests filter by how spicy a dish is.'],
+            ['trending', Flame, 'text-amber-400', 'Trending Now badge', 'Shows a badge on dishes ordered often today.'],
+            ['multiLanguage', Languages, 'text-violet-400', 'Multi-language menu', 'Shows a language switch for dishes you’ve translated.'],
+            ['accessibilityControls', Type, 'text-slate-400', 'Text-size control', 'Shows a small A+ / A− control for guests who want larger text.'],
+          ] as const).map(([key, Icon, colorClass, label, desc]) => (
+            <div key={key} className="rounded-xl border border-[#2a3832] bg-[#151c19] p-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <Icon size={16} className={`${colorClass} shrink-0`} />
+                <div>
+                  <p className="text-sm font-bold text-white">{label}</p>
+                  <p className="text-[11px] text-[#849a90]">{desc}</p>
+                </div>
+              </div>
+              <label className="inline-flex items-center cursor-pointer select-none shrink-0">
+                <input
+                  type="checkbox"
+                  checked={menuFeatures[key].enabled}
+                  onChange={(e) => setMenuFeatures((p) => ({ ...p, [key]: { enabled: e.target.checked } }))}
+                  className="sr-only peer"
+                />
+                <div className="relative w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#e8783c]" />
+              </label>
+            </div>
+          ))}
+        </div>
+
+        <div className="pt-2 flex justify-end">
+          <button
+            type="button"
+            onClick={handleSaveMenuFeatures}
+            disabled={savingMenuFeatures}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-2.5 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+          >
+            {savingMenuFeatures ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {savingMenuFeatures ? 'Saving...' : 'Save Menu Features'}
+          </button>
+        </div>
       </div>
 
       {/* ── 3. Google Reviews Add-on Section ─────────────────────────────────── */}

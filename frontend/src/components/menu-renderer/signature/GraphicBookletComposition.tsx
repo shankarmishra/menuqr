@@ -43,7 +43,7 @@ export const GraphicBookletComposition: React.FC<SignatureProps> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery } = useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
   const [page, setPage] = useState<'cover' | 'menu'>('cover');
 
   const featured = useMemo(() => featuredDishes(categories), [categories]);
@@ -163,6 +163,10 @@ export const GraphicBookletComposition: React.FC<SignatureProps> = ({
               dietFilter={dietFilter}
               onDietFilterChange={setDietFilter}
               counts={counts}
+              allergenFilter={allergenFilter}
+              onAllergenFilterChange={setAllergenFilter}
+              spiceFilter={spiceFilter}
+              onSpiceFilterChange={setSpiceFilter}
             />
           )}
 

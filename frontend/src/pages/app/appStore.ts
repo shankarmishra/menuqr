@@ -441,6 +441,24 @@ export function previewVoiceGreeting(payload: Omit<VoiceGreetingPayload, 'enable
   });
 }
 
+/** What the owner edits in Settings. Matches `backend/menuFeatures.js`'s `inputMenuFeatures` shape. */
+export interface MenuFeaturesInput {
+  callWaiter: { enabled: boolean; types: Array<'WATER' | 'WAITER' | 'BILL'> };
+  whatsappChat: { enabled: boolean; number: string | null };
+  allergenFilter: { enabled: boolean };
+  spiceFilter: { enabled: boolean };
+  trending: { enabled: boolean };
+  multiLanguage: { enabled: boolean };
+  accessibilityControls: { enabled: boolean };
+}
+
+export function saveMenuFeatures(payload: MenuFeaturesInput): Promise<{ success: boolean; menuFeatures: MenuFeaturesInput }> {
+  return request('/menu-features', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 export function getFeedback(limit = 50): Promise<FeedbackSummary> {
   return request<FeedbackSummary>(`/feedback?limit=${limit}`);
 }

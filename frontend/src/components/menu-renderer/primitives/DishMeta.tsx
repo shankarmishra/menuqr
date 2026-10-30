@@ -49,11 +49,12 @@ export const DishFlags: React.FC<{ item: RenderMenuItem }> = ({ item }) => {
   const allergens = tags?.allergens ?? [];
   const isNew = Boolean(tags?.badges?.includes('new'));
   const hasAny =
-    item.isBestseller || item.isSpecial || isNew || spice > 0 || tags?.jain || tags?.eggless || allergens.length > 0;
+    item.isBestseller || item.isSpecial || item.trending || isNew || spice > 0 || tags?.jain || tags?.eggless || allergens.length > 0;
   if (!hasAny) return null;
   return (
     <>
       {item.isBestseller && <Badge>Bestseller</Badge>}
+      {item.trending && !item.isBestseller && <Badge>🔥 Trending</Badge>}
       {item.isSpecial && !item.isBestseller && <Badge quiet>Chef&rsquo;s Special</Badge>}
       {isNew && <Badge quiet>New</Badge>}
       {tags?.jain && <Badge quiet>Jain</Badge>}

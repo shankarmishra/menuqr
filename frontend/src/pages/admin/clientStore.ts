@@ -1,6 +1,21 @@
 export type ClientCategory = 'restaurants' | 'dhabas' | 'cafes';
 export type MenuDietType = 'veg' | 'non-veg' | 'vegan';
 
+/**
+ * One toggle panel for every optional customer-facing menu feature, resolved server-side
+ * (`backend/menuFeatures.js`) so the frontend never re-derives defaults or the WhatsApp number
+ * format. Mirrors `resolveMenuFeatures`'s return shape exactly.
+ */
+export interface ResolvedMenuFeatures {
+  callWaiter: { enabled: boolean; types: Array<'WATER' | 'WAITER' | 'BILL'> };
+  whatsappChat: { enabled: boolean; number: string | null; resolvedNumber: string | null };
+  allergenFilter: { enabled: boolean };
+  spiceFilter: { enabled: boolean };
+  trending: { enabled: boolean };
+  multiLanguage: { enabled: boolean };
+  accessibilityControls: { enabled: boolean };
+}
+
 export interface MenuItemRecord {
   id: string;
   name: string;
@@ -24,6 +39,10 @@ export interface MenuItemRecord {
   availabilityNote?: string | null;
   available: boolean;
   variants?: Array<{ id?: string; name: string; price: number; variantGroup?: string }>;
+  /** Ordered 3+ times today — absent (not false) when the owner has the feature off. */
+  trending?: boolean;
+  /** Owner-entered name/description per language code, e.g. `{ hi: { name, description } }`. */
+  translations?: Record<string, { name?: string; description?: string }> | null;
 }
 
 export interface ClientRecord {
@@ -78,6 +97,7 @@ export interface PublicMenuRecord {
   orderingEnabled?: boolean;
   templateId?: string;
   accentConfiguration?: unknown;
+  menuFeatures?: ResolvedMenuFeatures;
   /** Full Design Studio theme, once the owner has published one. Takes precedence over templateId. */
   theme?: unknown;
   googleReviews?: {
@@ -389,6 +409,7 @@ interface RawPublicMenuApiResponse {
   orderingEnabled?: boolean;
   templateId?: string;
   accentConfiguration?: unknown;
+  menuFeatures?: ResolvedMenuFeatures;
   theme?: unknown;
   googleReviews?: {
     enabled: boolean;
@@ -413,6 +434,8 @@ interface RawPublicMenuApiResponse {
     soldOut?: boolean;
     availabilityNote?: string | null;
     variants?: Array<{ id?: string; name: string; price: number; variantGroup?: string }>;
+    trending?: boolean;
+    translations?: Record<string, { name?: string; description?: string }> | null;
   }>;
 }
 
@@ -438,6 +461,8 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     availabilityNote: item.availabilityNote ?? null,
     available: item.available,
     variants: item.variants,
+    trending: item.trending,
+    translations: item.translations ?? null,
   }));
   return {
     businessName: raw.restaurant.name,
@@ -461,6 +486,7 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     orderingEnabled: raw.orderingEnabled,
     templateId: raw.templateId,
     accentConfiguration: raw.accentConfiguration,
+    menuFeatures: raw.menuFeatures,
     theme: raw.theme,
     googleReviews: raw.googleReviews,
   };

@@ -162,8 +162,7 @@ export const NorenEdition: React.FC<EditionProps> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery } =
-    useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
   const sections = liveCategories(visible);
   const signatures = useFeatured(categories, 2);
   const coverImage = tokens.cover.imageUrl || signatures[0]?.imageUrl || '/assets/themes/noren-hero.webp';
@@ -280,6 +279,10 @@ export const NorenEdition: React.FC<EditionProps> = ({
             dietFilter={dietFilter}
             onDietFilterChange={setDietFilter}
             counts={counts}
+            allergenFilter={allergenFilter}
+            onAllergenFilterChange={setAllergenFilter}
+            spiceFilter={spiceFilter}
+            onSpiceFilterChange={setSpiceFilter}
           />
         </>
       )}

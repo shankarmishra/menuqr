@@ -52,6 +52,10 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
     setQuery,
     dietFilter,
     setDietFilter,
+    allergenFilter,
+    setAllergenFilter,
+    spiceFilter,
+    setSpiceFilter,
     counts,
     visible,
     navigableCategories,
@@ -93,6 +97,10 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
           dietFilter={dietFilter}
           onDietFilterChange={setDietFilter}
           counts={counts}
+          allergenFilter={allergenFilter}
+          onAllergenFilterChange={setAllergenFilter}
+          spiceFilter={spiceFilter}
+          onSpiceFilterChange={setSpiceFilter}
         />
       )}
 

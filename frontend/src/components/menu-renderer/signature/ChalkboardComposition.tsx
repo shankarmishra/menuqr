@@ -55,7 +55,7 @@ const DottedRow: React.FC<{ item: RenderMenuItem; readOnly?: boolean }> = ({ ite
 
 export const ChalkboardComposition: React.FC<SignatureProps> = ({ restaurant, categories, compact, readOnly }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery } = useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
   const [activeBoard, setActiveBoard] = useState<'cover' | 'menu'>('cover');
 
   const half = Math.ceil(visible.length / 2);
@@ -154,6 +154,10 @@ export const ChalkboardComposition: React.FC<SignatureProps> = ({ restaurant, ca
               dietFilter={dietFilter}
               onDietFilterChange={setDietFilter}
               counts={counts}
+              allergenFilter={allergenFilter}
+              onAllergenFilterChange={setAllergenFilter}
+              spiceFilter={spiceFilter}
+              onSpiceFilterChange={setSpiceFilter}
             />
 
             {visible.length === 0 ? (

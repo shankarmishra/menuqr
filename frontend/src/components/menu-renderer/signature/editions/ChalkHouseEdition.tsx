@@ -83,8 +83,7 @@ export const ChalkHouseEdition: React.FC<EditionProps> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery } =
-    useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
   const sections = liveCategories(visible);
   const special = useFeatured(categories, 1)[0];
 
@@ -134,6 +133,10 @@ export const ChalkHouseEdition: React.FC<EditionProps> = ({
             dietFilter={dietFilter}
             onDietFilterChange={setDietFilter}
             counts={counts}
+            allergenFilter={allergenFilter}
+            onAllergenFilterChange={setAllergenFilter}
+            spiceFilter={spiceFilter}
+            onSpiceFilterChange={setSpiceFilter}
           />
         </>
       )}

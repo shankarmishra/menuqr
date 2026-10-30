@@ -43,6 +43,8 @@ export type RenderMenuItem = {
   available?: boolean;
   isBestseller?: boolean;
   isSpecial?: boolean;
+  /** Ordered 3+ times today (IST) — see `getTrendingItemIds` in `backend/analytics.js`. */
+  trending?: boolean;
   spicyLevel?: number;
   tags?: ItemTags | null;
   /** True while the owner has marked the dish sold out for today. */

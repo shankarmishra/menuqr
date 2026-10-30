@@ -7,6 +7,8 @@ import { apiError, sendJson, readJson, getClientIp } from '../utils.js';
 import { resolveTenantAuthorization, requireEntitlement } from '../authorization.js';
 import { getCachedMenu, setCachedMenu, invalidateMenuCache } from '../redisClient.js';
 import { broadcastOrderEvent } from '../orderStream.js';
+import { resolveMenuFeatures } from '../menuFeatures.js';
+import { getTrendingItemIds } from '../analytics.js';
 import { randomUUID } from 'node:crypto';
 
 const contactRateLimits = new Map();
@@ -62,6 +64,8 @@ export async function getFullPublicMenuData(tenantId) {
   // 3. Fetch Appearance
   const appRes = await pool.query('SELECT * FROM appearance_settings WHERE tenant_id = $1', [tenantId]);
   const appearance = appRes.rows[0] || {};
+  const menuFeatures = resolveMenuFeatures(appearance.accent_configuration, client.phone);
+  const trendingIds = menuFeatures.trending.enabled ? await getTrendingItemIds(pool, tenantId) : new Set();
 
   // 4. Fetch Menu & Categories
   const menuRes = await pool.query('SELECT * FROM menus WHERE tenant_id = $1 LIMIT 1', [tenantId]);
@@ -164,6 +168,13 @@ export async function getFullPublicMenuData(tenantId) {
         focalY: i.metadata?.focal?.y ?? null,
         // Owner-set dish tags (allergens, spice, Jain/eggless, badges); null when none are set.
         tags: i.metadata?.tags ?? null,
+        // Ordered 3+ times today (IST) — see getTrendingItemIds in analytics.js. Omitted
+        // entirely (not just false) when the owner has the feature off, so a stale cached badge
+        // can never outlive the toggle.
+        ...(menuFeatures.trending.enabled ? { trending: trendingIds.has(i.id) } : {}),
+        // Owner-entered dish-name/description translations, keyed by language code; null when
+        // none are set or the owner has the customer-facing switch off.
+        translations: menuFeatures.multiLanguage.enabled ? (i.metadata?.translations ?? null) : null,
         variants: itemVariants,
         addonGroups: itemAddonGroups,
       };
@@ -214,6 +225,7 @@ export async function getFullPublicMenuData(tenantId) {
     },
     plan: authorization.planId,
     orderingEnabled: Boolean(authorization.active && authorization.entitlements.includes('customer_ordering')),
+    menuFeatures,
     templateId: appearance.template_id || 'royal-maharaja',
     accentConfiguration: appearance.accent_configuration || null,
     // The full Design Studio theme, once the owner has published one. `templateId` above stays
@@ -881,10 +893,23 @@ export default async function publicRoutes(request, response, url) {
   const serviceReqMatch = url.pathname.match(/^\/api\/public\/menu\/([^/]+)\/service-request$/);
   if (request.method === 'POST' && serviceReqMatch) {
     const slug = decodeURIComponent(serviceReqMatch[1]);
-    const clientRes = await pool.query('SELECT id, status, business_name as "businessName" FROM clients WHERE menu_slug = $1', [slug]);
+    const clientRes = await pool.query(
+      `SELECT c.id, c.status, c.business_name as "businessName", a.accent_configuration as "accentConfiguration"
+         FROM clients c LEFT JOIN appearance_settings a ON a.tenant_id = c.id
+        WHERE c.menu_slug = $1`,
+      [slug]
+    );
     const client = clientRes.rows[0];
     if (!client || client.status.toLowerCase() !== 'active') {
       throw apiError(404, 'Restaurant menu not found.');
+    }
+
+    // Owner-controlled: the whole feature, and which of the three request types, are both
+    // configurable from Settings → Menu Features (defaults match the feature's original
+    // hardcoded behaviour, so an untouched toggle changes nothing for an existing client).
+    const menuFeatures = resolveMenuFeatures(client.accentConfiguration, null);
+    if (!menuFeatures.callWaiter.enabled) {
+      throw apiError(403, 'Table service requests are turned off for this restaurant.');
     }
 
     const input = await readJson(request);
@@ -893,10 +918,9 @@ export default async function publicRoutes(request, response, url) {
       throw apiError(400, 'Table number is required for dine-in service request.');
     }
 
-    const allowedTypes = ['WATER', 'WAITER', 'BILL'];
     const requestType = String(input.requestType || 'WAITER').toUpperCase();
-    if (!allowedTypes.includes(requestType)) {
-      throw apiError(400, 'Invalid request type. Allowed: WATER, WAITER, BILL');
+    if (!menuFeatures.callWaiter.types.includes(requestType)) {
+      throw apiError(400, `Invalid request type. Allowed: ${menuFeatures.callWaiter.types.join(', ')}`);
     }
 
     const serviceEvent = {
@@ -907,6 +931,17 @@ export default async function publicRoutes(request, response, url) {
       customerName: input.customerName ? String(input.customerName).trim().slice(0, 50) : 'Guest',
       time: new Date().toISOString()
     };
+
+    // Persisted so a request survives even when no reception tab is open, and so the owner has a
+    // history to review — the live broadcast below is unchanged and still fires immediately.
+    try {
+      await pool.query(
+        'INSERT INTO service_requests (id, tenant_id, table_number, request_type, notes, customer_name) VALUES ($1, $2, $3, $4, $5, $6)',
+        [serviceEvent.id, client.id, serviceEvent.tableNumber, serviceEvent.requestType, serviceEvent.notes, serviceEvent.customerName]
+      );
+    } catch (err) {
+      console.warn('[service_requests] Failed to persist request:', err.message);
+    }
 
     // Broadcast in real-time to active kitchen & cashier dashboards
     try {

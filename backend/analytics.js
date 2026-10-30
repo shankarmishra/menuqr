@@ -39,6 +39,27 @@ export function sumField(rows, field) {
   return rows.reduce((total, row) => total + Number(row[field] || 0), 0);
 }
 
+/**
+ * Item ids ordered 3+ times today (IST), for the public menu's "Trending Now" badge.
+ *
+ * No new tracking infrastructure: `customer_orders.items` JSONB already carries each line's
+ * `id` and `quantity` (the same column `getTenantAnalytics`'s `topItems` query reads, just
+ * grouped by name there instead of id). The minimum-count floor keeps one stray order on a quiet
+ * day from reading as "trending" — a badge that shows up after a single sale would undersell the
+ * dishes that genuinely are popular.
+ */
+export async function getTrendingItemIds(db, tenantId, { minCount = 3 } = {}) {
+  const rows = (await db.query(
+    `SELECT elem->>'id' AS id, SUM(COALESCE((elem->>'quantity')::int, 1))::int AS quantity
+       FROM customer_orders, jsonb_array_elements(CASE WHEN jsonb_typeof(items) = 'array' THEN items ELSE '[]'::jsonb END) elem
+      WHERE tenant_id = $1 AND ${COUNTED_ORDER} AND ${IST_CREATED_AT}::date = $2::date AND elem->>'id' IS NOT NULL
+      GROUP BY 1
+     HAVING SUM(COALESCE((elem->>'quantity')::int, 1)) >= $3`,
+    [tenantId, istDateString(), minCount]
+  )).rows;
+  return new Set(rows.map((r) => r.id));
+}
+
 /** Percentage change vs the previous period; null when there is no baseline to compare with. */
 export function percentChange(current, previous) {
   if (!previous) return null;

@@ -1274,7 +1274,29 @@
 }
 
 /* ========================================================================================
-   7 — ATELIER PASTEL : patisserie
+   7 — ATELIER PASTEL : Parisian Haute Pâtisserie & Belle Époque Salon de Thé Masterpiece
+   ======================================================================================== */
+
+.mq-ed-pastel {
+  --mq-pastel-sage: #2d4a3e;
+  --mq-pastel-deep-green: #132a21;
+  --mq-pastel-foam: #e8f4ee;
+  --mq-pastel-rose: #be185d;
+  --mq-pastel-rose-subtle: #fdf2f4;
+  --mq-pastel-gold: #d4af37;
+  --mq-pastel-gold-light: #fef08a;
+  --mq-pastel-bronze: #b45309;
+  --mq-pastel-crumb: #fffdf9;
+  --mq-pastel-linen: #fbf8f3;
+  --mq-pastel-cacao: #1c1614;
+
+  background-color: var(--mq-pastel-crumb);
+  color: var(--mq-pastel-cacao);
+  font-family: var(--mq-font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+
+/* ========================================================================================
+   COVER: BELLE ÉPOQUE VITRINE & SCALLOPED ARCH WINDOW
    ======================================================================================== */
 
 .mq-ed-pastel-cover {
@@ -1282,38 +1304,85 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--mq-space-6);
+  gap: var(--mq-space-5);
   min-height: var(--mq-ed-cover-min);
   padding: var(--mq-space-10) var(--mq-space-5) 0;
-  background-color: var(--mq-color-surface);
+  background: radial-gradient(circle at 50% 18%, #ffffff 0%, var(--mq-pastel-crumb) 85%);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  text-align: center;
 }
 
-/* Arch window: a full radius on the top corners only, which is the whole patisserie signature. */
+.mq-ed-pastel-prestige-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-2);
+  font-size: max(12px, 0.75rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mq-pastel-sage);
+  font-weight: 600;
+  margin-bottom: var(--mq-space-1);
+}
+
+.mq-ed-pastel-prestige-star {
+  color: var(--mq-pastel-gold);
+  font-size: max(12px, 0.8rem);
+}
+
+/* Arch window: full radius on top, holding 8K photography */
 .mq-ed-pastel-arch {
   position: relative;
-  width: min(17rem, 72%);
+  width: min(18rem, 76%);
   border-radius: 999px 999px var(--mq-radius-md) var(--mq-radius-md);
   overflow: hidden;
-  box-shadow: var(--mq-shadow-lg);
+  box-shadow: 0 12px 32px rgba(45, 74, 62, 0.14), 0 2px 6px rgba(212, 175, 55, 0.2);
+  border: 2px solid rgba(212, 175, 55, 0.35);
 }
 
-.is-compact .mq-ed-pastel-arch { width: 58%; }
+.is-compact .mq-ed-pastel-arch {
+  width: 58%;
+}
 
 .mq-ed-pastel-arch .mq-image-frame,
-.mq-ed-pastel-arch .mq-image { width: 100%; }
+.mq-ed-pastel-arch .mq-image {
+  width: 100%;
+}
 
 .mq-ed-pastel-arch-empty {
   display: block;
   aspect-ratio: var(--mq-aspect-portrait);
-  background-color: var(--mq-color-surface-sunken);
+  background-color: var(--mq-pastel-foam);
 }
 
 .mq-ed-pastel-arch-ring {
   position: absolute;
   inset: var(--mq-space-2);
-  border: 1px solid color-mix(in oklab, var(--mq-color-accent) 60%, transparent);
+  border: 1px solid rgba(212, 175, 55, 0.65);
   border-radius: 999px 999px var(--mq-radius-sm) var(--mq-radius-sm);
   pointer-events: none;
+}
+
+/* Belle Époque Brand Cartouche */
+.mq-ed-pastel-arch-cartouche {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline: auto;
+}
+
+.mq-ed-pastel-cartouche-svg {
+  filter: drop-shadow(0 4px 12px rgba(45, 74, 62, 0.1));
+}
+
+.mq-ed-pastel-cartouche-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 20px;
 }
 
 .mq-ed-pastel-cover-body {
@@ -1323,45 +1392,67 @@
   gap: var(--mq-space-3);
   padding-bottom: var(--mq-space-8);
   text-align: center;
+  max-width: 50rem;
 }
 
 .mq-ed-pastel-cuisine {
   margin: 0;
-  font-size: var(--mq-text-xs);
-  letter-spacing: var(--mq-tracking-caps);
+  font-size: max(12px, 0.78rem);
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--mq-color-accent-text);
+  color: var(--mq-pastel-sage);
+  font-weight: 600;
 }
 
 .mq-ed-pastel-title {
   margin: 0;
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-display-2xl);
-  font-weight: 400;
-  line-height: var(--mq-leading-tight);
-  letter-spacing: var(--mq-tracking-display);
-  color: var(--mq-color-heading);
+  font-family: var(--mq-font-display, 'Playfair Display', Georgia, serif);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  color: var(--mq-pastel-deep-green);
   text-wrap: balance;
 }
 
-.is-compact .mq-ed-pastel-title { font-size: var(--mq-display-base); }
+.is-compact .mq-ed-pastel-title {
+  font-size: var(--mq-display-base);
+}
+
+.mq-ed-pastel-hero-astragal {
+  margin: var(--mq-space-1) 0;
+}
 
 .mq-ed-pastel-tagline {
   margin: 0;
-  max-width: 32ch;
-  font-size: var(--mq-text-sm);
+  max-width: 36ch;
+  font-size: max(12px, 0.95rem);
   font-style: italic;
   color: var(--mq-color-text-muted);
+  line-height: 1.45;
 }
 
-.mq-ed-pastel-contact { color: var(--mq-color-text-muted); }
+.mq-ed-pastel-teaser {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--mq-space-2);
+  margin-top: var(--mq-space-2);
+  font-size: max(12px, 0.8rem);
+  color: var(--mq-pastel-sage);
+}
 
-/* Scalloped edge: a repeating radial mask, so it stays sharp at any page width. */
+.mq-ed-pastel-contact {
+  color: var(--mq-color-text-muted);
+  font-size: max(12px, 0.82rem);
+}
+
+/* Scalloped edge: repeating radial mask for razor-sharp rendering */
 .mq-ed-pastel-scallop {
   display: block;
   width: 100%;
   height: var(--mq-space-5);
-  background-color: var(--mq-color-bg);
+  background-color: var(--mq-pastel-crumb);
   -webkit-mask-image: radial-gradient(circle at 50% 0, transparent 0 62%, black 63%);
   mask-image: radial-gradient(circle at 50% 0, transparent 0 62%, black 63%);
   -webkit-mask-size: 28px 100%;
@@ -1371,7 +1462,7 @@
 }
 
 .mq-ed-pastel-scallop-up {
-  background-color: var(--mq-color-surface);
+  background-color: var(--mq-pastel-foam);
   -webkit-mask-image: radial-gradient(circle at 50% 100%, transparent 0 62%, black 63%);
   mask-image: radial-gradient(circle at 50% 100%, transparent 0 62%, black 63%);
 }
@@ -1380,12 +1471,333 @@
   margin: 0;
   padding: var(--mq-space-3) var(--mq-space-5);
   text-align: center;
-  font-size: var(--mq-text-xs);
-  letter-spacing: var(--mq-tracking-caps);
+  font-size: max(12px, 0.8rem);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--mq-color-accent-text);
-  background-color: var(--mq-color-surface);
+  color: var(--mq-pastel-deep-green);
+  background-color: var(--mq-pastel-foam);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-2);
 }
+
+.mq-ed-pastel-announce-bullet {
+  color: var(--mq-pastel-rose);
+}
+
+/* ========================================================================================
+   DUAL SIGNATURE SHOWCASE (MILLEFEUILLE INVERSÉ & ISPAHAN ENTREMET)
+   ======================================================================================== */
+
+.mq-ed-pastel-showcase-section {
+  width: 100%;
+  max-width: 62rem;
+  margin: var(--mq-space-10) auto 0;
+  padding: 0 var(--mq-space-5);
+}
+
+.mq-ed-pastel-showcase-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--mq-space-1);
+  margin-bottom: var(--mq-space-6);
+}
+
+.mq-ed-pastel-showcase-pre {
+  font-size: max(12px, 0.75rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mq-pastel-bronze);
+  font-weight: 700;
+}
+
+.mq-ed-pastel-showcase-title {
+  margin: 0;
+  font-family: var(--mq-font-display, 'Playfair Display', Georgia, serif);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  color: var(--mq-pastel-deep-green);
+  font-weight: 500;
+}
+
+.mq-ed-pastel-showcase-astragal {
+  margin-top: var(--mq-space-1);
+}
+
+.mq-ed-pastel-curation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--mq-space-6);
+}
+
+.mq-ed-pastel-curation-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--mq-pastel-crumb);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: var(--mq-radius-lg);
+  padding: var(--mq-space-5);
+  box-shadow: 0 4px 20px rgba(45, 74, 62, 0.06);
+}
+
+.mq-ed-pastel-card-corner {
+  position: absolute;
+  pointer-events: none;
+}
+.mq-ed-pastel-card-corner.tl { top: 6px; left: 6px; }
+.mq-ed-pastel-card-corner.tr { top: 6px; right: 6px; transform: scaleX(-1); }
+.mq-ed-pastel-card-corner.bl { bottom: 6px; left: 6px; transform: scaleY(-1); }
+.mq-ed-pastel-card-corner.br { bottom: 6px; right: 6px; transform: scale(-1); }
+
+.mq-ed-pastel-card-media-wrapper {
+  position: relative;
+  border-radius: var(--mq-radius-md);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.mq-ed-pastel-card-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(19, 42, 33, 0.88);
+  color: var(--mq-pastel-gold-light);
+  border: 1px solid var(--mq-pastel-gold);
+  font-size: max(12px, 0.72rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+  font-weight: 600;
+}
+
+.mq-ed-pastel-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3);
+  margin-top: var(--mq-space-4);
+  flex: 1 1 auto;
+}
+
+.mq-ed-pastel-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--mq-space-3);
+}
+
+.mq-ed-pastel-card-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mq-ed-pastel-card-name {
+  margin: 0;
+  font-family: var(--mq-font-display, 'Playfair Display', Georgia, serif);
+  font-size: max(14px, 1.25rem);
+  font-weight: 600;
+  color: var(--mq-pastel-deep-green);
+  line-height: 1.25;
+}
+
+.mq-pastel-price-pill {
+  font-family: var(--mq-font-display, serif);
+  font-weight: 600;
+  font-size: max(14px, 1.15rem);
+  color: var(--mq-pastel-rose);
+  white-space: nowrap;
+}
+
+.mq-ed-pastel-card-desc {
+  margin: 0;
+  font-size: max(12px, 0.88rem);
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+/* Sommelier Tea Pairing Ribbon */
+.mq-ed-pastel-tea-ribbon {
+  margin-top: auto;
+  padding: var(--mq-space-3);
+  background: var(--mq-pastel-foam);
+  border-left: 3px solid var(--mq-pastel-sage);
+  border-radius: var(--mq-radius-sm);
+}
+
+.mq-ed-pastel-tea-tag {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: max(12px, 0.75rem);
+  font-weight: 600;
+  color: var(--mq-pastel-sage);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.mq-ed-pastel-tea-origin {
+  margin-left: auto;
+  font-size: max(12px, 0.75rem);
+  color: var(--mq-pastel-bronze);
+  font-style: italic;
+  text-transform: none;
+}
+
+.mq-ed-pastel-tea-text {
+  margin: 4px 0 0;
+  font-size: max(12px, 0.82rem);
+  font-style: italic;
+  color: var(--mq-pastel-deep-green);
+  line-height: 1.4;
+}
+
+/* ========================================================================================
+   STORYTELLING ASIDE PLAQUE: LE MANIFESTE DE L'ATELIER
+   ======================================================================================== */
+
+.mq-ed-pastel-manifesto {
+  position: relative;
+  margin: var(--mq-space-12) auto;
+  max-width: 62rem;
+  width: calc(100% - 2.5rem);
+  background: linear-gradient(135deg, #fffdf9 0%, #fbf6ec 100%);
+  border: 1.5px solid var(--mq-pastel-gold);
+  border-radius: var(--mq-radius-xl);
+  padding: var(--mq-space-8) var(--mq-space-6);
+  box-shadow: 0 8px 32px rgba(45, 74, 62, 0.08);
+  box-sizing: border-box;
+}
+
+.mq-ed-pastel-plaque-bracket {
+  position: absolute;
+  pointer-events: none;
+}
+.mq-ed-pastel-plaque-bracket.tl { top: 10px; left: 10px; }
+.mq-ed-pastel-plaque-bracket.tr { top: 10px; right: 10px; transform: scaleX(-1); }
+.mq-ed-pastel-plaque-bracket.bl { bottom: 10px; left: 10px; transform: scaleY(-1); }
+.mq-ed-pastel-plaque-bracket.br { bottom: 10px; right: 10px; transform: scale(-1); }
+
+.mq-ed-pastel-manifesto-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.mq-ed-pastel-manifesto-header {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  font-size: max(12px, 0.75rem);
+  letter-spacing: 0.2em;
+  color: var(--mq-pastel-bronze);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.mq-ed-pastel-prestige-pip {
+  color: var(--mq-pastel-gold);
+}
+
+.mq-ed-pastel-manifesto-title {
+  font-family: var(--mq-font-display, 'Playfair Display', Georgia, serif);
+  font-size: clamp(1.4rem, 3vw, 2.1rem);
+  color: var(--mq-pastel-deep-green);
+  margin: var(--mq-space-2) 0;
+  font-weight: 500;
+}
+
+.mq-ed-pastel-manifesto-astragal {
+  margin-top: var(--mq-space-1);
+}
+
+.mq-ed-pastel-manifesto-lead {
+  max-width: 54ch;
+  margin: var(--mq-space-3) auto var(--mq-space-6);
+  font-style: italic;
+  color: #4b5563;
+  line-height: 1.55;
+  font-size: max(12px, 0.92rem);
+}
+
+.mq-ed-pastel-pillars-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: var(--mq-space-4);
+  margin: var(--mq-space-6) 0;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .mq-ed-pastel-pillars-grid {
+    grid-template-columns: 1fr;
+  }
+  .mq-ed-pastel-pillar-sep {
+    display: none;
+  }
+}
+
+.mq-ed-pastel-pillar-card {
+  text-align: center;
+  padding: var(--mq-space-3);
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: var(--mq-radius-md);
+}
+
+.mq-ed-pastel-pillar-icon {
+  font-size: 1.8rem;
+  margin-bottom: 6px;
+}
+
+.mq-ed-pastel-pillar-name {
+  font-family: var(--mq-font-display, serif);
+  font-size: max(13px, 1.05rem);
+  color: var(--mq-pastel-deep-green);
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+.mq-ed-pastel-pillar-desc {
+  font-size: max(12px, 0.82rem);
+  color: #374151;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.mq-ed-pastel-pillar-sep {
+  color: var(--mq-pastel-gold);
+  font-size: 1.2rem;
+}
+
+.mq-ed-pastel-manifesto-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--mq-space-2);
+  margin-top: var(--mq-space-4);
+  font-size: max(12px, 0.78rem);
+  color: var(--mq-pastel-sage);
+  font-weight: 600;
+}
+
+.mq-ed-pastel-pip-dot {
+  color: var(--mq-pastel-gold);
+}
+
+/* ========================================================================================
+   COURSES & CATEGORIES BODY
+   ======================================================================================== */
 
 .mq-ed-pastel-body {
   flex: 1 1 auto;
@@ -1393,81 +1805,306 @@
   max-width: 62rem;
   margin-inline: auto;
   padding: var(--mq-space-10) var(--mq-space-5);
+  box-sizing: border-box;
 }
 
-.mq-ed-pastel-section + .mq-ed-pastel-section { margin-top: var(--mq-space-12); }
+.mq-ed-pastel-section + .mq-ed-pastel-section {
+  margin-top: var(--mq-space-12);
+}
 
-.mq-ed-pastel-ribbon {
+.mq-ed-pastel-section-header {
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: var(--mq-space-4);
   margin-bottom: var(--mq-space-2);
 }
 
-.mq-ed-pastel-ribbon h2 {
+.mq-ed-pastel-section-title-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.mq-ed-pastel-section-title {
   margin: 0;
-  padding: var(--mq-space-2) var(--mq-space-6);
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-lg);
-  font-weight: 400;
-  letter-spacing: var(--mq-tracking-caps);
+  font-family: var(--mq-font-display, 'Playfair Display', Georgia, serif);
+  font-size: clamp(1.25rem, 2.8vw, 1.75rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--mq-color-accent-text);
-  background-color: var(--mq-color-surface);
-  border-radius: var(--mq-radius-pill);
-  border: 1px solid color-mix(in oklab, var(--mq-color-accent) 40%, transparent);
+  color: var(--mq-pastel-deep-green);
+}
+
+.mq-ed-pastel-section-astragal {
+  margin-top: 2px;
 }
 
 .mq-ed-pastel-section-note {
   margin: 0 auto var(--mq-space-6);
-  max-width: 44ch;
+  max-width: 48ch;
   text-align: center;
-  font-size: var(--mq-text-sm);
+  font-size: max(12px, 0.88rem);
   font-style: italic;
   color: var(--mq-color-text-muted);
 }
 
-.mq-ed-pastel-grid {
-  display: grid;
+/* Items List with Precision Dotted Leaders */
+.mq-ed-pastel-items-list {
+  display: flex;
+  flex-direction: column;
   gap: var(--mq-space-6);
   margin-top: var(--mq-space-6);
-  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
 }
 
-.mq-ed-pastel-card {
-  padding: var(--mq-space-3);
-  background-color: var(--mq-color-surface);
-  border-radius: var(--mq-radius-lg);
-  box-shadow: var(--mq-shadow-sm);
+.mq-ed-pastel-dish-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: var(--mq-space-4);
+  border-bottom: 1px solid rgba(45, 74, 62, 0.08);
 }
 
-.mq-ed-pastel-card .mq-ed-photo-dish-media { border-radius: var(--mq-radius-md); }
+.mq-ed-pastel-dish-top {
+  display: flex;
+  align-items: last baseline;
+  gap: var(--mq-space-3);
+  width: 100%;
+}
 
-.mq-ed-pastel-card .mq-price {
-  padding: var(--mq-space-1) var(--mq-space-3);
-  border-radius: var(--mq-radius-pill);
-  background-color: var(--mq-color-surface-alt);
-  color: var(--mq-color-accent-text);
+.mq-ed-pastel-dish-identity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--mq-space-2);
+  flex-shrink: 0;
+}
+
+.mq-ed-pastel-dish-title {
+  margin: 0;
+  font-family: var(--mq-font-display, 'Playfair Display', Georgia, serif);
+  font-size: max(14px, 1.1rem);
   font-weight: 600;
+  color: var(--mq-pastel-deep-green);
+  letter-spacing: 0.01em;
 }
+
+/* Micro-Pearl Radial Gold Dotted Leader Rule */
+.mq-ed-pastel .mq-ed-leader-rule {
+  flex: 1 1 auto;
+  min-width: 1.25rem;
+  height: 1px;
+  align-self: last baseline;
+  margin-bottom: 0.22em;
+  background-image: radial-gradient(circle, #d4af37 35%, transparent 40%);
+  background-size: 7px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.85;
+}
+
+@media (max-width: 480px) {
+  .mq-ed-pastel .mq-ed-leader-rule {
+    min-width: 0.75rem;
+  }
+}
+
+.mq-ed-pastel-dish-price-wrap {
+  flex-shrink: 0;
+  align-self: last baseline;
+}
+
+.mq-ed-pastel .mq-price {
+  font-family: var(--mq-font-display, serif);
+  font-weight: 600;
+  font-size: max(13px, 1.05rem);
+  color: var(--mq-pastel-rose);
+  white-space: nowrap;
+}
+
+.mq-ed-pastel-dish-desc {
+  margin: 0;
+  font-size: max(12px, 0.85rem);
+  color: #4b5563;
+  line-height: 1.45;
+}
+
+.mq-ed-pastel-dish-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.mq-ed-pastel-allergen-pill {
+  font-size: max(12px, 0.72rem);
+  padding: 2px 8px;
+  border-radius: var(--mq-radius-pill);
+  background-color: var(--mq-pastel-foam);
+  color: var(--mq-pastel-sage);
+  border: 1px solid rgba(45, 74, 62, 0.15);
+}
+
+.mq-ed-pastel-tag-pill {
+  font-size: max(12px, 0.72rem);
+  padding: 2px 8px;
+  border-radius: var(--mq-radius-pill);
+  background-color: var(--mq-pastel-rose-subtle);
+  color: var(--mq-pastel-rose);
+  border: 1px solid rgba(190, 24, 93, 0.15);
+}
+
+/* Dietary Badges */
+.mq-pastel-badge-diet {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: max(12px, 0.72rem);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--mq-radius-pill);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mq-pastel-veg {
+  background-color: var(--mq-pastel-foam);
+  color: var(--mq-pastel-sage);
+  border: 1px solid rgba(45, 74, 62, 0.2);
+}
+
+.mq-pastel-vegan {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid rgba(4, 120, 87, 0.25);
+}
+
+.mq-pastel-gf {
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid rgba(194, 65, 12, 0.25);
+}
+
+.mq-pastel-signature {
+  background-color: #fefce8;
+  color: #854d0e;
+  border: 1px solid rgba(133, 77, 14, 0.25);
+}
+
+.mq-pastel-badge-dot {
+  font-size: 0.75rem;
+}
+
+/* ========================================================================================
+   HAUTE PÂTISSERIE BRIGADE COLOPHON
+   ======================================================================================== */
 
 .mq-ed-pastel-foot {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--mq-space-3);
-  padding-bottom: var(--mq-space-10);
-  background-color: var(--mq-color-surface);
+  padding: var(--mq-space-12) var(--mq-space-5) var(--mq-space-10);
+  background: var(--mq-pastel-foam);
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.mq-ed-pastel-foot-astragal {
+  margin-top: var(--mq-space-4);
+}
+
+.mq-ed-pastel-guarantee-seal {
+  margin: var(--mq-space-4) 0 var(--mq-space-2);
 }
 
 .mq-ed-pastel-foot-name {
-  margin: var(--mq-space-5) 0 0;
-  font-family: var(--mq-font-display);
-  font-size: var(--mq-text-base);
-  letter-spacing: var(--mq-tracking-caps);
+  margin: var(--mq-space-2) 0 0;
+  font-family: var(--mq-font-display, 'Playfair Display', Georgia, serif);
+  font-size: max(14px, 1.25rem);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--mq-color-heading);
+  color: var(--mq-pastel-deep-green);
+  font-weight: 600;
 }
 
+.mq-ed-pastel-foot-sub {
+  margin: 2px 0 var(--mq-space-6);
+  font-size: max(12px, 0.85rem);
+  font-style: italic;
+  color: var(--mq-pastel-sage);
+}
+
+.mq-ed-pastel-brigade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--mq-space-4);
+  max-width: 54rem;
+  width: 100%;
+  margin: 0 0 var(--mq-space-8);
+  padding: var(--mq-space-5);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(45, 74, 62, 0.15);
+  border-radius: var(--mq-radius-lg);
+  box-sizing: border-box;
+}
+
+.mq-ed-pastel-brigade-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: center;
+}
+
+.mq-ed-pastel-brigade-title {
+  font-size: max(12px, 0.75rem);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--mq-pastel-rose);
+  font-weight: 700;
+}
+
+.mq-ed-pastel-brigade-role {
+  font-family: var(--mq-font-display, serif);
+  font-size: max(12px, 0.92rem);
+  font-style: italic;
+  color: var(--mq-pastel-deep-green);
+}
+
+.mq-ed-pastel-disclosures {
+  max-width: 50ch;
+  margin: var(--mq-space-6) auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+}
+
+.mq-ed-pastel-disclosure-line {
+  margin: 0;
+  font-size: max(12px, 0.78rem);
+  color: #4b5563;
+  line-height: 1.45;
+}
+
+.mq-ed-pastel-finial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mq-space-3);
+  margin-top: var(--mq-space-6);
+  color: var(--mq-pastel-gold);
+}
+
+.mq-ed-pastel-finial-bar {
+  width: 32px;
+  height: 1px;
+  background-color: var(--mq-pastel-gold);
+  opacity: 0.5;
+}
+
+.mq-ed-pastel-finial-lozenge {
+  font-size: 1rem;
+}
 /* ========================================================================================
    8 — PRESSE BRUT : brutalist type specimen
    ======================================================================================== */

@@ -87,7 +87,7 @@ export const HeritageBookletComposition: React.FC<SignatureProps> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery } = useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
 
   return (
     <div className="mq-page mq-sig-heritage-page">
@@ -113,6 +113,10 @@ export const HeritageBookletComposition: React.FC<SignatureProps> = ({
           dietFilter={dietFilter}
           onDietFilterChange={setDietFilter}
           counts={counts}
+          allergenFilter={allergenFilter}
+          onAllergenFilterChange={setAllergenFilter}
+          spiceFilter={spiceFilter}
+          onSpiceFilterChange={setSpiceFilter}
         />
       )}
 

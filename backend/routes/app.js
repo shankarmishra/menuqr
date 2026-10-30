@@ -17,6 +17,7 @@ import { registerOrderClient, broadcastOrderEvent } from '../orderStream.js';
 import { optimizeAndSaveImage } from '../imageOptimizer.js';
 import { enqueueTask, getJobStatus, TASK_TYPES } from '../taskQueue.js';
 import { synthesizeVoiceGreeting, saveTenantVoiceGreeting } from '../welcomeVoice.js';
+import { inputMenuFeatures } from '../menuFeatures.js';
 
 function inputText(value, maxLength = 255) {
   if (value === undefined || value === null) return '';
@@ -87,6 +88,34 @@ export function mergeItemSoldOut(existingMetadata, istDate) {
     return rest;
   }
   return { ...base, soldOutOn: istDate };
+}
+
+/** One extra language to start (Hindi) — a free-form keyed object, so more languages can be
+ * added later without a schema change. Each language's name/description is capped the same as
+ * the item's own `name`/`description` fields. */
+const TRANSLATION_LANGUAGES = ['hi'];
+
+export function inputItemTranslations(value) {
+  if (!value || typeof value !== 'object') return null;
+  const result = {};
+  for (const lang of TRANSLATION_LANGUAGES) {
+    const entry = value[lang];
+    if (!entry || typeof entry !== 'object') continue;
+    const name = inputText(entry.name, 255);
+    const description = inputText(entry.description, 2000);
+    if (name || description) result[lang] = { ...(name ? { name } : {}), ...(description ? { description } : {}) };
+  }
+  return Object.keys(result).length ? result : null;
+}
+
+/** Merges (or clears, when `translations` is null) owner-entered dish translations. */
+export function mergeItemTranslations(existingMetadata, translations) {
+  const base = existingMetadata && typeof existingMetadata === 'object' ? existingMetadata : {};
+  if (translations === null) {
+    const { translations: _omit, ...rest } = base;
+    return rest;
+  }
+  return { ...base, translations };
 }
 
 function requireBasicContentAccess(authorization) {
@@ -374,6 +403,38 @@ export default async function appRoutes(request, response, url) {
 
     invalidatePublicMenuCache(user.tenantId);
     sendJson(response, 200, { success: true, voiceGreeting: voiceGreetingData });
+    return true;
+  }
+
+  // One toggle panel for every optional customer-facing menu feature (Call Waiter — including
+  // which of its request types are offered — WhatsApp chat, allergen/spice filters, Trending,
+  // multi-language, the accessibility control). Follows the voice-greeting handler immediately
+  // above: merge one new key into the tenant's existing `accent_configuration` JSONB, no migration.
+  if (request.method === 'POST' && url.pathname === '/api/app/menu-features') {
+    const input = await readJson(request);
+    const menuFeatures = inputMenuFeatures(input);
+
+    const appRes = await pool.query('SELECT id, accent_configuration FROM appearance_settings WHERE tenant_id = $1', [user.tenantId]);
+    let currentConfig = appRes.rows[0]?.accent_configuration || {};
+    if (typeof currentConfig === 'string') {
+      try { currentConfig = JSON.parse(currentConfig); } catch { currentConfig = {}; }
+    }
+    currentConfig.menuFeatures = menuFeatures;
+
+    if (appRes.rows[0]) {
+      await pool.query(
+        'UPDATE appearance_settings SET accent_configuration = $1, updated_at = NOW() WHERE tenant_id = $2',
+        [currentConfig, user.tenantId]
+      );
+    } else {
+      await pool.query(
+        'INSERT INTO appearance_settings (id, tenant_id, accent_configuration) VALUES ($1, $2, $3)',
+        [randomUUID(), user.tenantId, currentConfig]
+      );
+    }
+
+    invalidatePublicMenuCache(user.tenantId);
+    sendJson(response, 200, { success: true, menuFeatures });
     return true;
   }
 
@@ -1393,7 +1454,8 @@ export default async function appRoutes(request, response, url) {
       const actualPricingType = pricingType || (Array.isArray(variants) && variants.length > 0 ? 'variants' : 'single');
       const focal = inputFocalPoint(input.focal);
       const tags = inputItemTags(input.tags);
-      const newMetadata = { ...(focal ? { focal } : {}), ...(tags ? { tags } : {}) };
+      const translations = inputItemTranslations(input.translations);
+      const newMetadata = { ...(focal ? { focal } : {}), ...(tags ? { tags } : {}), ...(translations ? { translations } : {}) };
 
       await queryPortable(client,
         'INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, half_price, full_price, image_url, diet_type, is_available, sort_order, pricing_type, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -1504,6 +1566,32 @@ export default async function appRoutes(request, response, url) {
   if (request.method === 'GET' && url.pathname === '/api/app/feedback') {
     requireEntitlement(authorization, 'digital_menu');
     sendJson(response, 200, await getFeedbackSummary(pool, user.tenantId, Number(url.searchParams.get('limit'))));
+    return true;
+  }
+
+  // Call Waiter / Request Bill history — the live SSE broadcast (orderStream.js) is unchanged;
+  // this is the persisted record of the same events, for the reception panel's "Done" button to
+  // resolve and for an owner to review later.
+  if (request.method === 'GET' && url.pathname === '/api/app/service-requests') {
+    requireEntitlement(authorization, 'reception_orders');
+    const limit = Math.min(200, Math.max(1, Number(url.searchParams.get('limit')) || 50));
+    const result = await queryPortable(pool,
+      'SELECT id, table_number as "tableNumber", request_type as "requestType", notes, customer_name as "customerName", status, created_at as "createdAt", resolved_at as "resolvedAt" FROM service_requests WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ?',
+      [user.tenantId, limit]
+    );
+    sendJson(response, 200, { requests: result.rows });
+    return true;
+  }
+
+  const resolveServiceRequestMatch = url.pathname.match(/^\/api\/app\/service-requests\/([^/]+)\/resolve$/);
+  if (request.method === 'PATCH' && resolveServiceRequestMatch) {
+    requireEntitlement(authorization, 'reception_orders');
+    const result = await queryPortable(pool,
+      "UPDATE service_requests SET status = 'RESOLVED', resolved_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ? RETURNING id",
+      [resolveServiceRequestMatch[1], user.tenantId]
+    );
+    if (!result.rows[0]) throw apiError(404, 'Service request not found.');
+    sendJson(response, 200, { success: true });
     return true;
   }
 
@@ -1712,7 +1800,8 @@ export default async function appRoutes(request, response, url) {
         let nextMetadata = existing.rows[0].metadata;
         if ('focal' in input) nextMetadata = mergeItemMetadata(nextMetadata, inputFocalPoint(input.focal));
         if ('tags' in input) nextMetadata = mergeItemTags(nextMetadata, inputItemTags(input.tags));
-        const metadataJson = 'focal' in input || 'tags' in input ? JSON.stringify(nextMetadata ?? {}) : null;
+        if ('translations' in input) nextMetadata = mergeItemTranslations(nextMetadata, inputItemTranslations(input.translations));
+        const metadataJson = 'focal' in input || 'tags' in input || 'translations' in input ? JSON.stringify(nextMetadata ?? {}) : null;
         const ownedCategory = await queryPortable(client,
           'SELECT id FROM menu_categories WHERE id = ? AND menu_id = ? AND tenant_id = ?',
           [categoryId, existing.rows[0].menu_id, user.tenantId]
