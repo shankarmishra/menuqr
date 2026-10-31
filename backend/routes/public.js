@@ -9,6 +9,12 @@ import { getCachedMenu, setCachedMenu, invalidateMenuCache } from '../redisClien
 import { broadcastOrderEvent } from '../orderStream.js';
 import { resolveMenuFeatures } from '../menuFeatures.js';
 import { getTrendingItemIds } from '../analytics.js';
+import {
+  assertOrderTypeAllowed,
+  buildRestaurantBlock,
+  orderingSettingsFromRow,
+  resolvePublicPhone,
+} from '../publicMenuPayload.js';
 import { randomUUID } from 'node:crypto';
 
 const contactRateLimits = new Map();
@@ -111,35 +117,14 @@ export async function getFullPublicMenuData(tenantId) {
     }));
   } catch {}
 
-  // Ordering Settings (Dine-in, Takeaway, Delivery switches)
-  let orderingSettings = {
-    dineIn: true,
-    takeaway: false,
-    delivery: false,
-    accepting: true,
-    autoByHours: false,
-    deliveryMinOrder: 0,
-    deliveryFee: 0,
-    deliveryAreaNote: '',
-    payNotes: ['Pay at counter'],
-  };
+  // Ordering Settings (Dine-in, Takeaway, Delivery switches). A restaurant with no row (the
+  // table is new and empty on first deploy) reads as the legacy state: dine-in plus delivery.
+  let orderingRow = null;
   try {
     const ordRes = await pool.query('SELECT * FROM ordering_settings WHERE tenant_id = $1', [tenantId]);
-    if (ordRes.rows.length > 0) {
-      const o = ordRes.rows[0];
-      orderingSettings = {
-        dineIn: Boolean(o.dine_in_enabled),
-        takeaway: Boolean(o.takeaway_enabled),
-        delivery: Boolean(o.delivery_enabled),
-        accepting: Boolean(o.accepting_orders),
-        autoByHours: Boolean(o.auto_by_hours),
-        deliveryMinOrder: Number(o.delivery_min_order || 0),
-        deliveryFee: Number(o.delivery_fee || 0),
-        deliveryAreaNote: o.delivery_area_note || '',
-        payNotes: o.pay_notes || ['Pay at counter'],
-      };
-    }
+    orderingRow = ordRes.rows[0] || null;
   } catch {}
+  const orderingSettings = orderingSettingsFromRow(orderingRow);
 
   // 3b. Fetch Appearance
   const appRes = await pool.query('SELECT * FROM appearance_settings WHERE tenant_id = $1', [tenantId]);
@@ -261,80 +246,16 @@ export async function getFullPublicMenuData(tenantId) {
     });
   }
 
+  // A menu shows only what the owner entered. With no dishes the lists stay empty and the diner
+  // page says the menu is being prepared; the server never makes dishes up.
   if (items.length === 0) {
-    categories = [
-      { id: 'cat-starters', name: 'Starters & Appetizers', order: 1 },
-      { id: 'cat-main', name: 'Main Course (Curries)', order: 2 },
-      { id: 'cat-breads', name: 'Tandoori Breads & Rice', order: 3 },
-      { id: 'cat-desserts', name: 'Desserts & Sweets', order: 4 },
-      { id: 'cat-beverages', name: 'Beverages & Refreshments', order: 5 },
-    ];
-    items = [
-      { id: 'item-1', name: 'Paneer Tikka', description: 'Char-grilled cottage cheese marinated in spiced yogurt and aromatic herbs', price: 240, halfPrice: 140, fullPrice: 240, category: 'Starters & Appetizers', dietType: 'veg', available: true },
-      { id: 'item-2', name: 'Dahi Puri', description: 'Crisp puri shells filled with spiced potatoes, sweet chutney, and chilled yogurt', price: 120, category: 'Starters & Appetizers', dietType: 'veg', available: true },
-      { id: 'item-3', name: 'Chicken Tikka', description: 'Tender chicken morsels marinated in Kashmiri chili and tandoori spices', price: 280, halfPrice: 160, fullPrice: 280, category: 'Starters & Appetizers', dietType: 'non-veg', available: true },
-      { id: 'item-4', name: 'Butter Chicken', description: 'Slow-cooked tandoori chicken in creamy tomato-cashew gravy with dried fenugreek', price: 320, halfPrice: 190, fullPrice: 320, category: 'Main Course (Curries)', dietType: 'non-veg', available: true },
-      { id: 'item-5', name: 'Dal Makhani', description: 'Overnight slow-cooked black lentils finished with fresh cream and butter', price: 220, category: 'Main Course (Curries)', dietType: 'veg', available: true },
-      { id: 'item-6', name: 'Paneer Butter Masala', description: 'Cottage cheese cubes cooked in rich tomato gravy with royal spices', price: 260, halfPrice: 150, fullPrice: 260, category: 'Main Course (Curries)', dietType: 'veg', available: true },
-      { id: 'item-7', name: 'Chicken Dum Biryani', description: 'Fragrant basmati rice layered with spiced marinated chicken and saffron', price: 290, category: 'Tandoori Breads & Rice', dietType: 'non-veg', available: true },
-      { id: 'item-8', name: 'Garlic Naan', description: 'Leavened oven-baked flatbread brushed with garlic butter and fresh cilantro', price: 60, category: 'Tandoori Breads & Rice', dietType: 'veg', available: true },
-      { id: 'item-9', name: 'Butter Naan', description: 'Traditional tandoor-fired soft bread with rich Indian butter', price: 50, category: 'Tandoori Breads & Rice', dietType: 'veg', available: true },
-      { id: 'item-10', name: 'Gulab Jamun', description: 'Classic milk-solid dumplings soaked in rose-cardamom syrup', price: 110, category: 'Desserts & Sweets', dietType: 'veg', available: true },
-      { id: 'item-11', name: 'Rasmalai', description: 'Soft cottage cheese patties immersed in saffron-infused milk', price: 140, category: 'Desserts & Sweets', dietType: 'veg', available: true },
-      { id: 'item-12', name: 'Mango Lassi', description: 'Traditional chilled yogurt smoothie blended with Alphonso mango pulp', price: 90, category: 'Beverages & Refreshments', dietType: 'veg', available: true },
-      { id: 'item-13', name: 'Masala Chai', description: 'Steaming Indian spiced tea brewed with ginger and cardamom', price: 40, category: 'Beverages & Refreshments', dietType: 'veg', available: true },
-    ];
+    categories = [];
+    items = [];
   }
-
-  // Resolve contact phone (prefer explicit public contact from profile)
-  const contactsList = Array.isArray(canonicalProfile?.contacts) ? canonicalProfile.contacts : [];
-  const explicitPublicPhone = contactsList.find(c => c.public && c.number)?.number;
-  // If canonical profile exists with configured contacts, strictly respect it (never leak hidden numbers).
-  const primaryPublicPhone = explicitPublicPhone
-    || (canonicalProfile ? null : ((client.review_flags && client.review_flags.phone_privacy_pending) ? null : (client.phone || null)));
-
-  // Resolve links
-  const linksList = Array.isArray(canonicalProfile?.links) ? canonicalProfile.links : [];
-  const igLink = linksList.find(l => l.type === 'instagram' && !l.paused)?.value || client.instagram;
-  const fbLink = linksList.find(l => l.type === 'facebook' && !l.paused)?.value || client.facebook;
-  const webLink = linksList.find(l => l.type === 'website' && !l.paused)?.value || client.website;
 
   const result = {
     isExpired: false,
-    restaurant: {
-      name: canonicalProfile?.display_name || appearance.restaurant_display_name || client.business_name,
-      tagline: canonicalProfile?.tagline || appearance.tagline || client.tagline || '',
-      category: client.category,
-      phone: primaryPublicPhone,
-      address: canonicalProfile?.address?.line || client.address,
-      city: canonicalProfile?.address?.city || client.city,
-      state: canonicalProfile?.address?.state || client.state,
-      pincode: canonicalProfile?.address?.pincode || '',
-      landmark: canonicalProfile?.address?.landmark || '',
-      cuisine: canonicalProfile?.cuisine_tags?.join(', ') || client.cuisine,
-      cuisineTags: canonicalProfile?.cuisine_tags || (client.cuisine ? client.cuisine.split(',').map(s => s.trim()).filter(Boolean) : []),
-      openingHours: canonicalProfile?.hours?.note || client.opening_hours,
-      weeklyHours: canonicalProfile?.hours?.weekly || null,
-      hoursExceptions: canonicalProfile?.hours?.exceptions || [],
-      lastOrderMinutes: canonicalProfile?.hours?.lastOrderMinutes || 0,
-      instagram: igLink,
-      facebook: fbLink,
-      website: webLink,
-      logo: appearance.logo || client.logo_url || '',
-      story: canonicalProfile?.story || '',
-      establishedYear: canonicalProfile?.established_year || null,
-      dietDeclaration: canonicalProfile?.diet_declaration || null,
-      highlights: canonicalProfile?.highlights || [],
-      payments: canonicalProfile?.payments || [],
-      priceNote: canonicalProfile?.price_note || '',
-      serviceChargeNote: canonicalProfile?.service_charge_note || '',
-      fssai: canonicalProfile?.fssai || '',
-      maps: canonicalProfile?.maps || {},
-      contacts: contactsList.filter(c => c.public),
-      links: linksList.filter(l => !l.paused),
-      reservations: canonicalProfile?.reservations || {},
-      i18n: canonicalProfile?.i18n || {},
-    },
+    restaurant: buildRestaurantBlock({ client, appearance, profile: canonicalProfile }),
     orderingEnabled: Boolean(authorization.active && authorization.entitlements.includes('customer_ordering')),
     orderingSettings,
     announcement,
@@ -629,27 +550,15 @@ export default async function publicRoutes(request, response, url) {
     const rawType = String(input.orderType || input.type || 'DINE_IN').toUpperCase();
     const orderType = ['DELIVERY', 'TAKEAWAY'].includes(rawType) ? rawType : 'DINE_IN';
 
-    // Verify against restaurant's ordering_settings switches
+    // Verify against the restaurant's ordering_settings switches. A restaurant with no row (or a
+    // database that has not been migrated yet) is checked against the legacy state, which is the
+    // same state the menu payload advertises: dine-in and delivery on, takeaway off.
+    let orderingRow = null;
     try {
       const osRes = await pool.query('SELECT * FROM ordering_settings WHERE tenant_id = $1', [client.id]);
-      if (osRes.rows.length > 0) {
-        const os = osRes.rows[0];
-        if (!os.accepting_orders) {
-          throw apiError(400, 'This restaurant is currently not accepting online orders.');
-        }
-        if (orderType === 'DINE_IN' && !os.dine_in_enabled) {
-          throw apiError(400, 'Dine-in table ordering is currently disabled by the restaurant.');
-        }
-        if (orderType === 'TAKEAWAY' && !os.takeaway_enabled) {
-          throw apiError(400, 'Takeaway pickup ordering is currently disabled by the restaurant.');
-        }
-        if (orderType === 'DELIVERY' && !os.delivery_enabled) {
-          throw apiError(400, 'Delivery ordering is currently disabled by the restaurant.');
-        }
-      }
-    } catch (osErr) {
-      if (osErr.status) throw osErr;
-    }
+      orderingRow = osRes.rows[0] || null;
+    } catch {}
+    assertOrderTypeAllowed(orderingRow, orderType);
 
     // Customer name & phone handling
     const rawCustomerName = String(input.customerName || input.name || '').trim();
@@ -1030,7 +939,9 @@ export default async function publicRoutes(request, response, url) {
         o.estimated_delivery_time as "estimatedDeliveryTime",
         o.created_at as time,
         c.business_name as "restaurantName",
-        c.phone as "restaurantPhone"
+        c.phone as "restaurantPhone",
+        c.review_flags as "clientReviewFlags",
+        o.tenant_id as "tenantId"
       FROM customer_orders o
       JOIN clients c ON c.id = o.tenant_id
       WHERE o.id = $1
@@ -1039,6 +950,17 @@ export default async function publicRoutes(request, response, url) {
     if (!res.rows[0]) throw apiError(404, 'Order not found.');
     const order = res.rows[0];
     order.total = parseFloat(order.total);
+
+    // The restaurant phone follows the same rule as the menu: a number the owner hid must not
+    // be reachable through the order page either. Internal helper fields are removed again.
+    let phoneProfile = null;
+    try {
+      const profRes = await pool.query('SELECT contacts, review_flags FROM restaurant_profiles WHERE tenant_id = $1', [order.tenantId]);
+      phoneProfile = profRes.rows[0] || null;
+    } catch {}
+    order.restaurantPhone = resolvePublicPhone(phoneProfile, { phone: order.restaurantPhone, review_flags: order.clientReviewFlags });
+    delete order.clientReviewFlags;
+    delete order.tenantId;
 
     // Phase 2 Rule 8: Public tracking privacy protection
     const tokenParam = url.searchParams.get('token') || request.headers['x-tracking-token'];

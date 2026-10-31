@@ -1,6 +1,6 @@
 -- 018_phase0_review_flags.sql
 --
--- Phase 0 – Privacy & Safety hotfixes
+-- Phase 0 - Privacy & Safety hotfixes
 --
 -- Adds `review_flags` JSONB column to `clients`.
 -- This column is a lightweight signal store for one-time owner prompts and
@@ -8,33 +8,33 @@
 --
 -- Flags used in Phase 0:
 --   phone_privacy_pending  BOOLEAN
---     Set to true for ALL existing tenants by the backfill below.
+--     Set to true for every existing tenant that does not have the key yet (below).
 --     Also set to true for every new tenant at provisioning (purchase.js P5-fix).
---     Cleared (set to false) when the owner responds to the
---     "Keep / Edit / Hide" prompt on the Home dashboard (Phase 3 UI).
---     While true, public.js returns restaurant.phone = null instead of
---     forwarding clients.phone to the public menu payload.
+--     Cleared (set to false) when the owner answers the "Keep / Edit / Hide" prompt
+--     on the Home dashboard.
+--     It ONLY drives that one-time prompt. It never hides a phone number: the public
+--     menu keeps showing the restaurant's number until the owner explicitly hides it
+--     (see resolvePublicPhone in publicMenuPayload.js).
+--   phone_hidden  BOOLEAN
+--     Written by the application when the owner explicitly chooses to hide the phone.
 --
 -- Design notes:
---   • Additive-only: no existing columns touched.
---   • Idempotent: safe to run multiple times.
---   • The backfill below marks every tenant with an existing non-null phone
---     as phone_privacy_pending so they receive the one-time prompt.
---   • Tenants whose phone is already null (e.g. future signups post P5-fix)
---     are also marked pending so the prompt still runs (they can set/keep/hide).
+--   - Additive-only: no existing columns touched.
+--   - Idempotent: safe to run multiple times. The UPDATE below skips every tenant that
+--     already has the key, so re-running the file (for example when the tracked runner
+--     applies it to a database where it was run by hand) never resets an owner's answer.
 
 ALTER TABLE clients
   ADD COLUMN IF NOT EXISTS review_flags JSONB NOT NULL DEFAULT '{}';
 
--- Back-fill: flag every existing tenant so the Home dashboard shows the
--- one-time "Keep / Edit / Hide" prompt for their currently-published phone.
--- This does NOT remove any phone from the public payload immediately —
--- public.js only suppresses the phone AFTER the flag is set.
+-- Back-fill: flag every existing tenant that has no answer recorded yet so the Home
+-- dashboard shows the one-time "Keep / Edit / Hide" prompt. A tenant that already has the
+-- key (true, or false after the owner answered) is left exactly as it is.
 UPDATE clients
 SET review_flags = review_flags || '{"phone_privacy_pending": true}'::jsonb
-WHERE (review_flags->>'phone_privacy_pending') IS DISTINCT FROM 'true';
+WHERE NOT (review_flags ? 'phone_privacy_pending');
 
--- Index for fast lookup in public.js (checking the flag on every menu read).
+-- Index for fast lookup of the tenants that still have to answer the prompt.
 CREATE INDEX IF NOT EXISTS idx_clients_review_flags_phone_pending
   ON clients ((review_flags->>'phone_privacy_pending'))
   WHERE (review_flags->>'phone_privacy_pending') = 'true';

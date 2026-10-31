@@ -24,6 +24,9 @@ import {
   updateRestaurantProfile,
   calculateProfileCompleteness,
 } from '../profileService.js';
+import { orderingSettingsFromRow } from '../publicMenuPayload.js';
+import { contactsFromLegacyPhone } from '../legacyProfile.js';
+import { sanitizeText } from '../validation.js';
 import { randomUUID } from 'node:crypto';
 
 export async function handleProfileRoutes(request, response, url, user, authorization) {
@@ -138,42 +141,39 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
   // Responds to the "Keep / Edit / Hide" phone privacy prompt
   if (request.method === 'POST' && url.pathname === '/api/app/profile/review-flags/respond') {
     const input = await readJson(request);
-    const action = input.action; // 'keep' | 'edit' | 'hide'
+    const action = String(input.action || ''); // 'keep' | 'edit' | 'hide'
+    if (!['keep', 'edit', 'hide'].includes(action)) {
+      throw apiError(400, 'Choose keep, edit or hide.');
+    }
 
     const currentProfile = await getRestaurantProfile(tenantId);
     let updatedContacts = [...(currentProfile.contacts || [])];
 
     if (action === 'hide') {
-      // Make all numbers non-public
+      // Make all numbers non-public. `phone_hidden` below records the choice even when the
+      // contact list is empty, so the legacy number is not shown again through the fallback.
       updatedContacts = updatedContacts.map((c) => ({ ...c, public: false }));
-    } else if (action === 'edit' && input.newPhone) {
-      // Update primary phone
+    } else if (action === 'edit') {
+      const { contacts: parsed } = contactsFromLegacyPhone(input.newPhone);
+      if (parsed.length === 0) {
+        throw apiError(400, 'Enter a 10-digit mobile number starting with 6, 7, 8 or 9.');
+      }
       if (updatedContacts.length > 0) {
-        updatedContacts[0] = { ...updatedContacts[0], number: input.newPhone, public: true };
+        updatedContacts[0] = { ...updatedContacts[0], number: parsed[0].number, public: true };
       } else {
-        updatedContacts.push({
-          id: 'p1',
-          label: 'Primary',
-          kind: 'mobile',
-          number: input.newPhone,
-          public: true,
-          whatsapp: true,
-          primary: true,
-        });
+        updatedContacts = parsed;
       }
-    } else if (action === 'keep') {
-      // Keep verified and active
-      if (updatedContacts.length > 0) {
-        updatedContacts[0].public = true;
-      }
+    } else if (updatedContacts.length > 0) {
+      // keep: the number stays public (an unparseable legacy number simply stays on the fallback)
+      updatedContacts[0] = { ...updatedContacts[0], public: true };
     }
 
-    // Clear the phone_privacy_pending review flag
+    // Clear the phone_privacy_pending prompt and record whether the owner chose to hide the phone.
     const res = await updateRestaurantProfile(
       tenantId,
       {
         contacts: updatedContacts,
-        reviewFlags: { phone_privacy_pending: false },
+        reviewFlags: { phone_privacy_pending: false, phone_hidden: action === 'hide' },
       },
       user.email || 'owner'
     );
@@ -185,68 +185,76 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
   // ── 4. Ordering Settings: GET & PATCH /api/app/ordering-settings ──────────
   if (url.pathname === '/api/app/ordering-settings') {
     if (request.method === 'GET') {
+      // No row means the legacy state (dine-in and delivery on): the same state the public menu
+      // and the order endpoint use, so the console never shows a switch the diners do not see.
       const res = await pool.query('SELECT * FROM ordering_settings WHERE tenant_id = $1', [tenantId]);
-      if (res.rows.length === 0) {
-        sendJson(response, 200, {
-          dineInEnabled: true,
-          takeawayEnabled: false,
-          deliveryEnabled: false,
-          acceptingOrders: true,
-          autoByHours: false,
-          deliveryMinOrder: 0,
-          deliveryFee: 0,
-          deliveryAreaNote: '',
-          payNotes: ['Pay at counter'],
-        });
-        return true;
-      }
-      const r = res.rows[0];
+      const s = orderingSettingsFromRow(res.rows[0]);
       sendJson(response, 200, {
-        dineInEnabled: r.dine_in_enabled,
-        takeawayEnabled: r.takeaway_enabled,
-        deliveryEnabled: r.delivery_enabled,
-        acceptingOrders: r.accepting_orders,
-        autoByHours: r.auto_by_hours,
-        deliveryMinOrder: Number(r.delivery_min_order || 0),
-        deliveryFee: Number(r.delivery_fee || 0),
-        deliveryAreaNote: r.delivery_area_note || '',
-        payNotes: r.pay_notes || [],
+        dineInEnabled: s.dineIn,
+        takeawayEnabled: s.takeaway,
+        deliveryEnabled: s.delivery,
+        acceptingOrders: s.accepting,
+        autoByHours: s.autoByHours,
+        deliveryMinOrder: s.deliveryMinOrder,
+        deliveryFee: s.deliveryFee,
+        deliveryAreaNote: s.deliveryAreaNote,
+        payNotes: s.payNotes,
       });
       return true;
     }
 
     if (request.method === 'PATCH') {
       const input = await readJson(request);
+      const flag = (value, name) => {
+        if (value === undefined || value === null) return null;
+        if (typeof value !== 'boolean') throw apiError(400, `${name} must be true or false.`);
+        return value;
+      };
+      const amount = (value, name) => {
+        if (value === undefined || value === null || value === '') return null;
+        const n = Number(value);
+        if (!Number.isFinite(n) || n < 0 || n > 100000) throw apiError(400, `${name} must be a number between 0 and 100000.`);
+        return n;
+      };
+      const payNotes = Array.isArray(input.payNotes)
+        ? input.payNotes.slice(0, 6).map((n) => sanitizeText(n, 60)).filter(Boolean)
+        : null;
+      // A first save writes a row. Fields the owner did not send start from the legacy state
+      // (dine-in and delivery on), so saving one switch never silently turns the others off.
       await pool.query(
         `INSERT INTO ordering_settings (
           tenant_id, dine_in_enabled, takeaway_enabled, delivery_enabled, accepting_orders,
           auto_by_hours, delivery_min_order, delivery_fee, delivery_area_note, pay_notes, version, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 1, NOW())
+        ) VALUES ($1, COALESCE($2::boolean, true), COALESCE($3::boolean, false), COALESCE($4::boolean, true),
+                  COALESCE($5::boolean, true), COALESCE($6::boolean, false), COALESCE($7::numeric, 0),
+                  COALESCE($8::numeric, 0), $9::text, COALESCE($10::text[], ARRAY['Pay at counter']), 1, NOW())
         ON CONFLICT (tenant_id) DO UPDATE SET
-          dine_in_enabled = COALESCE($2, ordering_settings.dine_in_enabled),
-          takeaway_enabled = COALESCE($3, ordering_settings.takeaway_enabled),
-          delivery_enabled = COALESCE($4, ordering_settings.delivery_enabled),
-          accepting_orders = COALESCE($5, ordering_settings.accepting_orders),
-          auto_by_hours = COALESCE($6, ordering_settings.auto_by_hours),
-          delivery_min_order = COALESCE($7, ordering_settings.delivery_min_order),
-          delivery_fee = COALESCE($8, ordering_settings.delivery_fee),
-          delivery_area_note = COALESCE($9, ordering_settings.delivery_area_note),
-          pay_notes = COALESCE($10, ordering_settings.pay_notes),
+          dine_in_enabled = COALESCE($2::boolean, ordering_settings.dine_in_enabled),
+          takeaway_enabled = COALESCE($3::boolean, ordering_settings.takeaway_enabled),
+          delivery_enabled = COALESCE($4::boolean, ordering_settings.delivery_enabled),
+          accepting_orders = COALESCE($5::boolean, ordering_settings.accepting_orders),
+          auto_by_hours = COALESCE($6::boolean, ordering_settings.auto_by_hours),
+          delivery_min_order = COALESCE($7::numeric, ordering_settings.delivery_min_order),
+          delivery_fee = COALESCE($8::numeric, ordering_settings.delivery_fee),
+          delivery_area_note = COALESCE($9::text, ordering_settings.delivery_area_note),
+          pay_notes = COALESCE($10::text[], ordering_settings.pay_notes),
           version = ordering_settings.version + 1,
           updated_at = NOW()`,
         [
           tenantId,
-          input.dineInEnabled,
-          input.takeawayEnabled,
-          input.deliveryEnabled,
-          input.acceptingOrders,
-          input.autoByHours,
-          input.deliveryMinOrder,
-          input.deliveryFee,
-          input.deliveryAreaNote,
-          input.payNotes,
+          flag(input.dineInEnabled, 'dineInEnabled'),
+          flag(input.takeawayEnabled, 'takeawayEnabled'),
+          flag(input.deliveryEnabled, 'deliveryEnabled'),
+          flag(input.acceptingOrders, 'acceptingOrders'),
+          flag(input.autoByHours, 'autoByHours'),
+          amount(input.deliveryMinOrder, 'deliveryMinOrder'),
+          amount(input.deliveryFee, 'deliveryFee'),
+          input.deliveryAreaNote === undefined || input.deliveryAreaNote === null ? null : sanitizeText(String(input.deliveryAreaNote), 120),
+          payNotes,
         ]
       );
+      // The switches are part of the public payload, so the cached copy must go.
+      await invalidatePublicMenuCache(tenantId);
       sendJson(response, 200, { success: true });
       return true;
     }

@@ -12,6 +12,7 @@
 import { pool, queryPortable } from './db.js';
 import { apiError } from './utils.js';
 import { invalidatePublicMenuCache } from './routes/public.js';
+import { contactsFromLegacyPhone, linksFromLegacyClient } from './legacyProfile.js';
 import {
   sanitizeText,
   validateWeeklyHours,
@@ -145,12 +146,10 @@ export async function getRestaurantProfile(tenantId) {
     },
     maps: {},
     hours: { note: c.opening_hours || '', weekly: {} },
-    contacts: c.phone ? [{ id: 'legacy', label: 'Primary', kind: 'mobile', number: c.phone, public: true, whatsapp: true, primary: true }] : [],
-    links: [
-      c.instagram && { type: 'instagram', value: c.instagram, placements: { cover: true, about: true, print: true } },
-      c.facebook && { type: 'facebook', value: c.facebook, placements: { cover: false, about: true, print: true } },
-      c.website && { type: 'website', value: c.website, placements: { cover: false, about: true, print: true } },
-    ].filter(Boolean),
+    // Same understanding of the legacy values as the backfill (one number per contact, several
+    // numbers in one field are split); unparseable values stay on the legacy columns.
+    contacts: contactsFromLegacyPhone(c.phone).contacts,
+    links: linksFromLegacyClient(c).links,
     reservations: {},
     i18n: {},
     reviewFlags: c.review_flags || {},
@@ -193,13 +192,9 @@ export async function updateRestaurantProfile(tenantId, updates, updatedBy = 'ow
           c.cuisine ? c.cuisine.split(',').map((s) => s.trim()).filter(Boolean) : [],
           JSON.stringify({ line: c.address || '', city: c.city || '', state: c.state || '' }),
           JSON.stringify({ note: c.opening_hours || '', weekly: {} }),
-          JSON.stringify(c.phone ? [{ id: 'c1', label: 'Main', kind: 'mobile', number: c.phone, public: true, whatsapp: true, primary: true }] : []),
-          JSON.stringify([
-            c.instagram && { type: 'instagram', value: c.instagram, placements: { cover: true, about: true, print: true } },
-            c.facebook && { type: 'facebook', value: c.facebook, placements: { cover: false, about: true, print: true } },
-            c.website && { type: 'website', value: c.website, placements: { cover: false, about: true, print: true } },
-          ].filter(Boolean)),
-          c.review_flags || {},
+          JSON.stringify(contactsFromLegacyPhone(c.phone).contacts),
+          JSON.stringify(linksFromLegacyClient(c).links),
+          JSON.stringify(c.review_flags || {}),
         ]
       );
       current = initRes.rows[0];
@@ -264,6 +259,15 @@ export async function updateRestaurantProfile(tenantId, updates, updatedBy = 'ow
 
     if (updates.contacts !== undefined) {
       p.contacts = validateContacts(updates.contacts);
+      // Numbers were sent but none was a valid phone number: say so instead of silently saving an
+      // empty list (which would remove the restaurant's phone from the menu).
+      if (Array.isArray(updates.contacts) && updates.contacts.length > 0 && p.contacts.length === 0) {
+        throw apiError(400, 'Enter a 10-digit mobile number starting with 6, 7, 8 or 9.');
+      }
+      // Saving a contact list is a deliberate choice. If nothing in it is public the owner wants
+      // no phone shown, so the public menu must not fall back to the legacy clients.phone.
+      const priorFlags = typeof p.review_flags === 'string' ? JSON.parse(p.review_flags || '{}') : (p.review_flags || {});
+      p.review_flags = { ...priorFlags, phone_hidden: !p.contacts.some((c) => c.public) };
     }
 
     if (updates.links !== undefined) {
@@ -327,25 +331,26 @@ export async function updateRestaurantProfile(tenantId, updates, updatedBy = 'ow
       ]
     );
 
-    // 4. Dual-write to legacy clients row for backward compatibility
-    const primaryContact = Array.isArray(p.contacts) ? p.contacts.find((c) => c.primary && c.public) : null;
-    const igLink = Array.isArray(p.links) ? p.links.find((l) => l.type === 'instagram') : null;
-    const fbLink = Array.isArray(p.links) ? p.links.find((l) => l.type === 'facebook') : null;
-    const webLink = Array.isArray(p.links) ? p.links.find((l) => l.type === 'website') : null;
-
-    const legacyUpdates = {
-      tagline: p.tagline,
-      cuisine: p.cuisine_tags?.join(', '),
-      address: p.address?.line,
-      city: p.address?.city,
-      state: p.address?.state,
-      instagram: igLink?.value || null,
-      facebook: fbLink?.value || null,
-      website: webLink?.value || null,
-    };
-
-    if (primaryContact?.number) {
-      legacyUpdates.phone = primaryContact.number;
+    // 4. Dual-write to the legacy clients row for backward compatibility. Only the fields the
+    // owner actually changed are mirrored: an unrelated save must never rewrite (or null out) a
+    // legacy value that the profile does not hold, for example an Instagram value that did not parse.
+    const legacyUpdates = {};
+    if (updates.tagline !== undefined) legacyUpdates.tagline = p.tagline;
+    if (updates.cuisineTags !== undefined) legacyUpdates.cuisine = p.cuisine_tags?.join(', ');
+    if (updates.address !== undefined) {
+      legacyUpdates.address = p.address?.line;
+      legacyUpdates.city = p.address?.city;
+      legacyUpdates.state = p.address?.state;
+    }
+    if (updates.links !== undefined) {
+      const linkOf = (type) => (Array.isArray(p.links) ? p.links.find((l) => l.type === type) : null);
+      legacyUpdates.instagram = linkOf('instagram')?.value || null;
+      legacyUpdates.facebook = linkOf('facebook')?.value || null;
+      legacyUpdates.website = linkOf('website')?.value || null;
+    }
+    if (updates.contacts !== undefined) {
+      const primaryContact = Array.isArray(p.contacts) ? p.contacts.find((c) => c.primary && c.public) : null;
+      if (primaryContact?.number) legacyUpdates.phone = primaryContact.number;
     }
 
     const legacyFields = Object.keys(legacyUpdates).filter((k) => legacyUpdates[k] !== undefined);
