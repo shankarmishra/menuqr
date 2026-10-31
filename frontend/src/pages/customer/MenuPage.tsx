@@ -67,6 +67,7 @@ import { SEO } from '../../seo/SEO';
 import GuestFeedbackCard from '../../components/customer/GuestFeedbackCard';
 import VoiceWelcomeBanner from '../../components/customer/VoiceWelcomeBanner';
 import DishCustomizationDrawer, { type CustomizationResult } from '../../components/customer/DishCustomizationDrawer';
+import { availableOrderModes } from './orderModes';
 import './MenuPage.css';
 
 export interface CartItem {
@@ -202,6 +203,13 @@ export default function MenuPage() {
   const callWaiterTypes = menuFeatures?.callWaiter.types ?? ['WATER', 'WAITER', 'BILL'];
   const whatsappNumber = menuFeatures?.whatsappChat.enabled ? menuFeatures.whatsappChat.resolvedNumber : null;
   const accessibilityEnabled = menuFeatures ? menuFeatures.accessibilityControls.enabled : true;
+  // Absent `orderingSettings` (a backend that predates the owner's mode switches) reads as the old
+  // dine-in plus delivery pair, for the same reason as the menuFeatures defaults above.
+  const orderModes = useMemo(() => availableOrderModes(client?.orderingSettings), [client?.orderingSettings]);
+  useEffect(() => {
+    // A mode saved from an earlier visit may no longer be on offer (the owner switched it off).
+    if (client && !orderModes.includes(orderType)) setOrderType(orderModes[0] ?? 'DINE_IN');
+  }, [client, orderModes, orderType]);
   const loadError = currentMenuResult?.error ?? '';
   const isLoading = Boolean(slug) && !currentMenuResult;
 
@@ -1251,7 +1259,7 @@ export default function MenuPage() {
               <div className="menu-cart-content">
                 {/* Order Type Selector Switch (Blueprint Decision ★4) */}
                 <div className="order-type-tabs">
-                  {client?.orderingSettings?.dineIn !== false && (
+                  {orderModes.includes('DINE_IN') && (
                     <button
                       type="button"
                       className={`order-type-tab ${orderType === 'DINE_IN' ? 'active' : ''}`}
@@ -1261,7 +1269,7 @@ export default function MenuPage() {
                       <span>Dine-In</span>
                     </button>
                   )}
-                  {client?.orderingSettings?.takeaway && (
+                  {orderModes.includes('TAKEAWAY') && (
                     <button
                       type="button"
                       className={`order-type-tab ${orderType === 'TAKEAWAY' ? 'active' : ''}`}
@@ -1271,7 +1279,7 @@ export default function MenuPage() {
                       <span>Takeaway</span>
                     </button>
                   )}
-                  {client?.orderingSettings?.delivery && (
+                  {orderModes.includes('DELIVERY') && (
                     <button
                       type="button"
                       className={`order-type-tab ${orderType === 'DELIVERY' ? 'active' : ''}`}

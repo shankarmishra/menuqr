@@ -447,6 +447,7 @@ interface RawPublicMenuApiResponse {
     enabled: boolean;
     reviewUrl?: string;
   };
+  orderingSettings?: PublicMenuRecord['orderingSettings'];
   categories: Array<{ id: string; name: string; order: number }>;
   items: Array<{
     id: string;
@@ -521,6 +522,7 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     menuFeatures: raw.menuFeatures,
     theme: raw.theme,
     googleReviews: raw.googleReviews,
+    orderingSettings: raw.orderingSettings,
   };
 }
 
