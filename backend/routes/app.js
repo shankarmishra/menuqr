@@ -18,6 +18,7 @@ import { optimizeAndSaveImage } from '../imageOptimizer.js';
 import { enqueueTask, getJobStatus, TASK_TYPES } from '../taskQueue.js';
 import { synthesizeVoiceGreeting, saveTenantVoiceGreeting } from '../welcomeVoice.js';
 import { inputMenuFeatures } from '../menuFeatures.js';
+import { handleProfileRoutes } from './profile.js';
 
 function inputText(value, maxLength = 255) {
   if (value === undefined || value === null) return '';
@@ -171,6 +172,9 @@ export default async function appRoutes(request, response, url) {
   
   const user = await enforceTenant(request);
   const authorization = await resolveTenantAuthorization(user);
+
+  // Handle canonical profile, operation & marketing routes (§9.1)
+  if (await handleProfileRoutes(request, response, url, user, authorization)) return true;
 
   // Background Job Status Polling
   const jobStatusMatch = url.pathname.match(/^\/api\/app\/jobs\/([^/]+)$/);
@@ -340,54 +344,40 @@ export default async function appRoutes(request, response, url) {
   }
 
   // ───────────────────────── AI Voice Greeting (Table Welcome Hostess) ─────────────────────────
+  // [P4-FIX] AI Voice Greeting generation endpoints are retired.
+  // The feature called Gemini TTS (a paid/AI service) against the no-AI/no-cost rule.
+  // - /preview -> 410 Gone permanently.
+  // - /voice-greeting POST with enabled=true -> 410 Gone.
+  // - /voice-greeting POST with enabled=false -> still works (lets owners disable).
+  // Greetings already stored in object storage continue to play; we do NOT delete them.
   if (request.method === 'POST' && url.pathname === '/api/app/voice-greeting/preview') {
-    const input = await readJson(request);
-    const clientRes = await pool.query('SELECT business_name FROM clients WHERE id = $1', [user.tenantId]);
-    const businessName = clientRes.rows[0]?.business_name || 'Our Restaurant';
-    const { audioBuffer, text } = await synthesizeVoiceGreeting({
-      businessName,
-      messageStyle: input.messageStyle,
-      customText: input.customText,
-      voiceGender: input.voiceGender,
-    });
-    sendJson(response, 200, {
-      audioBase64: `data:audio/wav;base64,${audioBuffer.toString('base64')}`,
-      text,
+    sendJson(response, 410, {
+      error: 'AI Voice Greeting preview is no longer available.',
+      code: 'FEATURE_RETIRED',
+      message: 'The AI voice greeting feature has been retired. Existing greetings continue to play.',
     });
     return true;
   }
 
   if (request.method === 'POST' && url.pathname === '/api/app/voice-greeting') {
     const input = await readJson(request);
-    const clientRes = await pool.query('SELECT business_name FROM clients WHERE id = $1', [user.tenantId]);
-    const businessName = clientRes.rows[0]?.business_name || 'Our Restaurant';
-
-    let voiceGreetingData = { enabled: Boolean(input.enabled) };
 
     if (input.enabled) {
-      const res = await saveTenantVoiceGreeting({
-        tenantId: user.tenantId,
-        businessName,
-        messageStyle: input.messageStyle,
-        customText: input.customText,
-        voiceGender: input.voiceGender,
+      sendJson(response, 410, {
+        error: 'New AI voice greetings can no longer be generated.',
+        code: 'FEATURE_RETIRED',
+        message: 'The AI voice greeting feature has been retired. Your existing greeting (if any) continues to play.',
       });
-      voiceGreetingData = {
-        enabled: true,
-        audioUrl: res.audioUrl,
-        text: res.text,
-        messageStyle: res.messageStyle,
-        voiceGender: res.voiceGender,
-        customText: input.customText || '',
-      };
+      return true;
     }
 
+    // enabled=false: clear the voiceGreeting flag so the player stops showing.
     const appRes = await pool.query('SELECT id, accent_configuration FROM appearance_settings WHERE tenant_id = $1', [user.tenantId]);
     let currentConfig = appRes.rows[0]?.accent_configuration || {};
     if (typeof currentConfig === 'string') {
       try { currentConfig = JSON.parse(currentConfig); } catch { currentConfig = {}; }
     }
-    currentConfig.voiceGreeting = voiceGreetingData;
+    currentConfig.voiceGreeting = { enabled: false };
 
     if (appRes.rows[0]) {
       await pool.query(
@@ -402,7 +392,7 @@ export default async function appRoutes(request, response, url) {
     }
 
     invalidatePublicMenuCache(user.tenantId);
-    sendJson(response, 200, { success: true, voiceGreeting: voiceGreetingData });
+    sendJson(response, 200, { success: true, voiceGreeting: { enabled: false } });
     return true;
   }
 
@@ -988,6 +978,14 @@ export default async function appRoutes(request, response, url) {
        RETURNING theme_draft as "draft"`,
       [settingId, user.tenantId, JSON.stringify(theme)]
     );
+    try {
+      await pool.query(
+        `INSERT INTO design_documents (tenant_id, draft, draft_version, updated_at)
+         VALUES ($1, $2, 1, CURRENT_TIMESTAMP)
+         ON CONFLICT (tenant_id) DO UPDATE SET draft = EXCLUDED.draft, draft_version = design_documents.draft_version + 1, updated_at = CURRENT_TIMESTAMP`,
+        [user.tenantId, JSON.stringify(theme)]
+      );
+    } catch (e) {}
     sendJson(response, 200, { draft: res.rows[0].draft });
     return true;
   }
@@ -1033,6 +1031,21 @@ export default async function appRoutes(request, response, url) {
          ON CONFLICT (tenant_id, version) DO NOTHING`,
         [randomUUID(), user.tenantId, row.version, JSON.stringify(result.theme)]
       );
+
+      try {
+        await client.query(
+          `INSERT INTO design_documents (tenant_id, published, draft, published_version, language_id, updated_at)
+           VALUES ($1, $2, $2, $3, $4, CURRENT_TIMESTAMP)
+           ON CONFLICT (tenant_id) DO UPDATE SET published = EXCLUDED.published, draft = EXCLUDED.draft, published_version = $3, language_id = $4, updated_at = CURRENT_TIMESTAMP`,
+          [user.tenantId, JSON.stringify(result.theme), row.version, result.theme.presetId || 'rangeen']
+        );
+        await client.query(
+          `INSERT INTO design_history (id, tenant_id, version, language_id, theme_snapshot, published_by)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           ON CONFLICT DO NOTHING`,
+          [randomUUID(), user.tenantId, row.version, result.theme.presetId || 'rangeen', JSON.stringify(result.theme), user.id]
+        );
+      } catch (e) {}
 
       return row;
     });
@@ -1104,46 +1117,97 @@ export default async function appRoutes(request, response, url) {
   }
 
   if (request.method === 'PATCH' && url.pathname === '/api/app/settings') {
-    requireBasicContentAccess(authorization);
+    // [P3-FIX] Profile facts (phone, hours, social links, address…) must NEVER consume
+    // a BASIC content-change quota. Only menu content (business_name, menu_slug) is
+    // counted. We split the input into two buckets:
+    //   profileUpdates  -> direct UPDATE, no quota deduction
+    //   contentUpdates  -> withContentChange (BASIC limit applies)
     const input = await readJson(request);
-    const updates = {};
-    if (input.businessName !== undefined) updates.business_name = input.businessName;
-    if (input.menuSlug !== undefined) updates.menu_slug = input.menuSlug;
-    if (input.tagline !== undefined) updates.tagline = input.tagline;
-    if (input.phone !== undefined) updates.phone = input.phone;
-    if (input.city !== undefined) updates.city = input.city;
-    if (input.address !== undefined) updates.address = input.address;
-    if (input.logoUrl !== undefined) updates.logo_url = input.logoUrl;
-    if (input.state !== undefined) updates.state = input.state;
-    if (input.cuisine !== undefined) updates.cuisine = input.cuisine;
-    if (input.openingHours !== undefined) updates.opening_hours = input.openingHours;
-    if (input.instagram !== undefined) updates.instagram = input.instagram;
-    if (input.facebook !== undefined) updates.facebook = input.facebook;
-    if (input.website !== undefined) updates.website = input.website;
 
-    if (authorization.planId !== 'BASIC') requireEntitlement(authorization, 'initial_menu_setup');
-    
-    if (updates.menu_slug) {
-      const conflict = await pool.query('SELECT id FROM clients WHERE menu_slug = $1 AND id != $2', [updates.menu_slug, user.tenantId]);
+    // Bucket A: profile fields - unlimited on all plans
+    const profileUpdates = {};
+    if (input.tagline !== undefined)      profileUpdates.tagline        = input.tagline;
+    if (input.phone !== undefined)        profileUpdates.phone          = input.phone;
+    if (input.city !== undefined)         profileUpdates.city           = input.city;
+    if (input.address !== undefined)      profileUpdates.address        = input.address;
+    if (input.logoUrl !== undefined)      profileUpdates.logo_url       = input.logoUrl;
+    if (input.state !== undefined)        profileUpdates.state          = input.state;
+    if (input.cuisine !== undefined)      profileUpdates.cuisine        = input.cuisine;
+    if (input.openingHours !== undefined) profileUpdates.opening_hours  = input.openingHours;
+    if (input.instagram !== undefined)    profileUpdates.instagram      = input.instagram;
+    if (input.facebook !== undefined)     profileUpdates.facebook       = input.facebook;
+    if (input.website !== undefined)      profileUpdates.website        = input.website;
+
+    // Bucket B: content fields - deduct from BASIC quota
+    const contentUpdates = {};
+    if (input.businessName !== undefined) contentUpdates.business_name  = input.businessName;
+    if (input.menuSlug !== undefined)     contentUpdates.menu_slug      = input.menuSlug;
+
+    if (contentUpdates.menu_slug) {
+      const conflict = await pool.query('SELECT id FROM clients WHERE menu_slug = $1 AND id != $2', [contentUpdates.menu_slug, user.tenantId]);
       if (conflict.rows.length > 0) throw apiError(409, 'Menu slug already in use.');
+
+      // Decision ★5: Menu link name can change once every 30 days. Old links redirect.
+      const currentSlugRes = await pool.query('SELECT menu_slug FROM clients WHERE id = $1', [user.tenantId]);
+      const currentSlug = currentSlugRes.rows[0]?.menu_slug;
+      if (currentSlug && currentSlug !== contentUpdates.menu_slug) {
+        try {
+          const historyCheck = await pool.query(
+            `SELECT changed_at FROM menu_slug_history 
+             WHERE tenant_id = $1 AND changed_at > NOW() - INTERVAL '30 days'
+             ORDER BY changed_at DESC LIMIT 1`,
+            [user.tenantId]
+          );
+          if (historyCheck.rows.length > 0) {
+            const daysAgo = Math.ceil((Date.now() - new Date(historyCheck.rows[0].changed_at).getTime()) / (1000 * 60 * 60 * 24));
+            const remaining = Math.max(1, 30 - daysAgo);
+            throw apiError(429, `Menu link name can only be changed once every 30 days. Please wait ${remaining} more day(s).`);
+          }
+
+          // Record old slug for permanent redirect
+          await pool.query(
+            `INSERT INTO menu_slug_history (id, tenant_id, slug, changed_at)
+             VALUES ($1, $2, $3, NOW())
+             ON CONFLICT (slug) DO UPDATE SET changed_at = NOW()`,
+            [randomUUID(), user.tenantId, currentSlug]
+          );
+        } catch (slugErr) {
+          if (slugErr.status === 429) throw slugErr;
+          console.warn('[slug-history] Warning tracking slug history:', slugErr.message);
+        }
+      }
     }
 
-    const fields = Object.keys(updates);
-    if (fields.length === 0) {
+    if (Object.keys(profileUpdates).length === 0 && Object.keys(contentUpdates).length === 0) {
       sendJson(response, 200, { message: 'No updates provided' });
       return true;
     }
 
-    const setClause = fields.map((f) => `"${f}" = ?`).join(', ');
-    const values = fields.map(f => updates[f]);
-    values.push(user.tenantId);
+    // Apply profile updates directly (no quota)
+    if (Object.keys(profileUpdates).length > 0) {
+      const pFields = Object.keys(profileUpdates);
+      const pClause = pFields.map((f) => `"${f}" = ?`).join(', ');
+      const pValues = [...pFields.map(f => profileUpdates[f]), user.tenantId];
+      await queryPortable(pool, `UPDATE clients SET ${pClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, pValues);
+    }
 
-    const updated = await withContentChange(authorization, async (client) => {
-      const updateRes = await queryPortable(client, `UPDATE clients SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, values);
-      if (updateRes.rowCount === 0) throw apiError(404, 'Restaurant could not be found.');
-      return queryPortable(client, 'SELECT id, business_name as "businessName", menu_slug as "menuSlug", tagline, phone, city, state, address, logo_url as "logoUrl", cuisine, opening_hours as "openingHours", instagram, facebook, website FROM clients WHERE id = ?', [user.tenantId]);
-    });
+    // Apply content updates through withContentChange (quota-aware)
+    if (Object.keys(contentUpdates).length > 0) {
+      requireBasicContentAccess(authorization);
+      const cFields = Object.keys(contentUpdates);
+      const cClause = cFields.map((f) => `"${f}" = ?`).join(', ');
+      const cValues = [...cFields.map(f => contentUpdates[f]), user.tenantId];
+      await withContentChange(authorization, async (client) => {
+        const r = await queryPortable(client, `UPDATE clients SET ${cClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, cValues);
+        if (r.rowCount === 0) throw apiError(404, 'Restaurant could not be found.');
+      });
+    }
 
+    const updated = await queryPortable(pool,
+      'SELECT id, business_name as "businessName", menu_slug as "menuSlug", tagline, phone, city, state, address, logo_url as "logoUrl", cuisine, opening_hours as "openingHours", instagram, facebook, website FROM clients WHERE id = ?',
+      [user.tenantId]
+    );
+    invalidatePublicMenuCache(user.tenantId);
     sendJson(response, 200, updated.rows[0]);
     return true;
   }

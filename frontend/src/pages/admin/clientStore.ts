@@ -48,6 +48,9 @@ export interface MenuItemRecord {
 export interface ClientRecord {
   id: string;
   businessName: string;
+  displayName?: string;
+  story?: string;
+  coverImage?: string;
   category: ClientCategory;
   ownerName: string;
   email: string;
@@ -58,6 +61,19 @@ export interface ClientRecord {
   state: string;
   templateId?: string;
   accentConfiguration?: unknown;
+  announcement?: { text: string; linkType?: string; linkTarget?: string | null; i18n?: any } | null;
+  offers?: any[];
+  orderingSettings?: {
+    dineIn: boolean;
+    takeaway: boolean;
+    delivery: boolean;
+    accepting: boolean;
+    autoByHours?: boolean;
+    deliveryMinOrder?: number;
+    deliveryFee?: number;
+    deliveryAreaNote?: string;
+    payNotes?: string[];
+  };
   postalCode: string;
   country: string;
   menuSlug: string;
@@ -77,6 +93,9 @@ export interface ClientRecord {
 
 export interface PublicMenuRecord {
   businessName: string;
+  displayName?: string;
+  story?: string;
+  coverImage?: string;
   tagline?: string;
   logoUrl?: string;
   category: ClientCategory;
@@ -103,6 +122,19 @@ export interface PublicMenuRecord {
   googleReviews?: {
     enabled: boolean;
     reviewUrl?: string;
+  };
+  announcement?: { text: string; linkType?: string; linkTarget?: string | null; i18n?: any } | null;
+  offers?: any[];
+  orderingSettings?: {
+    dineIn: boolean;
+    takeaway: boolean;
+    delivery: boolean;
+    accepting: boolean;
+    autoByHours?: boolean;
+    deliveryMinOrder?: number;
+    deliveryFee?: number;
+    deliveryAreaNote?: string;
+    payNotes?: string[];
   };
 }
 
@@ -602,7 +634,7 @@ export interface CustomerOrder {
 }
 
 export type CreateCustomerOrderPayload = {
-  orderType?: 'DINE_IN' | 'DELIVERY';
+  orderType?: 'DINE_IN' | 'DELIVERY' | 'TAKEAWAY';
   tableNumber?: string | null;
   customerName: string;
   customerPhone: string;

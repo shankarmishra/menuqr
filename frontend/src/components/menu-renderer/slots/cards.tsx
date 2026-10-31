@@ -12,6 +12,7 @@
 import React from 'react';
 import { DietMark, DishFlags, DishPrice } from '../primitives/DishMeta.tsx';
 import { SmartImage } from '../primitives/SmartImage.tsx';
+import { useMenuCart } from '../../menu-builder/templates/shared/MenuCartContext';
 import { parseItemPricing } from '../../menu-builder/templates/shared/pricingUtils';
 import type { DishCardSlot } from '../../../design-system/theme.types.ts';
 import type { RenderMenuItem } from '../types.ts';
@@ -53,7 +54,7 @@ export const DISH_CARD_CONTAINER: Record<DishCardSlot, React.CSSProperties> = {
   'bento-tile': {
     display: 'grid',
     gap: 'var(--mq-space-3)',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(10.5rem, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(9.5rem, 1fr))',
   },
 };
 
@@ -65,9 +66,21 @@ export const DISH_CARD_CONTAINER: Record<DishCardSlot, React.CSSProperties> = {
  */
 export const MagazineCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
   const description = dishDescription(item);
+  const cart = useMenuCart();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button, a, input')) return;
+    if (!readOnly && cart.onCustomizeDish) {
+      cart.onCustomizeDish(item);
+    }
+  };
 
   return (
-    <article className="mq-card mq-card-lg" style={{ overflow: 'hidden' }}>
+    <article
+      className="mq-card mq-card-lg"
+      onClick={handleCardClick}
+      style={{ overflow: 'hidden', cursor: !readOnly && cart.onCustomizeDish ? 'pointer' : undefined }}
+    >
       {item.imageUrl && (
         <SmartImage
           src={item.imageUrl}
@@ -101,9 +114,21 @@ export const MagazineCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
  */
 export const MichelinLeaderCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
   const description = dishDescription(item);
+  const cart = useMenuCart();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button, a, input')) return;
+    if (!readOnly && cart.onCustomizeDish) {
+      cart.onCustomizeDish(item);
+    }
+  };
 
   return (
-    <article className="mq-stack" style={{ gap: 'var(--mq-space-1)' }}>
+    <article
+      className="mq-stack"
+      onClick={handleCardClick}
+      style={{ gap: 'var(--mq-space-1)', cursor: !readOnly && cart.onCustomizeDish ? 'pointer' : undefined }}
+    >
       <div className="mq-row" style={{ alignItems: 'baseline' }}>
         <DietMark type={item.dietType} />
         <h3 className="mq-dish-name" style={{ fontWeight: 600 }}>
@@ -155,50 +180,71 @@ export const MichelinLeaderCard: React.FC<DishCardProps> = ({ item, readOnly }) 
  * for a price. Dropping images here is the point, not a compromise: it is what makes a long menu
  * usable and fast on mobile data.
  */
-export const CompactRowCard: React.FC<DishCardProps> = ({ item, readOnly }) => (
-  <article
-    className="mq-row"
-    style={{
-      alignItems: 'center',
-      paddingBlock: 'var(--mq-space-2)',
-      borderBottom: '1px solid var(--mq-color-border)',
-    }}
-  >
-    <DietMark type={item.dietType} />
-    <div className="mq-grow" style={{ minWidth: 0 }}>
-      <h3 className="mq-dish-name" style={{ fontSize: 'var(--mq-text-sm)' }}>
-        {item.name}
-      </h3>
-    </div>
-    <DishFlags item={item} />
-    <DishPrice item={item} readOnly={readOnly} />
-  </article>
-);
+export const CompactRowCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
+  const cart = useMenuCart();
 
-/**
- * Bento tile — square photo tiles in a responsive grid.
- *
- * Suits cocktails, desserts, sushi and burgers: categories where the diner chooses by sight.
- * The grid uses `auto-fill` so it is two columns on a phone and four on a tablet without the
- * preset needing to know anything about viewports.
- */
-export const BentoTileCard: React.FC<DishCardProps> = ({ item, readOnly }) => (
-  <article className="mq-card" style={{ overflow: 'hidden' }}>
-    <SmartImage
-      src={item.imageUrl}
-      alt={item.name}
-      role="card"
-      focal={item.focal}
-      aspectRatio="var(--mq-aspect-square)"
-    />
-    <div className="mq-stack" style={{ padding: 'var(--mq-space-3)', gap: 'var(--mq-space-1)' }}>
-      <div className="mq-row" style={{ alignItems: 'center' }}>
-        <DietMark type={item.dietType} />
-        <h3 className="mq-dish-name mq-grow mq-clamp-2" style={{ fontSize: 'var(--mq-text-sm)' }}>
+  const handleCardClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button, a, input')) return;
+    if (!readOnly && cart.onCustomizeDish) {
+      cart.onCustomizeDish(item);
+    }
+  };
+
+  return (
+    <article
+      className="mq-row"
+      onClick={handleCardClick}
+      style={{
+        alignItems: 'center',
+        paddingBlock: 'var(--mq-space-2)',
+        borderBottom: '1px solid var(--mq-color-border)',
+        cursor: !readOnly && cart.onCustomizeDish ? 'pointer' : undefined,
+      }}
+    >
+      <DietMark type={item.dietType} />
+      <div className="mq-grow" style={{ minWidth: 0 }}>
+        <h3 className="mq-dish-name" style={{ fontSize: 'var(--mq-text-sm)' }}>
           {item.name}
         </h3>
       </div>
+      <DishFlags item={item} />
       <DishPrice item={item} readOnly={readOnly} />
-    </div>
-  </article>
-);
+    </article>
+  );
+};
+
+export const BentoTileCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
+  const cart = useMenuCart();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button, a, input')) return;
+    if (!readOnly && cart.onCustomizeDish) {
+      cart.onCustomizeDish(item);
+    }
+  };
+
+  return (
+    <article
+      className="mq-card"
+      onClick={handleCardClick}
+      style={{ overflow: 'hidden', cursor: !readOnly && cart.onCustomizeDish ? 'pointer' : undefined }}
+    >
+      <SmartImage
+        src={item.imageUrl}
+        alt={item.name}
+        role="card"
+        focal={item.focal}
+        aspectRatio="var(--mq-aspect-square)"
+      />
+      <div className="mq-stack" style={{ padding: 'var(--mq-space-3)', gap: 'var(--mq-space-1)' }}>
+        <div className="mq-row" style={{ alignItems: 'center' }}>
+          <DietMark type={item.dietType} />
+          <h3 className="mq-dish-name mq-grow mq-clamp-2" style={{ fontSize: 'var(--mq-text-sm)' }}>
+            {item.name}
+          </h3>
+        </div>
+        <DishPrice item={item} readOnly={readOnly} />
+      </div>
+    </article>
+  );
+};

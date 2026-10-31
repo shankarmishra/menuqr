@@ -118,7 +118,7 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
             )
           ) : (
             visible.map((category) => (
-              <section key={category.id} aria-labelledby={`mq-cat-${category.id}`}>
+              <section key={category.id} id={`mq-section-${category.id}`} aria-labelledby={`mq-cat-${category.id}`} style={{ scrollMarginTop: '90px' }}>
                 <SectionHeading
                   id={`mq-cat-${category.id}`}
                   name={category.name}

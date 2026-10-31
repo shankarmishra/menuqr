@@ -255,6 +255,68 @@ const server = createServer(async (request, response) => {
       }
     }
 
+    // Public Menu Bot / Crawler and Browser landing with Open Graph preview metadata (Blueprint Phase 0/5)
+    const menuSlugMatch = request.method === 'GET' && url.pathname.match(/^\/menu\/([^/]+)$/);
+    if (menuSlugMatch) {
+      const slug = decodeURIComponent(menuSlugMatch[1]);
+      try {
+        const clientRes = await pool.query(
+          `SELECT c.business_name, c.tagline, c.logo_url, c.cover_image, c.menu_slug,
+                  p.display_name, p.story
+             FROM clients c
+             LEFT JOIN restaurant_profiles p ON p.tenant_id = c.id
+            WHERE c.menu_slug = $1 OR c.public_id = $1 OR c.id = $1`,
+          [slug]
+        );
+        const row = clientRes.rows[0];
+        if (row) {
+          const restaurantName = row.display_name || row.business_name || 'Restaurant';
+          const description = row.tagline || row.story || 'View our complete digital menu and order online.';
+          const image = row.cover_image || row.logo_url || 'https://menusqr.in/og-image.png';
+          const menuUrl = `https://menusqr.in/menu/${row.menu_slug || slug}`;
+
+          const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const safeName = escapeHtml(restaurantName);
+          const safeDesc = escapeHtml(description);
+          const safeImg = escapeHtml(image);
+
+          const html = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>${safeName} | Digital Menu</title>
+    <meta name="description" content="${safeDesc}">
+    <meta property="og:type" content="restaurant.menu">
+    <meta property="og:title" content="${safeName}">
+    <meta property="og:description" content="${safeDesc}">
+    <meta property="og:image" content="${safeImg}">
+    <meta property="og:url" content="${menuUrl}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${safeName}">
+    <meta name="twitter:description" content="${safeDesc}">
+    <meta name="twitter:image" content="${safeImg}">
+    <meta http-equiv="refresh" content="0;url=/menu/${encodeURIComponent(row.menu_slug || slug)}">
+    <style>body{background:#151c19;color:#fff;font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center;padding:20px;}</style>
+  </head>
+  <body>
+    <div>
+      <h1 style="font-size:1.75rem;margin-bottom:0.5rem;">${safeName}</h1>
+      <p style="color:#aab7b2;max-width:400px;margin:0 auto 1.5rem;">${safeDesc}</p>
+      <a href="/menu/${encodeURIComponent(row.menu_slug || slug)}" style="color:#e8783c;text-decoration:none;font-weight:bold;border:1px solid #e8783c;padding:10px 20px;border-radius:10px;display:inline-block;">Open Menu &rarr;</a>
+    </div>
+    <script>window.location.replace('/menu/${encodeURIComponent(row.menu_slug || slug)}');</script>
+  </body>
+</html>`;
+          response.writeHead(200, {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'public, max-age=300'
+          });
+          response.end(html);
+          return;
+        }
+      } catch (err) {}
+    }
+
     if (await authRoutes(request, response, url)) return;
     if (await adminRoutes(request, response, url)) return;
     if (await appRoutes(request, response, url)) return;

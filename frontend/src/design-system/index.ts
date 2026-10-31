@@ -100,6 +100,15 @@ export {
 export { resolveTheme, TOKEN_PREFIX, tokensToCssText, tokensToStyle } from './resolveTheme.ts';
 
 export {
+  ARCHETYPE_BY_ID,
+  getTemplateArchetype,
+  matchArchetypeFromProfile,
+  TEMPLATE_ARCHETYPES,
+  type TemplateArchetype,
+  type TemplateArchetypeId,
+} from './archetypes.ts';
+
+export {
   coerceTheme,
   FALLBACK_THEME,
   MAX_ANNOUNCEMENT_LENGTH,

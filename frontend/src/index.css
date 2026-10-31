@@ -110,4 +110,58 @@ body {
   height: 0;
 }
 
+/* ============================================================================
+   PRINT MEDIA STYLES: Crisp, Ink-Saving Table Tents & Cutting Guides
+   Ensures window.print() outputs ONLY the printable cards with zero UI chrome
+   ============================================================================ */
+@media print {
+  @page {
+    size: auto;
+    margin: 8mm;
+  }
 
+  html, body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #root {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Force accurate color rendering of gold borders & contrast lines */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide app chrome: sidebars, top headers, toast notifications, control buttons */
+  .print\:hidden,
+  header,
+  nav,
+  aside,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  .print\:block {
+    display: block !important;
+  }
+
+  /* Avoid page breaks inside table tents and inserts */
+  .break-inside-avoid,
+  .tent-card,
+  .acrylic-card,
+  .sticker-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

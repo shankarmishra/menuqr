@@ -51,8 +51,8 @@ export type FontPairing = {
   supportsDevanagari: boolean;
 };
 
-const SERIF_FALLBACK = 'Georgia, "Times New Roman", serif';
-const SANS_FALLBACK = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+const SERIF_FALLBACK = '\'Cormorant Garamond\', Georgia, "Times New Roman", serif';
+const SANS_FALLBACK = 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 const FACES = {
   cinzel: {

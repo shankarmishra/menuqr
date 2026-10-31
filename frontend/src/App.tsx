@@ -117,6 +117,7 @@ const AppAppearance = lazyWithRetry(() => import('./pages/app/MenuDesignStudio')
 const AppQrCenter = lazyWithRetry(() => import('./pages/app/QrCenter'));
 const AppSubscription = lazyWithRetry(() => import('./pages/app/Subscription'));
 const AppSettings = lazyWithRetry(() => import('./pages/app/Settings'));
+const AppRestaurant = lazyWithRetry(() => import('./pages/app/Restaurant'));
 const AppOrders = lazyWithRetry(() => import('./pages/app/Orders'));
 
 // Lazy Admin Routes
@@ -368,6 +369,7 @@ function PublicAppRoutes() {
           <Route path="dashboard" element={<AppDashboard />} />
           <Route path="menu" element={<AppMenu />} />
           <Route path="appearance" element={<FeatureGate capability="menu_management"><AppAppearance /></FeatureGate>} />
+          <Route path="restaurant" element={<AppRestaurant />} />
           <Route path="analytics" element={<FeatureGate capability="analytics"><AppAnalytics /></FeatureGate>} />
           <Route path="feedback" element={<AppFeedback />} />
           <Route path="qr" element={<AppQrCenter />} />

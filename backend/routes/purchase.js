@@ -396,18 +396,25 @@ export async function processOrderPaymentAndProvision({
       }
       if (!refCode) refCode = String(Math.floor(10000 + Math.random() * 90000));
 
+      // [P5-FIX] The owner's signup phone must never be auto-published as the
+      // restaurant's public contact number. clients.phone is left NULL for new
+      // tenants. The owner explicitly opts a number in via Restaurant > Contact & Social.
+      // review_flags.phone_privacy_pending signals the Home dashboard to show the
+      // one-time "Keep / Edit / Hide" prompt (pre-filled from users.phone).
       await client.query(
         `INSERT INTO clients
            (id, public_id, business_name, menu_slug, category, business_type, category_other,
             state, outlet_count, phone, city, address, reference_code, email_verified, phone_verified, status,
-            instagram, facebook, website)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)`,
+            instagram, facebook, website, review_flags)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)`,
         [tenantId, publicId, order.business_name, menuSlug,
          order.cuisine || order.business_type || 'restaurant', order.business_type || 'restaurant',
          order.category_other || null, order.state || null, order.outlet_count || 1,
-         order.phone || null, order.city || null, order.address || null,
+         null,               // phone: intentionally NULL - owner chooses what to publish
+         order.city || null, order.address || null,
          refCode, Boolean(order.email_verified), Boolean(order.phone_verified), 'active',
-         order.instagram || null, order.facebook || null, order.website || null]
+         order.instagram || null, order.facebook || null, order.website || null,
+         JSON.stringify({ phone_privacy_pending: true })]
       );
 
       await client.query(

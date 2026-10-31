@@ -1,10 +1,16 @@
 import { useEffect, useState, useRef } from 'react';
-import { Download, PackageCheck, QrCode, Printer, Send, ShoppingBag } from 'lucide-react';
+import { Download, PackageCheck, QrCode, Printer, Send, ShoppingBag, Scissors } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import QRCode from 'qrcode';
 import TableQrGenerator from '../../components/qr/TableQrGenerator';
 import ShareMenuLink from '../../components/qr/ShareMenuLink';
 import { exportStickerToPng } from '../../utils/stickerExporter';
+import {
+  generateBrandedQrDataUrl,
+  generateBrandedQrSvg,
+  downloadDataUrl,
+  downloadSvg,
+} from '../../utils/brandedQr';
 import RoyalWalnutStickerCard from '../../components/sticker/RoyalWalnutStickerCard';
 import { type StickerThemeId } from '../../components/sticker/StickerTemplates';
 import { useToast } from '../../components/feedback/ToastProvider';
@@ -126,6 +132,36 @@ export default function QrCenter() {
     }
   };
 
+  const downloadBrandedQr = async (format: 'png' | 'svg') => {
+    if (!menuUrl) return;
+    try {
+      const name = qr?.restaurantName || profile?.businessName || 'Restaurant';
+      const safeName = name.replace(/[^a-z0-9]+/gi, '_');
+
+      if (format === 'png') {
+        const dataUrl = await generateBrandedQrDataUrl({
+          text: menuUrl,
+          size: 2048,
+          restaurantName: name,
+          includeMedallion: true,
+        });
+        downloadDataUrl(dataUrl, `MenusQR_${safeName}_Branded_QR_HighRes.png`);
+        showToast('success', 'High-res 2048px Branded QR PNG downloaded.');
+      } else {
+        const svgString = await generateBrandedQrSvg({
+          text: menuUrl,
+          restaurantName: name,
+          includeMedallion: true,
+        });
+        downloadSvg(svgString, `MenusQR_${safeName}_Branded_QR_Vector.svg`);
+        showToast('success', 'Scalable Vector SVG Branded QR downloaded.');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('error', 'Could not generate branded QR code.');
+    }
+  };
+
   const handleOrderClick = () => {
     setShowRequestForm(true);
     if (orderSectionRef.current) {
@@ -153,16 +189,16 @@ export default function QrCenter() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-12 px-4 md:px-8 pt-4 sm:pt-6">
-      <header className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-[#2a3832] pb-6">
+      <header className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-[#2a3832] pb-6 print:hidden">
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-[#e8783c]">{restaurantName}</p>
           <h1 className="mt-1 text-3xl font-bold text-white">QR Studio</h1>
-          <p className="mt-2 text-sm text-[#849a90]">Manage and download your physical table QR stand & order stickers.</p>
+          <p className="mt-2 text-sm text-[#849a90]">Manage, download, and print your physical table QR standees &amp; table tents.</p>
         </div>
       </header>
 
       {!qr?.qrId ? (
-        <div className="bg-[#1d2723] rounded-2xl border border-[#2a3832] p-10 flex flex-col items-center text-center max-w-2xl mx-auto mt-12 relative overflow-hidden">
+        <div className="bg-[#1d2723] rounded-2xl border border-[#2a3832] p-10 flex flex-col items-center text-center max-w-2xl mx-auto mt-12 relative overflow-hidden print:hidden">
           <div className="absolute top-0 right-0 -mt-10 -mr-10 text-white/5 pointer-events-none">
             <QrCode size={200} />
           </div>
@@ -182,8 +218,8 @@ export default function QrCenter() {
 
           {/* LEFT COLUMN: Full Physical QR Sticker Artwork Display */}
           <div className="lg:col-span-7 space-y-6">
-            <div className="bg-[#1d2723] rounded-2xl border border-[#2a3832] overflow-hidden flex flex-col shadow-2xl">
-              <div className="p-4 sm:p-5 border-b border-[#2a3832] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#151c19]">
+            <div className="bg-[#1d2723] rounded-2xl border border-[#2a3832] overflow-hidden flex flex-col shadow-2xl print:bg-white print:border-none print:shadow-none">
+              <div className="p-4 sm:p-5 border-b border-[#2a3832] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#151c19] print:hidden">
                 <div className="flex items-center gap-2 font-bold text-white text-sm">
                   <span className="bg-emerald-500/10 text-emerald-400 p-1.5 rounded-md border border-emerald-500/20"><QrCode size={16} /></span>
                   Active QR Stand Artwork
@@ -197,15 +233,15 @@ export default function QrCenter() {
               </div>
               
               {/* Luxury Flagship Edition Bar */}
-              <div className="p-4 border-b border-[#2a3832] bg-[#121815] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-4 border-b border-[#2a3832] bg-[#121815] flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden">
                 <div className="flex items-center gap-2.5">
                   <span className="w-4 h-4 rounded-full border border-amber-300/40 shrink-0 bg-gradient-to-br from-white via-[#FAF7F0] to-[#EBE0CD] shadow-sm" />
                   <div>
                     <span className="font-extrabold text-white text-xs tracking-wide">
-                      Imperial Royal Ivory & 24K Gold
+                      Imperial Royal Ivory &amp; 24K Gold
                     </span>
                     <span className="text-[#849a90] text-[11px] block">
-                      Calacatta Alabaster Stone, Hand-Pressed Vellum & Antique Brass Plaque
+                      Calacatta Alabaster Stone, Hand-Pressed Vellum &amp; Antique Brass Plaque
                     </span>
                   </div>
                 </div>
@@ -219,9 +255,9 @@ export default function QrCenter() {
                 </div>
               </div>
 
-              <div className="p-4 sm:p-6 flex flex-col items-center justify-center text-center bg-gradient-to-b from-[#17211d] to-[#0e1311]">
+              <div className="p-4 sm:p-6 flex flex-col items-center justify-center text-center bg-gradient-to-b from-[#17211d] to-[#0e1311] print:bg-white print:p-0">
                 {/* Physical Luxury QR Sticker Artwork Display */}
-                <div className="scale-90 sm:scale-95 transform-gpu transition-all">
+                <div className="scale-90 sm:scale-95 transform-gpu transition-all print:scale-100">
                   <RoyalWalnutStickerCard
                     themeId={selectedTheme}
                     stickerRef={stickerRef}
@@ -236,17 +272,17 @@ export default function QrCenter() {
                 </div>
 
                 {/* Permanent QR Status Banner (In-App UI) */}
-                <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
+                <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold print:hidden">
                   <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Permanent Table QR Active — Ready for Print & Placement</span>
+                  <span>Permanent Table QR Active — Ready for Print &amp; Placement</span>
                 </div>
                 
-                <p className="mt-3 text-xs text-[#849a90] max-w-sm leading-relaxed">
+                <p className="mt-3 text-xs text-[#849a90] max-w-sm leading-relaxed print:hidden">
                   Changing menu items or prices will <strong>never</strong> regenerate this QR code.
                 </p>
 
                 {/* --- ACTION & ORDER BUTTONS --- */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md mt-6">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md mt-6 print:hidden">
                   <button
                     type="button"
                     onClick={handleOrderClick}
@@ -259,9 +295,10 @@ export default function QrCenter() {
                     <button
                       type="button"
                       onClick={() => void downloadPNG()}
+                      title="Download 300 DPI Standee Image"
                       className="flex items-center justify-center gap-1.5 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-3 px-4 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                     >
-                      <Download size={14} /> Download Image
+                      <Download size={14} /> Download Standee
                     </button>
                     <button
                       type="button"
@@ -273,14 +310,41 @@ export default function QrCenter() {
                   </div>
                 </div>
 
+                {/* Standalone High-Res Branded QR Downloads */}
+                <div className="w-full max-w-md mt-4 pt-4 border-t border-[#2a3832]/60 flex flex-col items-center print:hidden">
+                  <span className="text-[11px] font-bold text-[#849a90] uppercase tracking-wider mb-2">
+                    Standalone Branded QR Code (High Recovery 'H')
+                  </span>
+                  <div className="grid grid-cols-2 gap-2 w-full">
+                    <button
+                      type="button"
+                      onClick={() => void downloadBrandedQr('png')}
+                      className="flex items-center justify-center gap-1.5 bg-[#151c19] hover:bg-[#1f2924] text-white/90 border border-[#36473f] py-2.5 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      <Download size={13} className="text-amber-400" /> High-Res PNG (300 DPI)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void downloadBrandedQr('svg')}
+                      className="flex items-center justify-center gap-1.5 bg-[#151c19] hover:bg-[#1f2924] text-white/90 border border-[#36473f] py-2.5 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      <Download size={13} className="text-sky-400" /> Vector SVG (Print Shop)
+                    </button>
+                  </div>
+                </div>
+
               </div>
             </div>
-            <ShareMenuLink menuUrl={menuUrl} restaurantName={restaurantName} />
-            <TableQrGenerator baseUrl={menuUrl} restaurantName={restaurantName} />
+            <div className="print:hidden">
+              <ShareMenuLink menuUrl={menuUrl} restaurantName={restaurantName} />
+            </div>
+            <div className="print:hidden">
+              <TableQrGenerator baseUrl={menuUrl} restaurantName={restaurantName} />
+            </div>
           </div>
           
           {/* RIGHT COLUMN: Physical Stickers Order Form & Order History */}
-          <div ref={orderSectionRef} className="lg:col-span-5 space-y-6">
+          <div ref={orderSectionRef} className="lg:col-span-5 space-y-6 print:hidden">
             <div className="bg-[#1d2723] rounded-2xl border border-[#2a3832] overflow-hidden shadow-xl">
               <div className="p-5 border-b border-[#2a3832] flex items-center justify-between bg-[#151c19]">
                 <div className="flex items-center gap-2 font-bold text-white text-sm">
@@ -367,37 +431,52 @@ export default function QrCenter() {
 
       {/* PRINT READY STICKER MODAL OVERLAY */}
       {showPrintModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-[#151c19] border border-white/15 rounded-3xl p-6 sm:p-8 max-w-lg w-full flex flex-col items-center text-center space-y-6 shadow-2xl relative">
-            <div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm overflow-y-auto print:bg-white print:p-0 print:static print:inset-auto print:backdrop-blur-none">
+          <div className="bg-[#151c19] border border-white/15 rounded-3xl p-6 sm:p-8 max-w-lg w-full flex flex-col items-center text-center space-y-5 shadow-2xl relative print:bg-white print:border-none print:shadow-none print:p-0 print:max-w-none">
+            <div className="print:hidden">
               <p className="text-xs font-bold uppercase tracking-wider text-[#e8783c]">Print-Ready Artwork</p>
-              <h2 className="text-xl sm:text-2xl font-black text-white mt-1">Print-Ready QR Artwork</h2>
-            </div>
-            <div className="scale-95 sm:scale-100">
-              <RoyalWalnutStickerCard
-                isModal={true}
-                themeId={selectedTheme}
-                restaurantName={restaurantName}
-                category={profile?.cuisine || 'DIGITAL MENU'}
-                menuUrl={menuUrl}
-                qrImage={qrImage}
-                showStatusBadge={true}
-                showDownloadButtons={false}
-              />
+              <h2 className="text-xl sm:text-2xl font-black text-white mt-1">Print-Ready Table Card</h2>
+              <p className="text-xs text-[#849a90] mt-1">Crisp print card with outer cutting guidelines for paper trimmers.</p>
             </div>
 
-            <div className="flex items-center justify-center gap-3 w-full pt-2">
+            {/* Card with cutting guide lines */}
+            <div className="p-3 border border-dashed border-stone-500 rounded-2xl relative bg-black/10 print:bg-white print:p-4 print:border-stone-600">
+              <div className="absolute top-1 left-2 text-[9px] font-bold text-stone-400 tracking-wider flex items-center gap-1 print:text-stone-600">
+                <Scissors size={10} /> CUT ALONG DASHED LINE
+              </div>
+              <div className="pt-3 scale-95 sm:scale-100 print:scale-100">
+                <RoyalWalnutStickerCard
+                  isModal={true}
+                  themeId={selectedTheme}
+                  restaurantName={restaurantName}
+                  category={profile?.cuisine || 'DIGITAL MENU'}
+                  menuUrl={menuUrl}
+                  qrImage={qrImage}
+                  showStatusBadge={false}
+                  showDownloadButtons={false}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 w-full pt-2 print:hidden">
               <button
                 type="button"
                 onClick={() => void downloadPNG()}
                 className="flex-1 bg-[#25322d] hover:bg-[#2a3832] text-white border border-[#36473f] py-2.5 px-4 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
-                Download Image (PNG)
+                Download PNG
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 bg-gradient-to-r from-[#e8783c] to-[#f08b55] hover:brightness-110 text-white py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-lg shadow-[#e8783c]/25 flex items-center justify-center gap-1.5"
+              >
+                <Printer size={14} /> Print Now
               </button>
               <button
                 type="button"
                 onClick={() => setShowPrintModal(false)}
-                className="flex-1 bg-[#e8783c] hover:bg-[#f08b55] text-white py-2.5 px-4 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                className="bg-white/10 hover:bg-white/15 text-white py-2.5 px-4 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 Close
               </button>

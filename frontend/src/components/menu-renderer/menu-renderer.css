@@ -532,3 +532,304 @@
 }
 
 .mq-contact-link:hover { background-color: var(--mq-color-surface-alt); }
+
+/* ----------------------------- mobile typography & spacing polish ----------------------------- */
+
+/* Smooth scroll-spy behavior */
+.mq-nav-scroller {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.mq-nav-item {
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mq-nav-item[aria-current='true'] {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-weight: 700;
+}
+
+.mq-card {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+}
+
+@media (hover: hover) {
+  .mq-card:hover {
+    box-shadow: var(--mq-shadow-md);
+  }
+}
+
+/* Responsive optimization for 375px/390px mobile viewports */
+@media (max-width: 480px) {
+  .mq-page {
+    padding-inline: 12px;
+    padding-block: var(--mq-space-4);
+  }
+
+  .mq-nav-scroller {
+    padding-inline: 12px;
+    gap: 6px;
+  }
+
+  .mq-nav-item {
+    padding-inline: 12px;
+    font-size: 13px;
+  }
+
+  .mq-dish-name {
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+
+  .mq-dish-desc {
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  .mq-price {
+    font-size: 15px;
+  }
+
+  .mq-button {
+    font-size: 13px;
+    padding-inline: 12px;
+  }
+}
+
+
+/* ---------------------------------- Archetype Extensions ---------------------------------- */
+
+/* 1. Dhaba Masterpiece: Prominent FSSAI Veg / Non-Veg Badges */
+.mq-fssai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mq-space-1);
+  padding: 2px 7px;
+  border-radius: var(--mq-radius-sm);
+  font-size: max(11px, 0.72rem);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mq-fssai-badge.is-veg {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1.5px solid #16a34a;
+}
+
+.mq-fssai-badge.is-nonveg {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1.5px solid #dc2626;
+}
+
+.mq-root[data-mode="dark"] .mq-fssai-badge.is-veg,
+.mq-ed-punjab .mq-fssai-badge.is-veg {
+  background-color: rgba(22, 163, 74, 0.16);
+  color: #4ade80;
+  border: 1.5px solid #22c55e;
+}
+
+.mq-root[data-mode="dark"] .mq-fssai-badge.is-nonveg,
+.mq-ed-punjab .mq-fssai-badge.is-nonveg {
+  background-color: rgba(220, 38, 38, 0.16);
+  color: #f87171;
+  border: 1.5px solid #ef4444;
+}
+
+.mq-fssai-symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+}
+
+.mq-fssai-dot {
+  width: 6px;
+  height: 6px;
+  background-color: currentColor;
+  border-radius: 50%;
+}
+
+.mq-fssai-badge.is-nonveg .mq-fssai-dot {
+  clip-path: polygon(50% 12%, 8% 88%, 92% 88%);
+  border-radius: 0;
+}
+
+.mq-fssai-label {
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* 2. Artisan Bakery & Café: Beverage Customizer & Rounded Cards */
+.mq-beverage-customizer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-2);
+  margin-top: var(--mq-space-2);
+  padding: var(--mq-space-2) var(--mq-space-3);
+  background-color: var(--mq-color-surface-alt, #faf7f2);
+  border: 1px solid var(--mq-color-border, rgba(200, 109, 81, 0.2));
+  border-radius: var(--mq-radius-md, 12px);
+}
+
+.mq-beverage-customizer.is-compact {
+  padding: var(--mq-space-1);
+  gap: var(--mq-space-1);
+}
+
+.mq-bev-row {
+  display: flex;
+  align-items: center;
+  gap: var(--mq-space-2);
+  flex-wrap: wrap;
+}
+
+.mq-bev-label {
+  font-size: max(11px, 0.72rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mq-color-text-muted, #78716c);
+  min-width: 2.8rem;
+}
+
+.mq-bev-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.mq-bev-pill {
+  border: 1px solid var(--mq-color-border, #d6d3d1);
+  border-radius: 999px;
+  background: var(--mq-color-surface, #ffffff);
+  color: var(--mq-color-text, #292524);
+  font-size: max(11px, 0.75rem);
+  font-weight: 600;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 28px;
+}
+
+.mq-bev-pill:hover {
+  background: var(--mq-color-surface-sunken, #f5f5f4);
+}
+
+.mq-bev-pill.is-active {
+  background: var(--mq-color-accent, #c86d51);
+  color: var(--mq-color-accent-contrast, #ffffff);
+  border-color: var(--mq-color-accent, #c86d51);
+  box-shadow: 0 1px 3px rgba(200, 109, 81, 0.3);
+}
+
+.mq-card-cafe {
+  border-radius: 1rem !important; /* rounded-2xl */
+}
+
+/* 3. Street Food & Fast-Casual: Speed Order Button & Stepper */
+.mq-speed-order-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 999px;
+  background: #eab308; /* Electric mustard */
+  color: #0f172a; /* Deep obsidian */
+  font-size: max(12px, 0.82rem);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mq-speed-order-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.6);
+}
+
+.mq-speed-order-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.mq-speed-icon {
+  font-size: 1.1em;
+}
+
+.mq-speed-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(234, 179, 8, 0.15);
+  border: 1.5px solid #eab308;
+}
+
+.mq-speed-stepper-btn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: #eab308;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mq-speed-qty {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #eab308;
+  min-width: 1.2rem;
+  text-align: center;
+}
+
+/* 4. Bistro & Trattoria: Dot-Leader Pricing & Chalkboard Styling */
+.mq-bistro-dot-leader {
+  display: flex;
+  align-items: last baseline;
+  width: 100%;
+  gap: var(--mq-space-2);
+}
+
+.mq-dot-leader-fill {
+  flex: 1 1 auto;
+  border-bottom: 2px dotted rgba(255, 255, 255, 0.35);
+  margin-bottom: 0.28em;
+  min-width: 1rem;
+}
+
+.mq-chalk-specials-card {
+  position: relative;
+  background: #0f172a;
+  border: 2px dashed rgba(253, 224, 71, 0.6);
+  border-radius: var(--mq-radius-md);
+  padding: var(--mq-space-5);
+  margin-block: var(--mq-space-6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.mq-chalk-tap-board {
+  background: #1e293b;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--mq-radius-md);
+  padding: var(--mq-space-5);
+  margin-block: var(--mq-space-6);
+}

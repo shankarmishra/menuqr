@@ -1,3 +1,4 @@
+export * from './archetypes.ts';
 /**
  * MENUQR Design System — Presets
  *
@@ -416,10 +417,10 @@ export const PRESETS: readonly Preset[] = [
     id: 'edition-maison-noir',
     label: 'Maison Noir',
     description:
-      'Art Deco fine dining. A black-marble cover under a gold double rule and faceted crest, with an engraved tasting-card interior.',
-    audience: 'Fine dining, chef tasting rooms, premium steak and wine',
+      'Noir & Gold Fine Dining. Obsidian black #0D0D0D ground, Champagne gold #D4AF37, Cormorant Garamond headings, tasting course progression and sommelier pairings.',
+    audience: 'Fine dining, chef tasting rooms, luxury steak and wine cellars',
     category: 'fine-dining',
-    seedColor: '#c9a227',
+    seedColor: '#D4AF37',
     mode: 'dark',
     slots: { cover: 'hero-photo', nav: 'underline-tabs', dishCard: 'michelin-leader', section: 'hairline-caps', footer: 'minimal-mark' },
     signatureId: 'maison-noir',
@@ -506,10 +507,10 @@ export const PRESETS: readonly Preset[] = [
     id: 'edition-chalk-house',
     label: 'Chalk House',
     description:
-      'A bistro board. Hand-chalked frame and swooshes on slate, courses written out rather than laid out, prices in chalk rings.',
-    audience: 'Bistros, grills, gastropubs, daily-special kitchens',
+      'Bistro & Trattoria. Slate chalkboard #1E293B, dot-leader pricing (Truffle Pasta . . . . ₹450), daily chalkboard specials card, and craft drinks tap list.',
+    audience: 'Bistros, trattorias, gastropubs, craft taprooms, blackboard special kitchens',
     category: 'street',
-    seedColor: '#d8a657',
+    seedColor: '#D8A657',
     mode: 'dark',
     slots: { cover: 'monogram', nav: 'capsule-pills', dishCard: 'compact-row', section: 'ribbon', footer: 'minimal-mark' },
     signatureId: 'chalk-house',
@@ -523,10 +524,10 @@ export const PRESETS: readonly Preset[] = [
     id: 'edition-atelier-pastel',
     label: 'Atelier Pastel',
     description:
-      'Patisserie. A scalloped arch window holds the hero photograph; inside, soft cards on a scalloped page with pill prices.',
-    audience: 'Patisseries, bakeries, dessert bars, tea rooms',
+      'Artisan Bakery & Café. Oat milk beige #FAF7F2, warm terracotta #C86D51, matcha green #606C38, rounded-2xl cards and beverage customization.',
+    audience: 'Artisan bakeries, specialty coffee houses, dessert salons, tea rooms',
     category: 'cafe',
-    seedColor: '#c2577a',
+    seedColor: '#C86D51',
     mode: 'light',
     slots: { cover: 'monogram', nav: 'underline-tabs', dishCard: 'bento-tile', section: 'hairline-caps', footer: 'minimal-mark' },
     signatureId: 'atelier-pastel',
@@ -575,10 +576,10 @@ export const PRESETS: readonly Preset[] = [
     id: 'edition-neon-ichiban',
     label: 'Neon Ichiban',
     description:
-      'Late-night counter. The name printed twice in hard misregistration over a measured grid, with sticker badges and hard-edge price tags.',
-    audience: 'Late-night counters, burger and ramen bars, street kitchens',
+      'Street Food & Fast-Casual. Electric mustard #EAB308 & neon coral #F43F5E, modular bento box layout and 1-tap speed ordering.',
+    audience: 'Street counters, burger joints, taco bars, roll clubs, late-night counters',
     category: 'street',
-    seedColor: '#ff3d6e',
+    seedColor: '#EAB308',
     mode: 'dark',
     slots: { cover: 'hero-photo', nav: 'capsule-pills', dishCard: 'bento-tile', section: 'ribbon', footer: 'minimal-mark' },
     signatureId: 'neon-ichiban',
@@ -610,10 +611,10 @@ export const PRESETS: readonly Preset[] = [
     id: 'edition-rang-e-punjab',
     label: 'Rang-e-Punjab',
     description:
-      'Authentic Punjabi feast. Phulkari embroidery, charcoal iron slate and tandoori vermilion with clay kiln embers.',
-    audience: 'Punjabi restaurants, tandoori grills, highway dhabas, North Indian kitchens',
+      'Dhaba Masterpiece (Rangeen). Saffron, emerald and warm copper, bold rustic typography, prominent FSSAI Veg/Non-Veg badges and community sharing energy.',
+    audience: 'Highway dhabas, Punjabi tandoors, clay oven grills, North Indian family dining',
     category: 'street',
-    seedColor: '#b82e1f',
+    seedColor: '#D97706',
     mode: 'dark',
     slots: { cover: 'hero-photo', nav: 'capsule-pills', dishCard: 'compact-row', section: 'ribbon', footer: 'contact-block' },
     signatureId: 'rang-e-punjab',
@@ -706,6 +707,13 @@ const PRESET_BY_ID = new Map(PRESETS.map((preset) => [preset.id, preset]));
  * `template_id` to `royal-maharaja`, which is one of these.
  */
 const LEGACY_TEMPLATE_ALIASES: Record<string, string> = {
+  // 5 Distinct Template Archetypes aliases
+  'dhaba-masterpiece': 'edition-rang-e-punjab',
+  rangeen: 'edition-rang-e-punjab',
+  'noir-gold': 'edition-maison-noir',
+  'artisan-bakery': 'edition-atelier-pastel',
+  'bistro-trattoria': 'edition-chalk-house',
+  'street-food': 'edition-neon-ichiban',
   'royal-maharaja': 'mughal-luxe',
   'banarasi-gold': 'mughal-luxe',
   'heritage-parchment': 'rajasthani-heritage',

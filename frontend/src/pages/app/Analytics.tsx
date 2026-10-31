@@ -171,6 +171,24 @@ export default function Analytics() {
             <TrafficChart days={traffic.days} />
           </Card>
 
+          {/* Guest Actions & Link Clicks (Blueprint Phase 4 / 5) */}
+          {data?.linkClicks && data.linkClicks.list && data.linkClicks.list.length > 0 && (
+            <Card title="Guest Actions & Social Clicks" subtitle="Calls, WhatsApp chats, maps directions and profile visits" className="mt-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {data.linkClicks.list.map((item) => (
+                  <div key={item.kind} className="rounded-xl border border-[#2a3832] bg-[#1d2723] p-4 flex flex-col justify-between">
+                    <span className="text-xs uppercase font-bold text-[#849a90] tracking-wider capitalize">
+                      {item.kind === 'custom' ? 'Social Link' : item.kind}
+                    </span>
+                    <span className="text-2xl font-black text-white mt-2">
+                      {item.count}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <Card title="When guests open your menu" subtitle="Busy hours by India time">
               <HoursStrip hours={traffic.hours} color={COLORS.scans} unit="visits" />

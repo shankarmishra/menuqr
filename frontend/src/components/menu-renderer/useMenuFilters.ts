@@ -69,8 +69,8 @@ export function useMenuFilters(categories: RenderCategory[]) {
   }, [categories, query, dietFilter, allergenFilter, spiceFilter]);
 
   const visible = useMemo(
-    () => (activeCategoryId === ALL ? filtered : filtered.filter((c) => c.id === activeCategoryId)),
-    [filtered, activeCategoryId]
+    () => filtered,
+    [filtered]
   );
 
   // Navigation lists every category that has items, not just the ones surviving the current

@@ -1,10 +1,11 @@
 import { reportMenuVisit } from '../../utils/menuHit';
 import { useEffect, useMemo, useState, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MapPin, 
   Clock3, 
-  ShoppingCart, 
+ 
   X, 
   Plus, 
   Minus, 
@@ -25,6 +26,7 @@ import {
   ConciergeBell,
   HandPlatter,
   MessageCircle,
+  ShoppingBag,
 } from 'lucide-react';
 
 function InstagramIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
@@ -64,7 +66,18 @@ import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRend
 import { SEO } from '../../seo/SEO';
 import GuestFeedbackCard from '../../components/customer/GuestFeedbackCard';
 import VoiceWelcomeBanner from '../../components/customer/VoiceWelcomeBanner';
+import DishCustomizationDrawer, { type CustomizationResult } from '../../components/customer/DishCustomizationDrawer';
 import './MenuPage.css';
+
+export interface CartItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  variant?: string;
+  instructions?: string;
+  spiceLevel?: number;
+}
 
 export interface DiningSessionOrder {
   id: string;
@@ -90,6 +103,15 @@ const DINING_SESSION_TTL_MS = 3.5 * 60 * 60 * 1000; // 3.5 hours auto-refresh wi
 
 export default function MenuPage() {
   const { slug } = useParams();
+
+  const trackAction = (kind: string) => {
+    if (!slug) return;
+    fetch(`/api/public/menus/${encodeURIComponent(slug)}/track-click`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind }),
+    }).catch(() => {});
+  };
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const qrId = searchParams.get('qr');
@@ -104,11 +126,12 @@ export default function MenuPage() {
   const [menuResult, setMenuResult] = useState<{ slug: string; client?: PublicMenuRecord; error?: string }>();
   
   // Ordering State
-  const [cart, setCart] = useState<{ id: string; name: string; quantity: number; price: number; variant?: string }[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [customizingDish, setCustomizingDish] = useState<any | null>(null);
   
   // Order Type & Customer Details
-  const [orderType, setOrderType] = useState<'DINE_IN' | 'DELIVERY'>(tableParam ? 'DINE_IN' : 'DINE_IN');
+  const [orderType, setOrderType] = useState<'DINE_IN' | 'TAKEAWAY' | 'DELIVERY'>(tableParam ? 'DINE_IN' : 'DINE_IN');
   const [tableNumber, setTableNumber] = useState(tableParam);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -366,44 +389,98 @@ export default function MenuPage() {
     return () => clearInterval(ticker);
   }, [activeOrder?.estimatedDeliveryTime, activeOrder?.estimatedTimeMinutes, activeOrder?.time, activeOrder?.status]);
 
-  const addToCart = (item: any, priceStr?: string, variant?: string) => {
-    if (!isPremium || !priceStr) return;
-    const price = parseFloat(priceStr.replace(/[^0-9.]/g, ''));
+  const addToCart = (
+    item: any,
+    priceStr?: string | number,
+    variant?: string,
+    instructions?: string,
+    spiceLevel?: number,
+    quantityToAdd = 1
+  ) => {
+    if (!isPremium || priceStr === undefined || priceStr === null) return;
+    const price = typeof priceStr === 'number' ? priceStr : parseFloat(String(priceStr).replace(/[^0-9.]/g, ''));
     if (isNaN(price)) return;
 
     setCart(prev => {
-      const existing = prev.find(c => c.id === item.id && c.variant === variant);
+      const cleanInstructions = instructions?.trim() || undefined;
+      const existing = prev.find(
+        c =>
+          c.id === item.id &&
+          c.variant === variant &&
+          c.instructions === cleanInstructions &&
+          c.spiceLevel === spiceLevel
+      );
       if (existing) {
-        return prev.map(c => c === existing ? { ...c, quantity: c.quantity + 1 } : c);
+        return prev.map(c => (c === existing ? { ...c, quantity: c.quantity + quantityToAdd } : c));
       }
-      return [...prev, { id: item.id, name: item.name, quantity: 1, price, variant }];
+      return [
+        ...prev,
+        {
+          id: item.id,
+          name: item.name,
+          quantity: quantityToAdd,
+          price,
+          variant,
+          instructions: cleanInstructions,
+          spiceLevel,
+        },
+      ];
     });
   };
 
-  const removeFromCart = (id: string, variant?: string) => {
+  const removeFromCart = (id: string, variant?: string, instructions?: string, spiceLevel?: number) => {
     setCart(prev => {
-      const existing = prev.find(c => c.id === id && c.variant === variant);
+      const existing = prev.find(
+        c =>
+          c.id === id &&
+          c.variant === variant &&
+          c.instructions === instructions &&
+          c.spiceLevel === spiceLevel
+      );
       if (!existing) return prev;
       if (existing.quantity > 1) {
-        return prev.map(c => c === existing ? { ...c, quantity: c.quantity - 1 } : c);
+        return prev.map(c => (c === existing ? { ...c, quantity: c.quantity - 1 } : c));
       }
       return prev.filter(c => c !== existing);
     });
   };
 
-  const deleteFromCart = (id: string, variant?: string) => {
-    setCart(prev => prev.filter(c => !(c.id === id && c.variant === variant)));
+  const deleteFromCart = (id: string, variant?: string, instructions?: string, spiceLevel?: number) => {
+    setCart(prev =>
+      prev.filter(
+        c =>
+          !(
+            c.id === id &&
+            c.variant === variant &&
+            c.instructions === instructions &&
+            c.spiceLevel === spiceLevel
+          )
+      )
+    );
   };
 
   const clearCart = () => {
     setCart([]);
   };
 
+  const handleConfirmCustomization = (result: CustomizationResult) => {
+    addToCart(
+      result.item,
+      result.price,
+      result.variant,
+      result.instructions,
+      result.spiceLevel,
+      result.quantity
+    );
+    setCustomizingDish(null);
+    showToast('success', `Added ${result.item.name} to tray`);
+  };
+
   const getItemQuantity = (id: string, variant?: string): number => {
     if (!cart || cart.length === 0) return 0;
     if (variant) {
-      const match = cart.find(c => c.id === id && c.variant === variant);
-      return match ? match.quantity : 0;
+      const matches = cart.filter(c => c.id === id && c.variant === variant);
+      return matches.reduce((sum, c) => sum + c.quantity, 0);
     }
     const matches = cart.filter(c => c.id === id);
     return matches.reduce((sum, c) => sum + c.quantity, 0);
@@ -433,9 +510,13 @@ export default function MenuPage() {
         showToast('error', 'Please enter your table number.');
         return;
       }
-    } else {
+    } else if (orderType === 'DELIVERY') {
       if (!deliveryAddress.trim() || deliveryAddress.trim().length < 5) {
         showToast('error', 'Please enter your full delivery address.');
+        return;
+      }
+      if (client?.orderingSettings?.deliveryMinOrder && cartTotalAmount < client.orderingSettings.deliveryMinOrder) {
+        showToast('error', `Minimum order for delivery is ₹${client.orderingSettings.deliveryMinOrder}. Add ₹${client.orderingSettings.deliveryMinOrder - cartTotalAmount} more.`);
         return;
       }
     }
@@ -639,6 +720,18 @@ export default function MenuPage() {
   if (loadError === 'SUBSCRIPTION_EXPIRED') {
     return (
       <div className="customer-menu menu-expired-lock">
+      <Helmet>
+        <title>{client?.displayName || client?.businessName ? `${client.displayName || client.businessName} | Digital Menu` : 'Digital Menu'}</title>
+        <meta name="description" content={client?.tagline || client?.story || 'Explore our complete digital menu, daily specials, and order online.'} />
+        <meta property="og:type" content="restaurant.menu" />
+        <meta property="og:title" content={client?.displayName || client?.businessName || 'Digital Menu'} />
+        <meta property="og:description" content={client?.tagline || client?.story || 'Explore our complete digital menu, daily specials, and order online.'} />
+        {client?.coverImage && <meta property="og:image" content={client.coverImage} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={client?.displayName || client?.businessName || 'Digital Menu'} />
+        <meta name="twitter:description" content={client?.tagline || client?.story || 'Explore our complete digital menu, daily specials, and order online.'} />
+        {client?.coverImage && <meta name="twitter:image" content={client.coverImage} />}
+      </Helmet>
         <header className="menu-topbar">
           <Link className="menu-wordmark" to={`/menu/${slug}#top`} aria-label="MenusQR menu">
             <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
@@ -785,7 +878,7 @@ export default function MenuPage() {
                   href={client.instagram.startsWith('http') ? client.instagram : `https://instagram.com/${client.instagram.replace(/^@/, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Instagram profile"
+                  onClick={() => trackAction("instagram")} aria-label="Instagram profile"
                   className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform"
                 >
                   <InstagramIcon size={13} />
@@ -796,7 +889,7 @@ export default function MenuPage() {
                   href={client.facebook.startsWith('http') ? client.facebook : `https://facebook.com/${client.facebook}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Facebook page"
+                  onClick={() => trackAction("custom")} aria-label="Facebook page"
                   className="w-7 h-7 rounded-full bg-[#1877F2] flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform"
                 >
                   <FacebookIcon size={13} />
@@ -807,7 +900,7 @@ export default function MenuPage() {
                   href={client.website.startsWith('http') ? client.website : `https://${client.website}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Official Website"
+                  onClick={() => trackAction("website")} aria-label="Official Website"
                   className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform"
                 >
                   <Globe size={13} />
@@ -824,7 +917,7 @@ export default function MenuPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="header-whatsapp-chip"
-              aria-label="Chat with the restaurant on WhatsApp"
+              onClick={() => trackAction("whatsapp")} aria-label="Chat with the restaurant on WhatsApp"
             >
               <MessageCircle size={13} />
               <span>WhatsApp</span>
@@ -852,6 +945,24 @@ export default function MenuPage() {
           )}
         </div>
       </header>
+
+      {/* Promotional Announcement Banner (Blueprint §3.2 I, §6.2) */}
+      {Boolean(client?.announcement?.text) && client?.announcement && (
+        <div className="bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/10 border-b border-amber-500/30 px-4 py-2.5 text-center text-xs text-amber-200 font-medium flex items-center justify-center gap-2">
+          <span>⚑</span>
+          <span>{client.announcement.text}</span>
+          {client.announcement.linkTarget && (
+            <a
+              href={client.announcement.linkTarget}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline font-bold text-amber-400 hover:text-amber-300 ml-1"
+            >
+              View ↗
+            </a>
+          )}
+        </div>
+      )}
 
       {/* Table Welcome Voice Greeting */}
       {Boolean(client?.accentConfiguration) && (
@@ -886,10 +997,20 @@ export default function MenuPage() {
           onAddToCart={isPremium ? addToCart : undefined}
           onRemoveFromCart={isPremium ? removeFromCart : undefined}
           getItemQuantity={isPremium ? getItemQuantity : undefined}
+          onCustomizeDish={isPremium ? (dish) => setCustomizingDish(dish) : undefined}
           isPremium={isPremium}
           accentConfiguration={client.accentConfiguration}
         />
       </main>
+
+      {/* Dish Customization Drawer (Bottom Sheet) */}
+      <DishCustomizationDrawer
+        isOpen={Boolean(customizingDish)}
+        dish={customizingDish}
+        onClose={() => setCustomizingDish(null)}
+        onConfirm={handleConfirmCustomization}
+        isPremium={isPremium}
+      />
 
       {/* Private Guest Feedback Section */}
       {slug && (
@@ -1034,26 +1155,54 @@ export default function MenuPage() {
       )}
 
 
-      {/* Modern Floating Bottom Cart Bar */}
-      {isPremium && cart.length > 0 && !isCartOpen && (
-        <div className="menu-floating-cart-bar">
-          <div className="cart-bar-info">
-            <div className="cart-bar-count">
-              <ShoppingCart size={16} />
-              <span>{cartTotalQuantity} {cartTotalQuantity === 1 ? 'item' : 'items'}</span>
-            </div>
-            <div className="cart-bar-price">₹{cartTotalAmount.toLocaleString('en-IN')}</div>
-          </div>
-          <button 
-            type="button"
-            className="cart-bar-action"
+      {/* Modern Floating Bottom Tray / Cart Bar */}
+      <AnimatePresence>
+        {isPremium && cart.length > 0 && !isCartOpen && (
+          <motion.div
+            className="menu-floating-cart-bar"
+            initial={{ y: 80, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 80, opacity: 0, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 24, stiffness: 280 }}
             onClick={() => setIsCartOpen(true)}
+            role="button"
+            tabIndex={0}
+            aria-label={`View Tray with ${cartTotalQuantity} items, running total ₹${cartTotalAmount.toLocaleString('en-IN')}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setIsCartOpen(true);
+              }
+            }}
           >
-            <span>View Cart</span>
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      )}
+            <div className="cart-bar-info">
+              <div className="cart-bar-count">
+                <span className="cart-bar-badge">
+                  <ShoppingBag size={14} />
+                  <span>{cartTotalQuantity}</span>
+                </span>
+                <span className="cart-bar-items-label">
+                  {cartTotalQuantity === 1 ? '1 item' : `${cartTotalQuantity} items in tray`}
+                </span>
+              </div>
+              <div className="cart-bar-price">₹{cartTotalAmount.toLocaleString('en-IN')}</div>
+            </div>
+
+            <button
+              type="button"
+              className="cart-bar-action"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCartOpen(true);
+              }}
+              aria-label="Open tray and proceed to checkout"
+            >
+              <span>View Tray</span>
+              <ChevronRight size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Cart & Checkout Modal */}
       <AnimatePresence>
@@ -1100,40 +1249,66 @@ export default function MenuPage() {
               </div>
 
               <div className="menu-cart-content">
-                {/* Order Type Selector Switch */}
+                {/* Order Type Selector Switch (Blueprint Decision ★4) */}
                 <div className="order-type-tabs">
-                  <button
-                    type="button"
-                    className={`order-type-tab ${orderType === 'DINE_IN' ? 'active' : ''}`}
-                    onClick={() => setOrderType('DINE_IN')}
-                  >
-                    <UtensilsCrossed size={16} />
-                    <span>Dine-In (Table)</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`order-type-tab ${orderType === 'DELIVERY' ? 'active' : ''}`}
-                    onClick={() => setOrderType('DELIVERY')}
-                  >
-                    <Bike size={16} />
-                    <span>Delivery / Takeaway</span>
-                  </button>
+                  {client?.orderingSettings?.dineIn !== false && (
+                    <button
+                      type="button"
+                      className={`order-type-tab ${orderType === 'DINE_IN' ? 'active' : ''}`}
+                      onClick={() => setOrderType('DINE_IN')}
+                    >
+                      <UtensilsCrossed size={16} />
+                      <span>Dine-In</span>
+                    </button>
+                  )}
+                  {client?.orderingSettings?.takeaway && (
+                    <button
+                      type="button"
+                      className={`order-type-tab ${orderType === 'TAKEAWAY' ? 'active' : ''}`}
+                      onClick={() => setOrderType('TAKEAWAY')}
+                    >
+                      <ShoppingBag size={16} />
+                      <span>Takeaway</span>
+                    </button>
+                  )}
+                  {client?.orderingSettings?.delivery && (
+                    <button
+                      type="button"
+                      className={`order-type-tab ${orderType === 'DELIVERY' ? 'active' : ''}`}
+                      onClick={() => setOrderType('DELIVERY')}
+                    >
+                      <Bike size={16} />
+                      <span>Delivery</span>
+                    </button>
+                  )}
                 </div>
 
                 {/* Items in Cart */}
                 <div className="menu-cart-items">
-                  {cart.map((item) => (
-                    <div key={`${item.id}-${item.variant || 'single'}`} className="menu-cart-item">
+                  {cart.map((item, idx) => (
+                    <div key={`${item.id}-${item.variant || 'std'}-${idx}`} className="menu-cart-item">
                       <div className="menu-cart-item-info">
                         <h4>{item.name}</h4>
-                        {item.variant && <span className="item-variant">{item.variant}</span>}
+                        <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                          {item.variant && <span className="item-variant">{item.variant}</span>}
+                          {item.spiceLevel !== undefined && item.spiceLevel > 0 && (
+                            <span className="text-[10px] font-semibold text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded">
+                              {'🌶️'.repeat(item.spiceLevel)} {item.spiceLevel === 1 ? 'Mild' : item.spiceLevel === 2 ? 'Spicy' : 'Extra Hot'}
+                            </span>
+                          )}
+                        </div>
+                        {item.instructions && (
+                          <p className="text-[11px] text-slate-500 italic mt-0.5 leading-tight">
+                            &ldquo;{item.instructions}&rdquo;
+                          </p>
+                        )}
                         <div className="item-price">₹{(item.price * item.quantity).toLocaleString('en-IN')}</div>
                       </div>
                       <div className="menu-cart-item-controls">
                         <button 
                           type="button"
                           aria-label={`Remove one ${item.name}`} 
-                          onClick={() => removeFromCart(item.id, item.variant)}
+                          onClick={() => removeFromCart(item.id, item.variant, item.instructions, item.spiceLevel)}
                         >
                           <Minus size={14} />
                         </button>
@@ -1141,14 +1316,14 @@ export default function MenuPage() {
                         <button 
                           type="button"
                           aria-label={`Add one ${item.name}`} 
-                          onClick={() => addToCart(item, `₹${item.price}`, item.variant)}
+                          onClick={() => addToCart(item, item.price, item.variant, item.instructions, item.spiceLevel, 1)}
                         >
                           <Plus size={14} />
                         </button>
                         <button
                           type="button"
                           aria-label={`Remove ${item.name} from cart`}
-                          onClick={() => deleteFromCart(item.id, item.variant)}
+                          onClick={() => deleteFromCart(item.id, item.variant, item.instructions, item.spiceLevel)}
                           className="p-1 text-slate-400 hover:text-rose-500 ml-1.5 transition-colors"
                           title="Remove item"
                         >
@@ -1162,8 +1337,10 @@ export default function MenuPage() {
                 {/* Customer Details Form based on Order Type */}
                 <div className="order-form-section">
                   <div className="order-form-title">
-                    {orderType === 'DINE_IN' ? <UtensilsCrossed size={14} /> : <Bike size={14} />}
-                    <span>{orderType === 'DINE_IN' ? 'Dine-In Table Details' : 'Delivery Address & Contact'}</span>
+                    {orderType === 'DINE_IN' ? <UtensilsCrossed size={14} /> : orderType === 'TAKEAWAY' ? <ShoppingBag size={14} /> : <Bike size={14} />}
+                    <span>
+                      {orderType === 'DINE_IN' ? 'Dine-In Table Details' : orderType === 'TAKEAWAY' ? 'Takeaway Pickup Details' : 'Delivery Address & Contact'}
+                    </span>
                   </div>
 
                   {/* Dine-In specific: Table Number */}

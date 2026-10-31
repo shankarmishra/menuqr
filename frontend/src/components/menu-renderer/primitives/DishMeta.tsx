@@ -36,6 +36,34 @@ export const DietMark: React.FC<{ type?: DietType; className?: string }> = ({ ty
   );
 };
 
+/** Prominent FSSAI-compliant Veg / Non-Veg badge with regulatory symbol and clear text */
+export const FssaiBadge: React.FC<{ type?: DietType; className?: string; prominent?: boolean }> = ({
+  type,
+  className,
+  prominent = false,
+}) => {
+  const isVeg = type === 'veg' || type === 'vegan' || !type;
+  const label = isVeg ? (type === 'vegan' ? '100% VEGAN' : '100% PURE VEG') : 'NON-VEG';
+
+  if (!prominent) {
+    return <DietMark type={type} className={className} />;
+  }
+
+  return (
+    <span
+      className={`mq-fssai-badge ${isVeg ? 'is-veg' : 'is-nonveg'} ${className || ''}`}
+      role="img"
+      aria-label={label}
+      title={`FSSAI Verified: ${label}`}
+    >
+      <span className="mq-fssai-symbol" aria-hidden="true">
+        <span className="mq-fssai-dot" />
+      </span>
+      <span className="mq-fssai-label">{label}</span>
+    </span>
+  );
+};
+
 // ----------------------------------------- badges -----------------------------------------
 
 export const Badge: React.FC<{ children: React.ReactNode; quiet?: boolean }> = ({ children, quiet }) => (
@@ -73,6 +101,151 @@ export const DishFlags: React.FC<{ item: RenderMenuItem }> = ({ item }) => {
   );
 };
 
+
+// ------------------------------------ beverage customizer ------------------------------------
+
+export type BeverageChoice = {
+  temp: 'hot' | 'iced';
+  milk: 'oat' | 'almond' | 'whole' | 'soy';
+  sweetness: 'standard' | 'half' | 'none';
+};
+
+/**
+ * Beverage customization selector for Artisan Bakery & Café Archetype.
+ * Supports Iced/Hot temperature toggle and artisan milk choices (Oat, Almond, Whole, Soy).
+ */
+export const BeverageCustomizer: React.FC<{
+  onChange?: (choice: BeverageChoice) => void;
+  compact?: boolean;
+}> = ({ onChange, compact = false }) => {
+  const [temp, setTemp] = React.useState<'hot' | 'iced'>('hot');
+  const [milk, setMilk] = React.useState<'oat' | 'almond' | 'whole' | 'soy'>('oat');
+
+  const handleTemp = (t: 'hot' | 'iced') => {
+    setTemp(t);
+    onChange?.({ temp: t, milk, sweetness: 'standard' });
+  };
+
+  const handleMilk = (m: 'oat' | 'almond' | 'whole' | 'soy') => {
+    setMilk(m);
+    onChange?.({ temp, milk: m, sweetness: 'standard' });
+  };
+
+  return (
+    <div className={`mq-beverage-customizer ${compact ? 'is-compact' : ''}`}>
+      <div className="mq-bev-row">
+        <span className="mq-bev-label">Temp:</span>
+        <div className="mq-bev-group" role="radiogroup" aria-label="Temperature choice">
+          <button
+            type="button"
+            className={`mq-bev-pill ${temp === 'hot' ? 'is-active' : ''}`}
+            onClick={(e) => { e.stopPropagation(); handleTemp('hot'); }}
+            aria-label="Hot beverage"
+          >
+            Hot ♨️
+          </button>
+          <button
+            type="button"
+            className={`mq-bev-pill ${temp === 'iced' ? 'is-active' : ''}`}
+            onClick={(e) => { e.stopPropagation(); handleTemp('iced'); }}
+            aria-label="Iced beverage"
+          >
+            Iced 🧊
+          </button>
+        </div>
+      </div>
+      <div className="mq-bev-row">
+        <span className="mq-bev-label">Milk:</span>
+        <div className="mq-bev-group mq-bev-milk-group" role="radiogroup" aria-label="Milk choice">
+          {(['oat', 'almond', 'whole', 'soy'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              className={`mq-bev-pill mq-bev-pill-milk ${milk === m ? 'is-active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); handleMilk(m); }}
+              aria-label={`${m} milk option`}
+            >
+              {m === 'oat' ? '🌾 Oat' : m === 'almond' ? '🌰 Almond' : m === 'whole' ? '🥛 Whole' : '🌱 Soy'}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ------------------------------------ speed ordering ------------------------------------
+
+/**
+ * Speed-ordering button for Street Food & Fast-Casual Archetype.
+ * Enables 1-tap rapid cart add with high-contrast electric styling.
+ */
+export const SpeedOrderButton: React.FC<{
+  item: RenderMenuItem;
+  price?: string;
+  variantLabel?: string;
+  readOnly?: boolean;
+}> = ({ item, price, variantLabel, readOnly = false }) => {
+  const cart = useMenuCart();
+  const quantity = cart.getItemQuantity?.(item.id, variantLabel) ?? 0;
+  const canOrder = !readOnly && Boolean(cart.isPremium && cart.onAddToCart);
+
+  if (item.soldOut || item.available === false) {
+    return <span className="mq-unavailable">Sold out</span>;
+  }
+
+  if (!canOrder) {
+    return null;
+  }
+
+  const effectivePrice = price || String(item.price || 0);
+
+  if (quantity === 0) {
+    return (
+      <button
+        type="button"
+        className="mq-speed-order-btn"
+        onClick={(e) => {
+          e.stopPropagation();
+          cart.onAddToCart?.(item, effectivePrice, variantLabel);
+        }}
+        aria-label={`⚡ Quick Add ${item.name} to order`}
+      >
+        <span className="mq-speed-icon">⚡</span>
+        <span>Quick Add</span>
+      </button>
+    );
+  }
+
+  return (
+    <span className="mq-speed-stepper">
+      <button
+        type="button"
+        className="mq-speed-stepper-btn"
+        onClick={(e) => {
+          e.stopPropagation();
+          cart.onRemoveFromCart?.(item.id, variantLabel);
+        }}
+        aria-label={`Reduce ${item.name}`}
+      >
+        &minus;
+      </button>
+      <span className="mq-speed-qty">{quantity}</span>
+      <button
+        type="button"
+        className="mq-speed-stepper-btn"
+        onClick={(e) => {
+          e.stopPropagation();
+          cart.onAddToCart?.(item, effectivePrice, variantLabel);
+        }}
+        aria-label={`Add more ${item.name}`}
+      >
+        +
+      </button>
+    </span>
+  );
+};
+
 // ----------------------------------------- pricing -----------------------------------------
 
 export type DishPriceProps = {
@@ -106,6 +279,32 @@ export const DishPrice: React.FC<DishPriceProps> = ({ item, readOnly = false }) 
   const canOrder = !readOnly && Boolean(cart.isPremium && cart.onAddToCart);
 
   if (pricing.hasVariants) {
+    if (cart.onCustomizeDish) {
+      return (
+        <div className="mq-row" style={{ alignItems: 'center', gap: 'var(--mq-space-2)' }}>
+          <span className="mq-price">{pricing.variants[0]?.formattedPrice}</span>
+          {pricing.variants.length > 1 && (
+            <span className="mq-price-label" style={{ fontSize: '11px', opacity: 0.85 }}>
+              ({pricing.variants.length} options)
+            </span>
+          )}
+          {canOrder && (
+            <button
+              type="button"
+              className="mq-button"
+              style={{ paddingInline: '12px', minHeight: '34px', height: '34px', fontSize: '12px' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                cart.onCustomizeDish?.(item);
+              }}
+              aria-label={`Customise options for ${item.name}`}
+            >
+              Customise +
+            </button>
+          )}
+        </div>
+      );
+    }
     return (
       <div className="mq-stack" style={{ alignItems: 'flex-end' }}>
         {pricing.variants.map((variant) => (

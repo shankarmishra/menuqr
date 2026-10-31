@@ -2,7 +2,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePlan } from '../lib/usePlan';
-import { Menu, LayoutDashboard, MessageSquareHeart, UtensilsCrossed, Palette, QrCode, CreditCard, Settings, LogOut, User, Bell, ChevronRight, Store, ShoppingBag, BarChart3 } from 'lucide-react';
+import { Menu, LayoutDashboard, UtensilsCrossed, Palette, QrCode, CreditCard, Settings, LogOut, User, Bell, ChevronRight, Store, ShoppingBag, BarChart3 } from 'lucide-react';
 import { getProfile } from '../pages/app/appStore';
 import { MenusQRBrand } from '../components/brand/MenusQRBrand';
 import clsx from 'clsx';
@@ -29,26 +29,26 @@ export default function AppLayout() {
 
   const navGroups = [
     {
-      title: 'MAIN',
+      title: 'CONSOLE',
       items: [
-        { to: '/app/dashboard', icon: LayoutDashboard, label: 'Overview' },
+        { to: '/app/dashboard', icon: LayoutDashboard, label: 'Home' },
         { to: '/app/menu', icon: UtensilsCrossed, label: 'Menu' },
-        { to: '/app/appearance', icon: Palette, label: 'Appearance' },
-        { to: '/app/qr', icon: QrCode, label: 'QR Code' },
-        { to: '/app/analytics', icon: BarChart3, label: 'Analytics' },
-        { to: '/app/feedback', icon: MessageSquareHeart, label: 'Guest Feedback' },
+        { to: '/app/appearance', icon: Palette, label: 'Design' },
+        { to: '/app/restaurant', icon: Store, label: 'Restaurant' },
+        { to: '/app/qr', icon: QrCode, label: 'QR & Print' },
+        { to: '/app/analytics', icon: BarChart3, label: 'Insights' },
       ]
     },
     ...(can('reception_orders') ? [{
-      title: 'PREMIUM',
+      title: 'OPERATIONS',
       items: [
-        { to: '/app/orders', icon: ShoppingBag, label: 'Orders & Reception' }
+        { to: '/app/orders', icon: ShoppingBag, label: 'Orders' }
       ]
     }] : []),
     {
-      title: 'BUSINESS',
+      title: 'ACCOUNT',
       items: [
-        { to: '/app/subscription', icon: CreditCard, label: 'Subscription' },
+        { to: '/app/subscription', icon: CreditCard, label: 'Account & Plan' },
         { to: '/app/settings', icon: Settings, label: 'Settings' },
       ]
     }
@@ -99,10 +99,10 @@ export default function AppLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a100d] text-[#fcfaf8] font-sans flex overflow-hidden">
+    <div className="min-h-screen bg-[#0a100d] text-[#fcfaf8] font-sans flex overflow-hidden print:bg-white print:overflow-visible">
       {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
+        <div className="md:hidden fixed inset-0 z-50 flex print:hidden">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={() => setMobileMenuOpen(false)} />
           <div className="relative flex w-[280px] flex-col bg-[#151c19] border-r border-white/5 animate-in slide-in-from-left">
             <SidebarContent />
@@ -111,14 +111,14 @@ export default function AppLayout() {
       )}
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex flex-col w-[260px] bg-[#151c19] border-r border-white/5 shrink-0 z-20">
+      <div className="hidden md:flex flex-col w-[260px] bg-[#151c19] border-r border-white/5 shrink-0 z-20 print:hidden">
         <SidebarContent />
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-h-0 relative">
+      <div className="flex-1 flex flex-col min-h-0 relative print:overflow-visible">
         {/* Top Bar */}
-        <header className="h-16 shrink-0 bg-[#0a100d]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 md:px-8 z-10">
+        <header className="h-16 shrink-0 bg-[#0a100d]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 md:px-8 z-10 print:hidden">
           <div className="flex items-center gap-3">
             <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-2 -ml-2 text-[#aab7b2] hover:text-white">
               <Menu size={24} />
@@ -154,7 +154,7 @@ export default function AppLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-[#0a100d]">
+        <main className="flex-1 overflow-y-auto bg-[#0a100d] print:bg-white print:overflow-visible print:p-0">
           <div className="w-full h-full">
             <Suspense fallback={
               <div className="flex h-64 items-center justify-center text-sm text-[#aab7b2]" role="status" aria-live="polite">

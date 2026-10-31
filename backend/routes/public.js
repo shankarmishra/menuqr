@@ -61,7 +61,87 @@ export async function getFullPublicMenuData(tenantId) {
     return null;
   }
 
-  // 3. Fetch Appearance
+  // 3. Fetch Canonical Profile & Brand (Blueprint §8)
+  let canonicalProfile = null;
+  try {
+    const profRes = await pool.query('SELECT * FROM restaurant_profiles WHERE tenant_id = $1', [tenantId]);
+    if (profRes.rows.length > 0) canonicalProfile = profRes.rows[0];
+  } catch (err) {
+    // Non-fatal if table not yet migrated
+  }
+
+  // Active Announcements
+  let announcement = null;
+  try {
+    const annRes = await pool.query(
+      `SELECT text, link_type, link_target, i18n FROM restaurant_announcements 
+       WHERE tenant_id = $1 AND is_active = true 
+         AND (starts_at IS NULL OR starts_at <= NOW()) 
+         AND (ends_at IS NULL OR ends_at >= NOW()) 
+       ORDER BY created_at DESC LIMIT 1`,
+      [tenantId]
+    );
+    if (annRes.rows.length > 0) {
+      announcement = {
+        text: annRes.rows[0].text,
+        linkType: annRes.rows[0].link_type,
+        linkTarget: annRes.rows[0].link_target,
+        i18n: annRes.rows[0].i18n || {},
+      };
+    }
+  } catch {}
+
+  // Active Promotional Offers
+  let offers = [];
+  try {
+    const offRes = await pool.query(
+      `SELECT id, title, details, price_text, schedule, item_ids, media_id, i18n 
+       FROM restaurant_offers WHERE tenant_id = $1 AND is_active = true ORDER BY created_at DESC LIMIT 10`,
+      [tenantId]
+    );
+    offers = offRes.rows.map(o => ({
+      id: o.id,
+      title: o.title,
+      details: o.details,
+      priceText: o.price_text,
+      schedule: o.schedule,
+      itemIds: o.item_ids || [],
+      mediaId: o.media_id,
+      i18n: o.i18n || {},
+    }));
+  } catch {}
+
+  // Ordering Settings (Dine-in, Takeaway, Delivery switches)
+  let orderingSettings = {
+    dineIn: true,
+    takeaway: false,
+    delivery: false,
+    accepting: true,
+    autoByHours: false,
+    deliveryMinOrder: 0,
+    deliveryFee: 0,
+    deliveryAreaNote: '',
+    payNotes: ['Pay at counter'],
+  };
+  try {
+    const ordRes = await pool.query('SELECT * FROM ordering_settings WHERE tenant_id = $1', [tenantId]);
+    if (ordRes.rows.length > 0) {
+      const o = ordRes.rows[0];
+      orderingSettings = {
+        dineIn: Boolean(o.dine_in_enabled),
+        takeaway: Boolean(o.takeaway_enabled),
+        delivery: Boolean(o.delivery_enabled),
+        accepting: Boolean(o.accepting_orders),
+        autoByHours: Boolean(o.auto_by_hours),
+        deliveryMinOrder: Number(o.delivery_min_order || 0),
+        deliveryFee: Number(o.delivery_fee || 0),
+        deliveryAreaNote: o.delivery_area_note || '',
+        payNotes: o.pay_notes || ['Pay at counter'],
+      };
+    }
+  } catch {}
+
+  // 3b. Fetch Appearance
   const appRes = await pool.query('SELECT * FROM appearance_settings WHERE tenant_id = $1', [tenantId]);
   const appearance = appRes.rows[0] || {};
   const menuFeatures = resolveMenuFeatures(appearance.accent_configuration, client.phone);
@@ -206,33 +286,61 @@ export async function getFullPublicMenuData(tenantId) {
     ];
   }
 
+  // Resolve contact phone (prefer explicit public contact from profile)
+  const contactsList = Array.isArray(canonicalProfile?.contacts) ? canonicalProfile.contacts : [];
+  const explicitPublicPhone = contactsList.find(c => c.public && c.number)?.number;
+  // If canonical profile exists with configured contacts, strictly respect it (never leak hidden numbers).
+  const primaryPublicPhone = explicitPublicPhone
+    || (canonicalProfile ? null : ((client.review_flags && client.review_flags.phone_privacy_pending) ? null : (client.phone || null)));
+
+  // Resolve links
+  const linksList = Array.isArray(canonicalProfile?.links) ? canonicalProfile.links : [];
+  const igLink = linksList.find(l => l.type === 'instagram' && !l.paused)?.value || client.instagram;
+  const fbLink = linksList.find(l => l.type === 'facebook' && !l.paused)?.value || client.facebook;
+  const webLink = linksList.find(l => l.type === 'website' && !l.paused)?.value || client.website;
+
   const result = {
     isExpired: false,
     restaurant: {
-      name: appearance.restaurant_display_name || client.business_name,
-      tagline: appearance.tagline || client.tagline || '',
+      name: canonicalProfile?.display_name || appearance.restaurant_display_name || client.business_name,
+      tagline: canonicalProfile?.tagline || appearance.tagline || client.tagline || '',
       category: client.category,
-      phone: client.phone,
-      address: client.address,
-      city: client.city,
-      state: client.state,
-      cuisine: client.cuisine,
-      openingHours: client.opening_hours,
-      instagram: client.instagram,
-      facebook: client.facebook,
-      website: client.website,
+      phone: primaryPublicPhone,
+      address: canonicalProfile?.address?.line || client.address,
+      city: canonicalProfile?.address?.city || client.city,
+      state: canonicalProfile?.address?.state || client.state,
+      pincode: canonicalProfile?.address?.pincode || '',
+      landmark: canonicalProfile?.address?.landmark || '',
+      cuisine: canonicalProfile?.cuisine_tags?.join(', ') || client.cuisine,
+      cuisineTags: canonicalProfile?.cuisine_tags || (client.cuisine ? client.cuisine.split(',').map(s => s.trim()).filter(Boolean) : []),
+      openingHours: canonicalProfile?.hours?.note || client.opening_hours,
+      weeklyHours: canonicalProfile?.hours?.weekly || null,
+      hoursExceptions: canonicalProfile?.hours?.exceptions || [],
+      lastOrderMinutes: canonicalProfile?.hours?.lastOrderMinutes || 0,
+      instagram: igLink,
+      facebook: fbLink,
+      website: webLink,
       logo: appearance.logo || client.logo_url || '',
+      story: canonicalProfile?.story || '',
+      establishedYear: canonicalProfile?.established_year || null,
+      dietDeclaration: canonicalProfile?.diet_declaration || null,
+      highlights: canonicalProfile?.highlights || [],
+      payments: canonicalProfile?.payments || [],
+      priceNote: canonicalProfile?.price_note || '',
+      serviceChargeNote: canonicalProfile?.service_charge_note || '',
+      fssai: canonicalProfile?.fssai || '',
+      maps: canonicalProfile?.maps || {},
+      contacts: contactsList.filter(c => c.public),
+      links: linksList.filter(l => !l.paused),
+      reservations: canonicalProfile?.reservations || {},
+      i18n: canonicalProfile?.i18n || {},
     },
-    plan: authorization.planId,
     orderingEnabled: Boolean(authorization.active && authorization.entitlements.includes('customer_ordering')),
+    orderingSettings,
+    announcement,
+    offers,
     menuFeatures,
     templateId: appearance.template_id || 'royal-maharaja',
-    accentConfiguration: appearance.accent_configuration || null,
-    // The full Design Studio theme, once the owner has published one. `templateId` above stays
-    // populated for every caller that predates it (the public API itself is unversioned, so
-    // old cached clients and third-party integrations must keep working unchanged); the
-    // frontend renderer prefers `theme` when present and falls back to deriving a theme from
-    // `templateId` alone otherwise — see MenuTemplateRenderer.tsx.
     theme: appearance.theme_published || null,
     googleReviews,
     categories,
@@ -292,8 +400,26 @@ export default async function publicRoutes(request, response, url) {
   );
   if (request.method === 'GET' && publicMenuMatch) {
     const slug = decodeURIComponent(publicMenuMatch[1]);
-    const clientRes = await pool.query('SELECT id FROM clients WHERE menu_slug = $1 OR public_id = $1 OR id = $1', [slug]);
+    const clientRes = await pool.query('SELECT id, menu_slug FROM clients WHERE menu_slug = $1 OR public_id = $1 OR id = $1', [slug]);
     let client = clientRes.rows[0];
+    let redirectedFromHistory = false;
+
+    // Check menu_slug_history if not found (Decision ★5: 30-day slug changes redirect permanently)
+    if (!client) {
+      try {
+        const histRes = await pool.query(
+          'SELECT c.id, c.menu_slug FROM menu_slug_history h JOIN clients c ON c.id = h.tenant_id WHERE h.slug = $1',
+          [slug]
+        );
+        if (histRes.rows.length > 0) {
+          client = histRes.rows[0];
+          redirectedFromHistory = true;
+        }
+      } catch (err) {
+        // Table might be pending migration
+      }
+    }
+
     if (!client) {
       throw apiError(404, 'This menu was not found.');
     }
@@ -305,7 +431,52 @@ export default async function publicRoutes(request, response, url) {
       return true;
     }
 
-    sendJson(response, 200, applyLiveFlags(data, new Date(), istDateString()));
+    const payload = applyLiveFlags(data, new Date(), istDateString());
+    if (redirectedFromHistory && client.menu_slug) {
+      payload.redirectToSlug = client.menu_slug;
+    }
+    sendJson(response, 200, payload);
+    return true;
+  }
+
+  // Public Link Click Tracking Endpoint (Blueprint Phase 4 / 5)
+  const trackClickMatch = url.pathname.match(
+    /^\/api\/public\/menus\/([^/]+)\/track-click$/
+  );
+  if (request.method === 'POST' && trackClickMatch) {
+    const slug = decodeURIComponent(trackClickMatch[1]);
+    const body = await readJson(request);
+    const ALLOWED_KINDS = ['instagram', 'whatsapp', 'call', 'directions', 'website', 'share', 'zomato', 'swiggy', 'custom'];
+    const kind = String(body.kind || '').toLowerCase().trim();
+    if (!ALLOWED_KINDS.includes(kind)) {
+      throw apiError(400, 'Invalid click kind.');
+    }
+
+    const clientRes = await pool.query('SELECT id FROM clients WHERE menu_slug = $1 OR public_id = $1 OR id = $1', [slug]);
+    let tenantId = clientRes.rows[0]?.id;
+    if (!tenantId) {
+      try {
+        const histRes = await pool.query(
+          'SELECT tenant_id FROM menu_slug_history WHERE slug = $1',
+          [slug]
+        );
+        tenantId = histRes.rows[0]?.tenant_id;
+      } catch (err) {}
+    }
+
+    if (tenantId) {
+      try {
+        await pool.query(
+          `INSERT INTO link_clicks_daily (tenant_id, day, kind, count)
+           VALUES ($1, CURRENT_DATE, $2, 1)
+           ON CONFLICT (tenant_id, day, kind)
+           DO UPDATE SET count = link_clicks_daily.count + 1`,
+          [tenantId, kind]
+        );
+      } catch (err) {}
+    }
+
+    sendJson(response, 200, { success: true });
     return true;
   }
 
@@ -454,9 +625,31 @@ export default async function publicRoutes(request, response, url) {
       }
     }
 
-    // Normalise order type: 'DINE_IN' or 'DELIVERY'
+    // Normalise order type: Decision ★4 supports DINE_IN, TAKEAWAY, and DELIVERY as distinct owner switches
     const rawType = String(input.orderType || input.type || 'DINE_IN').toUpperCase();
-    const orderType = rawType === 'DELIVERY' ? 'DELIVERY' : 'DINE_IN';
+    const orderType = ['DELIVERY', 'TAKEAWAY'].includes(rawType) ? rawType : 'DINE_IN';
+
+    // Verify against restaurant's ordering_settings switches
+    try {
+      const osRes = await pool.query('SELECT * FROM ordering_settings WHERE tenant_id = $1', [client.id]);
+      if (osRes.rows.length > 0) {
+        const os = osRes.rows[0];
+        if (!os.accepting_orders) {
+          throw apiError(400, 'This restaurant is currently not accepting online orders.');
+        }
+        if (orderType === 'DINE_IN' && !os.dine_in_enabled) {
+          throw apiError(400, 'Dine-in table ordering is currently disabled by the restaurant.');
+        }
+        if (orderType === 'TAKEAWAY' && !os.takeaway_enabled) {
+          throw apiError(400, 'Takeaway pickup ordering is currently disabled by the restaurant.');
+        }
+        if (orderType === 'DELIVERY' && !os.delivery_enabled) {
+          throw apiError(400, 'Delivery ordering is currently disabled by the restaurant.');
+        }
+      }
+    } catch (osErr) {
+      if (osErr.status) throw osErr;
+    }
 
     // Customer name & phone handling
     const rawCustomerName = String(input.customerName || input.name || '').trim();
@@ -491,6 +684,12 @@ export default async function publicRoutes(request, response, url) {
       if (!tableNumber) {
         throw apiError(400, 'Table number is required for dine-in orders.');
       }
+    } else if (orderType === 'TAKEAWAY') {
+      // Takeaway does not require an address or table, but requires phone & name
+      if (!customerPhone) {
+        throw apiError(400, 'A contact mobile number is required for takeaway orders so we can notify you when ready.');
+      }
+      tableNumber = 'TAKEAWAY';
     } else {
       deliveryAddress = String(input.deliveryAddress || input.address || '').trim();
       if (!deliveryAddress || deliveryAddress.length < 5) {
@@ -661,6 +860,18 @@ export default async function publicRoutes(request, response, url) {
       });
     }
     
+    if (orderType === 'DELIVERY') {
+      try {
+        const minRes = await pool.query('SELECT delivery_min_order FROM ordering_settings WHERE tenant_id = $1', [client.id]);
+        const minAmt = Number(minRes.rows[0]?.delivery_min_order || 0);
+        if (minAmt > 0 && calculatedTotal < minAmt) {
+          throw apiError(400, `Minimum order amount for delivery is ₹${minAmt}. Please add more items.`);
+        }
+      } catch (minErr) {
+        if (minErr.status) throw minErr;
+      }
+    }
+
     // Generate order ID and cryptographically random tracking token
     const { randomBytes } = await import('node:crypto');
     const orderId = randomBytes(4).toString('hex').toUpperCase();

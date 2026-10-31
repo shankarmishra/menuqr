@@ -73,7 +73,8 @@ export interface MenuTemplateRendererProps {
   }>;
   compact?: boolean;
   className?: string;
-  onAddToCart?: (item: any, priceStr?: string, variant?: string) => void;
+  onAddToCart?: (item: any, priceStr?: string, variant?: string, instructions?: string, spiceLevel?: number) => void;
+  onCustomizeDish?: (item: any) => void;
   onRemoveFromCart?: (itemId: string, variant?: string) => void;
   getItemQuantity?: (itemId: string, variant?: string) => number;
   isPremium?: boolean;
@@ -96,6 +97,7 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
   onAddToCart,
   onRemoveFromCart,
   getItemQuantity,
+  onCustomizeDish,
   isPremium = false,
   theme: storedTheme,
 }) => {
@@ -170,9 +172,10 @@ export const MenuTemplateRenderer: React.FC<MenuTemplateRendererProps> = ({
       onAddToCart: isPremium ? onAddToCart : undefined,
       onRemoveFromCart: isPremium ? onRemoveFromCart : undefined,
       getItemQuantity,
+  onCustomizeDish,
       isPremium,
     }),
-    [isPremium, onAddToCart, onRemoveFromCart, getItemQuantity]
+    [isPremium, onAddToCart, onRemoveFromCart, getItemQuantity, onCustomizeDish]
   );
 
   return (

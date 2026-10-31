@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import {
   getProfile,
   updateSettings,
@@ -6,7 +6,6 @@ import {
   updateGoogleReviewsAddon,
   deleteGoogleReviewsAddon,
   saveVoiceGreeting,
-  previewVoiceGreeting,
   saveMenuFeatures,
   type AppProfile,
   type GoogleReviewsAddonStatus,
@@ -23,8 +22,6 @@ import {
   Clock,
   Sparkles,
   Volume2,
-  Play,
-  Pause,
   Link as LinkIcon,
   Building2,
   Phone,
@@ -92,10 +89,7 @@ export default function Settings() {
   const [voiceCustomText, setVoiceCustomText] = useState('');
   const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
   const [savingVoice, setSavingVoice] = useState(false);
-  const [previewingVoice, setPreviewingVoice] = useState(false);
-  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [activeVoiceUrl, setActiveVoiceUrl] = useState<string | null>(null);
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Menu Features — one toggle panel for every optional customer-facing control, including the
   // existing Call Waiter button down to its individual request types. Defaults mirror
@@ -174,30 +168,6 @@ export default function Settings() {
       })
       .finally(() => setLoading(false));
   }, []);
-
-  const handlePreviewVoice = async () => {
-    setPreviewingVoice(true);
-    if (previewAudioRef.current) {
-      previewAudioRef.current.pause();
-    }
-    try {
-      const res = await previewVoiceGreeting({
-        messageStyle: voiceStyle,
-        customText: voiceCustomText,
-        voiceGender,
-      });
-      const audio = new Audio(res.audioBase64);
-      previewAudioRef.current = audio;
-      audio.onplay = () => setIsPlayingPreview(true);
-      audio.onended = () => setIsPlayingPreview(false);
-      audio.onpause = () => setIsPlayingPreview(false);
-      await audio.play();
-    } catch (err: any) {
-      showToast('error', err.message || 'Failed to preview voice greeting.');
-    } finally {
-      setPreviewingVoice(false);
-    }
-  };
 
   const handleSaveVoice = async () => {
     setSavingVoice(true);
@@ -367,6 +337,28 @@ export default function Settings() {
             <ExternalLink size={14} className="text-[#e8783c]" />
           </Link>
         )}
+      </div>
+
+      {/* Master Restaurant Management Console banner */}
+      <div className="rounded-2xl border border-[#e8783c]/30 bg-gradient-to-r from-[#e8783c]/10 via-[#1d2723] to-[#151c19] p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#e8783c] text-white shadow-md shadow-[#e8783c]/20">
+            <Sparkles className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-white">Full Restaurant Management Console</h3>
+            <p className="text-xs text-[#aab7b2] mt-0.5 max-w-xl">
+              Configure your complete identity (Hindi name, story, diet type), brand kit, multi-shift opening hours, phone privacy switches, photo gallery, and FSSAI license with a live customer phone preview.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/app/restaurant"
+          className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-2.5 text-xs font-bold transition-all shadow-md shadow-[#e8783c]/20"
+        >
+          <span>Open Restaurant Console</span>
+          <ExternalLink size={14} />
+        </Link>
       </div>
 
       {/* ── 1. Comprehensive Restaurant Account & Profile Setup ──────────────── */}
@@ -814,21 +806,9 @@ export default function Settings() {
 
             {/* Preview and Save Action Bar */}
             <div className="pt-3 border-t border-[#2a3832] flex flex-wrap items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={handlePreviewVoice}
-                disabled={previewingVoice}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                {previewingVoice ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
-                ) : isPlayingPreview ? (
-                  <Pause className="h-4 w-4 text-amber-400" />
-                ) : (
-                  <Play className="h-4 w-4 text-amber-400" />
-                )}
-                <span>{previewingVoice ? 'Generating AI Voice...' : isPlayingPreview ? 'Playing Voice...' : 'Listen Live Preview'}</span>
-              </button>
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-300 w-full mb-2">
+                <span className="font-bold">Notice:</span> New AI voice generation has been retired as per platform policy (Decision ★3). Saved audio recordings continue to play for diners.
+              </div>
 
               {activeVoiceUrl && (
                 <div className="flex items-center gap-2 text-xs text-[#849a90]">

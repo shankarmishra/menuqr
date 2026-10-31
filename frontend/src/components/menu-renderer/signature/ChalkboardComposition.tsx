@@ -17,6 +17,7 @@ import { DietMark, DishFlags, DishPrice } from '../primitives/DishMeta.tsx';
 import { SmartImage } from '../primitives/SmartImage.tsx';
 import { EmptyResults, MenuToolbar } from '../primitives/MenuToolbar.tsx';
 import { parseItemPricing } from '../../menu-builder/templates/shared/pricingUtils';
+import { useMenuCart } from '../../menu-builder/templates/shared/MenuCartContext';
 import type { RenderMenuItem, SignatureProps } from '../types.ts';
 import './signature.css';
 
@@ -36,9 +37,21 @@ const ClipboardFrame: React.FC<{ children: React.ReactNode; className?: string }
 const DottedRow: React.FC<{ item: RenderMenuItem; readOnly?: boolean }> = ({ item, readOnly }) => {
   const pricing = parseItemPricing(item as Parameters<typeof parseItemPricing>[0]);
   const description = (pricing.cleanDescription ?? item.description ?? '').trim();
+  const cart = useMenuCart();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button, a, input')) return;
+    if (!readOnly && cart.onCustomizeDish) {
+      cart.onCustomizeDish(item);
+    }
+  };
 
   return (
-    <article className="mq-sig-chalk-row">
+    <article
+      className="mq-sig-chalk-row"
+      onClick={handleCardClick}
+      style={{ cursor: !readOnly && cart.onCustomizeDish ? 'pointer' : undefined }}
+    >
       <div className="mq-row" style={{ alignItems: 'baseline', minWidth: 0 }}>
         <DietMark type={item.dietType} />
         <span className="mq-sig-chalk-name mq-grow mq-clamp-2">{item.name}</span>

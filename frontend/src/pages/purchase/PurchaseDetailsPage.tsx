@@ -312,7 +312,7 @@ export default function PurchaseDetailsPage() {
     }
     if (!formData.businessName.trim()) errors.businessName = 'Restaurant name is required';
     if (!formData.city.trim()) errors.city = 'City is required';
-    if (!formData.address.trim()) errors.address = 'Address is required';
+    // Decision ★6: Street address optional during initial checkout - detailed in Restaurant console
     if (formData.businessType === 'other' && !formData.categoryOther.trim()) {
       errors.categoryOther = 'Please specify your business type';
     }
@@ -694,7 +694,7 @@ export default function PurchaseDetailsPage() {
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-[#151C19]">Address *</label>
+                    <label className="block text-xs font-semibold text-[#151C19]">Street Address <span className="text-gray-500 font-normal">(Optional)</span></label>
                     <button
                       type="button"
                       onClick={handleGetLocation}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getProfile, getSubscription, getMenu, getOrders, getStickerRequests } from './appStore';
+import { getProfile, getSubscription, getMenu, getOrders, getStickerRequests, getCanonicalProfile, respondToPhonePrivacyReview } from './appStore';
+import { ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import type { AppSubscriptionData, AppProfile, StickerRequest } from './appStore';
 import { QrCode, ArrowRight, UtensilsCrossed, Edit3, ExternalLink, Download, Sparkles, ChefHat, CheckCircle2, XCircle, Package } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -16,6 +17,8 @@ export default function Dashboard() {
   const [orders, setOrders] = useState<any[]>([]);
   const [stickers, setStickers] = useState<StickerRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [phonePrivacyPending, setPhonePrivacyPending] = useState(false);
+  const [canonicalPhone, setCanonicalPhone] = useState<string | null>(null);
   const [now] = useState(() => Date.now());
   
 
@@ -27,9 +30,16 @@ export default function Dashboard() {
       getProfile().catch(() => null),
       getSubscription().catch(() => null),
       getMenu().catch(() => null),
-      getStickerRequests().catch(() => [])
+      getStickerRequests().catch(() => []),
+      getCanonicalProfile().catch(() => null)
     ])
-      .then(async ([p, s, menuData, stickerData]) => {
+      .then(async ([p, s, menuData, stickerData, canData]) => {
+        if (canData?.profile) {
+          const isPending = Boolean(canData.profile.reviewFlags?.phone_privacy_pending);
+          setPhonePrivacyPending(isPending);
+          const priPhone = canData.profile.contacts?.find((c: any) => c.primary || c.public)?.number || p?.phone;
+          setCanonicalPhone(priPhone || null);
+        }
         if (p) setProfile(p);
         if (s) setSub(s);
         if (menuData) {
@@ -105,9 +115,58 @@ export default function Dashboard() {
 
   const currentFeatures = planFeatures[planId as keyof typeof planFeatures] || planFeatures.BASIC;
 
+  const handlePhonePrivacyAction = async (action: 'keep' | 'hide') => {
+    try {
+      await respondToPhonePrivacyReview(action);
+      setPhonePrivacyPending(false);
+    } catch (err: any) {
+      alert('Error updating privacy preference: ' + err.message);
+    }
+  };
+
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500 max-w-7xl mx-auto pb-12 px-4 md:px-8 pt-4 sm:pt-6">
       
+      {/* One-Time Privacy Review Prompt (Blueprint Decision ★2) */}
+      {phonePrivacyPending && (
+        <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/5 border border-amber-500/40 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-amber-500/5 animate-in fade-in">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+              <ShieldCheck size={18} />
+              <span>Guest Phone Visibility Check</span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Your registered phone <span className="font-mono font-semibold text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-700">{canonicalPhone || profile?.phone || 'on file'}</span> is currently set to be visible to diners who scan your QR code. Is this correct?
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => handlePhonePrivacyAction('keep')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold hover:bg-emerald-500/30 transition-colors"
+            >
+              <Eye size={13} />
+              <span>Keep Visible</span>
+            </button>
+            <Link
+              to="/app/restaurant?tab=contact"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold hover:bg-amber-500/30 transition-colors"
+            >
+              <Edit3 size={13} />
+              <span>Edit / Change</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => handlePhonePrivacyAction('hide')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 text-xs font-semibold hover:bg-slate-700 transition-colors"
+            >
+              <EyeOff size={13} />
+              <span>Hide Number</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Overview Hero */}
       <div className="bg-[#1d2723] rounded-2xl p-8 border border-[#2a3832] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 text-white/5 pointer-events-none">

@@ -175,5 +175,23 @@ export async function getTenantAnalytics(db, tenantId, range, { includeOrders = 
     };
   }
 
-  return { range: n, from, to, traffic, orders };
+  let linkClicks = { totals: {}, list: [] };
+  try {
+    const clickRows = (await db.query(
+      `SELECT kind, SUM(count)::int AS count
+         FROM link_clicks_daily
+        WHERE tenant_id = $1 AND day >= $2::date AND day <= $3::date
+        GROUP BY kind ORDER BY count DESC`,
+      [tenantId, from, to]
+    )).rows;
+    const totals = {};
+    for (const r of clickRows) {
+      totals[r.kind] = r.count;
+    }
+    linkClicks = { totals, list: clickRows };
+  } catch (err) {
+    // Graceful fallback if table is pending migration
+  }
+
+  return { range: n, from, to, traffic, orders, linkClicks };
 }

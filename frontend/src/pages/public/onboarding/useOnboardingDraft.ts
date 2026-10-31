@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import type { MenuTheme } from '../../../design-system/theme.types';
+import { saveSetupProgress } from '../../app/appStore';
 
 /**
  * Local-only resume for the onboarding wizard (no backend/DB change this
@@ -46,6 +47,16 @@ export function useOnboardingDraft<TRestaurantData>() {
     timerRef.current = setTimeout(() => {
       try {
         localStorage.setItem(DRAFT_PREFIX + userId, JSON.stringify(draft));
+        void saveSetupProgress({
+          currentStep: `S${draft.currentStepIdx}`,
+          steps: {
+            s0: true,
+            s1: draft.currentStepIdx >= 1,
+            s2: draft.currentStepIdx >= 2,
+            s3: draft.currentStepIdx >= 3,
+            s4: draft.currentStepIdx >= 4,
+          },
+        }).catch(() => {});
       } catch {
         // Storage full or disabled (private browsing) — resume just won't work this session.
       }

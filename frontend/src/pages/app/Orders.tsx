@@ -22,10 +22,12 @@ import {
   Kanban, 
   BellRing,
   Flame,
-  Volume1
+  Volume1,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useToast } from '../../components/feedback/ToastProvider';
-import { getOrders, updateOrderStatus, updateOrderEstimatedTime } from './appStore';
+import { getOrders, updateOrderStatus, updateOrderEstimatedTime, getProfile } from './appStore';
 
 export type CustomerOrder = {
   id: string;
@@ -185,6 +187,644 @@ function getOrderUrgency(order: CustomerOrder): 'normal' | 'warning' | 'urgent' 
   }
 }
 
+// ==========================================
+// Screen Wake Lock API Interface
+// ==========================================
+interface ScreenWakeLockSentinel extends EventTarget {
+  released: boolean;
+  type: 'screen';
+  release: () => Promise<void>;
+  onrelease: ((this: ScreenWakeLockSentinel, ev: Event) => any) | null;
+}
+
+// Safe HTML character escaper for printable thermal tickets
+function escapeHtml(str: string | null | undefined): string {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Silent Thermal Receipt Print Dispatcher (Supports both popup and iframe fallbacks for tablet touch devices)
+function executeThermalPrint(html: string) {
+  try {
+    const printWindow = window.open('', '_blank', 'width=420,height=680');
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        try {
+          printWindow.print();
+          setTimeout(() => {
+            try { printWindow.close(); } catch {}
+          }, 600);
+        } catch {}
+      }, 350);
+      return;
+    }
+  } catch {}
+
+  // Fallback to hidden iframe for tablets / environments where popups are blocked
+  try {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.style.opacity = '0';
+    document.body.appendChild(iframe);
+    const frameDoc = iframe.contentWindow?.document;
+    if (frameDoc) {
+      frameDoc.open();
+      frameDoc.write(html);
+      frameDoc.close();
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch {}
+        setTimeout(() => {
+          try {
+            document.body.removeChild(iframe);
+          } catch {}
+        }, 2000);
+      }, 400);
+    }
+  } catch (err) {
+    console.error('[Print] Thermal printing failed:', err);
+  }
+}
+
+// 58mm / 80mm Clean Thermal Kitchen Order Ticket (KOT) Formatter
+function buildKOTPrintHtml({
+  order,
+  restaurantName,
+  paperWidth
+}: {
+  order: CustomerOrder;
+  restaurantName: string;
+  paperWidth: '80mm' | '58mm';
+}): string {
+  const is58mm = paperWidth === '58mm';
+  const timeFormatted = new Date(order.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+  const dateFormatted = new Date(order.time).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
+  const orderIdShort = (order.id || '').substring(0, 8).toUpperCase();
+  const isDelivery = order.orderType === 'DELIVERY';
+  const tableDisplay = isDelivery ? '🛵 DELIVERY' : `TABLE ${order.tableNumber || 'N/A'}`;
+  const fullAddress = [order.deliveryAddress, order.deliveryLandmark, order.deliveryCity].filter(Boolean).join(', ');
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>KOT #${escapeHtml(orderIdShort)} - ${escapeHtml(tableDisplay)}</title>
+        <style>
+          @page {
+            size: ${paperWidth} auto;
+            margin: 0mm;
+          }
+          * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          html, body {
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            color: #000;
+            font-family: 'Courier New', Courier, 'Lucida Console', Monaco, monospace;
+            font-size: ${is58mm ? '11px' : '13px'};
+            line-height: 1.32;
+            width: 100%;
+          }
+          .kot-receipt {
+            width: 100%;
+            max-width: ${is58mm ? '52mm' : '76mm'};
+            margin: 0 auto;
+            padding: ${is58mm ? '3mm 1mm' : '4mm 2mm'};
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          .center { text-align: center; }
+          .bold { font-weight: 900; }
+          .uppercase { text-transform: uppercase; }
+          
+          /* Dividers */
+          .divider-dashed {
+            border-bottom: 2px dashed #000;
+            margin: 5px 0;
+          }
+          .divider-double {
+            border-bottom: 3px double #000;
+            margin: 6px 0;
+          }
+          .divider-solid {
+            border-bottom: 2px solid #000;
+            margin: 5px 0;
+          }
+
+          /* Restaurant Branding & KOT Header */
+          .rest-name {
+            font-size: ${is58mm ? '15px' : '18px'};
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+            word-break: break-word;
+          }
+          .kot-badge {
+            font-size: ${is58mm ? '12px' : '14px'};
+            font-weight: 900;
+            letter-spacing: 1px;
+            margin-top: 2px;
+          }
+          .date-time {
+            font-size: ${is58mm ? '10px' : '11px'};
+            margin-top: 3px;
+          }
+
+          /* Table Number (Large font e.g. "TABLE 04") */
+          .table-hero {
+            font-size: ${is58mm ? '24px' : '32px'};
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            padding: ${is58mm ? '4px 2px' : '6px 4px'};
+            margin: 6px 0;
+            border: 3px solid #000;
+            text-align: center;
+            background: #fff;
+            line-height: 1.15;
+          }
+
+          /* Round # Highlight */
+          .round-banner {
+            background: #000;
+            color: #fff !important;
+            padding: 4px;
+            font-size: ${is58mm ? '12px' : '13px'};
+            font-weight: 900;
+            text-align: center;
+            margin: 5px 0 2px 0;
+            letter-spacing: 0.5px;
+          }
+          .round-instruction {
+            font-size: 10px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 4px;
+          }
+
+          /* Order Meta */
+          .meta-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: ${is58mm ? '10px' : '11.5px'};
+            line-height: 1.35;
+          }
+
+          /* Item List */
+          .items-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: ${is58mm ? '11px' : '12px'};
+            font-weight: 900;
+            margin-top: 6px;
+            padding-bottom: 2px;
+          }
+          .item-row {
+            display: flex;
+            align-items: flex-start;
+            margin: 6px 0;
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          .item-qty {
+            font-size: ${is58mm ? '16px' : '18px'};
+            font-weight: 900;
+            width: ${is58mm ? '36px' : '44px'};
+            flex-shrink: 0;
+            line-height: 1.2;
+          }
+          .item-body {
+            flex: 1;
+            padding-left: 2px;
+          }
+          .item-name {
+            font-size: ${is58mm ? '13px' : '15px'};
+            font-weight: 900;
+            line-height: 1.25;
+            word-break: break-word;
+          }
+          .item-variant {
+            font-size: ${is58mm ? '11px' : '12px'};
+            font-weight: bold;
+          }
+          .item-addons {
+            font-size: ${is58mm ? '10px' : '11px'};
+            margin-top: 2px;
+            padding-left: 6px;
+            font-style: italic;
+            border-left: 2px solid #555;
+          }
+
+          /* Bold Kitchen Special Notes */
+          .kitchen-notes-box {
+            border: 2px solid #000;
+            background: #f4f4f4;
+            padding: 6px 8px;
+            margin: 8px 0;
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          .kitchen-notes-title {
+            font-size: ${is58mm ? '11px' : '12px'};
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+          }
+          .kitchen-notes-body {
+            font-size: ${is58mm ? '12px' : '13px'};
+            font-weight: 900;
+            margin-top: 4px;
+            white-space: pre-wrap;
+            word-break: break-word;
+          }
+
+          /* Previously served items */
+          .previous-round-box {
+            border-top: 1px dashed #666;
+            padding-top: 5px;
+            margin-top: 6px;
+            font-size: ${is58mm ? '10px' : '11px'};
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+
+          /* Delivery Info */
+          .delivery-info-box {
+            border: 1px solid #000;
+            padding: 5px;
+            margin: 6px 0;
+            font-size: ${is58mm ? '10px' : '11px'};
+          }
+
+          /* Tear / Cut Mark */
+          .tear-divider {
+            text-align: center;
+            margin-top: 12px;
+            padding-top: 4px;
+            font-size: 10px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          .cut-line {
+            letter-spacing: 2px;
+            font-size: 10px;
+          }
+
+          @media print {
+            body { margin: 0; padding: 0; }
+            .kot-receipt { max-width: 100%; width: 100%; margin: 0; padding: 2mm 1mm; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="kot-receipt">
+          <!-- Restaurant & Ticket Title -->
+          <div class="center">
+            <div class="rest-name bold">${escapeHtml((restaurantName || 'RESTAURANT KITCHEN').toUpperCase())}</div>
+            <div class="kot-badge bold">KITCHEN ORDER TICKET (KOT)</div>
+            <div class="date-time">${escapeHtml(dateFormatted)} • ${escapeHtml(timeFormatted)}</div>
+          </div>
+
+          <!-- Table Number (Large font e.g. "TABLE 04") -->
+          <div class="table-hero bold">
+            ${escapeHtml(tableDisplay)}
+          </div>
+
+          <!-- Round # Header if multi-round session -->
+          ${order.roundNumber && order.roundNumber > 1 ? `
+            <div class="round-banner uppercase">
+              🔥 ROUND ${order.roundNumber} ADD-ON 🔥
+            </div>
+            <div class="round-instruction uppercase">
+              >>> PREPARE ONLY NEW ROUND DISHES BELOW <<<
+            </div>
+          ` : `
+            <div class="center bold" style="font-size: 11px; margin-bottom: 4px;">
+              [ INITIAL ORDER • ROUND 1 ]
+            </div>
+          `}
+
+          <!-- Meta Grid -->
+          <div class="divider-dashed"></div>
+          <div class="meta-row">
+            <span>Ticket: <strong class="bold">#${escapeHtml(orderIdShort)}</strong></span>
+            <span>Type: <strong>${escapeHtml(order.orderType)}</strong></span>
+          </div>
+          <div class="meta-row">
+            <span>Server/Guest: <strong>${escapeHtml(order.customerName || 'Walk-in Guest')}</strong></span>
+            <span>Elapsed: <strong>${escapeHtml(formatElapsedTime(order.time))}</strong></span>
+          </div>
+
+          <!-- Items with Quantities and Custom Addons/Notes -->
+          <div class="divider-double"></div>
+          <div class="items-header">
+            <span class="bold">QTY</span>
+            <span class="bold">ITEM DESCRIPTION</span>
+          </div>
+          <div class="divider-dashed"></div>
+
+          ${(order.items || []).map(it => `
+            <div class="item-row">
+              <span class="item-qty bold">${it.quantity}x</span>
+              <div class="item-body">
+                <div class="item-name bold">
+                  ${escapeHtml(it.name)}
+                  ${it.variant ? `<span class="item-variant">(${escapeHtml(it.variant)})</span>` : ''}
+                </div>
+                ${Array.isArray(it.addons) && it.addons.length > 0 ? `
+                  <div class="item-addons">
+                    + ${it.addons.map(a => escapeHtml(a.name)).join(', ')}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `).join('')}
+
+          <!-- Bold Kitchen Special Notes -->
+          ${order.notes ? `
+            <div class="kitchen-notes-box">
+              <div class="kitchen-notes-title bold">⚠️ KITCHEN SPECIAL NOTE:</div>
+              <div class="kitchen-notes-body bold">${escapeHtml(order.notes)}</div>
+            </div>
+          ` : ''}
+
+          <!-- Delivery Address & Phone if Delivery -->
+          ${isDelivery && fullAddress ? `
+            <div class="delivery-info-box">
+              <div class="bold" style="font-size: 11px; text-transform: uppercase;">📍 Delivery Details:</div>
+              <div style="margin-top: 2px;">${escapeHtml(fullAddress)}</div>
+              ${order.customerPhone ? `<div style="margin-top: 2px;">📞 ${escapeHtml(order.customerPhone)}</div>` : ''}
+            </div>
+          ` : ''}
+
+          <!-- Multi-round: Already served items warning -->
+          ${order.roundNumber && order.roundNumber > 1 && order.previousRoundItems && order.previousRoundItems.length > 0 ? `
+            <div class="previous-round-box">
+              <div class="bold" style="text-decoration: underline;">ALREADY SERVED IN PREVIOUS ROUNDS:</div>
+              <div style="font-style: italic; margin-top: 2px;">
+                ${order.previousRoundItems.map(it => `${it.quantity}x ${escapeHtml(it.name)}`).join(', ')}
+              </div>
+              <div class="bold" style="font-size: 10px; margin-top: 2px;">(DO NOT DUPLICATE COOKING)</div>
+            </div>
+          ` : ''}
+
+          <!-- Clean Tear / Cut Divider Lines -->
+          <div class="tear-divider">
+            <div class="cut-line">- - - - - - - - - - - - - - - - - - - -</div>
+            <div class="bold" style="margin: 3px 0;">✂️ [ TEAR HERE / CUT TICKET ] ✂️</div>
+            <div class="cut-line">- - - - - - - - - - - - - - - - - - - -</div>
+            <div style="font-size: 9px; margin-top: 4px; color: #444;">
+              MenusQR Digital Kitchen Operating System
+            </div>
+          </div>
+        </div>
+        <script>
+          window.onload = function() {
+            try {
+              window.focus();
+              window.print();
+            } catch (e) {}
+            setTimeout(function() {
+              try { window.close(); } catch(e) {}
+            }, 600);
+          };
+        </script>
+      </body>
+    </html>
+  `;
+}
+
+// 58mm / 80mm Clean Thermal Consolidated Table Bill Formatter
+function buildTableSummaryPrintHtml({
+  tableNumber,
+  tableOrders,
+  totalBill,
+  restaurantName,
+  paperWidth
+}: {
+  tableNumber: string;
+  tableOrders: CustomerOrder[];
+  totalBill: number;
+  restaurantName: string;
+  paperWidth: '80mm' | '58mm';
+}): string {
+  const is58mm = paperWidth === '58mm';
+  const dateFormatted = new Date().toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
+  const timeFormatted = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+  const seatedTime = tableOrders[0]?.time;
+  const seatedMins = seatedTime ? Math.max(1, Math.round((Date.now() - new Date(seatedTime).getTime()) / 60000)) : null;
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>TABLE #${escapeHtml(tableNumber)} - Bill / Summary</title>
+        <style>
+          @page {
+            size: ${paperWidth} auto;
+            margin: 0mm;
+          }
+          * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          html, body {
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            color: #000;
+            font-family: 'Courier New', Courier, 'Lucida Console', Monaco, monospace;
+            font-size: ${is58mm ? '11px' : '13px'};
+            line-height: 1.32;
+            width: 100%;
+          }
+          .bill-receipt {
+            width: 100%;
+            max-width: ${is58mm ? '52mm' : '76mm'};
+            margin: 0 auto;
+            padding: ${is58mm ? '3mm 1mm' : '4mm 2mm'};
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          .center { text-align: center; }
+          .bold { font-weight: 900; }
+          .uppercase { text-transform: uppercase; }
+
+          .rest-name {
+            font-size: ${is58mm ? '15px' : '18px'};
+            font-weight: 900;
+            letter-spacing: 0.5px;
+          }
+          .bill-title {
+            font-size: ${is58mm ? '12px' : '14px'};
+            font-weight: 900;
+            margin-top: 2px;
+          }
+          .table-hero {
+            font-size: ${is58mm ? '24px' : '32px'};
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            padding: ${is58mm ? '4px 2px' : '6px 4px'};
+            margin: 6px 0;
+            border: 3px solid #000;
+            text-align: center;
+          }
+          .divider-dashed {
+            border-bottom: 2px dashed #000;
+            margin: 5px 0;
+          }
+          .divider-double {
+            border-bottom: 3px double #000;
+            margin: 6px 0;
+          }
+          .meta-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: ${is58mm ? '10px' : '11.5px'};
+          }
+          .round-header {
+            font-size: ${is58mm ? '11px' : '12px'};
+            font-weight: 900;
+            background: #f0f0f0;
+            padding: 3px 5px;
+            margin-top: 6px;
+            border-left: 3px solid #000;
+          }
+          .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: ${is58mm ? '11px' : '12px'};
+            margin: 3px 0;
+          }
+          .item-qty {
+            font-weight: 900;
+            width: ${is58mm ? '28px' : '34px'};
+            flex-shrink: 0;
+          }
+          .item-desc {
+            flex: 1;
+            padding-right: 4px;
+            word-break: break-word;
+          }
+          .item-amt {
+            font-weight: 900;
+            text-align: right;
+            white-space: nowrap;
+          }
+          .total-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: ${is58mm ? '17px' : '20px'};
+            font-weight: 900;
+            padding: 6px 0;
+          }
+          .tear-divider {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 10px;
+          }
+          @media print {
+            body { margin: 0; padding: 0; }
+            .bill-receipt { max-width: 100%; width: 100%; margin: 0; padding: 2mm 1mm; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="bill-receipt">
+          <div class="center">
+            <div class="rest-name bold">${escapeHtml((restaurantName || 'RESTAURANT').toUpperCase())}</div>
+            <div class="bill-title bold">CONSOLIDATED TABLE BILL</div>
+            <div style="font-size: 10.5px; margin-top: 2px;">${escapeHtml(dateFormatted)} • ${escapeHtml(timeFormatted)}</div>
+          </div>
+
+          <div class="table-hero bold">
+            TABLE ${escapeHtml(tableNumber)}
+          </div>
+
+          <div class="divider-dashed"></div>
+          <div class="meta-row">
+            <span>Total Rounds: <strong class="bold">${tableOrders.length}</strong></span>
+            <span>Duration: <strong class="bold">${seatedMins ? `${seatedMins}m` : 'Active'}</strong></span>
+          </div>
+
+          <div class="divider-double"></div>
+          ${tableOrders.map((ord, oIdx) => `
+            <div class="round-header bold">
+              ROUND ${ord.roundNumber || (oIdx + 1)} (#${ord.id.substring(0, 6).toUpperCase()}) - ${new Date(ord.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
+            ${(ord.items || []).map(it => {
+              const itemTotal = ((it.price || 0) + (it.addons ? it.addons.reduce((s, a) => s + (a.price || 0), 0) : 0)) * it.quantity;
+              return `
+                <div class="item-row">
+                  <span class="item-qty">${it.quantity}x</span>
+                  <span class="item-desc">${escapeHtml(it.name)}${it.variant ? ` (${escapeHtml(it.variant)})` : ''}</span>
+                  <span class="item-amt">₹${itemTotal}</span>
+                </div>
+                ${it.addons && it.addons.length > 0 ? `
+                  <div style="font-size: 10px; margin-left: 28px; font-style: italic; color: #444;">
+                    + ${it.addons.map(a => escapeHtml(a.name)).join(', ')}
+                  </div>
+                ` : ''}
+              `;
+            }).join('')}
+          `).join('')}
+
+          <div class="divider-double"></div>
+          <div class="total-box">
+            <span>GRAND TOTAL:</span>
+            <span>₹${totalBill}</span>
+          </div>
+          <div class="divider-dashed"></div>
+
+          <div class="tear-divider">
+            <div>- - - - - - - - - - - - - - - - - - - -</div>
+            <div class="bold" style="margin: 3px 0;">✂️ [ TEAR HERE / CUT TICKET ] ✂️</div>
+            <div>- - - - - - - - - - - - - - - - - - - -</div>
+            <div style="font-size: 9px; margin-top: 4px; color: #444;">
+              Thank you for dining with us! • MenusQR
+            </div>
+          </div>
+        </div>
+        <script>
+          window.onload = function() {
+            try {
+              window.focus();
+              window.print();
+            } catch (e) {}
+            setTimeout(function() {
+              try { window.close(); } catch(e) {}
+            }, 600);
+          };
+        </script>
+      </body>
+    </html>
+  `;
+}
+
 export default function Orders() {
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -218,6 +858,28 @@ export default function Orders() {
   const [buzzerSnoozed, setBuzzerSnoozed] = useState(false);
   const [selectedTableModal, setSelectedTableModal] = useState<string | null>(null);
   const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
+  const [restaurantName, setRestaurantName] = useState<string>('Kitchen');
+  const [paperWidth, setPaperWidth] = useState<'80mm' | '58mm'>(() => {
+    try {
+      const saved = localStorage.getItem('menuqr_kot_paper_width');
+      return (saved === '58mm' || saved === '80mm') ? saved : '80mm';
+    } catch {
+      return '80mm';
+    }
+  });
+
+  // Tablet Screen Wake Lock State
+  const wakeLockSentinelRef = useRef<ScreenWakeLockSentinel | null>(null);
+  const isWakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator;
+  const [wakeLockEnabled, setWakeLockEnabled] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('menuqr_kds_wakelock');
+      return saved !== null ? saved === 'true' : true;
+    } catch {
+      return true;
+    }
+  });
+  const [isWakeLockActive, setIsWakeLockActive] = useState(false);
 
   const knownOrderIds = useRef<Set<string>>(new Set());
   const initialLoadDone = useRef(false);
@@ -265,181 +927,115 @@ export default function Orders() {
     setCheckedItems(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // 80mm Thermal KOT (Kitchen Order Ticket)
-  const printKOT = (order: CustomerOrder) => {
-    const printWindow = window.open('', '_blank', 'width=380,height=600');
-    if (!printWindow) return;
+  // Fetch restaurant profile for KOT branding
+  useEffect(() => {
+    getProfile()
+      .then((p: any) => {
+        if (p?.businessName?.trim()) {
+          setRestaurantName(p.businessName.trim());
+        }
+      })
+      .catch(() => {});
+  }, []);
 
-    const timeFormatted = new Date(order.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const dateFormatted = new Date(order.time).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
+  // Tablet Screen Wake Lock Request & Release
+  const requestWakeLock = useCallback(async () => {
+    if (typeof navigator === 'undefined' || !('wakeLock' in navigator)) {
+      return;
+    }
+    try {
+      if (wakeLockSentinelRef.current && !wakeLockSentinelRef.current.released) {
+        return;
+      }
+      const sentinel = await (navigator as any).wakeLock.request('screen') as ScreenWakeLockSentinel;
+      wakeLockSentinelRef.current = sentinel;
+      setIsWakeLockActive(true);
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>KOT - #${order.id}</title>
-          <style>
-            @page { size: 80mm auto; margin: 2mm; }
-            body { 
-              font-family: 'Courier New', Courier, monospace; 
-              font-size: 13px; 
-              line-height: 1.35; 
-              color: #000; 
-              margin: 0; 
-              padding: 10px; 
-            }
-            .center { text-align: center; }
-            .bold { font-weight: 900; }
-            .dashed { border-bottom: 2px dashed #000; padding-bottom: 6px; margin-bottom: 8px; }
-            .dashed-top { border-top: 2px dashed #000; padding-top: 6px; margin-top: 8px; }
-            .table-hero { font-size: 28px; font-weight: 900; letter-spacing: 1px; }
-            .badge { display: inline-block; background: #000; color: #fff; padding: 3px 8px; font-size: 12px; font-weight: 900; border-radius: 4px; margin-top: 4px; }
-            .item-row { display: flex; justify-content: space-between; font-size: 14px; margin: 6px 0; }
-            .qty { font-size: 16px; font-weight: 900; width: 40px; }
-            .item-name { flex: 1; font-weight: 900; }
-            .item-addons { font-size: 11px; margin-left: 40px; font-style: italic; color: #222; }
-            .note-box { background: #f0f0f0; border-left: 4px solid #000; padding: 6px; font-weight: bold; margin-top: 6px; font-size: 12px; }
-          </style>
-        </head>
-        <body>
-          <div class="center dashed">
-            <div class="bold" style="font-size: 17px; letter-spacing: 1px;">KITCHEN ORDER TICKET (KOT)</div>
-            <div style="font-size: 11px; margin-top: 2px;">${dateFormatted} • ${timeFormatted}</div>
-            <div class="table-hero" style="margin: 6px 0;">
-              ${order.orderType === 'DELIVERY' ? '🛵 DELIVERY' : `TABLE ${order.tableNumber || 'N/A'}`}
-            </div>
-            ${order.roundNumber && order.roundNumber > 1 ? `<div class="badge">🔥 ROUND ${order.roundNumber} ADD-ON</div>` : ''}
-            <div style="font-size: 11px; margin-top: 4px;">Ticket #${order.id} • ${order.customerName || 'Guest'}</div>
-          </div>
+      sentinel.addEventListener('release', () => {
+        wakeLockSentinelRef.current = null;
+        setIsWakeLockActive(false);
+      });
+    } catch (err: any) {
+      console.warn('[WakeLock] Unable to acquire wake lock:', err?.message || err);
+      setIsWakeLockActive(false);
+    }
+  }, []);
 
-          <div style="margin: 10px 0;">
-            <div class="bold" style="font-size: 12px; margin-bottom: 6px;">
-              ${order.roundNumber && order.roundNumber > 1 ? `🔥 PREPARE THESE DISHES (ROUND ${order.roundNumber}):` : 'DISHES TO PREPARE:'}
-            </div>
-            ${(order.items || []).map(it => `
-              <div class="item-row">
-                <span class="qty">${it.quantity}x</span>
-                <span class="item-name">${it.name} ${it.variant ? `(${it.variant})` : ''}</span>
-              </div>
-              ${Array.isArray(it.addons) && it.addons.length > 0 ? `
-                <div class="item-addons">+ ${it.addons.map(a => a.name).join(', ')}</div>
-              ` : ''}
-            `).join('')}
-          </div>
+  const releaseWakeLock = useCallback(async () => {
+    if (wakeLockSentinelRef.current) {
+      try {
+        await wakeLockSentinelRef.current.release();
+      } catch {}
+      wakeLockSentinelRef.current = null;
+    }
+    setIsWakeLockActive(false);
+  }, []);
 
-          ${order.notes ? `
-            <div class="dashed-top note-box">
-              <div class="bold">SPECIAL INSTRUCTIONS:</div>
-              <div>${order.notes}</div>
-            </div>
-          ` : ''}
+  // Manage WakeLock lifecycle and visibility changes (auto re-acquire after screen unhides)
+  useEffect(() => {
+    if (wakeLockEnabled) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
 
-          ${order.roundNumber && order.roundNumber > 1 && order.previousRoundItems && order.previousRoundItems.length > 0 ? `
-            <div class="dashed-top" style="font-size: 11px; color: #444;">
-              <div class="bold">ALREADY SERVED (DO NOT RECOOK):</div>
-              <div>${order.previousRoundItems.map(it => `${it.quantity}x ${it.name}`).join(', ')}</div>
-            </div>
-          ` : ''}
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && wakeLockEnabled) {
+        requestWakeLock();
+      }
+    };
 
-          <div class="center dashed-top" style="font-size: 10px; margin-top: 12px;">
-            --- MenusQR Digital Kitchen Dispatch ---
-          </div>
-          <script>
-            window.onload = function() {
-              window.print();
-              setTimeout(function() { window.close(); }, 500);
-            };
-          </script>
-        </body>
-      </html>
-    `;
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      releaseWakeLock();
+    };
+  }, [wakeLockEnabled, requestWakeLock, releaseWakeLock]);
 
-    printWindow.document.write(html);
-    printWindow.document.close();
+  const toggleWakeLock = async () => {
+    if (!isWakeLockSupported) {
+      showToast('info', 'Screen Wake Lock is not supported on this browser or tablet.');
+      return;
+    }
+    const next = !wakeLockEnabled;
+    setWakeLockEnabled(next);
+    try {
+      localStorage.setItem('menuqr_kds_wakelock', String(next));
+    } catch {}
+
+    if (next) {
+      await requestWakeLock();
+      showToast('success', '🖥️ Screen Always On enabled (tablet will stay awake for kitchen service).');
+    } else {
+      await releaseWakeLock();
+      showToast('info', '🌙 Auto Sleep enabled (device will follow standard sleep timeout).');
+    }
   };
 
-  // 80mm Thermal Consolidated Table Bill
-  const printTableSummary = (tableNumber: string, tableOrders: CustomerOrder[], totalBill: number) => {
-    const printWindow = window.open('', '_blank', 'width=380,height=650');
-    if (!printWindow) return;
+  const togglePaperWidth = () => {
+    const next = paperWidth === '80mm' ? '58mm' : '80mm';
+    setPaperWidth(next);
+    try {
+      localStorage.setItem('menuqr_kot_paper_width', next);
+    } catch {}
+    showToast('info', `🖨️ Thermal printer width set to ${next} (${next === '80mm' ? 'Standard 3" Roll' : 'Compact 2" Mobile Roll'})`);
+  };
 
-    const dateFormatted = new Date().toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
-    const timeFormatted = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // 58mm / 80mm Thermal KOT (Kitchen Order Ticket)
+  const printKOT = (order: CustomerOrder, overrideWidth?: '80mm' | '58mm') => {
+    const width = overrideWidth || paperWidth;
+    const html = buildKOTPrintHtml({ order, restaurantName, paperWidth: width });
+    executeThermalPrint(html);
+    const targetLabel = order.orderType === 'DELIVERY' ? 'Delivery' : `Table ${order.tableNumber || 'N/A'}`;
+    showToast('info', `🖨️ Printing KOT (${width}) for ${targetLabel}`);
+  };
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>TABLE #${tableNumber} - Running Bill / KOT</title>
-          <style>
-            @page { size: 80mm auto; margin: 2mm; }
-            body { 
-              font-family: 'Courier New', Courier, monospace; 
-              font-size: 13px; 
-              line-height: 1.35; 
-              color: #000; 
-              margin: 0; 
-              padding: 10px; 
-            }
-            .center { text-align: center; }
-            .bold { font-weight: 900; }
-            .dashed { border-bottom: 2px dashed #000; padding-bottom: 6px; margin-bottom: 8px; }
-            .dashed-top { border-top: 2px dashed #000; padding-top: 6px; margin-top: 8px; }
-            .table-hero { font-size: 28px; font-weight: 900; letter-spacing: 1px; }
-            .item-row { display: flex; justify-content: space-between; font-size: 13px; margin: 4px 0; }
-            .qty { font-size: 14px; font-weight: 900; width: 32px; }
-            .item-name { flex: 1; font-weight: bold; }
-            .item-price { font-weight: bold; text-align: right; width: 65px; }
-            .total-row { display: flex; justify-content: space-between; font-size: 19px; font-weight: 900; margin-top: 8px; }
-          </style>
-        </head>
-        <body>
-          <div class="center dashed">
-            <div class="table-hero">TABLE ${tableNumber}</div>
-            <div class="bold" style="font-size: 15px;">CONSOLIDATED TABLE BILL</div>
-            <div style="font-size: 11px; margin-top: 4px;">${dateFormatted} • ${timeFormatted}</div>
-          </div>
-          <div style="margin-bottom: 6px; font-size: 11px; font-weight: bold;">
-            TOTAL ROUNDS ORDERED: ${tableOrders.length}
-          </div>
-          ${tableOrders.map((ord, oIdx) => `
-            <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dotted #888;">
-              <div style="font-size: 11px; font-weight: bold; color: #222;">
-                ROUND ${ord.roundNumber || (oIdx + 1)} (#${ord.id.substring(0, 6)}) - ${new Date(ord.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
-              ${ord.items.map(it => `
-                <div class="item-row">
-                  <span class="qty">${it.quantity}x</span>
-                  <span class="item-name">${it.name} ${it.variant ? `(${it.variant})` : ''}</span>
-                  <span class="item-price">₹${((it.price || 0) + (it.addons ? it.addons.reduce((s, a) => s + (a.price || 0), 0) : 0)) * it.quantity}</span>
-                </div>
-              `).join('')}
-            </div>
-          `).join('')}
-          <div class="dashed-top">
-            <div class="total-row">
-              <span>TABLE TOTAL:</span>
-              <span>₹${totalBill}</span>
-            </div>
-          </div>
-          <div class="center dashed-top" style="font-size: 10px; margin-top: 12px;">
-            MenusQR Dining System • Thank you!
-          </div>
-          <script>
-            window.onload = function() {
-              window.print();
-              setTimeout(function() { window.close(); }, 500);
-            };
-          </script>
-        </body>
-      </html>
-    `;
-
-    printWindow.document.open();
-    printWindow.document.write(html);
-    printWindow.document.close();
+  // 58mm / 80mm Thermal Consolidated Table Bill
+  const printTableSummary = (tableNumber: string, tableOrders: CustomerOrder[], totalBill: number, overrideWidth?: '80mm' | '58mm') => {
+    const width = overrideWidth || paperWidth;
+    const html = buildTableSummaryPrintHtml({ tableNumber, tableOrders, totalBill, restaurantName, paperWidth: width });
+    executeThermalPrint(html);
+    showToast('info', `🖨️ Printing Consolidated Bill (${width}) for Table ${tableNumber}`);
   };
 
   // Repeating Audio Buzzer for Unaccepted NEW orders in Kitchen
@@ -894,10 +1490,10 @@ export default function Orders() {
                     type="button"
                     onClick={() => printTableSummary(group.tableNumber, group.orders, group.totalBill)}
                     className="p-2 rounded-xl bg-[#1d2723] hover:bg-[#273530] text-slate-200 border border-[#2a3832] text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                    title="Print 80mm thermal bill slip for this table"
+                    title={`Print ${paperWidth} thermal bill slip for this table`}
                   >
                     <Printer size={13} className="text-amber-400" />
-                    <span>Print Bill</span>
+                    <span>Print Bill ({paperWidth})</span>
                   </button>
 
                   <button
@@ -993,10 +1589,10 @@ export default function Orders() {
               type="button"
               onClick={() => printKOT(order)}
               className="p-1.5 px-2 rounded-lg bg-[#1d2723] hover:bg-[#e8783c] text-slate-300 hover:text-white transition-all flex items-center gap-1 text-[11px] font-bold border border-[#2a3832] cursor-pointer"
-              title="Print Kitchen Order Ticket (KOT) on 80mm printer"
+              title={`Print Kitchen Order Ticket (KOT) on ${paperWidth} thermal printer`}
             >
               <Printer size={13} />
-              <span>KOT</span>
+              <span>KOT ({paperWidth})</span>
             </button>
             <div className="text-right">
               <span className="text-[#849a90] text-xs font-mono font-bold">#{order.id.substring(0, 6)}</span>
@@ -1476,8 +2072,54 @@ export default function Orders() {
             </div>
           </div>
 
-          {/* Right: Audio Control, Speaker Test, and View Switcher */}
+          {/* Right: Audio Control, Tablet Wake Lock, Thermal Roll Size, Refresh, and View Switcher */}
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Tablet Wake Lock Toggle & Visual Indicator (Screen Always On) */}
+            <button
+              type="button"
+              onClick={toggleWakeLock}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                isWakeLockActive || wakeLockEnabled
+                  ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-sm shadow-amber-500/10 hover:bg-amber-500/25'
+                  : 'bg-[#141b18] border-[#2a3832] text-[#62756d] hover:text-white'
+              }`}
+              title={
+                !isWakeLockSupported
+                  ? 'Screen WakeLock is not supported on this browser or tablet'
+                  : (isWakeLockActive || wakeLockEnabled)
+                  ? 'Kitchen tablet screen is kept awake. Click to allow Auto Sleep.'
+                  : 'Click to keep kitchen tablet screen always on.'
+              }
+            >
+              {(isWakeLockActive || wakeLockEnabled) ? (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span>
+                  </span>
+                  <Sun size={13} className="text-amber-400 shrink-0" />
+                  <span>Screen Always On</span>
+                </>
+              ) : (
+                <>
+                  <Moon size={13} className="shrink-0" />
+                  <span>Auto Sleep</span>
+                </>
+              )}
+            </button>
+
+            {/* Thermal Printer Paper Roll Selector (80mm vs 58mm) */}
+            <button
+              type="button"
+              onClick={togglePaperWidth}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#1d2723] hover:bg-[#273530] text-[#849a90] hover:text-white border border-[#2a3832] text-xs font-bold transition-colors cursor-pointer"
+              title={`Current thermal roll width: ${paperWidth}. Click to toggle between 80mm (Standard POS) and 58mm (Compact Mobile).`}
+            >
+              <Printer size={13} className="text-[#e8783c] shrink-0" />
+              <span className="font-mono text-white font-bold">{paperWidth}</span>
+              <span className="text-[10px] text-[#849a90] hidden md:inline">KOT</span>
+            </button>
+
             {/* Audio Toggle */}
             <button
               type="button"
@@ -2025,9 +2667,20 @@ export default function Orders() {
                       <Flame size={12} />
                       <span>Round {ord.roundNumber || (oIdx + 1)} • #{ord.id.substring(0, 6)}</span>
                     </span>
-                    <span className="text-xs font-mono font-bold text-emerald-400">
-                      ₹{ord.total}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => printKOT(ord)}
+                        className="px-2 py-0.5 rounded-lg bg-[#1d2723] hover:bg-[#e8783c] text-slate-300 hover:text-white text-[11px] font-bold border border-[#2a3832] flex items-center gap-1 transition-colors cursor-pointer"
+                        title={`Print KOT for Round ${ord.roundNumber || (oIdx + 1)} on ${paperWidth} printer`}
+                      >
+                        <Printer size={11} />
+                        <span>KOT</span>
+                      </button>
+                      <span className="text-xs font-mono font-bold text-emerald-400">
+                        ₹{ord.total}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="space-y-1.5 text-xs">
@@ -2086,9 +2739,10 @@ export default function Orders() {
                 type="button"
                 onClick={() => printTableSummary(currentModalGroup.tableNumber, currentModalGroup.orders, currentModalGroup.totalBill)}
                 className="px-4 py-2 rounded-xl bg-[#24332d] hover:bg-[#2d4038] text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer border border-[#2a3832]"
+                title={`Print ${paperWidth} thermal consolidated bill`}
               >
                 <Printer size={14} className="text-amber-400" />
-                <span>Print Table Bill / KOT</span>
+                <span>Print Table Bill ({paperWidth})</span>
               </button>
 
               <button
