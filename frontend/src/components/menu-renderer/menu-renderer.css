@@ -14,6 +14,7 @@
 
 .mq-root {
   /* `--mq-*` custom properties are set inline by MenuThemeProvider. */
+  container-type: inline-size;
   background-color: var(--mq-color-bg);
   color: var(--mq-color-text);
   font-family: var(--mq-font-body);
@@ -308,6 +309,7 @@
   position: sticky;
   top: 0;
   z-index: 20;
+  container-type: inline-size;
   background-color: var(--mq-color-bg);
   border-bottom: 1px solid var(--mq-color-border);
   padding-block: var(--mq-space-2);

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Check, 
@@ -16,13 +16,14 @@ import {
   Upload, 
   Trash2, 
   Image as ImageIcon,
-  Sparkles
+  Sparkles,
+  Search
 } from 'lucide-react';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import PremiumIPhoneMockup from '../../components/marketing/PremiumIPhoneMockup';
-import IsolatedMobileFrame from '../../components/menu-builder/IsolatedMobileFrame';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
-import { menuTemplates, isTemplateDark, isColorDark } from '../../data/menuTemplates';
+import { SHOWCASE_PRESETS, PRESETS, themeFromPresetId } from '../../design-system/presets';
+import { derivePalette } from '../../design-system/palette';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { 
   getAppearance, 
@@ -37,15 +38,15 @@ import {
 } from './appStore';
 
 const THEME_CATEGORIES = [
-  { id: 'all', label: 'All Themes', count: 2 },
-  { id: 'heritage', label: 'Heritage Masterpieces', count: 2 },
+  { id: 'all', label: `All (${SHOWCASE_PRESETS.length})` },
+  { id: 'heritage', label: 'Royal & Heritage' },
+  { id: 'fine-dining', label: 'Fine Dining' },
+  { id: 'cafe', label: 'Cafe & Bakery' },
+  { id: 'contemporary', label: 'Contemporary' },
+  { id: 'street', label: 'Street & Dhaba' },
 ] as const;
 
 type ThemeCategoryFilter = typeof THEME_CATEGORIES[number]['id'];
-
-function getThemeGroup(_id: string): 'heritage' {
-  return 'heritage';
-}
 
 
 export default function Appearance() {
@@ -57,6 +58,7 @@ export default function Appearance() {
   const [displayName, setDisplayName] = useState<string>('');
   const [brandTagline, setBrandTagline] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<ThemeCategoryFilter>('all');
+  const [templateSearch, setTemplateSearch] = useState('');
   const [previewMode, setPreviewMode] = useState<'phone' | 'desktop'>('phone');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -248,15 +250,40 @@ export default function Appearance() {
     );
   }
 
-  const selectedTemplate = menuTemplates.find((t) => t.id === templateId) || menuTemplates[0];
-  const activeThemeName = selectedTemplate.name;
-  const activeBgColor = selectedTemplate.colors.bg;
-  const activeIsDark = isTemplateDark(selectedTemplate);
+  const activePreset = useMemo(() => {
+    return (
+      SHOWCASE_PRESETS.find((p) => p.id === templateId) ||
+      PRESETS.find((p) => p.id === templateId) ||
+      SHOWCASE_PRESETS[0]
+    );
+  }, [templateId]);
 
-  const filteredTemplates = menuTemplates.filter((t) => {
-    if (categoryFilter === 'all') return true;
-    return getThemeGroup(t.id) === categoryFilter;
-  });
+  const activePalette = useMemo(() => {
+    return derivePalette(activePreset.seedColor, activePreset.mode);
+  }, [activePreset]);
+
+  const resolvedTheme = useMemo(() => {
+    const base = themeFromPresetId(templateId);
+    return {
+      ...base,
+      brand: {
+        ...base.brand,
+        logoUrl: brandLogo.trim() || profile?.logoUrl || null,
+      },
+    };
+  }, [templateId, brandLogo, profile?.logoUrl]);
+
+  const filteredPresets = useMemo(() => {
+    return SHOWCASE_PRESETS.filter((preset) => {
+      const matchesCategory = categoryFilter === 'all' || preset.category === categoryFilter;
+      const matchesSearch =
+        !templateSearch.trim() ||
+        preset.label.toLowerCase().includes(templateSearch.toLowerCase()) ||
+        preset.description.toLowerCase().includes(templateSearch.toLowerCase()) ||
+        preset.audience.toLowerCase().includes(templateSearch.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [categoryFilter, templateSearch]);
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-12 px-4 md:px-8 pt-4 sm:pt-6">
@@ -393,113 +420,119 @@ export default function Appearance() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Palette size={18} className="text-[#e8783c]" />
-                <h2 className="text-lg font-bold text-white">Select Menu Theme ({menuTemplates.length} Themes)</h2>
+                <h2 className="text-lg font-bold text-white">Select Menu Theme ({SHOWCASE_PRESETS.length} Editions)</h2>
               </div>
               <span className="text-xs text-[#849a90]">
-                Active: <strong className="text-white">{activeThemeName}</strong>
+                Active: <strong className="text-white">{activePreset.label}</strong>
               </span>
             </div>
 
-            {/* Category Filter Pills */}
-            <div className="flex flex-wrap items-center gap-2 pb-1">
-              {THEME_CATEGORIES.map((cat) => {
-                const isActive = categoryFilter === cat.id;
+            {/* Search and Category Filter */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                {THEME_CATEGORIES.map((cat) => {
+                  const isActive = categoryFilter === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setCategoryFilter(cat.id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-[#e8783c] text-white shadow-md shadow-[#e8783c]/20'
+                          : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="relative shrink-0">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                <input
+                  type="text"
+                  placeholder="Search editions..."
+                  value={templateSearch}
+                  onChange={(e) => setTemplateSearch(e.target.value)}
+                  className="pl-8 pr-3 py-1.5 bg-[#151c19] border border-[#2a3832] rounded-xl text-xs text-white placeholder:text-stone-500 focus:outline-none focus:border-[#e8783c] w-full sm:w-44"
+                />
+              </div>
+            </div>
+
+            {/* Grid of Edition Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-h-[560px] overflow-y-auto pr-1 mq-showcase-preview-frame">
+              {filteredPresets.map((preset) => {
+                const isSelected = templateId === preset.id;
+                const palette = derivePalette(preset.seedColor, preset.mode);
+                const editionNum = String(
+                  SHOWCASE_PRESETS.findIndex((p) => p.id === preset.id) + 1
+                ).padStart(2, '0');
+
                 return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setCategoryFilter(cat.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-[#e8783c] text-white shadow-md shadow-[#e8783c]/20'
-                        : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
+                  <button 
+                    key={preset.id} 
+                    type="button" 
+                    onClick={() => setTemplateId(preset.id)} 
+                    aria-pressed={isSelected} 
+                    className={`relative p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-3 group ${
+                      isSelected 
+                        ? 'border-[#e8783c] bg-[#1d2723] ring-2 ring-[#e8783c] shadow-xl' 
+                        : 'border-[#2a3832] bg-[#1d2723] hover:border-[#42574d] hover:bg-[#222e29]'
                     }`}
                   >
-                    {cat.label} ({cat.count})
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-white/90">
+                            #{editionNum}
+                          </span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#e8783c]">
+                            {preset.category}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                            style={{ backgroundColor: palette.bg }}
+                            title={`Background: ${palette.bg}`}
+                          />
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                            style={{ backgroundColor: preset.seedColor }}
+                            title={`Accent: ${preset.seedColor}`}
+                          />
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                            style={{ backgroundColor: palette.heading }}
+                            title={`Heading: ${palette.heading}`}
+                          />
+                          {isSelected && (
+                            <div className="w-4 h-4 rounded-full bg-[#e8783c] text-white flex items-center justify-center shrink-0 ml-1">
+                              <Check size={10} strokeWidth={3} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <h4 className="text-sm font-bold text-white mb-1 group-hover:text-[#f08b55] transition-colors">{preset.label}</h4>
+                      <p className="text-[11px] text-[#849a90] leading-relaxed line-clamp-2">
+                        {preset.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-[#2a3832] flex items-center justify-between text-[10px] text-[#849a90]">
+                      <span className="truncate max-w-[170px]">{preset.audience}</span>
+                      <span className="uppercase font-mono text-[9px] px-1.5 py-0.5 rounded bg-black/30 font-semibold text-white/80">
+                        {preset.mode}
+                      </span>
+                    </div>
                   </button>
                 );
               })}
             </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {filteredTemplates.map((template) => {
-                const isSelected = templateId === template.id;
-                return (
-                  <button 
-                    key={template.id} 
-                    type="button" 
-                    onClick={() => setTemplateId(template.id)} 
-                    aria-pressed={isSelected} 
-                    className={`flex flex-col items-start rounded-2xl border-2 text-left transition-all overflow-hidden cursor-pointer relative group ${
-                      isSelected 
-                        ? 'border-[#e8783c] bg-[#1d2723] ring-4 ring-[#e8783c]/20 shadow-xl' 
-                        : 'border-[#2a3832] bg-[#1d2723] hover:border-[#42574d] hover:bg-[#222e29]'
-                    }`}
-                  >
-                    {/* Visual Palette Preview Header */}
-                    <div 
-                      className="w-full p-3.5 flex items-center justify-between relative overflow-hidden" 
-                      style={{ 
-                        backgroundColor: template.colors.bg, 
-                        color: template.colors.text,
-                        borderBottom: `1px solid ${template.colors.border || 'rgba(0,0,0,0.1)'}` 
-                      }}
-                    >
-                      <div className="flex items-center gap-2 truncate">
-                        <span 
-                          className="text-xs font-bold uppercase tracking-wider truncate font-serif" 
-                          style={{ fontFamily: template.typography.heading }}
-                        >
-                          {template.name}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {template.badge && (
-                          <span 
-                            className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full shadow-sm"
-                            style={{ 
-                              backgroundColor: template.colors.accent, 
-                              color: isColorDark(template.colors.accent) ? '#fff' : '#000' 
-                            }}
-                          >
-                            {template.badge}
-                          </span>
-                        )}
-                        {isSelected && (
-                          <div className="w-5 h-5 rounded-full bg-[#e8783c] text-white flex items-center justify-center shrink-0 shadow">
-                            <Check size={12} strokeWidth={3} />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Card Content & Details */}
-                    <div className="p-4 w-full flex-1 flex flex-col justify-between space-y-3">
-                      <div>
-                        <p className="text-[11px] font-semibold text-zinc-300 mb-1">{template.subtitle}</p>
-                        <p className="text-xs text-[#849a90] line-clamp-2 leading-relaxed">{template.description}</p>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-2 border-t border-[#2a3832]/60 text-[11px]">
-                        {/* Swatches */}
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-[#849a90] font-mono mr-1">Palette:</span>
-                          <span className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: template.colors.bg }} title="Background" />
-                          <span className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: template.colors.surface }} title="Surface" />
-                          <span className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: template.colors.accent }} title="Accent" />
-                        </div>
-
-                        {/* Layout Type */}
-                        <span className="text-[10px] text-zinc-400 capitalize px-2 py-0.5 rounded bg-[#151c19] border border-[#2a3832]">
-                          {template.layout.type}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-                </div>
           </div>
         </div>
 
@@ -538,14 +571,17 @@ export default function Appearance() {
           {previewMode === 'phone' ? (
             <div className="py-1 w-full flex justify-center">
               <PremiumIPhoneMockup
-                className="!w-[340px] sm:!w-[365px] max-w-full shadow-2xl"
-                badgeText={`${selectedTemplate.name} Theme`}
-                statusBarTheme={activeIsDark ? 'light' : 'dark'}
-                homeIndicatorTheme={activeIsDark ? 'light' : 'dark'}
-                screenStyle={{ backgroundColor: activeBgColor }}
+                className="w-[330px] sm:w-[360px] md:w-[375px] max-w-full shadow-2xl"
+                badgeText={`${activePreset.label} Edition`}
+                statusBarTheme={activePreset.mode === 'dark' ? 'light' : 'dark'}
+                homeIndicatorTheme={activePreset.mode === 'dark' ? 'light' : 'dark'}
+                screenStyle={{ backgroundColor: activePalette.bg }}
                 screenClassName=""
               >
-                <IsolatedMobileFrame backgroundColor={activeBgColor}>
+                <div
+                  className="w-full h-full overflow-y-auto mq-showcase-preview-frame"
+                  style={{ backgroundColor: activePalette.bg }}
+                >
                   <div className="flex flex-col min-h-full w-full relative">
                     {/* Customer Experience Top Bar */}
                     <header className="px-3.5 py-2.5 border-b border-white/10 flex items-center justify-between backdrop-blur-md sticky top-0 z-40 bg-black/50 shrink-0">
@@ -568,7 +604,9 @@ export default function Appearance() {
                     {/* Actual Menu Content */}
                     <div className="flex-1 pb-24">
                       <MenuTemplateRenderer
+                        key={templateId}
                         templateId={templateId}
+                        theme={resolvedTheme}
                         restaurant={{ 
                           name: displayName.trim() || profile?.businessName || 'Your Restaurant', 
                           tagline: brandTagline.trim() || profile?.tagline, 
@@ -622,14 +660,16 @@ export default function Appearance() {
                       </div>
                     )}
                   </div>
-                </IsolatedMobileFrame>
+                </div>
               </PremiumIPhoneMockup>
             </div>
           ) : (
             <div className="w-full aspect-[4/3] rounded-xl border-4 border-[#151c19] overflow-hidden shadow-2xl relative bg-black max-h-[500px]">
-              <div className="h-full w-full overflow-y-auto">
+              <div className="h-full w-full overflow-y-auto mq-showcase-preview-frame" style={{ backgroundColor: activePalette.bg }}>
                 <MenuTemplateRenderer
+                  key={templateId}
                   templateId={templateId}
+                  theme={resolvedTheme}
                   restaurant={{ 
                     name: displayName.trim() || profile?.businessName || 'Your Restaurant', 
                     tagline: brandTagline.trim() || profile?.tagline, 

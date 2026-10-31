@@ -541,7 +541,7 @@ export default function MenuDesignStudio() {
                 showHomeIndicator
                 statusBarTheme={theme.mode === 'dark' ? 'light' : 'dark'}
                 homeIndicatorTheme={theme.mode === 'dark' ? 'light' : 'dark'}
-                className="w-[295px] sm:w-[325px]"
+                className="w-[330px] sm:w-[360px] md:w-[375px] max-w-full"
               >
                 <div
                   ref={phoneScrollRef}

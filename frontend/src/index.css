@@ -100,21 +100,14 @@ body {
 
 /* Custom sleek scrollbar for showcase preview and dark containers */
 .mq-showcase-preview-frame {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  container-type: inline-size;
 }
 .mq-showcase-preview-frame::-webkit-scrollbar {
-  width: 6px;
-}
-.mq-showcase-preview-frame::-webkit-scrollbar-track {
-  background: transparent;
-}
-.mq-showcase-preview-frame::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 999px;
-}
-.mq-showcase-preview-frame::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.45);
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 

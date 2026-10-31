@@ -153,6 +153,10 @@
         {
           "key": "Content-Security-Policy-Report-Only",
           "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://checkout.razorpay.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.firebaseapp.com https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
         }
       ]
     },
@@ -186,15 +190,42 @@
           "value": "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
         }
       ]
+    },
+    {
+      "source": "/(login|signup|onboarding)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/(app|purchase)/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/(app|purchase)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
   ],
   "rewrites": [
     {
-      "source": "/:section(app|admin|menu|qr|audit-preview|purchase)/:path*",
+      "source": "/:section(app|admin|menu|qr|audit-preview|purchase|demo|preview)/:path*",
       "destination": "/index"
     },
     {
-      "source": "/:page(app|admin|template-showcase|showcase|audit-preview)",
+      "source": "/:page(app|admin|template-showcase|showcase|audit-preview|template-1)",
       "destination": "/index"
     }
   ]

@@ -891,7 +891,7 @@ export default function CharacterCarouselSection() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full sm:w-auto">
               <a
-                href="/pricing"
+                href="/plans"
                 className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-menusqr-orange hover:bg-amber-600 text-white shadow-md text-xs font-bold transition-all active:scale-95 cursor-pointer text-center"
               >
                 <span>Get MenusQR For Your Restaurant</span>

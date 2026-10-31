@@ -2033,7 +2033,7 @@ export default function OnboardingWizard() {
                     {/* Premium Realistic iPhone Mockup */}
                     <div className="w-full flex justify-center py-1">
                       <PremiumIPhoneMockup
-                        className="w-[285px] sm:w-[315px]"
+                        className="w-[330px] sm:w-[360px] md:w-[375px] max-w-full"
                         statusBarTheme={studioTheme.mode === 'dark' ? 'light' : 'dark'}
                       >
                         <div
@@ -2226,7 +2226,7 @@ export default function OnboardingWizard() {
 
                     <div className="w-full flex justify-center py-1">
                       <PremiumIPhoneMockup
-                        className="w-[285px] sm:w-[315px]"
+                        className="w-[330px] sm:w-[360px] md:w-[375px] max-w-full"
                         statusBarTheme={previewTheme.mode === 'dark' ? 'light' : 'dark'}
                       >
                         <div className="w-full h-full overflow-y-auto mq-showcase-preview-frame">

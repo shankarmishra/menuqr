@@ -152,12 +152,16 @@ const SignatureBody: React.FC<
   Omit<MenuRendererProps, 'theme' | 'className'> & { signatureId: keyof typeof SIGNATURE_COMPONENTS }
 > = ({ signatureId, ...rest }) => {
   const Composition = SIGNATURE_COMPONENTS[signatureId];
-  return <Composition {...rest} />;
+  return <Composition key={signatureId} {...rest} />;
 };
 
 export const MenuRenderer: React.FC<MenuRendererProps> = ({ theme, className, ...rest }) => (
   <MenuThemeProvider theme={theme} className={className}>
-    {theme.signatureId ? <SignatureBody signatureId={theme.signatureId} {...rest} /> : <MenuBody {...rest} />}
+    {theme.signatureId ? (
+      <SignatureBody key={theme.signatureId} signatureId={theme.signatureId} {...rest} />
+    ) : (
+      <MenuBody key={theme.presetId || 'default-menu-body'} {...rest} />
+    )}
   </MenuThemeProvider>
 );
 
