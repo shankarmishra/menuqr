@@ -54,16 +54,20 @@ export function inputMenuFeatures(value) {
 
 /**
  * Merges stored menu-feature toggles (or their absence) with the defaults, and resolves the
- * WhatsApp chat number — the owner's explicit override, or `clients.phone` as a fallback — into
- * the E.164 shape `wa.me` needs. Called once per public menu read, so the resolution happens
- * server-side and the frontend never re-derives a phone format.
+ * WhatsApp chat number into the E.164 shape `wa.me` needs.
+ *
+ * [P2-FIX] The second parameter `clientPhone` (the owner's private signup number) is no longer
+ * used as a fallback for the public WhatsApp button.  Only an explicit override set by the
+ * owner in the menu-features panel is published.  The parameter is kept in the signature so
+ * existing call-sites do not need a simultaneous update, but it is intentionally ignored.
  */
-export function resolveMenuFeatures(accentConfiguration, clientPhone) {
+export function resolveMenuFeatures(accentConfiguration, _clientPhone) {
   const stored = accentConfiguration && typeof accentConfiguration === 'object' ? accentConfiguration.menuFeatures : null;
   const merged = stored ? inputMenuFeatures(stored) : DEFAULT_MENU_FEATURES;
 
-  const resolvedNumber = merged.whatsappChat.enabled
-    ? normalizePhone(merged.whatsappChat.number || clientPhone || '')
+  // Only use the owner's explicit override — never fall back to the private signup phone.
+  const resolvedNumber = merged.whatsappChat.enabled && merged.whatsappChat.number
+    ? normalizePhone(merged.whatsappChat.number)
     : '';
 
   return {
