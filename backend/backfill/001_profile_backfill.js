@@ -22,8 +22,9 @@ import {
 
 const isDryRun = process.argv.includes('--dry-run');
 
-async function runBackfill() {
-  console.log(`\n🚀 Starting Profile & Brand Kit Backfill (dryRun=${isDryRun})...\n`);
+export async function runBackfill(options = {}) {
+  const dryRun = options.dryRun !== undefined ? options.dryRun : process.argv.includes('--dry-run');
+  console.log(`\n🚀 Starting Profile & Brand Kit Backfill (dryRun=${dryRun})...\n`);
 
   const activePool = pool || (await connectDB(process.env.DATABASE_URL));
   const client = await activePool.connect();
@@ -100,7 +101,7 @@ async function runBackfill() {
         const reviewFlags = c.review_flags || { phone_privacy_pending: true };
 
         console.log(`[PROFILE] Tenant ${tenantId} (${displayName}): missing profile -> will create.`);
-        if (!isDryRun) {
+        if (!dryRun) {
           await client.query(
             `INSERT INTO restaurant_profiles (
               tenant_id, display_name, tagline, cuisine_tags, address, hours,
@@ -135,7 +136,7 @@ async function runBackfill() {
         const palette = app.accent_configuration?.palette || {};
 
         console.log(`[BRAND] Tenant ${tenantId}: missing brand_kit -> will create.`);
-        if (!isDryRun) {
+        if (!dryRun) {
           await client.query(
             `INSERT INTO brand_kits (tenant_id, logo, palette, colour_mood, cover_media_id, version, updated_at)
              VALUES ($1, $2, $3, 'default', $4, 1, NOW())
@@ -150,7 +151,7 @@ async function runBackfill() {
       const ordRes = await client.query('SELECT tenant_id FROM ordering_settings WHERE tenant_id = $1', [tenantId]);
       if (ordRes.rows.length === 0) {
         console.log(`[ORDERING] Tenant ${tenantId}: missing ordering_settings -> will create.`);
-        if (!isDryRun) {
+        if (!dryRun) {
           await client.query(
             `INSERT INTO ordering_settings (tenant_id, dine_in_enabled, takeaway_enabled, delivery_enabled, accepting_orders)
              VALUES ($1, true, false, false, true)
@@ -166,10 +167,13 @@ async function runBackfill() {
     console.log(`  Profiles migrated:     ${migratedProfiles}`);
     console.log(`  Brand Kits migrated:   ${migratedBrandKits}`);
     console.log(`  Ordering configs added:${migratedOrdering}`);
-    console.log(isDryRun ? `\n(Dry run completed: no database modifications made)\n` : `\nDatabase successfully updated.\n`);
+    console.log(dryRun ? `\n(Dry run completed: no database modifications made)\n` : `\nDatabase successfully updated.\n`);
+    return { migratedProfiles, migratedBrandKits, migratedOrdering };
   } finally {
     client.release();
-    await pool.end();
+    if (options.closePool) {
+      await pool.end();
+    }
   }
 }
 
