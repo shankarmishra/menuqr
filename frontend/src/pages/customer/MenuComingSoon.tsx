@@ -1,4 +1,5 @@
 import { Phone } from 'lucide-react';
+import { firstDialNumber } from '../../utils/dialNumber';
 
 type MenuComingSoonProps = {
   name: string;
@@ -14,7 +15,7 @@ type MenuComingSoonProps = {
  * owner has actually saved (name, tagline, logo, phone): nothing is invented to fill the page.
  */
 export function MenuComingSoon({ name, tagline, logoUrl, phone, background, textColor }: MenuComingSoonProps) {
-  const dial = phone ? phone.replace(/[^\d+]/g, '') : '';
+  const dial = firstDialNumber(phone);
 
   return (
     <main
