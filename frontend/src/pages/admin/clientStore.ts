@@ -1,3 +1,5 @@
+import { isPlaceholderMenu } from '../../utils/menuPlaceholder';
+
 export type ClientCategory = 'restaurants' | 'dhabas' | 'cafes';
 export type MenuDietType = 'veg' | 'non-veg' | 'vegan';
 
@@ -473,7 +475,9 @@ interface RawPublicMenuApiResponse {
 }
 
 function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
-  const menuItems: MenuItemRecord[] = raw.items.map((item) => ({
+  // An old backend invents dishes for an empty menu; such a menu is shown as empty (see isPlaceholderMenu).
+  const placeholder = isPlaceholderMenu(raw.items, raw.categories);
+  const menuItems: MenuItemRecord[] = (placeholder ? [] : raw.items).map((item) => ({
     id: item.id,
     name: item.name,
     description: item.description ?? '',
@@ -513,7 +517,7 @@ function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
     cuisine: (raw.restaurant as any).cuisine || undefined,
     services: [],
     heroImage: undefined,
-    categories: raw.categories,
+    categories: placeholder ? [] : raw.categories,
     menuItems,
     plan: raw.plan,
     orderingEnabled: raw.orderingEnabled,

@@ -68,6 +68,7 @@ import GuestFeedbackCard from '../../components/customer/GuestFeedbackCard';
 import VoiceWelcomeBanner from '../../components/customer/VoiceWelcomeBanner';
 import DishCustomizationDrawer, { type CustomizationResult } from '../../components/customer/DishCustomizationDrawer';
 import { availableOrderModes } from './orderModes';
+import { MenuComingSoon } from './MenuComingSoon';
 import './MenuPage.css';
 
 export interface CartItem {
@@ -810,6 +811,23 @@ export default function MenuPage() {
     isSpecial: Boolean(item.tags?.badges?.includes('special')),
     trending: menuFeatures?.trending.enabled === false ? false : item.trending,
   }));
+
+  // A restaurant that has not added any dishes yet: say so plainly instead of showing an empty page.
+  if (itemsForRenderer.length === 0) {
+    return (
+      <>
+        <SEO title={`${client.businessName || 'Restaurant Menu'} | MenusQR`} description="This menu is being prepared." canonicalUrl={`/menu/${slug}`} index={false} />
+        <MenuComingSoon
+          name={client.businessName}
+          tagline={client.tagline}
+          logoUrl={client.logoUrl}
+          phone={client.phone}
+          background={effectiveBg}
+          textColor={effectiveText}
+        />
+      </>
+    );
+  }
 
   const cartTotalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartTotalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
