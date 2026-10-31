@@ -17,6 +17,14 @@ export interface ItemPricingDetails {
   cleanDescription?: string;
 }
 
+/**
+ * A variant name typed by an owner can contain regular-expression characters ("Half (", "[Large").
+ * Built into a RegExp as they are, they throw and take the whole menu down, so escape them first.
+ */
+export function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export function formatIndianPrice(val: number | string | undefined | null): string {
   if (val === undefined || val === null || val === '') return '';
   const num = typeof val === 'number' ? val : parseFloat(String(val).replace(/[^0-9.]/g, ''));
@@ -44,7 +52,7 @@ export function parseItemPricing(item: MenuItem): ItemPricingDetails {
         name = dotMatch[1].trim();
         portion = dotMatch[2].trim();
       } else {
-        const regex = new RegExp(`(?:^|[;\\n,\\.\\s])${name}\\s*[:\\-\\—\\·]\\s*([^;\\n,\\.]+)`, 'i');
+        const regex = new RegExp(`(?:^|[;\\n,\\.\\s])${escapeRegExp(name)}\\s*[:\\-\\—\\·]\\s*([^;\\n,\\.]+)`, 'i');
         const m = desc.match(regex);
         if (m) portion = m[1].trim();
       }
@@ -54,7 +62,7 @@ export function parseItemPricing(item: MenuItem): ItemPricingDetails {
 
     for (const v of variants) {
       if (v.portion) {
-        const re = new RegExp(`(?:^|[;\\n,\\s]*)${v.name}\\s*[:\\-\\—\\·]\\s*${v.portion}[;\\n,\\s]*`, 'gi');
+        const re = new RegExp(`(?:^|[;\\n,\\s]*)${escapeRegExp(v.name)}\\s*[:\\-\\—\\·]\\s*${escapeRegExp(v.portion)}[;\\n,\\s]*`, 'gi');
         cleanDesc = cleanDesc.replace(re, ' ').trim();
       }
     }
@@ -138,7 +146,8 @@ export function parseItemPricing(item: MenuItem): ItemPricingDetails {
     hasVariants: false,
     variants: [],
     basePrice,
-    formattedBasePrice: basePrice !== undefined && !isNaN(basePrice) ? formatIndianPrice(basePrice) : '',
+    // A missing price reaches the renderer as 0, and "₹0" is wrong, so a price must be above zero.
+    formattedBasePrice: basePrice !== undefined && !isNaN(basePrice) && basePrice > 0 ? formatIndianPrice(basePrice) : '',
     cleanDescription: desc,
   };
 }
