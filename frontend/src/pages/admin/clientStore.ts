@@ -1,4 +1,5 @@
-import { isPlaceholderMenu } from '../../utils/menuPlaceholder';
+import { mapPublicMenu, type RawPublicMenuApiResponse } from '../customer/publicMenuMapper';
+import type { PublicAnnouncement, PublicOffer, PublicProfileFields } from '../customer/publicProfileTypes';
 
 export type ClientCategory = 'restaurants' | 'dhabas' | 'cafes';
 export type MenuDietType = 'veg' | 'non-veg' | 'vegan';
@@ -93,7 +94,7 @@ export interface ClientRecord {
   createdAt: string;
 }
 
-export interface PublicMenuRecord {
+export interface PublicMenuRecord extends PublicProfileFields {
   businessName: string;
   displayName?: string;
   story?: string;
@@ -125,8 +126,8 @@ export interface PublicMenuRecord {
     enabled: boolean;
     reviewUrl?: string;
   };
-  announcement?: { text: string; linkType?: string; linkTarget?: string | null; i18n?: any } | null;
-  offers?: any[];
+  announcement?: PublicAnnouncement | null;
+  offers?: PublicOffer[];
   orderingSettings?: {
     dineIn: boolean;
     takeaway: boolean;
@@ -424,110 +425,6 @@ export async function getClient(id: string): Promise<ClientRecord | undefined> {
     if (error instanceof Error && error.message === 'Client not found.') return undefined;
     throw error;
   }
-}
-
-// Raw shape returned by GET /api/public/menus/:slug
-interface RawPublicMenuApiResponse {
-  isExpired?: boolean;
-  menuSlug?: string;
-  restaurant: {
-    name: string;
-    tagline?: string;
-    category?: string;
-    phone?: string;
-    address?: string;
-    city?: string;
-    logo?: string;
-  };
-  plan: string;
-  orderingEnabled?: boolean;
-  templateId?: string;
-  accentConfiguration?: unknown;
-  menuFeatures?: ResolvedMenuFeatures;
-  theme?: unknown;
-  googleReviews?: {
-    enabled: boolean;
-    reviewUrl?: string;
-  };
-  orderingSettings?: PublicMenuRecord['orderingSettings'];
-  categories: Array<{ id: string; name: string; order: number }>;
-  items: Array<{
-    id: string;
-    name: string;
-    description?: string;
-    price: number;
-    halfPrice?: number | null;
-    fullPrice?: number | null;
-    pricingType?: string;
-    category: string;
-    dietType: 'veg' | 'non-veg' | 'vegan';
-    available: boolean;
-    image?: string;
-    focalX?: number | null;
-    focalY?: number | null;
-    tags?: ItemTags | null;
-    soldOut?: boolean;
-    availabilityNote?: string | null;
-    variants?: Array<{ id?: string; name: string; price: number; variantGroup?: string }>;
-    trending?: boolean;
-    translations?: Record<string, { name?: string; description?: string }> | null;
-  }>;
-}
-
-function mapPublicMenu(raw: RawPublicMenuApiResponse): PublicMenuRecord {
-  // An old backend invents dishes for an empty menu; such a menu is shown as empty (see isPlaceholderMenu).
-  const placeholder = isPlaceholderMenu(raw.items, raw.categories);
-  const menuItems: MenuItemRecord[] = (placeholder ? [] : raw.items).map((item) => ({
-    id: item.id,
-    name: item.name,
-    description: item.description ?? '',
-    price: String(item.price),
-    pricingType: (item.pricingType as any) || (item.variants && item.variants.length > 0 ? 'variants' : (item.halfPrice || item.fullPrice ? 'half-full' : 'single')),
-    halfPrice: item.halfPrice !== undefined && item.halfPrice !== null ? String(item.halfPrice) : '',
-    fullPrice: item.fullPrice !== undefined && item.fullPrice !== null ? String(item.fullPrice) : '',
-    regPrice: '',
-    medPrice: '',
-    largePrice: '',
-    category: item.category,
-    dietType: (item.dietType ?? 'veg') as MenuDietType,
-    image: item.image ?? '',
-    focalX: item.focalX ?? null,
-    focalY: item.focalY ?? null,
-    tags: item.tags ?? null,
-    soldOut: item.soldOut ?? false,
-    availabilityNote: item.availabilityNote ?? null,
-    available: item.available,
-    variants: item.variants,
-    trending: item.trending,
-    translations: item.translations ?? null,
-  }));
-  return {
-    businessName: raw.restaurant.name,
-    tagline: raw.restaurant.tagline ?? '',
-    logoUrl: raw.restaurant.logo || undefined,
-    category: (raw.restaurant.category ?? 'restaurants') as ClientCategory,
-    phone: raw.restaurant.phone ?? '',
-    address: raw.restaurant.address ?? '',
-    city: raw.restaurant.city ?? '',
-    state: (raw.restaurant as any).state || '',
-    website: (raw.restaurant as any).website || '',
-    openingHours: (raw.restaurant as any).openingHours || '',
-    instagram: (raw.restaurant as any).instagram || undefined,
-    facebook: (raw.restaurant as any).facebook || undefined,
-    cuisine: (raw.restaurant as any).cuisine || undefined,
-    services: [],
-    heroImage: undefined,
-    categories: placeholder ? [] : raw.categories,
-    menuItems,
-    plan: raw.plan,
-    orderingEnabled: raw.orderingEnabled,
-    templateId: raw.templateId,
-    accentConfiguration: raw.accentConfiguration,
-    menuFeatures: raw.menuFeatures,
-    theme: raw.theme,
-    googleReviews: raw.googleReviews,
-    orderingSettings: raw.orderingSettings,
-  };
 }
 
 export async function getClientByMenuSlug(slug: string): Promise<PublicMenuRecord | undefined> {

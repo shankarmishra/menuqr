@@ -113,15 +113,14 @@ export const PhotoDish: React.FC<{
   return (
     <article className={['mq-ed-photo-dish', className].filter(Boolean).join(' ')}>
       {item.imageUrl && (
-        <div className="mq-ed-photo-dish-media">
-          <SmartImage
-            src={item.imageUrl}
-            alt={item.name}
-            role="card"
-            focal={item.focal}
-            aspectRatio={aspect}
-          />
-        </div>
+        <SmartImage
+          src={item.imageUrl}
+          alt={item.name}
+          role="card"
+          focal={item.focal}
+          aspectRatio={aspect}
+          className="mq-ed-photo-dish-media"
+        />
       )}
       <div className="mq-ed-photo-dish-body">
         {eyebrow && <span className="mq-ed-eyebrow">{eyebrow}</span>}

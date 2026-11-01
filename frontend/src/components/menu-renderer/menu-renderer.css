@@ -66,6 +66,11 @@
   gap: var(--mq-space-10);
 }
 
+.mq-section-stack > section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 400px;
+}
+
 .mq-prose {
   max-width: var(--mq-measure);
 }

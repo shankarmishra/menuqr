@@ -65,8 +65,10 @@ export type SmartImageProps = {
   /** Set only for the one image above the fold; everything else stays lazy. */
   priority?: boolean;
   className?: string;
-  /** Rendered in place of the image when `src` is absent. */
+  /** Rendered in place of the image when `src` is absent or fails to load. When omitted, nothing is rendered. */
   placeholder?: React.ReactNode;
+  /** Callback when the image fails to load. */
+  onError?: () => void;
 };
 
 export const SmartImage: React.FC<SmartImageProps> = ({
@@ -78,18 +80,16 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   priority = false,
   className,
   placeholder,
+  onError,
 }) => {
   const [hasError, setHasError] = useState(false);
   const frameStyle: React.CSSProperties = aspectRatio ? { aspectRatio } : {};
 
   if (!src || hasError) {
+    if (!placeholder) return null;
     return (
       <div className={['mq-image-frame', className].filter(Boolean).join(' ')} style={frameStyle}>
-        {placeholder ?? (
-          // A dish with no photo gets a quiet tinted frame. A placeholder word such as "Delicious" is a claim
-          // the restaurant never made, and an unlabelled frame is the honest alternative.
-          <div className="mq-image-placeholder bg-white/[0.04]" aria-hidden="true" />
-        )}
+        {placeholder}
       </div>
     );
   }
@@ -107,7 +107,10 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   const img = (
     <img
       className="mq-image"
-      onError={() => setHasError(true)}
+      onError={() => {
+        setHasError(true);
+        onError?.();
+      }}
       src={src}
       alt={alt}
       // Intrinsic dimensions plus the frame's aspect-ratio are what hold layout steady while

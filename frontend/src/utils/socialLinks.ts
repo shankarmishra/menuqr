@@ -12,6 +12,8 @@
  * backend/test/fixtures/profile-rules.json are run against both.
  */
 
+import { firstDialNumber } from './dialNumber.ts';
+
 const INSTAGRAM_HOSTS = new Set(['instagram.com', 'www.instagram.com', 'm.instagram.com', 'instagr.am', 'www.instagr.am']);
 const INSTAGRAM_RESERVED = new Set([
   'p', 'reel', 'reels', 'tv', 'stories', 'explore', 'accounts', 'direct', 'about', 'legal', 'developer',
@@ -172,4 +174,115 @@ export function phoneLinks(value?: string | null): PhoneLink[] {
 /** The first valid number, or null. */
 export function firstPhone(value?: string | null): PhoneLink | null {
   return phoneLinks(value)[0] ?? null;
+}
+
+/** `tel:` link for the first number of a phone field, or null when there is nothing dialable. */
+export function telHref(value?: string | null): string | null {
+  const dial = firstDialNumber(value);
+  return dial.length >= 6 ? `tel:${dial}` : null;
+}
+
+/**
+ * `https://wa.me/<digits>` for an Indian number, or for an explicit international "+..." number,
+ * with an optional pre-filled message. Null for toll-free numbers and anything unreadable.
+ */
+export function whatsappUrl(value?: string | null, message?: string | null): string | null {
+  const first = firstPhone(value);
+  let digits = first?.whatsapp ?? '';
+  if (!first) {
+    const international = clean(value).replace(/[\s().-]/g, '');
+    if (/^\+\d{8,15}$/.test(international)) digits = international.slice(1);
+  }
+  if (!digits) return null;
+  const text = clean(message);
+  return `https://wa.me/${digits}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
+}
+
+/**
+ * A saved Google Maps link, or null. Only real map links qualify: a `google.com/url?q=` redirect or
+ * a shortened `goo.gl` link to anywhere else is refused, because the page opens this link for guests.
+ */
+export function mapsUrl(value?: string | null): string | null {
+  const raw = clean(value);
+  if (!raw || raw.length > 2048) return null;
+  const url = parseUrl(raw);
+  if (!url || url.username || url.password) return null;
+  const host = url.hostname.toLowerCase();
+  const isGoogle = host === 'google.com' || host.endsWith('.google.com');
+  const isMapsPath = url.pathname === '/maps' || url.pathname.startsWith('/maps/');
+  const ok =
+    host === 'maps.app.goo.gl' ||
+    (host === 'goo.gl' && isMapsPath) ||
+    (isGoogle && (isMapsPath || host === 'maps.google.com'));
+  return ok ? `https://${host}${url.pathname}${url.search}` : null;
+}
+
+/**
+ * Where "Get directions" goes: the saved Maps link when it is valid, otherwise a Google Maps search
+ * for the name, address and city. Null when there is no link and no address to search for.
+ */
+export function directionsUrl(input: {
+  mapsUrl?: string | null;
+  directionsUrl?: string | null;
+  name?: string | null;
+  address?: string | null;
+  city?: string | null;
+}): string | null {
+  const saved = mapsUrl(input.mapsUrl) ?? mapsUrl(input.directionsUrl);
+  if (saved) return saved;
+  const address = clean(input.address);
+  const city = clean(input.city);
+  if (!address && !city) return null;
+  const query = [clean(input.name), address, city].filter(Boolean).join(' ');
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+export interface StoredLinkTarget {
+  href: string;
+  /** What to show beside the icon: "@handle", the address without its scheme, or the platform name. */
+  text: string;
+}
+
+const hostIs = (href: string, allowed: string[]) => {
+  const host = new URL(href).hostname.toLowerCase();
+  return allowed.some((name) => host === name || host.endsWith(`.${name}`));
+};
+
+/**
+ * The link for one entry of the restaurant's saved links (`links[]`: instagram, facebook, youtube,
+ * website, zomato, swiggy, custom), or null when the value is not a valid link for that type.
+ */
+export function storedLinkTarget(type: string, value?: string | null): StoredLinkTarget | null {
+  switch (type) {
+    case 'instagram': {
+      const handle = instagramHandle(value);
+      return handle ? { href: `https://www.instagram.com/${handle}/`, text: `@${handle}` } : null;
+    }
+    case 'facebook': {
+      const href = facebookUrl(value);
+      return href ? { href, text: websiteLabel(href) ?? 'Facebook' } : null;
+    }
+    case 'website':
+    case 'custom': {
+      const href = websiteUrl(value);
+      return href ? { href, text: websiteLabel(href) ?? href } : null;
+    }
+    case 'youtube':
+    case 'zomato':
+    case 'swiggy': {
+      const href = websiteUrl(value);
+      const hosts = type === 'youtube' ? ['youtube.com', 'youtu.be'] : [`${type}.com`];
+      if (!href || !hostIs(href, hosts)) return null;
+      return { href, text: type === 'youtube' ? websiteLabel(href) ?? href : type === 'zomato' ? 'Zomato' : 'Swiggy' };
+    }
+    default:
+      return null;
+  }
+}
+
+/** The link an announcement banner points to: a web address or a WhatsApp number, nothing else. */
+export function announcementHref(linkType?: string | null, linkTarget?: string | null): string | null {
+  if (linkType === 'url') return websiteUrl(linkTarget);
+  if (linkType === 'whatsapp') return whatsappUrl(linkTarget);
+  return null;
 }

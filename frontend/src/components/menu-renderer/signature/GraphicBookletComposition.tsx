@@ -174,7 +174,9 @@ export const GraphicBookletComposition: React.FC<SignatureProps> = ({
             <div className="mq-sig-feature-row">
               {featured.slice(0, 2).map((item) => (
                 <article key={item.id} className="mq-sig-feature-card">
-                  <SmartImage src={item.imageUrl} alt={item.name} role="thumb" focal={item.focal} aspectRatio="var(--mq-aspect-square)" className="mq-sig-feature-photo" />
+                  {item.imageUrl && (
+                    <SmartImage src={item.imageUrl} alt={item.name} role="thumb" focal={item.focal} aspectRatio="var(--mq-aspect-square)" className="mq-sig-feature-photo" />
+                  )}
                   <div className="mq-grow" style={{ minWidth: 0 }}>
                     <span className="mq-eyebrow">{item.isBestseller ? 'Bestseller' : 'Chef Pick'}</span>
                     <h4 className="mq-dish-name mq-clamp-2">{item.name}</h4>
