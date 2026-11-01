@@ -59,6 +59,10 @@ export const DhabaMasterpieceCover: React.FC<SlotProps> = ({ restaurant, categor
     if (target) target.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // The corner artwork is decoration, but a roasted chicken on the cover of a pure-vegetarian restaurant
+  // is still a false picture of it. The chicken plate is used only when the menu has non-vegetarian dishes.
+  const bottomRightDish = hasNonVeg ? 'roasted_chicken_platter' : 'paneer_tikka_masala';
+
   const dishSize = compact ? 110 : 140;
   const bottomDishSize = compact ? 120 : 155;
   const mascotWidth = compact ? 98 : 118;
@@ -114,12 +118,12 @@ export const DhabaMasterpieceCover: React.FC<SlotProps> = ({ restaurant, categor
       </div>
       <div className="absolute -bottom-8 -right-8 sm:-bottom-10 sm:-right-10 pointer-events-none z-10" aria-hidden="true">
         <img
-          src="/assets/dhaba-cover/roasted_chicken_platter.webp"
+          src={`/assets/dhaba-cover/${bottomRightDish}.webp`}
           alt=""
           width={bottomDishSize}
           height={bottomDishSize}
           className="object-contain filter drop-shadow-[0_14px_24px_rgba(0,0,0,0.28)] -rotate-2"
-          style={{ width: bottomDishSize, height: bottomDishSize }}
+          style={{ width: bottomDishSize, height: bottomDishSize, transform: hasNonVeg ? undefined : 'scaleX(-1) rotate(2deg)' }}
           loading="lazy"
           decoding="async"
         />

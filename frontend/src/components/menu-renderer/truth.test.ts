@@ -173,6 +173,19 @@ const RICH: Fixture = {
 
 const EMPTY: Fixture = { restaurant: { name: 'Test Kitchen' }, categories: [] };
 
+/** The target of every <a> in the markup (not the resource hints React adds for images). */
+const anchorHrefs = (html: string): string[] => [...html.matchAll(/<a\s[^>]*?href="([^"]*)"/g)].map((match) => match[1]);
+
+/** Links a design may print for RICH: anchors, the two phone numbers, WhatsApp, Facebook, the website and a maps search. */
+const ALLOWED_HREF = [
+  /^#/,
+  /^https:\/\/maps\.google\.com\/\?q=/,
+  /^tel:\+91\d{10}$/,
+  /^https:\/\/wa\.me\/91\d{10}$/,
+  /^https:\/\/www\.facebook\.com\/shobharams$/,
+  /^https:\/\/shobharam\.in$/,
+];
+
 type Loaded = {
   MenuRenderer: React.ComponentType<Record<string, unknown>>;
   CartContext: React.Context<Record<string, unknown>>;
@@ -180,6 +193,7 @@ type Loaded = {
   themeFromPresetId: (id: string) => unknown;
   DietMark: React.ComponentType<{ type?: string }>;
   DishPrice: React.ComponentType<{ item: unknown }>;
+  EditionContact: React.ComponentType<{ restaurant: RenderRestaurant }>;
 };
 
 let vite: ViteDevServer;
@@ -207,7 +221,9 @@ before(async () => {
   const presets = await vite.ssrLoadModule('/src/design-system/presets.ts');
   const cart = await vite.ssrLoadModule('/src/components/menu-builder/templates/shared/MenuCartContext.tsx');
   const meta = await vite.ssrLoadModule('/src/components/menu-renderer/primitives/DishMeta.tsx');
+  const shared = await vite.ssrLoadModule('/src/components/menu-renderer/signature/editions/shared.tsx');
   loaded = {
+    EditionContact: shared.EditionContact,
     MenuRenderer: renderer.default,
     CartContext: cart.MenuCartContext,
     PRESETS: presets.PRESETS,
@@ -282,6 +298,12 @@ for (const presetId of PRESET_IDS) {
       for (const problem of inventionsIn(html, fixture)) problems.push(`[${label}] ${problem}`);
       // A price of zero or a missing price is never shown as a price.
       assert.ok(!/₹\s*0(?![\d.,])/.test(html), `[${label}] ${presetId} shows a price of 0`);
+      // Every link is a real one: the malformed Instagram value in RICH must produce no link at all.
+      assert.ok(!html.includes('@https'), `[${label}] ${presetId} prints an "@https" handle`);
+      assert.ok(!/instagram\.com/i.test(html), `[${label}] ${presetId} links to Instagram from a malformed value`);
+      for (const href of anchorHrefs(html)) {
+        assert.ok(ALLOWED_HREF.some((pattern) => pattern.test(href)), `[${label}] ${presetId} has an unexpected link: ${href}`);
+      }
     }
     assert.deepEqual(problems, [], `${presetId} prints text that is not from the data:\n${problems.join('\n')}`);
   });
@@ -306,6 +328,44 @@ test('a missing, zero or non-numeric price prints no price and no order button',
     assert.ok(!/>0</.test(html), `price ${String(price)} printed a stray 0: ${html}`);
     assert.ok(!html.includes('<button'), `price ${String(price)} offered an order button: ${html}`);
   }
+});
+
+test('EditionContact builds every link through socialLinks: a malformed value renders no link, never "@https://..."', async () => {
+  const hrefsOf = async (restaurant: RenderRestaurant) => {
+    const html = await toHtml(React.createElement(loaded.EditionContact, { restaurant }));
+    return { html, hrefs: anchorHrefs(html) };
+  };
+
+  const broken = await hrefsOf({
+    name: 'X',
+    instagram: '@https://instagram.com/shankar.dhaba',
+    facebook: 'https://www.facebook.com/sharer/sharer.php?u=1',
+    website: 'javascript:alert(1)',
+    phone: '12345',
+  });
+  assert.deepEqual(broken.hrefs, [], `malformed values produced links: ${broken.hrefs.join(', ')}`);
+  assert.ok(!broken.html.includes('@https'), 'prints an @https handle');
+  assert.ok(broken.html.includes('12345'), 'a number we cannot dial is still shown as the owner wrote it, just not as a link');
+
+  const post = await hrefsOf({ name: 'X', instagram: 'https://www.instagram.com/p/ABC123/' });
+  assert.deepEqual(post.hrefs, [], 'an Instagram post link is not a profile');
+
+  const good = await hrefsOf({
+    name: 'X',
+    instagram: '@shobharams',
+    facebook: 'facebook.com/shobharams',
+    website: 'shobharam.in',
+    phone: '+91 98765 43210, +91 98765 43211',
+  });
+  assert.deepEqual(good.hrefs, [
+    'tel:+919876543210',
+    'tel:+919876543211',
+    'https://www.instagram.com/shobharams/',
+    'https://www.facebook.com/shobharams',
+    'https://shobharam.in',
+  ]);
+  // React separates adjacent text nodes with a comment, so read the text the way a person does.
+  assert.ok(visibleStrings(good.html).includes('@shobharams'));
 });
 
 test('visibleStrings sees what a design prints, so the render lint cannot pass on an empty page', async () => {
