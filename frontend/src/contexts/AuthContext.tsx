@@ -26,8 +26,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuth = async () => {
     try {
       const apiBaseUrl = getApiBaseUrl();
+      let authToken: string | null = null;
+      try {
+        authToken = localStorage.getItem('menusqr_auth_token') || sessionStorage.getItem('menusqr_auth_token');
+      } catch {}
+      const authHeaders: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+
       const response = await fetch(`${apiBaseUrl}/api/auth/session`, {
         credentials: 'include',
+        headers: authHeaders,
       });
       if (response.ok) {
         const data = await parseApiResponse<{

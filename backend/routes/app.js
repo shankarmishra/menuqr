@@ -1815,7 +1815,6 @@ export default async function appRoutes(request, response, url) {
   // call — this is what gives an onboarded-via-Excel menu the same photo coverage an
   // Excel import done later from the Menu page already gets.
   if (request.method === 'POST' && url.pathname === '/api/app/menu/resolve-images') {
-    requireBasicContentAccess(authorization);
     const input = await readJson(request);
     const rawItems = Array.isArray(input?.items) ? input.items : [];
     if (rawItems.length === 0 || rawItems.length > 300) {

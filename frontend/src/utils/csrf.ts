@@ -28,7 +28,16 @@ export async function ensureCsrfToken(): Promise<string | null> {
 
   try {
     const apiBaseUrl = getApiBaseUrl();
-    const res = await fetch(`${apiBaseUrl}/api/auth/session`, { credentials: 'include' });
+    let authToken: string | null = null;
+    try {
+      authToken = localStorage.getItem('menusqr_auth_token') || sessionStorage.getItem('menusqr_auth_token');
+    } catch {}
+    const authHeaders: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+
+    const res = await fetch(`${apiBaseUrl}/api/auth/session`, {
+      credentials: 'include',
+      headers: authHeaders,
+    });
     if (res.ok) {
       const data = await parseApiResponse<{ csrfToken?: string }>(res);
       if (data && typeof data.csrfToken === 'string') {

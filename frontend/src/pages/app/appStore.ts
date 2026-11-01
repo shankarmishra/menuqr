@@ -8,50 +8,43 @@ import type { MenuTheme } from '../../design-system/theme.types.ts';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
-
+function getStoredAuthToken(): string | null {
+  try {
+    return (
+      localStorage.getItem('menusqr_auth_token') ||
+      sessionStorage.getItem('menusqr_auth_token') ||
+      null
+    );
+  } catch {
+    return null;
+  }
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-
   let response: Response;
-
   const method = (init?.method || 'GET').toUpperCase();
-
   const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
-
   let csrfHeaders: Record<string, string> = {};
-
   if (isStateChanging) {
-
     const token = await ensureCsrfToken();
-
     if (token) {
-
       csrfHeaders['X-CSRF-Token'] = token;
-
     }
-
   }
 
-
+  const authToken = getStoredAuthToken();
+  const authHeaders: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
   try {
-
     response = await fetch(`${apiBaseUrl}/api/app${path}`, {
-
       ...init,
-
       credentials: 'include',
-
       headers: {
-
         'Content-Type': 'application/json',
-
+        ...authHeaders,
         ...csrfHeaders,
-
         ...init?.headers,
-
       },
-
     });
 
   } catch {

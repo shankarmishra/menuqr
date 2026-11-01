@@ -84,6 +84,19 @@ import { OB, DISPLAY } from './onboarding/chrome';
 import { processLogoFile } from '../../lib/logo/browserAdapter.ts';
 import { LogoMark } from '../../components/brand/LogoMark.tsx';
 
+function getUserIdFromToken(): string | null {
+  try {
+    const token = localStorage.getItem('menusqr_auth_token') || sessionStorage.getItem('menusqr_auth_token');
+    if (!token) return null;
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return payload?.id || null;
+  } catch {
+    return null;
+  }
+}
+
 // Reads a file as a data URL, then runs it through the real optimize+storage
 // pipeline (sharp resize, AVIF/WebP variants, durable storage driver) instead
 // of holding a raw base64 blob in component state — that pipeline already
@@ -450,12 +463,14 @@ export default function OnboardingWizard() {
         setPlanId(subResult.value.planId.toUpperCase());
       }
 
-      const profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
-      if (profile?.id) setUserId(profile.id);
+      const rawProfile: any = profileResult.status === 'fulfilled' ? profileResult.value : null;
+      const canonical = rawProfile?.profile;
+      const profileId = rawProfile?.id || canonical?.id || getUserIdFromToken();
+      if (profileId) setUserId(profileId);
 
       // A local draft is a full, more-recent snapshot of this session's progress — prefer it
       // over re-deriving the identity step from the profile alone when one exists.
-      const draft = profile?.id ? loadDraft(profile.id) : null;
+      const draft = profileId ? loadDraft(profileId) : null;
       if (draft) {
         const isShowcase = SHOWCASE_PRESETS.some((p) => p.id === draft.restaurantData.templateId);
         const safeTemplateId = isShowcase ? draft.restaurantData.templateId : DEFAULT_SHOWCASE_PRESET_ID;
@@ -463,16 +478,23 @@ export default function OnboardingWizard() {
         setRestaurantData({ ...draft.restaurantData, templateId: safeTemplateId });
         setStudioTheme(isShowcase ? draft.studioTheme : themeFromPresetId(safeTemplateId));
         if (draft.restaurantData.name || draft.restaurantData.phone) setIsPreloaded(true);
-      } else if (profile) {
-        if (profile.businessName || profile.phone || profile.city || profile.address) {
+      } else if (rawProfile) {
+        const resolvedName = rawProfile.businessName || canonical?.displayName || '';
+        const resolvedPhone = rawProfile.phone || (Array.isArray(canonical?.contacts) && canonical.contacts[0]?.value) || '';
+        const resolvedCity = rawProfile.city || (typeof canonical?.address === 'object' ? canonical.address?.city : '') || '';
+        const resolvedAddress = rawProfile.address || (typeof canonical?.address === 'string' ? canonical.address : [canonical?.address?.line1, canonical?.address?.line2, canonical?.address?.city].filter(Boolean).join(', ')) || '';
+        const resolvedTagline = rawProfile.tagline || canonical?.tagline || '';
+        const resolvedLogoUrl = rawProfile.logoUrl || '';
+
+        if (resolvedName || resolvedPhone || resolvedCity || resolvedAddress) {
           setRestaurantData((prev) => ({
             ...prev,
-            name: profile.businessName || prev.name,
-            tagline: profile.tagline || prev.tagline,
-            phone: profile.phone || prev.phone,
-            city: profile.city || prev.city,
-            address: profile.address || prev.address,
-            logoUrl: profile.logoUrl || prev.logoUrl,
+            name: resolvedName || prev.name,
+            tagline: resolvedTagline || prev.tagline,
+            phone: resolvedPhone || prev.phone,
+            city: resolvedCity || prev.city,
+            address: resolvedAddress || prev.address,
+            logoUrl: resolvedLogoUrl || prev.logoUrl,
           }));
           setIsPreloaded(true);
         }

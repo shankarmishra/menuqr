@@ -57,7 +57,27 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
       itemsWithDescriptionsPercent: totalItems > 0 ? (withDesc / totalItems) * 100 : 0,
     });
 
+    // Also fetch legacy client & user attributes for backwards compatibility
+    let legacy = {};
+    try {
+      const legacyRes = await pool.query(`
+        SELECT u.id as "id", u.email, u.role, c.business_name as "businessName", c.menu_slug as "menuSlug", c.status, c.tagline, c.phone, c.city, c.state, c.address, c.logo_url as "logoUrl", c.cuisine, c.opening_hours as "openingHours", c.instagram, c.facebook, c.website, a.accent_configuration as "accentConfiguration"
+        FROM users u
+        JOIN clients c ON u.tenant_id = c.id
+        LEFT JOIN appearance_settings a ON a.tenant_id = c.id
+        WHERE u.id = $1 AND c.id = $2
+      `, [user.id, user.tenantId]);
+      if (legacyRes.rows[0]) legacy = legacyRes.rows[0];
+    } catch (_) {}
+
     sendJson(response, 200, {
+      ...legacy,
+      id: String(user.id),
+      businessName: legacy.businessName || profile.displayName || '',
+      phone: legacy.phone || (Array.isArray(profile.contacts) && profile.contacts[0]?.value) || '',
+      city: legacy.city || (typeof profile.address === 'object' ? profile.address?.city : '') || '',
+      address: legacy.address || (typeof profile.address === 'string' ? profile.address : [profile.address?.line1, profile.address?.line2, profile.address?.city, profile.address?.pincode].filter(Boolean).join(', ')) || '',
+      tagline: legacy.tagline || profile.tagline || '',
       profile,
       completeness,
       plan: authorization.planId,
