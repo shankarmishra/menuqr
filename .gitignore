@@ -70,7 +70,12 @@ frontend/public/marketing/phone-mockup.png
 menusqr-instagram/
 test_*.js
 
-docs/
+# docs/ is a local scratch area (audits, screenshots, hi-res PDF pages: roughly 100 MB) and stays
+# untracked, except the permanent project-memory documents listed below, which are tracked on purpose.
+docs/*
+!docs/MENUQR_MASTER_CONTEXT.md
+!docs/SESSION_START_PROMPT.md
+!docs/MENUQR_PLATFORM_BLUEPRINT_V4.md
 uploads/
 # ^ covers backend/uploads and frontend/public/uploads at any depth.
 #   Client media lives in object storage in production (see backend/storage/).
