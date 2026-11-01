@@ -3,13 +3,33 @@
  * 
  * Server-authoritative normalisers and validators for restaurant profile facts,
  * social links, opening hours, phones, addresses, and regulatory identifiers.
+ * Guaranteed parity with frontend src/utils/socialLinks.ts via profile-rules.json.
  */
+
+const INSTAGRAM_HOSTS = new Set(['instagram.com', 'www.instagram.com', 'm.instagram.com', 'instagr.am', 'www.instagr.am']);
+const INSTAGRAM_RESERVED = new Set([
+  'p', 'reel', 'reels', 'tv', 'stories', 'explore', 'accounts', 'direct', 'about', 'legal', 'developer',
+  'web', 'directory', 'privacy', 'press', 'api', 'challenge', 'oauth', 'emails', 'session', 'login',
+  'download', 'topics', 'locations',
+]);
+const INSTAGRAM_HANDLE = /^(?!.*\.\.)[a-z0-9._]{1,30}$/;
+
+const FACEBOOK_HOSTS = new Set(['facebook.com', 'www.facebook.com', 'm.facebook.com', 'web.facebook.com', 'fb.com', 'www.fb.com', 'fb.me']);
+const FACEBOOK_BLOCKED = new Set(['sharer', 'sharer.php', 'share', 'share.php', 'dialog', 'login', 'login.php', 'plugins', 'tr', 'l.php', 'policies', 'help']);
+const FACEBOOK_NAME = /^[A-Za-z0-9.\-]{5,50}$/;
+const FACEBOOK_SEGMENT = /^[A-Za-z0-9._\-%]{1,120}$/;
+
+const RESERVED_SLUGS = new Set([
+  'admin', 'template-1', 'demo', 'api', 'login', 'app', 'qr', 'menu', 'menus',
+  'dashboard', 'settings', 'auth', 'signup', 'webhook', 'health', 'public', 'static',
+]);
 
 /** Strips HTML tags, trims whitespace, removes zero-width characters, normalises to Unicode NFC. */
 export function sanitizeText(val, maxLength = 255) {
   if (typeof val !== 'string') return '';
   return val
-    .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, '').replace(/<[^>]*>/g, '') // strip scripts and HTML
+    .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, '')
+    .replace(/<[^>]*>/g, '') // strip HTML tags
     .replace(/[\u200B-\u200D\uFEFF]/g, '') // strip zero-width chars
     .normalize('NFC')
     .trim()
@@ -18,70 +38,72 @@ export function sanitizeText(val, maxLength = 255) {
 
 /**
  * Normalises an Instagram input into a clean handle.
- * Accepts: @handle, handle, https://instagram.com/handle, https://www.instagram.com/handle/?hl=en
- * Rejects: /p/, /reel/, /stories/, /explore/, other hostnames, >30 chars.
+ * Accepts: @handle, handle, https://instagram.com/handle, https://instagr.am/handle
+ * Rejects: /p/, /reel/, /stories/, /explore/, other hostnames, >30 chars, consecutive dots.
  */
 export function normalizeInstagram(input) {
   if (!input || typeof input !== 'string') return null;
-  let str = input.trim();
-  if (!str) return null;
+  const raw = sanitizeText(input);
+  if (!raw) return null;
 
-  // If a URL was pasted:
-  if (str.includes('instagram.com')) {
+  let candidate = raw;
+  const isUrlLike = /^(https?:\/\/|www\.|(m\.)?instagram\.com|instagr\.am)/i.test(raw);
+  if (isUrlLike || raw.includes('instagram.com') || raw.includes('instagr.am')) {
     try {
-      if (!/^https?:\/\//i.test(str)) str = 'https://' + str;
-      const url = new URL(str);
+      const urlStr = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+      const url = new URL(urlStr);
       const host = url.hostname.toLowerCase();
-      if (!host.endsWith('instagram.com')) return null;
+      if (!INSTAGRAM_HOSTS.has(host)) return null;
 
-      const parts = url.pathname.split('/').filter(Boolean);
-      if (parts.length === 0) return null;
-      const first = parts[0].toLowerCase();
-      // Reject non-profile paths
-      if (['p', 'reel', 'reels', 'stories', 'explore', 'accounts', 'direct'].includes(first)) {
-        return null;
-      }
-      str = parts[0];
+      const segments = url.pathname.split('/').filter(Boolean);
+      if (segments.length === 0) return null;
+      const first = segments[0].toLowerCase();
+      if (INSTAGRAM_RESERVED.has(first)) return null;
+      candidate = first;
     } catch {
       return null;
     }
   }
 
-  // Strip leading @
-  str = str.replace(/^@+/, '').trim();
-  // Valid Instagram handle: letters, numbers, periods, underscores, 1-30 chars
-  if (!/^[A-Za-z0-9._]{1,30}$/.test(str)) return null;
-  return str;
+  const handle = candidate.replace(/^@+/, '').replace(/[/?#].*$/, '').toLowerCase();
+  return INSTAGRAM_HANDLE.test(handle) ? handle : null;
 }
 
 /**
- * Normalises Facebook page URL or handle.
+ * Normalises Facebook page URL or handle into canonical https://www.facebook.com/... format.
  */
 export function normalizeFacebook(input) {
   if (!input || typeof input !== 'string') return null;
-  let str = input.trim();
-  if (!str) return null;
+  const raw = sanitizeText(input);
+  if (!raw) return null;
 
-  if (str.includes('facebook.com') || str.includes('fb.me') || str.includes('fb.com')) {
+  const isUrlLike = /^(https?:\/\/|www\.|m\.|web\.|(facebook|fb)\.com|fb\.me)/i.test(raw);
+  if (isUrlLike || raw.includes('facebook.com') || raw.includes('fb.me') || raw.includes('fb.com')) {
     try {
-      if (!/^https?:\/\//i.test(str)) str = 'https://' + str;
-      const url = new URL(str);
+      const urlStr = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+      const url = new URL(urlStr);
       const host = url.hostname.toLowerCase();
-      const isDomain = (h, d) => h === d || h.endsWith('.' + d);
-      if (!isDomain(host, 'facebook.com') && !isDomain(host, 'fb.me') && !isDomain(host, 'fb.com')) {
-        return null;
+      if (!FACEBOOK_HOSTS.has(host)) return null;
+
+      const segments = url.pathname.split('/').filter(Boolean);
+      if (segments.length === 0 || FACEBOOK_BLOCKED.has(segments[0].toLowerCase())) return null;
+
+      if (segments[0].toLowerCase() === 'profile.php') {
+        const id = url.searchParams.get('id') || '';
+        return /^\d{5,20}$/.test(id) ? `https://www.facebook.com/profile.php?id=${id}` : null;
       }
-      return url.origin + url.pathname;
+
+      if (segments.every((segment) => FACEBOOK_SEGMENT.test(segment))) {
+        return `https://www.facebook.com/${segments.join('/')}`;
+      }
+      return null;
     } catch {
       return null;
     }
   }
 
-  const clean = str.replace(/^@+/, '').trim();
-  if (/^[A-Za-z0-9.]{3,50}$/.test(clean)) {
-    return `https://www.facebook.com/${clean}`;
-  }
-  return null;
+  const name = raw.replace(/^@+/, '');
+  return FACEBOOK_NAME.test(name) ? `https://www.facebook.com/${name}` : null;
 }
 
 /**
@@ -89,15 +111,14 @@ export function normalizeFacebook(input) {
  */
 export function normalizeYouTube(input) {
   if (!input || typeof input !== 'string') return null;
-  let str = input.trim();
-  if (!str) return null;
+  const raw = sanitizeText(input);
+  if (!raw) return null;
 
   try {
-    if (!/^https?:\/\//i.test(str)) str = 'https://' + str;
-    const url = new URL(str);
+    const urlStr = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    const url = new URL(urlStr);
     const host = url.hostname.toLowerCase();
     if (!host.endsWith('youtube.com') && !host.endsWith('youtu.be')) return null;
-    // Reject plain watch links
     if (url.pathname.includes('/watch') || host.endsWith('youtu.be')) return null;
     return url.origin + url.pathname;
   } catch {
@@ -110,23 +131,27 @@ export function normalizeYouTube(input) {
  */
 export function normalizeWebsite(input) {
   if (!input || typeof input !== 'string') return null;
-  let str = input.trim();
-  if (!str) return null;
+  const raw = sanitizeText(input);
+  if (!raw || raw.length > 2048) return null;
+
+  if (/^(javascript|data|vbscript|file|ftp|mailto|tel|blob):/i.test(raw) || (raw.includes('://') && !/^https?:\/\//i.test(raw))) {
+    return null;
+  }
 
   try {
-    if (!/^https?:\/\//i.test(str)) str = 'https://' + str;
-    const url = new URL(str);
-    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
-    // Disallow IP addresses and localhost
-    const host = url.hostname.toLowerCase();
-    if (host === 'localhost' || /^127\.|^10\.|^192\.168\.|^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host)) {
-      return null;
-    }
-    if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host)) return null;
+    const urlStr = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    const url = new URL(urlStr);
     if (url.username || url.password) return null;
-    // Always upgrade to HTTPS
-    url.protocol = 'https:';
-    return url.href;
+
+    const host = url.hostname.toLowerCase();
+    const isIpAddress = /^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.startsWith('[');
+    const isInternal = host === 'localhost' || /\.(localhost|local|internal|test|invalid|example)$/.test(host);
+    if (!host.includes('.') || host.startsWith('.') || host.endsWith('.') || isIpAddress || isInternal) return null;
+    if (host.split('.').some((label) => label.startsWith('xn--'))) return null;
+    if (url.port && url.port !== '80' && url.port !== '443') return null;
+
+    const path = url.pathname === '/' ? '' : url.pathname.replace(/\/+$/, '');
+    return `https://${host}${path}${url.search}`;
   } catch {
     return null;
   }
@@ -137,12 +162,12 @@ export function normalizeWebsite(input) {
  */
 export function normalizeMapsUrl(input) {
   if (!input || typeof input !== 'string') return null;
-  let str = input.trim();
+  const str = sanitizeText(input);
   if (!str) return null;
 
   try {
-    if (!/^https?:\/\//i.test(str)) str = 'https://' + str;
-    const url = new URL(str);
+    const urlStr = /^https?:\/\//i.test(str) ? str : `https://${str}`;
+    const url = new URL(urlStr);
     const host = url.hostname.toLowerCase();
     const isGoogleMaps = host.endsWith('google.com') || host === 'maps.app.goo.gl' || host === 'goo.gl';
     if (!isGoogleMaps) return null;
@@ -150,13 +175,11 @@ export function normalizeMapsUrl(input) {
     let lat = null;
     let lng = null;
 
-    // Check for @lat,lng,zoom pattern in pathname
     const match = url.pathname.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
     if (match) {
       lat = parseFloat(match[1]);
       lng = parseFloat(match[2]);
     } else {
-      // Check query params q=lat,lng or ll=lat,lng
       const q = url.searchParams.get('q') || url.searchParams.get('ll');
       if (q) {
         const qm = q.match(/(-?\d+\.\d+),(-?\d+\.\d+)/);
@@ -167,30 +190,30 @@ export function normalizeMapsUrl(input) {
       }
     }
 
-    return {
-      url: str,
-      lat,
-      lng,
-    };
+    return { url: str, lat, lng };
   } catch {
     return null;
   }
 }
 
 /**
- * Normalises Indian phone number to E.164 (+91XXXXXXXXXX) format.
- * Supports mobile and landlines.
+ * Normalises an Indian phone number to E.164 (+91XXXXXXXXXX) format.
  */
 export function normalizePhoneNumber(input) {
   if (!input || typeof input !== 'string') return null;
-  const digits = input.replace(/\D/g, '');
+  const raw = sanitizeText(input);
+  if (!raw || /[a-zA-Z]/.test(raw)) return null;
+
+  if (raw.startsWith('+') && !raw.startsWith('+91')) return null;
+
+  const digits = raw.replace(/\D/g, '');
 
   // 10-digit mobile starting with 6, 7, 8, or 9
   if (digits.length === 10 && /^[6-9]/.test(digits)) {
     return `+91${digits}`;
   }
 
-  // 11-digit starting with 0 (e.g. 09812345678)
+  // 11-digit starting with 0
   if (digits.length === 11 && digits.startsWith('0') && /^[6-9]/.test(digits.slice(1))) {
     return `+91${digits.slice(1)}`;
   }
@@ -200,16 +223,119 @@ export function normalizePhoneNumber(input) {
     return `+${digits}`;
   }
 
-  // Toll-Free numbers (1800XXXXXXX)
-  if (digits.startsWith('1800') && (digits.length === 10 || digits.length === 11)) {
+  // Toll-Free numbers (1800XXXXXXX or 1860XXXXXXX)
+  if ((digits.startsWith('1800') || digits.startsWith('1860')) && (digits.length === 10 || digits.length === 11)) {
     return `+91${digits}`;
   }
 
   // Landline with explicit STD code (e.g. 011-23456789, 0120-4567890)
-  if (input.includes('-') || input.trim().startsWith('0')) {
+  if (raw.includes('-') || raw.startsWith('0')) {
     if (digits.length >= 9 && digits.length <= 11) {
       const rawDigits = digits.startsWith('0') ? digits.slice(1) : digits;
       return `+91${rawDigits}`;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Normalises and formats a phone field (possibly containing multiple numbers separated by commas,
+ * slashes, or 'or') into formatted display string "+91 XXXXX XXXXX, ...".
+ * Validates against profile-rules.json fixtures.
+ */
+export function normalizePhones(input) {
+  if (input === null || input === undefined) return null;
+  if (typeof input !== 'string') return null;
+  const raw = sanitizeText(input);
+  if (!raw) return null;
+
+  const tokens = raw.split(/\s*(?:[,;]|\s\/\s|\sor\s|\s&\s)\s*/i).filter(Boolean);
+  if (tokens.length === 0) return null;
+
+  const seen = new Set();
+  const formattedList = [];
+
+  for (const token of tokens) {
+    if (/[a-zA-Z]/.test(token)) return null; // Reject strings like "Shop 12"
+
+    const digits = token.replace(/[^\d+]/g, '');
+    if (!digits) return null;
+
+    let national = '';
+    if (digits.startsWith('+')) {
+      if (!digits.startsWith('+91')) return null; // Foreign numbers rejected
+      national = digits.slice(3);
+    } else if (digits.startsWith('91') && digits.length === 12) {
+      national = digits.slice(2);
+    } else if (digits.startsWith('0')) {
+      national = digits.slice(1);
+    } else {
+      national = digits;
+    }
+
+    let formatted = '';
+    if (/^1(?:800|860)\d{6,7}$/.test(national)) {
+      formatted = `${national.slice(0, 4)} ${national.slice(4)}`;
+    } else if (/^\d{10}$/.test(national)) {
+      formatted = `+91 ${national.slice(0, 5)} ${national.slice(5)}`;
+    } else if (/^11\d{8}$/.test(national)) { // 011 Delhi STD
+      formatted = `+91 ${national.slice(0, 5)} ${national.slice(5)}`;
+    } else {
+      return null;
+    }
+
+    if (!seen.has(formatted)) {
+      seen.add(formatted);
+      formattedList.push(formatted);
+    }
+  }
+
+  if (formattedList.length === 0 || formattedList.length > 4) return null;
+  return formattedList.join(', ');
+}
+
+/**
+ * Normalises a menu slug.
+ * Length 3-50, lowercase alphanumeric with single hyphens, no reserved words.
+ */
+export function normalizeSlug(input) {
+  if (!input || typeof input !== 'string') return null;
+  const raw = sanitizeText(input).toLowerCase();
+  if (raw.length < 3 || raw.length > 50) return null;
+
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(raw)) return null;
+  if (RESERVED_SLUGS.has(raw)) return null;
+
+  return raw;
+}
+
+/**
+ * Normalises an image URL (either /uploads/ relative path or https:// URL).
+ * Rejects path traversal and insecure protocols.
+ */
+export function normalizeImageUrl(input) {
+  if (input === null || input === undefined) return null;
+  if (typeof input !== 'string') return null;
+  const raw = sanitizeText(input);
+  if (!raw) return null;
+
+  if (/^(javascript|data|vbscript|file|ftp):/i.test(raw)) return null;
+
+  if (raw.startsWith('/uploads/')) {
+    if (raw.includes('..')) return null; // Path traversal
+    if (/^\/uploads\/[A-Za-z0-9._\-\/]+$/.test(raw)) return raw;
+    return null;
+  }
+
+  if (raw.startsWith('http://')) return null;
+
+  if (raw.startsWith('https://')) {
+    try {
+      const url = new URL(raw);
+      return url.href;
+    } catch {
+      return null;
     }
   }
 
@@ -231,23 +357,12 @@ export function validateFSSAI(fssai) {
   if (!fssai) return false;
   const clean = String(fssai).trim();
   if (!/^\d{14}$/.test(clean)) return false;
-  // Reject numbers with all identical digits (e.g. 11111111111111)
   if (/^(\d)\1{13}$/.test(clean)) return false;
   return true;
 }
 
 /**
  * Validates and normalises weekly opening hours.
- * Expected shape:
- * {
- *   weekly: {
- *     mon: { closed: false, shifts: [{ open: "10:00", close: "23:00", overnight: false }] },
- *     ...
- *   },
- *   exceptions: [{ date: "2026-11-12", closed: true, note: "Diwali" }],
- *   lastOrderMinutes: 30,
- *   note: "string"
- * }
  */
 export function validateWeeklyHours(hours) {
   if (!hours || typeof hours !== 'object') return { weekly: {}, exceptions: [], lastOrderMinutes: 0 };
@@ -265,7 +380,7 @@ export function validateWeeklyHours(hours) {
     const rawShifts = Array.isArray(dayConfig.shifts) ? dayConfig.shifts : [];
     const validShifts = [];
 
-    for (const shift of rawShifts.slice(0, 3)) { // maximum 3 shifts
+    for (const shift of rawShifts.slice(0, 3)) {
       const open = String(shift.open || '').trim();
       const close = String(shift.close || '').trim();
       const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -275,13 +390,9 @@ export function validateWeeklyHours(hours) {
         const [cH, cM] = close.split(':').map(Number);
         const openMin = oH * 60 + oM;
         const closeMin = cH * 60 + cM;
-        const overnight = closeMin <= openMin; // runs past midnight
+        const overnight = closeMin <= openMin;
 
-        validShifts.push({
-          open,
-          close,
-          overnight,
-        });
+        validShifts.push({ open, close, overnight });
       }
     }
 
@@ -332,7 +443,6 @@ export function validateContacts(contacts) {
     });
   }
 
-  // Ensure at most one primary, default first to primary if none set
   if (cleaned.length > 0) {
     const primaryCount = cleaned.filter((c) => c.primary).length;
     if (primaryCount === 0) cleaned[0].primary = true;
