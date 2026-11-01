@@ -17,15 +17,17 @@ import {
   Trash2, 
   Image as ImageIcon,
   Sparkles,
-  Search
+  Search,
+  Type
 } from 'lucide-react';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
-import PremiumIPhoneMockup from '../../components/marketing/PremiumIPhoneMockup';
+import PhonePreviewFrame from '../../components/preview/PhonePreviewFrame';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import { LogoMark } from '../../components/brand/LogoMark';
 import { processLogoFile } from '../../lib/logo/browserAdapter';
 import { SHOWCASE_PRESETS, PRESETS, themeFromPresetId } from '../../design-system/presets';
-import { derivePalette } from '../../design-system/palette';
+import { derivePalette, CURATED_SEEDS } from '../../design-system/palette';
+import { FONT_PAIRINGS, FONT_PAIRING_IDS, type FontPairingId } from '../../design-system/fonts';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { 
   getAppearance, 
@@ -56,6 +58,8 @@ export default function Appearance() {
   const [profile, setProfile] = useState<AppProfile | null>(null);
   const [sub, setSub] = useState<AppSubscriptionData | null>(null);
   const [templateId, setTemplateId] = useState('rajasthani-heritage');
+  const [customAccent, setCustomAccent] = useState<string | null>(null);
+  const [customFontPair, setCustomFontPair] = useState<FontPairingId | null>(null);
   const [brandLogo, setBrandLogo] = useState<string>('');
   const [displayName, setDisplayName] = useState<string>('');
   const [brandTagline, setBrandTagline] = useState<string>('');
@@ -270,20 +274,24 @@ export default function Appearance() {
     );
   }, [templateId]);
 
-  const activePalette = useMemo(() => {
-    return derivePalette(activePreset.seedColor, activePreset.mode);
-  }, [activePreset]);
-
   const resolvedTheme = useMemo(() => {
     const base = themeFromPresetId(templateId);
+    const effectiveAccent = customAccent || base.brand.seedColor;
+    const effectiveFontPair = customFontPair || base.typePair;
     return {
       ...base,
+      typePair: effectiveFontPair,
       brand: {
         ...base.brand,
+        seedColor: effectiveAccent,
         logoUrl: brandLogo.trim() || profile?.logoUrl || null,
       },
     };
-  }, [templateId, brandLogo, profile?.logoUrl]);
+  }, [templateId, customAccent, customFontPair, brandLogo, profile?.logoUrl]);
+
+  const activePalette = useMemo(() => {
+    return derivePalette(resolvedTheme.brand.seedColor, activePreset.mode);
+  }, [resolvedTheme.brand.seedColor, activePreset.mode]);
 
   const filteredPresets = useMemo(() => {
     return SHOWCASE_PRESETS.filter((preset) => {
@@ -495,13 +503,18 @@ export default function Appearance() {
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-white/90">
                             #{editionNum}
                           </span>
                           <span className="text-[10px] font-bold uppercase tracking-wider text-[#e8783c]">
                             {preset.category}
                           </span>
+                          {preset.id === 'atelier-rangeen' && (
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 flex items-center gap-1">
+                              ★ Atelier 400
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-1.5">
@@ -545,6 +558,84 @@ export default function Appearance() {
               })}
             </div>
           </div>
+
+          {/* Section 3: Color Accents & Font Pairings (Instant Draft Reactivity) */}
+          <div className="bg-[#1d2723] rounded-2xl border border-[#2a3832] p-5 sm:p-6 space-y-5">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-[#2a3832]">
+              <div className="w-8 h-8 rounded-lg bg-[#e8783c]/15 text-[#e8783c] flex items-center justify-center">
+                <Palette size={18} />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-white">Brand Accent & Typography</h2>
+                <p className="text-xs text-[#849a90]">Customize color accent and font pairing with instant live preview</p>
+              </div>
+            </div>
+
+            {/* Color Accent Picker */}
+            <div className="space-y-2.5">
+              <label className="block text-xs font-semibold text-[#849a90]">
+                Curated Color Accent (Active: <span className="text-white font-mono">{resolvedTheme.brand.seedColor}</span>)
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                {CURATED_SEEDS.map((item) => {
+                  const isCurActive = resolvedTheme.brand.seedColor.toLowerCase() === item.seed.toLowerCase();
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setCustomAccent(item.seed)}
+                      style={{ backgroundColor: item.seed }}
+                      className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer flex items-center justify-center ${
+                        isCurActive ? 'border-white scale-110 shadow-lg' : 'border-black/30 hover:scale-105'
+                      }`}
+                      title={`${item.label} (${item.seed})`}
+                    >
+                      {isCurActive && <Check size={12} className="text-white drop-shadow" />}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => setCustomAccent(null)}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[#849a90] hover:text-white border border-[#2a3832] hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  Reset to Preset
+                </button>
+              </div>
+            </div>
+
+            {/* Font Pairing Picker */}
+            <div className="space-y-2.5">
+              <label className="block text-xs font-semibold text-[#849a90] flex items-center gap-1.5">
+                <Type size={13} className="text-[#e8783c]" />
+                Font Pairing (Active: <span className="text-white font-bold">{FONT_PAIRINGS[resolvedTheme.typePair]?.label || resolvedTheme.typePair}</span>)
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {FONT_PAIRING_IDS.slice(0, 6).map((pairId) => {
+                  const pair = FONT_PAIRINGS[pairId];
+                  const isPairActive = resolvedTheme.typePair === pairId;
+                  return (
+                    <button
+                      key={pairId}
+                      type="button"
+                      onClick={() => setCustomFontPair(pairId)}
+                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                        isPairActive
+                          ? 'border-[#e8783c] bg-[#e8783c]/10 text-white ring-1 ring-[#e8783c]'
+                          : 'border-[#2a3832] bg-[#151c19] text-[#849a90] hover:text-white hover:border-[#42574d]'
+                      }`}
+                    >
+                      <div>
+                        <div className="text-xs font-bold leading-tight text-white">{pair.label}</div>
+                        <div className="text-[10px] text-[#849a90] truncate max-w-[170px]">{pair.display.family} + {pair.body.family}</div>
+                      </div>
+                      {isPairActive && <Check size={13} className="text-[#e8783c] shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Right Column: Live Interactive Phone & Desktop Simulator */}
@@ -581,13 +672,16 @@ export default function Appearance() {
           
           {previewMode === 'phone' ? (
             <div className="py-1 w-full flex justify-center">
-              <PremiumIPhoneMockup
-                className="w-[330px] sm:w-[360px] md:w-[375px] max-w-full shadow-2xl"
+              <PhonePreviewFrame
+                viewportWidth={390}
+                viewportHeight={844}
+                scaleToFit={true}
+                theme={resolvedTheme}
+                presetId={templateId}
+                palette={activePalette}
                 badgeText={`${activePreset.label} Edition`}
                 statusBarTheme={activePreset.mode === 'dark' ? 'light' : 'dark'}
-                homeIndicatorTheme={activePreset.mode === 'dark' ? 'light' : 'dark'}
                 screenStyle={{ backgroundColor: activePalette.bg }}
-                screenClassName=""
               >
                 <div
                   className="w-full h-full overflow-y-auto mq-showcase-preview-frame"
@@ -615,7 +709,7 @@ export default function Appearance() {
                     {/* Actual Menu Content */}
                     <div className="flex-1 pb-24">
                       <MenuTemplateRenderer
-                        key={templateId}
+                        key={`${templateId}-${resolvedTheme.brand.seedColor}-${resolvedTheme.typePair}`}
                         templateId={templateId}
                         theme={resolvedTheme}
                         restaurant={{ 
@@ -672,7 +766,7 @@ export default function Appearance() {
                     )}
                   </div>
                 </div>
-              </PremiumIPhoneMockup>
+              </PhonePreviewFrame>
             </div>
           ) : (
             <div className="w-full aspect-[4/3] rounded-xl border-4 border-[#151c19] overflow-hidden shadow-2xl relative bg-black max-h-[500px]">

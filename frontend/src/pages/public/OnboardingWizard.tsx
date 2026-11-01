@@ -55,7 +55,7 @@ import type { FontPairingId } from '../../design-system/fonts';
 import { CURATED_SEEDS } from '../../design-system/palette';
 import { isValidHex } from '../../design-system/color';
 import { DEMO_RESTAURANT } from '../../data/menuTemplates';
-import PremiumIPhoneMockup from '../../components/marketing/PremiumIPhoneMockup';
+import PhonePreviewFrame from '../../components/preview/PhonePreviewFrame';
 import { 
   parseExcelMenuFile, 
   downloadSampleMenuExcel, 
@@ -1407,13 +1407,18 @@ export default function OnboardingWizard() {
                               >
                                 <div>
                                   <div className="flex items-center justify-between gap-2 mb-2">
-                                    <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
                                       <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-white/90">
                                         #{editionNum}
                                       </span>
                                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#A3957E]">
                                         {preset.category}
                                       </span>
+                                      {preset.id === 'atelier-rangeen' && (
+                                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 flex items-center gap-1">
+                                          ★ Atelier 400
+                                        </span>
+                                      )}
                                     </div>
 
                                     <div className="flex items-center gap-1.5">
@@ -2082,10 +2087,15 @@ export default function OnboardingWizard() {
                       </button>
                     </div>
 
-                    {/* Premium Realistic iPhone Mockup */}
+                    {/* Standard 390x844 Mobile Viewport Frame */}
                     <div className="w-full flex justify-center py-1">
-                      <PremiumIPhoneMockup
-                        className="w-[330px] sm:w-[360px] md:w-[375px] max-w-full"
+                      <PhonePreviewFrame
+                        viewportWidth={390}
+                        viewportHeight={844}
+                        scaleToFit={true}
+                        theme={studioTheme}
+                        presetId={restaurantData.templateId}
+                        badgeText={`${SHOWCASE_PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'Edition'} Edition`}
                         statusBarTheme={studioTheme.mode === 'dark' ? 'light' : 'dark'}
                       >
                         <div
@@ -2109,7 +2119,7 @@ export default function OnboardingWizard() {
                             compact={false}
                           />
                         </div>
-                      </PremiumIPhoneMockup>
+                      </PhonePreviewFrame>
                     </div>
 
                     {/* Preview status info */}
@@ -2277,8 +2287,13 @@ export default function OnboardingWizard() {
                     </div>
 
                     <div className="w-full flex justify-center py-1">
-                      <PremiumIPhoneMockup
-                        className="w-[330px] sm:w-[360px] md:w-[375px] max-w-full"
+                      <PhonePreviewFrame
+                        viewportWidth={390}
+                        viewportHeight={844}
+                        scaleToFit={true}
+                        theme={previewTheme}
+                        presetId={restaurantData.templateId}
+                        badgeText={`${SHOWCASE_PRESETS.find((p) => p.id === restaurantData.templateId)?.label || 'Edition'} Edition`}
                         statusBarTheme={previewTheme.mode === 'dark' ? 'light' : 'dark'}
                       >
                         <div className="w-full h-full overflow-y-auto mq-showcase-preview-frame">
@@ -2299,7 +2314,7 @@ export default function OnboardingWizard() {
                             compact={false}
                           />
                         </div>
-                      </PremiumIPhoneMockup>
+                      </PhonePreviewFrame>
                     </div>
                   </div>
                 </div>

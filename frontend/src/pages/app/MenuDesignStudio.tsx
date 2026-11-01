@@ -41,7 +41,7 @@ import {
 
 import MenuRenderer from '../../components/menu-renderer/MenuRenderer';
 import { FocalPointPicker } from '../../components/menu-renderer/primitives/FocalPointPicker';
-import PremiumIPhoneMockup from '../../components/marketing/PremiumIPhoneMockup';
+import PhonePreviewFrame from '../../components/preview/PhonePreviewFrame';
 import { useToast } from '../../components/feedback/ToastProvider';
 
 import { CURATED_SEEDS, derivePalette } from '../../design-system/palette';
@@ -101,7 +101,7 @@ const TABS: Array<{ id: TabId; label: string; icon: typeof Layers }> = [
   { id: 'photos', label: '5. Dish Photography', icon: ImageIcon },
 ];
 
-/** The 10 Ultra-Detailed Masterpiece Editions */
+/** The 11 Ultra-Detailed Masterpiece Editions (includes Atelier Rangeen) */
 const MASTERPIECE_PRESET_IDS = new Set([
   'edition-maison-noir',
   'edition-herbarium',
@@ -113,6 +113,7 @@ const MASTERPIECE_PRESET_IDS = new Set([
   'edition-thali-and-co',
   'edition-bombay-chowk',
   'edition-atelier-pastel',
+  'atelier-rangeen',
 ]);
 
 const AUTOSAVE_DELAY_MS = 900;
@@ -183,6 +184,7 @@ export default function MenuDesignStudio() {
 
   const [activeTab, setActiveTab] = useState<TabId>('preset');
   const [saving, setSaving] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -260,6 +262,19 @@ export default function MenuDesignStudio() {
     return SHOWCASE_PRESETS.find((p) => p.id === theme.presetId) ?? getPreset(theme.presetId);
   }, [theme?.presetId]);
 
+  const handleSaveDraft = useCallback(() => {
+    if (!theme) return;
+    setSavingDraft(true);
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    saveThemeDraft(theme)
+      .then(() => {
+        setHasUnpublished(true);
+        showToast('success', 'Draft saved. Ready to publish when you are set.');
+      })
+      .catch((err) => showToast('error', err instanceof Error ? err.message : 'Could not save draft.'))
+      .finally(() => setSavingDraft(false));
+  }, [theme, showToast]);
+
   const handlePublish = useCallback(() => {
     if (!theme) return;
     setPublishing(true);
@@ -267,7 +282,7 @@ export default function MenuDesignStudio() {
       .then((result) => {
         setPublishedVersion(result.version);
         setHasUnpublished(false);
-        showToast('success', 'Your menu design is live.');
+        showToast('success', 'Your menu design is published live.');
         getThemeHistory().then(setHistory).catch(() => {});
       })
       .catch((err) => showToast('error', err instanceof Error ? err.message : 'Publish failed.'))
@@ -418,12 +433,22 @@ export default function MenuDesignStudio() {
 
           <button
             type="button"
+            onClick={handleSaveDraft}
+            disabled={savingDraft || saving}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-[#1d2723] hover:bg-[#25322c] border border-[#2a3832] text-xs font-bold text-white transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {savingDraft ? <Loader2 size={13} className="animate-spin text-[#e8783c]" /> : <Save size={13} />}
+            Save Draft
+          </button>
+
+          <button
+            type="button"
             onClick={handlePublish}
             disabled={publishing || (!hasUnpublished && publishedVersion > 0)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#e8783c] hover:bg-[#f08b55] disabled:opacity-50 disabled:cursor-default text-sm font-bold text-white shadow-lg shadow-[#e8783c]/20 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#e8783c] to-[#f08b55] hover:brightness-110 disabled:opacity-50 disabled:cursor-default text-sm font-bold text-white shadow-lg shadow-[#e8783c]/20 transition-all cursor-pointer"
           >
-            {publishing ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-            Publish
+            {publishing ? <Loader2 size={15} className="animate-spin" /> : <Zap size={15} />}
+            Publish Live
           </button>
         </div>
       </header>
@@ -534,14 +559,16 @@ export default function MenuDesignStudio() {
           {/* Interactive Frame */}
           {previewViewport === 'phone' ? (
             <div className="w-full flex justify-center py-1">
-              <PremiumIPhoneMockup
-                badgeText="Interactive Preview"
-                showStatusBar
-                showDynamicIsland
-                showHomeIndicator
+              <PhonePreviewFrame
+                theme={theme}
+                presetId={currentPreset.id}
+                palette={derivePalette(theme.brand.seedColor, theme.mode)}
+                viewportWidth={390}
+                viewportHeight={844}
+                scaleToFit={true}
+                badgeText={`${currentPreset.label} Edition`}
                 statusBarTheme={theme.mode === 'dark' ? 'light' : 'dark'}
-                homeIndicatorTheme={theme.mode === 'dark' ? 'light' : 'dark'}
-                className="w-[330px] sm:w-[360px] md:w-[375px] max-w-full"
+                scrollRef={phoneScrollRef}
               >
                 <div
                   ref={phoneScrollRef}
@@ -554,7 +581,7 @@ export default function MenuDesignStudio() {
                     compact={false}
                   />
                 </div>
-              </PremiumIPhoneMockup>
+              </PhonePreviewFrame>
             </div>
           ) : (
             <div className="w-full max-w-[420px] rounded-[32px] p-3.5 bg-[#0e1411] border-2 border-[#2a3832] shadow-2xl">
@@ -753,11 +780,15 @@ function PresetTab({
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#849a90]">
                       {preset.category}
                     </span>
-                    {isMasterpiece && (
+                    {preset.id === 'atelier-rangeen' ? (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 flex items-center gap-1">
+                        ★ Atelier 400
+                      </span>
+                    ) : isMasterpiece ? (
                       <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 text-[#fef08a] flex items-center gap-1">
                         ★ Masterpiece
                       </span>
-                    )}
+                    ) : null}
                   </div>
 
                   <div className="flex items-center gap-1.5">
