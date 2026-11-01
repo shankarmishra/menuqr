@@ -229,13 +229,15 @@ export const BentoTileCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
       onClick={handleCardClick}
       style={{ overflow: 'hidden', cursor: !readOnly && cart.onCustomizeDish ? 'pointer' : undefined }}
     >
-      <SmartImage
-        src={item.imageUrl}
-        alt={item.name}
-        role="card"
-        focal={item.focal}
-        aspectRatio="var(--mq-aspect-square)"
-      />
+      {item.imageUrl && (
+        <SmartImage
+          src={item.imageUrl}
+          alt={item.name}
+          role="card"
+          focal={item.focal}
+          aspectRatio="var(--mq-aspect-square)"
+        />
+      )}
       <div className="mq-stack" style={{ padding: 'var(--mq-space-3)', gap: 'var(--mq-space-1)' }}>
         <div className="mq-row" style={{ alignItems: 'center' }}>
           <DietMark type={item.dietType} />

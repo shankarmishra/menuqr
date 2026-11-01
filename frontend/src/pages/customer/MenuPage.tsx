@@ -29,10 +29,12 @@ import {
   HandPlatter,
   MessageCircle,
   ShoppingBag,
+  WifiOff,
 } from 'lucide-react';
 
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
 import { InfoSheet } from '../../components/customer/InfoSheet';
+import { MenuLoadingSkeleton } from '../../components/customer/MenuLoadingSkeleton';
 import { FacebookIcon, InstagramIcon } from '../../components/customer/ContactIcons';
 import { buildInfoModel } from './infoModel';
 import { announcementHref, whatsappUrl } from '../../utils/socialLinks';
@@ -732,6 +734,18 @@ export default function MenuPage() {
   const effectiveBg = bespokeColors?.bg || pagePalette.bg;
   const effectiveText = bespokeColors?.text || pagePalette.text;
 
+  const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' && !navigator.onLine);
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   // Prevent white overscroll / bottom strip on dark themed menus
   useEffect(() => {
     const originalBg = document.body.style.backgroundColor;
@@ -780,13 +794,71 @@ export default function MenuPage() {
     );
   }
 
-  if (isLoading || loadError || !client) {
+  if (isOffline) {
     return (
-      <div className="customer-menu">
-        <header className="menu-topbar"><Link className="menu-wordmark" to={`/menu/${slug}#top`} aria-label="MenusQR menu"><MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" /></Link></header>
-        <main id="top" className="menu-main"><div className="menu-empty-state" role={loadError ? 'alert' : 'status'}>{loadError || 'Preparing this menu…'}</div></main>
+      <div className="customer-menu min-h-screen bg-white">
+        <header className="menu-topbar border-b border-slate-100 flex items-center justify-between h-16 max-w-5xl mx-auto px-4">
+          <Link className="menu-wordmark" to={`/menu/${slug}#top`} aria-label="MenusQR menu">
+            <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
+          </Link>
+        </header>
+        <main id="top" className="max-w-md mx-auto px-6 py-20 text-center flex flex-col items-center" role="status">
+          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 mb-5">
+            <WifiOff size={28} aria-hidden="true" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">You're offline</h2>
+          <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+            Please check your internet connection and try again to view this menu.
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center justify-center min-h-11 px-6 rounded-full bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+          >
+            Retry
+          </button>
+        </main>
       </div>
     );
+  }
+
+  if (loadError) {
+    const isNotFound = loadError.toLowerCase().includes('unavailable') || loadError.toLowerCase().includes('not found');
+    return (
+      <div className="customer-menu min-h-screen bg-white">
+        <header className="menu-topbar border-b border-slate-100 flex items-center justify-between h-16 max-w-5xl mx-auto px-4">
+          <Link className="menu-wordmark" to={`/menu/${slug}#top`} aria-label="MenusQR menu">
+            <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
+          </Link>
+        </header>
+        <main id="top" className="max-w-md mx-auto px-6 py-20 text-center flex flex-col items-center" role="alert">
+          <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center text-rose-600 mb-5">
+            <UtensilsCrossed size={28} aria-hidden="true" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">
+            {isNotFound ? 'Menu Unavailable' : 'Unable to load menu'}
+          </h2>
+          <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+            {isNotFound
+              ? 'This menu is unavailable. Please check the link or contact the restaurant.'
+              : 'Something went wrong while loading this menu. Please try refreshing.'}
+          </p>
+          {!isNotFound && (
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center justify-center min-h-11 px-6 rounded-full bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+            >
+              Refresh
+            </button>
+          )}
+        </main>
+      </div>
+    );
+  }
+
+  if (isLoading || !client) {
+    return <MenuLoadingSkeleton />;
   }
 
   const categoriesForRenderer = (client.categories && client.categories.length > 0)

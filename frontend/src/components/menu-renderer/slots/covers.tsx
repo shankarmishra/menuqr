@@ -8,7 +8,7 @@
  * `MenuTheme.slots.cover` — not a new file, which is what the old architecture required.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useMenuTheme } from '../MenuThemeProvider.tsx';
 import { SmartImage } from '../primitives/SmartImage.tsx';
 import { DhabaMasterpieceCover } from './DhabaMasterpieceCover.tsx';
@@ -67,7 +67,8 @@ const RestaurantMeta: React.FC<{ restaurant: CoverProps['restaurant'] }> = ({ re
  */
 export const HeroPhotoCover: React.FC<CoverProps> = ({ restaurant, compact }) => {
   const { cover } = useMenuTheme();
-  const hasPhoto = Boolean(cover.imageUrl);
+  const [coverFailed, setCoverFailed] = useState(false);
+  const hasPhoto = Boolean(cover.imageUrl) && !coverFailed;
 
   // Before a client uploads a cover photo — true for every brand-new menu — reserving 58vh for
   // an empty frame reads as broken, not as restrained. Fall back to a compact, centred layout
@@ -97,6 +98,7 @@ export const HeroPhotoCover: React.FC<CoverProps> = ({ restaurant, compact }) =>
           focal={cover.focal}
           priority
           aspectRatio={undefined}
+          onError={() => setCoverFailed(true)}
         />
       </div>
       <div className="mq-cover-scrim" />
