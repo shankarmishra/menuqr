@@ -76,6 +76,10 @@ docs/*
 !docs/MENUQR_MASTER_CONTEXT.md
 !docs/SESSION_START_PROMPT.md
 !docs/MENUQR_PLATFORM_BLUEPRINT_V4.md
+!docs/reference-assets/
+docs/reference-assets/*
+!docs/reference-assets/client-logos/
+!docs/reference-assets/client-logos/**
 uploads/
 # ^ covers backend/uploads and frontend/public/uploads at any depth.
 #   Client media lives in object storage in production (see backend/storage/).

@@ -226,8 +226,10 @@ export function maskIou(a: Uint8Array, b: Uint8Array): number {
 export function realLogoDir(): string | null {
   const candidates = [
     process.env.MENUQR_LOGO_FIXTURES,
-    'C:/Users/xshan/Desktop/menuqr/docs/reference-assets/client-logos',
     path.resolve(import.meta.dirname, '../../../../../docs/reference-assets/client-logos'),
+    path.resolve(process.cwd(), 'docs/reference-assets/client-logos'),
+    path.resolve(process.cwd(), '../docs/reference-assets/client-logos'),
+    'C:/Users/xshan/Desktop/menuqr/docs/reference-assets/client-logos',
   ].filter((c): c is string => Boolean(c));
   return candidates.find((c) => fs.existsSync(c)) ?? null;
 }
