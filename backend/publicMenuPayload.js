@@ -156,3 +156,51 @@ export function buildRestaurantBlock({ client, appearance = {}, profile = null }
     i18n: profile?.i18n || {},
   };
 }
+
+// ── Legacy accent settings (the two pieces a diner's page still reads) ──────
+
+const HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+
+function safeAudioUrl(value) {
+  if (typeof value !== 'string' || value.length > 2048) return null;
+  if (value.startsWith('/uploads/')) return value;
+  try {
+    return new URL(value).protocol === 'https:' ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The stored `accent_configuration` is a private settings blob (it also holds feature switches
+ * and the WhatsApp override), so it is never published as a whole. The diner page still reads
+ * exactly two things from it, and both existed in the payload before this server stopped sending
+ * the blob: the bespoke page colours (`colors.bg`, `colors.text`) and an already generated voice
+ * greeting that keeps playing. Only those two are passed on, checked field by field; anything
+ * else in the blob is dropped. Returns null when there is nothing to publish.
+ */
+export function publicAccentFrom(accentConfiguration) {
+  let config = accentConfiguration;
+  if (typeof config === 'string') {
+    try { config = JSON.parse(config); } catch { return null; }
+  }
+  if (!config || typeof config !== 'object') return null;
+
+  const out = {};
+  const colors = {};
+  if (typeof config.colors?.bg === 'string' && HEX_COLOR.test(config.colors.bg.trim())) colors.bg = config.colors.bg.trim();
+  if (typeof config.colors?.text === 'string' && HEX_COLOR.test(config.colors.text.trim())) colors.text = config.colors.text.trim();
+  if (Object.keys(colors).length > 0) out.colors = colors;
+
+  const greeting = config.voiceGreeting;
+  const audioUrl = greeting && greeting.enabled === true ? safeAudioUrl(greeting.audioUrl) : null;
+  if (audioUrl) {
+    out.voiceGreeting = {
+      enabled: true,
+      audioUrl,
+      ...(typeof greeting.text === 'string' ? { text: greeting.text.slice(0, 200) } : {}),
+      ...(greeting.voiceGender === 'male' || greeting.voiceGender === 'female' ? { voiceGender: greeting.voiceGender } : {}),
+    };
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}

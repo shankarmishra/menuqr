@@ -16,7 +16,6 @@ import { coerceTheme, validateTheme } from '../themeValidator.js';
 import { registerOrderClient, broadcastOrderEvent } from '../orderStream.js';
 import { optimizeAndSaveImage } from '../imageOptimizer.js';
 import { enqueueTask, getJobStatus, TASK_TYPES } from '../taskQueue.js';
-import { synthesizeVoiceGreeting, saveTenantVoiceGreeting } from '../welcomeVoice.js';
 import { inputMenuFeatures } from '../menuFeatures.js';
 import { handleProfileRoutes } from './profile.js';
 
@@ -345,7 +344,7 @@ export default async function appRoutes(request, response, url) {
 
   // ───────────────────────── AI Voice Greeting (Table Welcome Hostess) ─────────────────────────
   // [P4-FIX] AI Voice Greeting generation endpoints are retired.
-  // The feature called Gemini TTS (a paid/AI service) against the no-AI/no-cost rule.
+  // The feature called an AI text-to-speech service, against the no-AI/no-cost rule; the generator was removed.
   // - /preview -> 410 Gone permanently.
   // - /voice-greeting POST with enabled=true -> 410 Gone.
   // - /voice-greeting POST with enabled=false -> still works (lets owners disable).

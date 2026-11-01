@@ -13,6 +13,7 @@ import {
   assertOrderTypeAllowed,
   buildRestaurantBlock,
   orderingSettingsFromRow,
+  publicAccentFrom,
   resolvePublicPhone,
 } from '../publicMenuPayload.js';
 import { randomUUID } from 'node:crypto';
@@ -259,6 +260,8 @@ export async function getFullPublicMenuData(tenantId) {
     items = [];
   }
 
+  const publicAccent = publicAccentFrom(appearance.accent_configuration);
+
   const result = {
     isExpired: false,
     restaurant: buildRestaurantBlock({ client, appearance, profile: canonicalProfile }),
@@ -267,6 +270,8 @@ export async function getFullPublicMenuData(tenantId) {
     announcement,
     offers,
     menuFeatures,
+    // Only the bespoke page colours and a stored voice greeting; never the whole settings blob.
+    ...(publicAccent ? { accentConfiguration: publicAccent } : {}),
     templateId: appearance.template_id || 'royal-maharaja',
     theme: appearance.theme_published || null,
     googleReviews,
