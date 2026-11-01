@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   Trash2,
   Globe,
+  Info,
   CheckCircle2,
   Sparkles,
   BellRing,
@@ -29,25 +30,13 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 
-function InstagramIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-    </svg>
-  );
-}
-
-function FacebookIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-    </svg>
-  );
-}
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
-import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { InfoSheet } from '../../components/customer/InfoSheet';
+import { FacebookIcon, InstagramIcon } from '../../components/customer/ContactIcons';
+import { buildInfoModel } from './infoModel';
+import { announcementHref, whatsappUrl } from '../../utils/socialLinks';
+import { trackClick, type TrackKind } from '../../utils/trackClick';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { DEMO_RESTAURANT } from '../../data/menuTemplates';
 import { 
   getClientByMenuSlug, 
@@ -106,14 +95,7 @@ const DINING_SESSION_TTL_MS = 3.5 * 60 * 60 * 1000; // 3.5 hours auto-refresh wi
 export default function MenuPage() {
   const { slug } = useParams();
 
-  const trackAction = (kind: string) => {
-    if (!slug) return;
-    fetch(`/api/public/menus/${encodeURIComponent(slug)}/track-click`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ kind }),
-    }).catch(() => {});
-  };
+  const trackAction = (kind: TrackKind) => trackClick(slug, kind);
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const qrId = searchParams.get('qr');
@@ -211,6 +193,38 @@ export default function MenuPage() {
     // A mode saved from an earlier visit may no longer be on offer (the owner switched it off).
     if (client && !orderModes.includes(orderType)) setOrderType(orderModes[0] ?? 'DINE_IN');
   }, [client, orderModes, orderType]);
+
+  // Info sheet: what the owner saved about the restaurant, worked out once per payload.
+  const navigate = useNavigate();
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [infoNow, setInfoNow] = useState(() => Date.now());
+  // The server's clock, when it sends one, so a phone with a wrong clock cannot show the wrong open/closed status.
+  const serverClockOffset = useMemo(() => {
+    const serverTime = Date.parse(client?.serverNow ?? '');
+    return Number.isFinite(serverTime) ? serverTime - Date.now() : 0;
+  }, [client?.serverNow]);
+  const infoModel = useMemo(
+    () => (client ? buildInfoModel(client, { whatsappNumber, now: new Date(infoNow + serverClockOffset) }) : null),
+    [client, whatsappNumber, infoNow, serverClockOffset]
+  );
+  useEffect(() => {
+    // Keep "Open · closes 11 PM" honest while the sheet stays open.
+    if (!isInfoOpen) return;
+    const timer = window.setInterval(() => setInfoNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, [isInfoOpen]);
+  const openInfo = () => {
+    setInfoNow(Date.now());
+    setIsInfoOpen(true);
+  };
+  const shareUrl = slug && typeof window !== 'undefined' ? `${window.location.origin}/menu/${encodeURIComponent(slug)}` : '';
+  useEffect(() => {
+    // Opened through an old link name: continue on the current one.
+    const target = client?.redirectToSlug;
+    if (target && target !== slug && /^[a-z0-9-]{1,60}$/i.test(target)) {
+      navigate({ pathname: `/menu/${target}`, search: location.search, hash: location.hash }, { replace: true });
+    }
+  }, [client?.redirectToSlug, slug, navigate, location.search, location.hash]);
   const loadError = currentMenuResult?.error ?? '';
   const isLoading = Boolean(slug) && !currentMenuResult;
 
@@ -884,6 +898,13 @@ export default function MenuPage() {
     }
   };
 
+  // One link per kind in the top bar and footer, built by the same helpers as the Info sheet.
+  const socialLinks = (infoModel?.links ?? []).filter(
+    (link, index, all) => (link.icon === 'instagram' || link.icon === 'facebook' || link.icon === 'website') && all.findIndex((other) => other.icon === link.icon) === index
+  );
+  const whatsappChatHref = whatsappNumber ? whatsappUrl(whatsappNumber, `Hi, I'm looking at the ${client.businessName || ''} menu`) : null;
+  const announcementLink = client.announcement ? announcementHref(client.announcement.linkType, client.announcement.linkTarget) : null;
+
   return (
     <div className="min-h-screen flex flex-col font-sans transition-colors duration-300" style={{ backgroundColor: effectiveBg, color: effectiveText }}>
       <SEO 
@@ -897,53 +918,40 @@ export default function MenuPage() {
           <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
         </Link>
         <div className="flex items-center gap-3">
-          {(client?.instagram || client?.facebook || client?.website) && (
+          {infoModel?.hasContent && (
+            <button type="button" className="header-info-btn" onClick={openInfo} aria-haspopup="dialog" aria-label="Restaurant info and contact">
+              <Info size={15} aria-hidden="true" />
+              <span>Info</span>
+              {infoModel.status && <span className={`header-info-dot ${infoModel.status.isOpen ? 'open' : 'closed'}`} aria-hidden="true" />}
+            </button>
+          )}
+          {socialLinks.length > 0 && (
             <div className="flex items-center gap-1.5 mr-1">
-              {client.instagram && (
+              {socialLinks.map((link) => (
                 <a
-                  href={client.instagram.startsWith('http') ? client.instagram : `https://instagram.com/${client.instagram.replace(/^@/, '')}`}
+                  key={link.href}
+                  href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => trackAction("instagram")} aria-label="Instagram profile"
-                  className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform"
+                  onClick={() => trackAction(link.kind)}
+                  aria-label={`${link.label} (opens in a new tab)`}
+                  className={`header-social-link ${link.icon}`}
                 >
-                  <InstagramIcon size={13} />
+                  {link.icon === 'instagram' ? <InstagramIcon size={14} /> : link.icon === 'facebook' ? <FacebookIcon size={14} /> : <Globe size={14} aria-hidden="true" />}
                 </a>
-              )}
-              {client.facebook && (
-                <a
-                  href={client.facebook.startsWith('http') ? client.facebook : `https://facebook.com/${client.facebook}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackAction("custom")} aria-label="Facebook page"
-                  className="w-7 h-7 rounded-full bg-[#1877F2] flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform"
-                >
-                  <FacebookIcon size={13} />
-                </a>
-              )}
-              {client.website && (
-                <a
-                  href={client.website.startsWith('http') ? client.website : `https://${client.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackAction("website")} aria-label="Official Website"
-                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform"
-                >
-                  <Globe size={13} />
-                </a>
-              )}
+              ))}
             </div>
           )}
           {client?.city && (
             <span className="text-xs font-mono opacity-80 flex items-center gap-1"><MapPin size={12} />{[client.city, client.state].filter(Boolean).join(', ')}</span>
           )}
-          {whatsappNumber && (
+          {whatsappChatHref && (
             <a
-              href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi, I'm looking at the ${client.businessName || ''} menu`)}`}
+              href={whatsappChatHref}
               target="_blank"
               rel="noopener noreferrer"
               className="header-whatsapp-chip"
-              onClick={() => trackAction("whatsapp")} aria-label="Chat with the restaurant on WhatsApp"
+              onClick={() => trackAction('whatsapp')} aria-label="Chat with the restaurant on WhatsApp"
             >
               <MessageCircle size={13} />
               <span>WhatsApp</span>
@@ -972,18 +980,13 @@ export default function MenuPage() {
         </div>
       </header>
 
-      {/* Promotional Announcement Banner (Blueprint §3.2 I, §6.2) */}
-      {Boolean(client?.announcement?.text) && client?.announcement && (
-        <div className="bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/10 border-b border-amber-500/30 px-4 py-2.5 text-center text-xs text-amber-200 font-medium flex items-center justify-center gap-2">
-          <span>⚑</span>
+      {/* Promotional Announcement Banner (Blueprint §3.2 I, §6.2). Light amber with dark text so it reads on every theme. */}
+      {client.announcement && (
+        <div role="region" aria-label="Announcement" className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-b border-amber-300 bg-amber-100 px-4 py-2.5 text-center text-sm font-medium text-amber-950">
+          <span aria-hidden="true">⚑</span>
           <span>{client.announcement.text}</span>
-          {client.announcement.linkTarget && (
-            <a
-              href={client.announcement.linkTarget}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline font-bold text-amber-400 hover:text-amber-300 ml-1"
-            >
+          {announcementLink && (
+            <a href={announcementLink} target="_blank" rel="noopener noreferrer" className="font-bold underline">
               View ↗
             </a>
           )}
@@ -1028,6 +1031,17 @@ export default function MenuPage() {
           accentConfiguration={client.accentConfiguration}
         />
       </main>
+
+      {infoModel?.hasContent && (
+        <InfoSheet
+          open={isInfoOpen}
+          name={client.businessName}
+          model={infoModel}
+          shareUrl={shareUrl}
+          onClose={() => setIsInfoOpen(false)}
+          onAction={trackAction}
+        />
+      )}
 
       {/* Dish Customization Drawer (Bottom Sheet) */}
       <DishCustomizationDrawer
@@ -1078,41 +1092,21 @@ export default function MenuPage() {
       )}
 
       <footer className="py-8 text-center text-xs opacity-80 border-t border-white/10 mt-12 mb-16 flex flex-col items-center gap-3">
-        {(client.instagram || client.facebook || client.website) && (
-          <div className="flex items-center justify-center gap-3 mb-2">
-            {client.instagram && (
+        {socialLinks.length > 0 && (
+          <div className="mb-2 flex flex-wrap items-center justify-center gap-3">
+            {socialLinks.map((link) => (
               <a
-                href={client.instagram.startsWith('http') ? client.instagram : `https://instagram.com/${client.instagram.replace(/^@/, '')}`}
+                key={link.href}
+                href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white transition-all text-xs font-semibold"
+                onClick={() => trackAction(link.kind)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-current/30 bg-current/10 px-3 py-2 text-xs font-semibold transition-all hover:bg-current/20"
               >
-                <InstagramIcon size={14} className="text-pink-400" />
-                <span>Instagram</span>
+                {link.icon === 'instagram' ? <InstagramIcon size={14} /> : link.icon === 'facebook' ? <FacebookIcon size={14} /> : <Globe size={14} aria-hidden="true" />}
+                <span>{link.label}</span>
               </a>
-            )}
-            {client.facebook && (
-              <a
-                href={client.facebook.startsWith('http') ? client.facebook : `https://facebook.com/${client.facebook}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white transition-all text-xs font-semibold"
-              >
-                <FacebookIcon size={14} className="text-blue-400" />
-                <span>Facebook</span>
-              </a>
-            )}
-            {client.website && (
-              <a
-                href={client.website.startsWith('http') ? client.website : `https://${client.website}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white transition-all text-xs font-semibold"
-              >
-                <Globe size={14} className="text-emerald-400" />
-                <span>Website</span>
-              </a>
-            )}
+            ))}
           </div>
         )}
         <div>Prepared with care at <strong className="opacity-100">{client.businessName}</strong></div>

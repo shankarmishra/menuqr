@@ -1600,6 +1600,66 @@
 }
 
 /* ── Header text-size control (accessibilityControls toggle) ── */
+/* Guest bar: Info button and contact icons. Colours follow the bar, so they read on light and dark themes. */
+.header-info-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+.header-info-btn:hover {
+  background: rgba(127, 127, 127, 0.2);
+}
+.header-info-btn:focus-visible,
+.header-social-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.header-info-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+.header-info-dot.open {
+  background: #22c55e;
+}
+.header-info-dot.closed {
+  background: #f43f5e;
+}
+.header-social-link {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border: 1px solid transparent;
+  transition: transform 0.15s ease;
+}
+.header-social-link:hover {
+  transform: scale(1.08);
+}
+.header-social-link.instagram {
+  background: linear-gradient(45deg, #b45309, #be123c, #7e22ce);
+}
+.header-social-link.facebook {
+  background: #1877f2;
+}
+.header-social-link.website {
+  background: #334155;
+}
+
 .a11y-text-size {
   display: inline-flex;
   align-items: center;
