@@ -223,7 +223,7 @@ test('PDF Pipeline Orchestration - extractMenuFromPdf with Validation and Specs'
   assert.ok(Array.isArray(result.categories));
   assert.ok(result.restaurant);
   assert.ok(result.designSpec);
-  assert.ok(['gemini', 'deterministic-fallback'].includes(result.provider));
+  assert.equal(result.provider, 'deterministic-fallback');
   assert.ok(typeof result.pageCount === 'number');
   assert.ok(validateDesignSpecification(result.designSpec));
 });
