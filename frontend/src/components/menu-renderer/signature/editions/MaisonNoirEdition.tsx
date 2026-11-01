@@ -36,19 +36,6 @@ import './editions.css';
 
 export const ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 
-export const FRENCH_COURSE_NAMES = [
-  'Premier Service',
-  'Deuxième Service',
-  'Troisième Service',
-  'Quatrième Service',
-  'Cinquième Service',
-  'Sixième Service',
-  'Septième Service',
-  'Huitième Service',
-  'Neuvième Service',
-  'Dixième Service',
-];
-
 const toRomanCourse = (idx: number): string => ROMAN_NUMERALS[idx] || String(idx + 1);
 
 // =============================================================================
@@ -401,146 +388,6 @@ const DecoCardCornerBracket: React.FC<{ size?: number; className?: string }> = (
   </svg>
 );
 
-/** Sommelier Wine Pairing Ribbon with Wine Goblet Crest. */
-const DecoSommelierRibbon: React.FC<{
-  pairingNote?: string;
-  vintageNote?: string;
-}> = ({
-  pairingNote = "Sélection de la Cave Personnelle du Sommelier",
-  vintageNote = "Grand Cru Classé",
-}) => (
-  <div className="mq-ed-noir-card-pairing-ribbon">
-    <div className="mq-ed-noir-ribbon-tag">
-      <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" className="mq-ed-noir-wine-icon">
-        <path
-          d="M 4 2 L 12 2 C 12 6, 9.5 8, 8.5 8.5 L 8.5 13 L 11 13 L 11 14.5 L 5 14.5 L 5 13 L 7.5 13 L 7.5 8.5 C 6.5 8, 4 6, 4 2 Z"
-          fill="none"
-          stroke="#fcf6ba"
-          strokeWidth="1"
-        />
-        <line x1="5" y1="5" x2="11" y2="5" stroke="#bf953f" strokeWidth="0.75" />
-      </svg>
-      <span className="mq-ed-noir-ribbon-label">Accord Mets &amp; Vins</span>
-      <span className="mq-ed-noir-ribbon-badge">{vintageNote}</span>
-    </div>
-    <p className="mq-ed-noir-ribbon-text">{pairingNote}</p>
-  </div>
-);
-
-/** Ziggurat bracket for the Menu Dégustation luxury plaque. */
-const DecoPlaqueCornerBracket: React.FC<{ size?: number; className?: string }> = ({
-  size = 34,
-  className,
-}) => (
-  <svg
-    viewBox="0 0 44 44"
-    width={size}
-    height={size}
-    aria-hidden="true"
-    focusable="false"
-    className={['mq-ed-noir-plaque-bracket-svg', className].filter(Boolean).join(' ')}
-  >
-    <defs>
-      <linearGradient id="noirPlaqueGold" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#bf953f" />
-        <stop offset="35%" stopColor="#fcf6ba" />
-        <stop offset="70%" stopColor="#b38728" />
-        <stop offset="100%" stopColor="#8a6117" />
-      </linearGradient>
-    </defs>
-    {/* Stepped 3-Tier Corner Ziggurat */}
-    <path
-      d="M 2 2 L 42 2 L 42 6 L 30 6 L 30 14 L 20 14 L 20 24 L 14 24 L 14 30 L 6 30 L 6 42 L 2 42 Z"
-      fill="none"
-      stroke="url(#noirPlaqueGold)"
-      strokeWidth="1.25"
-    />
-    <path
-      d="M 5 5 L 36 5 L 36 8 L 26 8 L 26 16 L 16 16 L 16 26 L 8 26 L 8 36 L 5 36 Z"
-      fill="none"
-      stroke="url(#noirPlaqueGold)"
-      strokeWidth="0.5"
-      opacity="0.6"
-    />
-    <rect x="4.5" y="4.5" width="4" height="4" transform="rotate(45 6.5 6.5)" fill="url(#noirPlaqueGold)" />
-  </svg>
-);
-
-/** Authentic 3-Star Michelin Constellation Seal with Laurel Perlage. */
-const DecoMichelinSeal: React.FC<{ size?: number }> = ({ size = 110 }) => (
-  <div className="mq-ed-noir-michelin-seal" style={{ width: size, height: size * 0.72 }} aria-hidden="true">
-    <svg viewBox="0 0 160 115" width="100%" height="100%" focusable="false">
-      <defs>
-        <linearGradient id="noirSealGold" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#bf953f" />
-          <stop offset="25%" stopColor="#fcf6ba" />
-          <stop offset="50%" stopColor="#b38728" />
-          <stop offset="75%" stopColor="#fbf5b7" />
-          <stop offset="100%" stopColor="#8a6117" />
-        </linearGradient>
-      </defs>
-
-      {/* Triad of 3 Art Deco 8-Point Faceted Stars */}
-      {[
-        { cx: 80, cy: 30, scale: 1.15 },
-        { cx: 48, cy: 36, scale: 0.9 },
-        { cx: 112, cy: 36, scale: 0.9 },
-      ].map((star, idx) => (
-        <g key={idx} transform={`translate(${star.cx}, ${star.cy}) scale(${star.scale})`}>
-          <path
-            d="M 0 -13 L 3.2 -3.2 L 13 0 L 3.2 3.2 L 0 13 L -3.2 3.2 L -13 0 L -3.2 -3.2 Z"
-            fill="url(#noirSealGold)"
-          />
-          <path
-            d="M 0 -13 L 3.2 -3.2 L 0 0 Z M 13 0 L 3.2 3.2 L 0 0 Z M 0 13 L -3.2 3.2 L 0 0 Z M -13 0 L -3.2 -3.2 L 0 0 Z"
-            fill="#fcf6ba"
-            opacity="0.65"
-          />
-          <circle cx="0" cy="0" r="1.5" fill="#0d0c10" />
-        </g>
-      ))}
-
-      {/* Laurel Perlage Arch */}
-      <path
-        d="M 32 64 C 48 80, 112 80, 128 64"
-        fill="none"
-        stroke="url(#noirSealGold)"
-        strokeWidth="1.2"
-      />
-      <path
-        d="M 36 67 C 50 82, 110 82, 124 67"
-        fill="none"
-        stroke="url(#noirSealGold)"
-        strokeWidth="0.5"
-        opacity="0.65"
-      />
-
-      {/* Circular Laurel Beads */}
-      {[0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180].map((deg) => {
-        const rad = (deg * Math.PI) / 180;
-        const x = 80 + 44 * Math.cos(rad);
-        const y = 62 + 18 * Math.sin(rad);
-        return <circle key={deg} cx={x} cy={y} r="1.2" fill="url(#noirSealGold)" />;
-      })}
-
-      {/* Motto Ribbon with 3 Faceted Diamond Jewels */}
-      <path
-        d="M 30 88 L 130 88 L 124 99 L 36 99 Z"
-        fill="#0d0c10"
-        stroke="url(#noirSealGold)"
-        strokeWidth="0.8"
-      />
-      <g fill="url(#noirSealGold)">
-        <polygon points="80,91 83,94 80,97 77,94" />
-        <polygon points="64,91.5 66.5,94 64,96.5 61.5,94" opacity="0.8" />
-        <polygon points="96,91.5 98.5,94 96,96.5 93.5,94" opacity="0.8" />
-        <line x1="42" y1="94" x2="57" y2="94" stroke="url(#noirSealGold)" strokeWidth="0.6" opacity="0.6" />
-        <line x1="103" y1="94" x2="118" y2="94" stroke="url(#noirSealGold)" strokeWidth="0.6" opacity="0.6" />
-      </g>
-    </svg>
-  </div>
-);
-
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
@@ -594,7 +441,7 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
           <div className="mq-ed-noir-prestige-strip">
             <span className="mq-ed-noir-prestige-pip" aria-hidden="true">◈</span>
             <span className="mq-ed-noir-edition-label">
-              {restaurant.cuisine ? restaurant.cuisine : 'Édition Gastronomique • Haute Cuisine'}
+              {restaurant.cuisine || 'Menu'}
             </span>
             <span className="mq-ed-noir-prestige-pip" aria-hidden="true">◈</span>
           </div>
@@ -615,13 +462,7 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
           <DecoAstragalRule className="mq-ed-noir-cover-divider" />
 
           {/* Tagline / Subtitle */}
-          <p className="mq-ed-noir-tagline">
-            {restaurant.tagline ? (
-              <>&ldquo;{restaurant.tagline}&rdquo;</>
-            ) : (
-              <>Menu D&eacute;gustation &bull; Carte des Saisons</>
-            )}
-          </p>
+          {restaurant.tagline && <p className="mq-ed-noir-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>}
 
           {/* Curated Category Teaser */}
           <CategoryTeaser
@@ -669,10 +510,9 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
       <main className="mq-ed-noir-plate">
         {/* 1. SÉLECTION DU CHEF : CURATED SIGNATURE SHOWCASE */}
         {signatures.length > 0 && !compact && !hasQuery && (
-          <section className="mq-ed-noir-signatures-section" aria-label="Sélection du Chef">
+          <section className="mq-ed-noir-signatures-section" aria-label="Featured dishes">
             <div className="mq-ed-noir-section-header">
-              <span className="mq-ed-eyebrow">Dégustation</span>
-              <h2 className="mq-ed-noir-section-title">Sélection du Chef</h2>
+              <h2 className="mq-ed-noir-section-title">Featured dishes</h2>
               <DecoArchitecturalDivider variant="grand" className="mq-ed-noir-section-rule" />
             </div>
 
@@ -694,7 +534,7 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
                       aspectRatio="16 / 10"
                     />
                     <span className="mq-ed-noir-card-badge">
-                      Service {toRomanCourse(idx)}
+                      {toRomanCourse(idx)}
                     </span>
                   </div>
 
@@ -713,8 +553,6 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
                       <p className="mq-ed-noir-card-desc mq-dish-desc">{cleanDescription(item)}</p>
                     )}
 
-                    {/* Sommelier wine pairing ribbon pinned to bottom of card */}
-                    <DecoSommelierRibbon />
                   </div>
                 </article>
               ))}
@@ -743,7 +581,7 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
                 <DecoCourseMedallion index={catIdx} />
 
                 <span className="mq-ed-noir-course-service-name">
-                  {FRENCH_COURSE_NAMES[catIdx] || `Service ${toRomanCourse(catIdx)}`}
+                  Section {toRomanCourse(catIdx)}
                 </span>
 
                 <h2 id={`mq-ed-noir-${category.id}`} className="mq-ed-noir-course-title">
@@ -766,77 +604,6 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
           ))
         )}
 
-        {/* 3. GRAND TASTING EXPERIENCE : GILDED ASIDE PLAQUE */}
-        {!compact && !hasQuery && sections.length > 0 && (
-          <aside className="mq-ed-noir-tasting-flight" aria-label="Menu Dégustation">
-            {/* 4 Corner Stepped Ziggurats */}
-            <span className="mq-ed-noir-plaque-bracket mq-ed-noir-plaque-bracket-tl">
-              <DecoPlaqueCornerBracket />
-            </span>
-            <span className="mq-ed-noir-plaque-bracket mq-ed-noir-plaque-bracket-tr">
-              <DecoPlaqueCornerBracket />
-            </span>
-            <span className="mq-ed-noir-plaque-bracket mq-ed-noir-plaque-bracket-bl">
-              <DecoPlaqueCornerBracket />
-            </span>
-            <span className="mq-ed-noir-plaque-bracket mq-ed-noir-plaque-bracket-br">
-              <DecoPlaqueCornerBracket />
-            </span>
-
-            <div className="mq-ed-noir-tasting-frame">
-              <div className="mq-ed-noir-tasting-surtitle">
-                <span className="mq-ed-noir-prestige-pip" aria-hidden="true">◈</span>
-                <span>EXPÉRIENCE GASTRONOMIQUE</span>
-                <span className="mq-ed-noir-prestige-pip" aria-hidden="true">◈</span>
-              </div>
-
-              <h3 className="mq-ed-noir-tasting-title">The Grand Chef&rsquo;s Table &bull; Menu Dégustation</h3>
-
-              <p className="mq-ed-noir-tasting-text">
-                An art-directed multi-course culinary journey orchestrated course-by-course with rare
-                seasonal botanicals, aged reduction sauces, and optional vintage pairings.
-              </p>
-
-              <DecoArchitecturalDivider variant="course" className="mq-ed-noir-tasting-divider" />
-
-              {/* Sommelier Flight Tiers */}
-              <div className="mq-ed-noir-flight-tiers">
-                <div className="mq-ed-noir-flight-tier">
-                  <div className="mq-ed-noir-flight-header">
-                    <span className="mq-ed-noir-flight-vol">VOL. I</span>
-                    <span className="mq-ed-noir-flight-name">Découverte des Terroirs</span>
-                  </div>
-                  <p className="mq-ed-noir-flight-desc">
-                    Accord en cinq temps avec domaines confidentiels, vignerons indépendants et cuvées de terroir.
-                  </p>
-                </div>
-
-                <div className="mq-ed-noir-flight-sep" aria-hidden="true">❖</div>
-
-                <div className="mq-ed-noir-flight-tier">
-                  <div className="mq-ed-noir-flight-header">
-                    <span className="mq-ed-noir-flight-vol">VOL. II</span>
-                    <span className="mq-ed-noir-flight-name">Grands Crus d&rsquo;Exception</span>
-                  </div>
-                  <p className="mq-ed-noir-flight-desc">
-                    Sélection de millésimes rares et flacons mythiques issus des réserves historiques de notre cave.
-                  </p>
-                </div>
-              </div>
-
-              {/* Table Protocol Disclosures */}
-              <div className="mq-ed-noir-tasting-meta">
-                <span className="mq-ed-noir-tasting-pill">Sept Services &bull; 7 Courses</span>
-                <span className="mq-ed-noir-tasting-pip" aria-hidden="true">◈</span>
-                <span className="mq-ed-noir-tasting-pill">Servi pour l&rsquo;ensemble de la table</span>
-                <span className="mq-ed-noir-tasting-pip" aria-hidden="true">◈</span>
-                <span className="mq-ed-noir-tasting-pill">Accord sans alcool d&rsquo;extraction disponible</span>
-                <span className="mq-ed-noir-tasting-pip" aria-hidden="true">◈</span>
-                <span className="mq-ed-noir-tasting-pill">Réservation préalable recommandée</span>
-              </div>
-            </div>
-          </aside>
-        )}
       </main>
 
       {/* =========================================================================
@@ -845,48 +612,8 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
       <footer className="mq-ed-noir-foot">
         <DecoArchitecturalDivider variant="grand" />
 
-        {/* Michelin 3-Star Constellation Seal */}
-        <DecoMichelinSeal size={120} />
-
         <p className="mq-ed-noir-foot-name mq-ed-noir-foil-text">{restaurant.name}</p>
-        <p className="mq-ed-noir-foot-sub">Haute Gastronomie &bull; Service d&rsquo;Excellence</p>
-
-        {/* Brigade Culinary Hierarchy */}
-        <div className="mq-ed-noir-brigade-grid">
-          <div className="mq-ed-noir-brigade-item">
-            <span className="mq-ed-noir-brigade-title">Chef de Cuisine</span>
-            <span className="mq-ed-noir-brigade-role">Direction Culinaire</span>
-          </div>
-          <div className="mq-ed-noir-brigade-item">
-            <span className="mq-ed-noir-brigade-title">Chef Pâtissier</span>
-            <span className="mq-ed-noir-brigade-role">Créations Sucrées</span>
-          </div>
-          <div className="mq-ed-noir-brigade-item">
-            <span className="mq-ed-noir-brigade-title">Chef Sommelier</span>
-            <span className="mq-ed-noir-brigade-role">Cave &amp; Flacons Rares</span>
-          </div>
-          <div className="mq-ed-noir-brigade-item">
-            <span className="mq-ed-noir-brigade-title">Maître d&rsquo;Hôtel</span>
-            <span className="mq-ed-noir-brigade-role">Service de Salle</span>
-          </div>
-        </div>
-
         <EditionContact restaurant={restaurant} />
-
-        {/* Legal, Allergy & Meat Provenance Disclosures */}
-        <div className="mq-ed-noir-disclosures">
-          <p className="mq-ed-noir-disclosure-line">
-            <strong>Service et taxes compris.</strong> Tous nos prix sont nets en monnaie légale.
-          </p>
-          <p className="mq-ed-noir-disclosure-line">
-            Nos plats sont préparés à la minute à partir de produits frais de saison. Nos équipes de salle
-            se tiennent à votre disposition pour toute information relative aux allergènes alimentaires.
-          </p>
-          <p className="mq-ed-noir-disclosure-line mq-ed-noir-provenance">
-            Origine des viandes : viandes et volailles nées, élevées et préparées en terroirs certifiés.
-            Pêche durable et maraîchage d&rsquo;exception.
-          </p>
-        </div>
 
         {/* Final Art Deco Finial Lozenge */}
         <div className="mq-ed-noir-finial" aria-hidden="true">

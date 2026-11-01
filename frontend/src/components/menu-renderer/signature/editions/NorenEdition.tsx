@@ -34,9 +34,6 @@ import {
 } from './shared.tsx';
 import './editions.css';
 
-/** Formal Kanji numerical indices for course registers (1 to 10) */
-const KANJI_NUMS = ['壱', '弐', '参', '四', '伍', '六', '七', '八', '九', '拾'];
-
 /**
  * Architectural Noren hanging curtain with cedar bamboo rod, brass brackets,
  * and 3 hanging fabric panels with hemmed slits.
@@ -91,7 +88,7 @@ const HankoChopSeal: React.FC<{
     <div
       className={['mq-ed-noren-hanko', className].filter(Boolean).join(' ')}
       style={{ width: size, height: size }}
-      aria-label={`${restaurant.name} Seal`}
+      aria-label={restaurant.name}
     >
       <svg
         viewBox="0 0 120 120"
@@ -123,19 +120,6 @@ const HankoChopSeal: React.FC<{
           opacity="0.88"
         />
 
-        {/* 4 Corner Seal Registration Kanji Accents */}
-        <text x="25" y="33" fill="#ffffff" opacity="0.65" fontSize="10" fontFamily="serif" fontWeight="bold">
-          特
-        </text>
-        <text x="95" y="33" fill="#ffffff" opacity="0.65" fontSize="10" fontFamily="serif" fontWeight="bold" textAnchor="end">
-          選
-        </text>
-        <text x="25" y="93" fill="#ffffff" opacity="0.65" fontSize="10" fontFamily="serif" fontWeight="bold">
-          極
-        </text>
-        <text x="95" y="93" fill="#ffffff" opacity="0.65" fontSize="10" fontFamily="serif" fontWeight="bold" textAnchor="end">
-          印
-        </text>
       </svg>
 
       <div className="mq-ed-noren-hanko-content">
@@ -179,9 +163,7 @@ export const NorenEdition: React.FC<EditionProps> = ({
         <div className="mq-ed-noren-cover-body">
           {/* 2. Archival Register Header */}
           <div className="mq-ed-noren-folio">
-            <span className="mq-ed-noren-folio-kanji">旬の味覚 · お品書き</span>
-            <span className="mq-ed-noren-folio-sep">／</span>
-            <span className="mq-ed-noren-folio-text">SEASONAL REGISTER · FOLIO NO. 03</span>
+            <span className="mq-ed-noren-folio-text">Menu</span>
           </div>
 
           {/* 3. Central Hanko Cinnabar Seal with Brand Logo */}
@@ -194,29 +176,17 @@ export const NorenEdition: React.FC<EditionProps> = ({
 
           {/* 4. Restaurant Identity */}
           <div className="mq-ed-noren-identity" data-testid="mq-cover-mark">
-            {restaurant.cuisine ? (
+            {restaurant.cuisine && (
               <p className="mq-ed-noren-cuisine">
                 <span className="mq-ed-noren-red-dot" aria-hidden="true">●</span>
                 <span>{restaurant.cuisine}</span>
-                <span className="mq-ed-noren-red-dot" aria-hidden="true">●</span>
-              </p>
-            ) : (
-              <p className="mq-ed-noren-cuisine">
-                <span className="mq-ed-noren-red-dot" aria-hidden="true">●</span>
-                <span>ROBATAYAKI · KAISEKI · OMATASE</span>
                 <span className="mq-ed-noren-red-dot" aria-hidden="true">●</span>
               </p>
             )}
 
             <h1 className="mq-ed-noren-title">{restaurant.name}</h1>
 
-            {restaurant.tagline ? (
-              <p className="mq-ed-noren-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>
-            ) : (
-              <p className="mq-ed-noren-tagline">
-                &ldquo;Where seasonal discipline meets the radiant warmth of charcoal.&rdquo;
-              </p>
-            )}
+            {restaurant.tagline && <p className="mq-ed-noren-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>}
 
             {/* Curated Category Teaser Pills */}
             <CategoryTeaser
@@ -244,13 +214,6 @@ export const NorenEdition: React.FC<EditionProps> = ({
               />
             </div>
 
-            <div className="mq-ed-noren-mount-caption">
-              <span className="mq-ed-noren-caption-kanji">炭火と旬の恵み</span>
-              <span className="mq-ed-noren-caption-sep">・</span>
-              <span className="mq-ed-noren-caption-text">
-                CHEF&apos;S SEASONAL CHARCOAL HEARTH TASTING
-              </span>
-            </div>
           </div>
 
           {/* 6. Precision Hairline & Contact Colophon */}
@@ -293,23 +256,15 @@ export const NorenEdition: React.FC<EditionProps> = ({
       <main className="mq-ed-noren-body">
         {/* 1. SHUN TOKUSEN (旬の特選) — CURATED SIGNATURE SHOWCASE */}
         {signatures.length > 0 && !compact && !hasQuery && (
-          <section className="mq-ed-noren-showcase" aria-label="旬の特選">
+          <section className="mq-ed-noren-showcase" aria-label="Featured dishes">
             <div className="mq-ed-noren-showcase-header">
-              <div className="mq-ed-noren-showcase-eyebrow">
-                <span className="mq-ed-noren-red-dot" aria-hidden="true">●</span>
-                <span>旬の特選</span>
-                <span className="mq-ed-noren-red-dot" aria-hidden="true">●</span>
-              </div>
-              <h3 className="mq-ed-noren-showcase-title">CHEF&apos;S SEASONAL SPECIALTIES</h3>
-              <p className="mq-ed-noren-showcase-sub">
-                Charcoal-seared masterworks, aged dashi reductions, and seasonal heritage delicacies.
-              </p>
+              <h3 className="mq-ed-noren-showcase-title">FEATURED DISHES</h3>
             </div>
 
             <div className="mq-ed-noren-showcase-grid">
               {signatures.map((dish, idx) => (
                 <article key={dish.id} className="mq-ed-noren-card">
-                  <span className="mq-ed-noren-card-kanji-num">{KANJI_NUMS[idx] || '特'}</span>
+                  <span className="mq-ed-noren-card-kanji-num">{String(idx + 1).padStart(2, '0')}</span>
                   {dish.imageUrl && (
                     <div className="mq-ed-noren-card-media">
                       <SmartImage
@@ -334,10 +289,6 @@ export const NorenEdition: React.FC<EditionProps> = ({
                     {cleanDescription(dish) && (
                       <p className="mq-ed-noren-card-desc mq-dish-desc">{cleanDescription(dish)}</p>
                     )}
-                    <div className="mq-ed-noren-card-accent">
-                      <span className="noren-pill-red">名物</span>
-                      <span>Binchōtan charcoal seared • House-crafted glaze</span>
-                    </div>
                   </div>
                 </article>
               ))}
@@ -363,14 +314,14 @@ export const NorenEdition: React.FC<EditionProps> = ({
                 <header className="mq-ed-noren-section-header">
                   <div className="mq-ed-noren-section-title-wrap">
                     <span className="mq-ed-noren-section-kanji">
-                      {KANJI_NUMS[sectionIndex] || String(sectionIndex + 1).padStart(2, '0')}
+                      {String(sectionIndex + 1).padStart(2, '0')}
                     </span>
                     <span className="mq-ed-noren-red-dot" aria-hidden="true">●</span>
                     <h2 id={`mq-ed-noren-${category.id}`} className="mq-ed-noren-section-title">
                       {category.name}
                     </h2>
                     <span className="mq-ed-noren-section-count">
-                      {category.items.length} 品目
+                      {category.items.length} {category.items.length === 1 ? 'item' : 'items'}
                     </span>
                   </div>
                   <span className="mq-ed-noren-section-hairline" aria-hidden="true" />
@@ -399,10 +350,10 @@ export const NorenEdition: React.FC<EditionProps> = ({
 
                         {!compact && (
                           <div className="mq-ed-noren-tags">
-                            {item.isBestseller && <span className="noren-badge bestseller">一番人気</span>}
-                            {item.isSpecial && <span className="noren-badge special">名物特選</span>}
-                            {item.spicyLevel && item.spicyLevel > 0 && (
-                              <span className="noren-badge spice">辛味 {'🌶️'.repeat(Math.min(item.spicyLevel, 3))}</span>
+                            {item.isBestseller && <span className="noren-badge bestseller">Bestseller</span>}
+                            {item.isSpecial && <span className="noren-badge special">Special</span>}
+                            {(item.spicyLevel ?? 0) > 0 && (
+                              <span className="noren-badge spice">Spicy {'🌶️'.repeat(Math.min(item.spicyLevel ?? 0, 3))}</span>
                             )}
                           </div>
                         )}
@@ -415,43 +366,6 @@ export const NorenEdition: React.FC<EditionProps> = ({
           </div>
         )}
 
-        {/* 3. BINCHŌTAN HEARTH & KAISEKI PHILOSOPHY ASIDE PLAQUE */}
-        {!compact && !hasQuery && sections.length > 0 && (
-          <aside className="mq-ed-noren-hearth-aside" aria-label="炭火の極意">
-            <div className="mq-ed-noren-hearth-inner">
-              <div className="mq-ed-noren-hearth-seal">
-                <svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true">
-                  <rect x="2" y="2" width="36" height="36" rx="4" fill="#c93a2a" />
-                  <text
-                    x="20"
-                    y="26"
-                    textAnchor="middle"
-                    fill="#ffffff"
-                    fontSize="18"
-                    fontFamily="serif"
-                    fontWeight="bold"
-                  >
-                    極
-                  </text>
-                </svg>
-              </div>
-              <p className="mq-ed-noren-hearth-kanji">炭火と出汁の美学</p>
-              <h3 className="mq-ed-noren-hearth-title">The Art of Binchōtan &amp; Umami</h3>
-              <p className="mq-ed-noren-hearth-text">
-                Every skewer and hearth creation is kissed by pure Kishū Binchōtan white charcoal,
-                reaching intense radiant infrared heat to caramelize surfaces while preserving
-                deep natural juices. Our master dashi is brewed daily from aged Rishiri kombu
-                and hand-shaved katsuobushi.
-              </p>
-              <div className="mq-ed-noren-hearth-tags">
-                <span className="hearth-pill">KISHŪ BINCHŌTAN</span>
-                <span className="hearth-pill">AGED RISHIRI KOMBU</span>
-                <span className="hearth-pill">HERITAGE CLAY OVEN</span>
-                <span className="hearth-pill">SLOW-SIMMERED TARE</span>
-              </div>
-            </div>
-          </aside>
-        )}
       </main>
 
       {/* =========================================================================
@@ -462,9 +376,6 @@ export const NorenEdition: React.FC<EditionProps> = ({
           <HankoChopSeal restaurant={restaurant} size={54} />
         </div>
         <p className="mq-ed-noren-foot-name">{restaurant.name}</p>
-        <p className="mq-ed-noren-foot-motto">
-          一期一会 · CHERISH EVERY ENCOUNTER · OMOTENASHI HOSPITALITY
-        </p>
         <EditionContact
           restaurant={restaurant}
           separator="／"

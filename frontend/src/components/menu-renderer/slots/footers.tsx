@@ -7,14 +7,20 @@
  */
 
 import React from 'react';
+import { phoneLinks } from '../../../utils/socialLinks.ts';
 import type { RenderRestaurant } from '../types.ts';
 
 export type FooterProps = { restaurant: RenderRestaurant };
 
-/** Strip anything that is not a digit or a leading plus, so `tel:` links dial correctly. */
-function telHref(phone: string): string {
-  const cleaned = phone.replace(/[^\d+]/g, '');
-  return `tel:${cleaned}`;
+/**
+ * One tap-to-call link per valid number. A phone field can hold several numbers ("98... , 97..."),
+ * and joining their digits produces a number that dials nobody, so each is parsed on its own. A value
+ * that is not a dialable number is shown as the owner wrote it, without a link.
+ */
+function callLinks(phone: string | undefined, render: (link: { tel: string; display: string }) => React.ReactNode): React.ReactNode {
+  const links = phoneLinks(phone).slice(0, 2);
+  if (links.length > 0) return links.map((link) => <React.Fragment key={link.tel}>{render(link)}</React.Fragment>);
+  return phone ? <p className="mq-tagline">{phone}</p> : null;
 }
 
 export const ContactBlockFooter: React.FC<FooterProps> = ({ restaurant }) => {
@@ -31,12 +37,12 @@ export const ContactBlockFooter: React.FC<FooterProps> = ({ restaurant }) => {
        * on a phone, a 17px-tall phone number is a miss waiting to happen.
        */}
       <div className="mq-stack" style={{ gap: 'var(--mq-space-1)' }}>
-        {restaurant.phone && (
-          <a className="mq-contact-link" href={telHref(restaurant.phone)}>
+        {callLinks(restaurant.phone, (link) => (
+          <a className="mq-contact-link" href={`tel:${link.tel}`}>
             <span className="mq-price-label">Call</span>
-            <span>{restaurant.phone}</span>
+            <span>{link.display}</span>
           </a>
-        )}
+        ))}
         {location && (
           <a
             className="mq-contact-link"
@@ -65,10 +71,10 @@ export const MinimalMarkFooter: React.FC<FooterProps> = ({ restaurant }) => (
       style={{ width: '2.5rem', height: 1, backgroundColor: 'var(--mq-color-accent)' }}
     />
     <p className="mq-eyebrow">{restaurant.name}</p>
-    {restaurant.phone && (
-      <a className="mq-contact-link" href={telHref(restaurant.phone)}>
-        {restaurant.phone}
+    {callLinks(restaurant.phone, (link) => (
+      <a className="mq-contact-link" href={`tel:${link.tel}`}>
+        {link.display}
       </a>
-    )}
+    ))}
   </footer>
 );

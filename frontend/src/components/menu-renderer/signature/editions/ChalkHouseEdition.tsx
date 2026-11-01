@@ -93,7 +93,7 @@ export const ChalkHouseEdition: React.FC<EditionProps> = ({
         <ChalkFrame />
 
         <div className="mq-ed-chalk-cover-body">
-          <p className="mq-ed-chalk-kicker">Today&rsquo;s Board</p>
+          <p className="mq-ed-chalk-kicker">Menu</p>
 
           <BrandMark restaurant={restaurant} size={compact ? 32 : 56} className="mq-ed-mark-ring" />
 

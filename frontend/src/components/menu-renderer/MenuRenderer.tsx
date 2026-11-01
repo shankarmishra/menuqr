@@ -155,14 +155,19 @@ const SignatureBody: React.FC<
   return <Composition key={signatureId} {...rest} />;
 };
 
-export const MenuRenderer: React.FC<MenuRendererProps> = ({ theme, className, ...rest }) => (
-  <MenuThemeProvider theme={theme} className={className}>
-    {theme.signatureId ? (
-      <SignatureBody key={theme.signatureId} signatureId={theme.signatureId} {...rest} />
-    ) : (
-      <MenuBody key={theme.presetId || 'default-menu-body'} {...rest} />
-    )}
-  </MenuThemeProvider>
-);
+export const MenuRenderer: React.FC<MenuRendererProps> = ({ theme, className, ...rest }) => {
+  const effectiveSignatureId =
+    theme.signatureId || (theme.presetId === 'atelier-rangeen' ? 'atelier-rangeen' : null);
+
+  return (
+    <MenuThemeProvider theme={theme} className={className}>
+      {effectiveSignatureId ? (
+        <SignatureBody key={effectiveSignatureId} signatureId={effectiveSignatureId} {...rest} />
+      ) : (
+        <MenuBody key={theme.presetId || 'default-menu-body'} {...rest} />
+      )}
+    </MenuThemeProvider>
+  );
+};
 
 export default MenuRenderer;

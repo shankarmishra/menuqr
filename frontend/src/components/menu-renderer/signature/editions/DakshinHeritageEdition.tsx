@@ -468,9 +468,10 @@ export const VazhaiIlaiAstragal: React.FC<{
 export const ChettinadDietMark: React.FC<{
   type?: 'veg' | 'non-veg' | 'vegan';
   className?: string;
-}> = ({ type = 'veg', className }) => {
+}> = ({ type, className }) => {
+  if (type !== 'veg' && type !== 'vegan' && type !== 'non-veg') return null;
   const isVeg = type === 'veg' || type === 'vegan';
-  const label = isVeg ? 'Shuddha Saivam (Vegetarian)' : 'Asaivam (Non-Vegetarian)';
+  const label = isVeg ? 'Vegetarian' : 'Non-vegetarian';
 
   return (
     <span
@@ -603,6 +604,7 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
   const sections = liveCategories(visible);
 
   const heroImage = tokens.cover.imageUrl || '/assets/themes/dakshin-heritage-hero.webp';
+  const stampText = (restaurant.cuisine || [restaurant.city, restaurant.state].filter(Boolean).join(', ')).trim();
 
   return (
     <div className={compact ? 'mq-ed mq-ed-dakshin is-compact' : 'mq-ed mq-ed-dakshin'}>
@@ -643,11 +645,13 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
 
         <div className="mq-ed-dakshin-cover-body">
           {/* Sacred Heritage Eyebrow Banner */}
-          <div className="mq-ed-dakshin-heritage-badge">
-            <span aria-hidden="true">🪔</span>
-            <span>Vazhai Ilai Virundhu • Flavours of the 5 Southern States</span>
-            <span aria-hidden="true">🪔</span>
-          </div>
+          {stampText && (
+            <div className="mq-ed-dakshin-heritage-badge">
+              <span aria-hidden="true">🪔</span>
+              <span>{stampText}</span>
+              <span aria-hidden="true">🪔</span>
+            </div>
+          )}
 
           {/* Kuthu Vilakku Lamp Logo Cartouche */}
           <KuthuvilakkuCartouche size={compact ? 120 : 156}>
@@ -665,11 +669,7 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
           <VazhaiIlaiAstragal variant="grand" />
 
           {/* Tagline / Subtitle */}
-          {restaurant.tagline ? (
-            <p className="mq-ed-dakshin-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>
-          ) : (
-            <p className="mq-ed-dakshin-tagline">Heirloom Podi Tiffins, Fiery Chettinad Roasts &amp; Kumbakonam Filter Kaapi</p>
-          )}
+          {restaurant.tagline && <p className="mq-ed-dakshin-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>}
 
           {/* Category Teaser */}
           <CategoryTeaser
@@ -715,28 +715,16 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
           INTERIOR : Plantain Leaf Banquet Plate
           ========================================================================= */}
       <main className="mq-ed-dakshin-plate">
-        <div className="mq-ed-dakshin-leaf-banner">
-          <span>🌿</span>
-          <span>Served on Fresh Plantain Leaves with Stone-Ground Chutneys &amp; Ghee</span>
-          <span>🌿</span>
-        </div>
-
         {/* 1. SIGNATURE TIFFIN & ROAST SHOWCASE */}
         {signatures.length > 0 && !compact && !hasQuery && (
-          <section className="mq-ed-dakshin-showcase" aria-label="Heritage Highlights">
+          <section className="mq-ed-dakshin-showcase" aria-label="Featured dishes">
             <div className="mq-ed-dakshin-showcase-header">
               <VazhaiIlaiAstragal />
-              <span className="mq-ed-dakshin-section-eyebrow">சிறப்பு தட்டச்சு • Signature Highlights</span>
-              <h2 className="mq-ed-dakshin-showcase-title mq-ed-dakshin-foil-text">
-                Podi &amp; Ghee Specialities
-              </h2>
-              <p className="mq-ed-dakshin-showcase-subtitle">
-                Slow-roasted on heavy seasoned cast-iron tawas with unrefined cold-pressed sesame oil and A2 cow ghee
-              </p>
+              <h2 className="mq-ed-dakshin-showcase-title mq-ed-dakshin-foil-text">Featured dishes</h2>
             </div>
 
             <div className="mq-ed-dakshin-showcase-grid">
-              {signatures.map((item, idx) => (
+              {signatures.map((item) => (
                 <article key={item.id} className="mq-ed-dakshin-card">
                   {/* Sikku Kolam Corner Accents */}
                   <span className="mq-ed-dakshin-card-bracket bracket-tl">
@@ -761,9 +749,7 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
                         focal={item.focal}
                         aspectRatio="16 / 10"
                       />
-                      <span className="mq-ed-dakshin-card-badge">
-                        Heritage Masterpiece {idx === 0 ? '௧' : '௨'}
-                      </span>
+                      <span className="mq-ed-dakshin-card-badge">Featured</span>
                     </div>
                   )}
 
@@ -784,73 +770,11 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
                       </p>
                     )}
 
-                    {/* Authentic Chutney & Podi Accompaniment Ribbon */}
-                    <div className="mq-ed-dakshin-pairing-ribbon">
-                      <span aria-hidden="true">🌿</span>
-                      <span>
-                        {idx === 0
-                          ? 'Accompanied by: Roasted Chana Podi, Vellore Brinjal Gothsu & Vadai'
-                          : 'Accompanied by: Shallot Vatha Kuzhambu, Coconut Thuvaiyal & Ghee'}
-                      </span>
-                    </div>
-
-                    {/* Culinary Lore Tag */}
-                    <p className="mq-ed-dakshin-card-lore">
-                      <em>Cast-Iron Tawa Tradition:</em> Cast on vintage century-old iron plates, crisping golden-brown edges with aromatic kariveppilai (curry leaves) &amp; freshly churned butter.
-                    </p>
                   </div>
                 </article>
               ))}
             </div>
           </section>
-        )}
-
-        {/* 2. "VAZHAI ILAI VIRUNDHU" EDITORIAL PLAQUE ASIDE */}
-        {!compact && !hasQuery && (
-          <aside className="mq-ed-dakshin-virundhu-plaque" aria-label="The Plantain Leaf Banquet Lore">
-            <span className="mq-ed-dakshin-plaque-bracket bracket-tl">
-              <PulliKolamCornerBracket position="top-left" size={32} />
-            </span>
-            <span className="mq-ed-dakshin-plaque-bracket bracket-tr">
-              <PulliKolamCornerBracket position="top-right" size={32} />
-            </span>
-            <span className="mq-ed-dakshin-plaque-bracket bracket-bl">
-              <PulliKolamCornerBracket position="bottom-left" size={32} />
-            </span>
-            <span className="mq-ed-dakshin-plaque-bracket bracket-br">
-              <PulliKolamCornerBracket position="bottom-right" size={32} />
-            </span>
-
-            <span className="mq-ed-dakshin-section-eyebrow">◈ வாழை இலை விருந்து • BANQUET TRADITION ◈</span>
-            <h3 className="mq-ed-dakshin-plaque-title mq-ed-dakshin-foil-text">
-              The Plantain Leaf Banquet Protocol
-            </h3>
-            <p className="mq-ed-dakshin-plaque-prose">
-              &ldquo;The plantain leaf is laid with its tapered tip pointing towards the guest's heart. As steaming Ponni rice touches the leaf's natural waxy surface, it awakens potent polyphenols and subtle herbal aromas. The meal begins with ghee and stone-ground paruppu, deepens through tamarind-simmered kuzhambu, kindles the digestive fire with pepper-garlic rasam, and concludes with frothy brass-dabarah filter coffee.&rdquo;
-            </p>
-
-            <VazhaiIlaiAstragal />
-
-            <div className="mq-ed-dakshin-plaque-pillars">
-              <div className="mq-ed-dakshin-plaque-col">
-                <h4 className="mq-ed-dakshin-col-title">VOL. I — KAL CHATTI &amp; URULI</h4>
-                <p className="mq-ed-dakshin-col-desc">
-                  Curries and broths simmered inside soapstone pots (Kal Chatti) and heavy bronze urulis, retaining mineral nutrients and gentle radiant heat.
-                </p>
-              </div>
-              <div className="mq-ed-dakshin-plaque-sep" aria-hidden="true" />
-              <div className="mq-ed-dakshin-plaque-col">
-                <h4 className="mq-ed-dakshin-col-title">VOL. II — STONE-GROUND PODIS</h4>
-                <p className="mq-ed-dakshin-col-desc">
-                  Curry leaves, Tellicherry black pepper, roasted lentils, and cold-pressed unrefined gingelly (sesame) oil ground slowly on granite ammi kals.
-                </p>
-              </div>
-            </div>
-
-            <p className="mq-ed-dakshin-plaque-footer">
-              🌿 Pure Ghee • Sea Salt • Hand-Roasted Masalas • Zero Preservatives 🌿
-            </p>
-          </aside>
         )}
 
         {/* 3. DAKSHIN COURSES WITH TAMIL MEDALLIONS & PRECISION LEADERS */}
@@ -872,7 +796,7 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
                 <DakshinCourseMedallion index={catIdx} size={compact ? 42 : 52} />
                 <div className="mq-ed-dakshin-course-title-wrap">
                   <span className="mq-ed-dakshin-course-subtitle">
-                    பகுதி {['௧', '௨', '௩', '௪', '௫', '௬', '௭', '௮', '௯', '௰'][catIdx] || (catIdx + 1)} • Course {catIdx + 1}
+                    Course {catIdx + 1}
                   </span>
                   <h2 id={`mq-ed-dakshin-${category.id}`} className="mq-ed-dakshin-course-title mq-ed-dakshin-foil-text">
                     {category.name}
@@ -906,17 +830,17 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
                     <div className="mq-ed-dakshin-dish-meta">
                       {item.isBestseller && (
                         <span className="mq-ed-dakshin-tag is-bestseller">
-                          🌿 Virundhu Special
+                          Bestseller
                         </span>
                       )}
                       {item.isSpecial && (
                         <span className="mq-ed-dakshin-tag is-special">
-                          🪔 Heritage Recipe
+                          Special
                         </span>
                       )}
-                      {item.spicyLevel && item.spicyLevel > 1 && (
+                      {(item.spicyLevel ?? 0) > 1 && (
                         <span className="mq-ed-dakshin-tag is-spice">
-                          {'🌶'.repeat(Math.min(item.spicyLevel, 3))} Chettinad Kaaram
+                          {'🌶'.repeat(Math.min(item.spicyLevel ?? 0, 3))} Spicy
                         </span>
                       )}
                     </div>
@@ -929,35 +853,11 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
       </main>
 
       {/* =========================================================================
-          FOOTER & SOUTH INDIAN BRIGADE COLOPHON
+          FOOTER
           ========================================================================= */}
       <footer className="mq-ed-dakshin-foot">
         <VazhaiIlaiAstragal variant="grand" />
         <p className="mq-ed-dakshin-foot-name mq-ed-dakshin-foil-text">{restaurant.name}</p>
-        <p className="mq-ed-dakshin-foot-sub">Vazhai Ilai Virundhu • Traditional South Indian Hospitality</p>
-
-        {/* South Indian Culinary Brigade Colophon */}
-        {!compact && (
-          <div className="mq-ed-dakshin-brigade-grid">
-            <div className="mq-ed-dakshin-brigade-item">
-              <span className="mq-ed-dakshin-brigade-title">Pramukha Samayalkar</span>
-              <span className="mq-ed-dakshin-brigade-role">Master Chef of the Traditional Kitchen</span>
-            </div>
-            <div className="mq-ed-dakshin-brigade-item">
-              <span className="mq-ed-dakshin-brigade-title">Dosai Ustad</span>
-              <span className="mq-ed-dakshin-brigade-role">Artisan of the Fiery Cast-Iron Tawa</span>
-            </div>
-            <div className="mq-ed-dakshin-brigade-item">
-              <span className="mq-ed-dakshin-brigade-title">Rasam &amp; Kuzhambu Vidwan</span>
-              <span className="mq-ed-dakshin-brigade-role">Master of Aromatic Stone-Ground Broths</span>
-            </div>
-            <div className="mq-ed-dakshin-brigade-item">
-              <span className="mq-ed-dakshin-brigade-title">Kaapi Ustad</span>
-              <span className="mq-ed-dakshin-brigade-role">Degree Filter Coffee Master with Brass Dabarah</span>
-            </div>
-          </div>
-        )}
-
         <EditionContact restaurant={restaurant} />
       </footer>
     </div>

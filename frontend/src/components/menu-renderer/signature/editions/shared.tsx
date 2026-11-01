@@ -14,6 +14,7 @@ import React, { useMemo } from 'react';
 import { DietMark, DishFlags, DishPrice } from '../../primitives/DishMeta.tsx';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
 import { parseItemPricing } from '../../../menu-builder/templates/shared/pricingUtils';
+import { facebookUrl, instagramHandle, instagramUrl, phoneLinks, websiteLabel, websiteUrl } from '../../../../utils/socialLinks.ts';
 import type { RenderCategory, RenderMenuItem, RenderRestaurant, SignatureProps } from '../../types.ts';
 
 export type EditionProps = SignatureProps;
@@ -138,24 +139,82 @@ export const PhotoDish: React.FC<{
   );
 };
 
-/** Phone, address and hours, formatted identically everywhere it appears. */
+/**
+ * Phone, address, hours and the restaurant's own links, formatted identically everywhere.
+ *
+ * Phone numbers become tap-to-call links, one per number. Instagram, Facebook and the website
+ * appear on a second line, and only when the owner has saved a valid address for them: a malformed
+ * value renders nothing rather than a broken link.
+ */
 export const EditionContact: React.FC<{
   restaurant: RenderRestaurant;
   className?: string;
   separator?: string;
 }> = ({ restaurant, className, separator = '·' }) => {
-  const parts = [restaurant.phone, locationLine(restaurant), restaurant.openingHours].filter(Boolean);
-  if (parts.length === 0) return null;
+  const phones = phoneLinks(restaurant.phone).slice(0, 2);
+  const instagram = instagramUrl(restaurant.instagram);
+  const facebook = facebookUrl(restaurant.facebook);
+  const website = websiteUrl(restaurant.website);
+  const external = { target: '_blank', rel: 'noopener noreferrer', className: 'mq-ed-contact-link' } as const;
 
-  return (
-    <p className={['mq-ed-contact', className].filter(Boolean).join(' ')} data-testid="mq-cover-meta">
-      {parts.map((part, index) => (
-        <React.Fragment key={part}>
+  const details: React.ReactNode[] = [];
+  if (phones.length > 0) {
+    for (const phone of phones) {
+      details.push(
+        <a key={phone.tel} href={`tel:${phone.tel}`} className="mq-ed-contact-link">
+          {phone.display}
+        </a>
+      );
+    }
+  } else if (restaurant.phone) {
+    // A number we could not parse is still shown as the owner wrote it, just not as a link.
+    details.push(<span key="phone">{restaurant.phone}</span>);
+  }
+  const location = locationLine(restaurant);
+  if (location) details.push(<span key="location">{location}</span>);
+  if (restaurant.openingHours) details.push(<span key="hours">{restaurant.openingHours}</span>);
+
+  const links: React.ReactNode[] = [];
+  if (instagram) {
+    links.push(
+      <a key="instagram" href={instagram} aria-label="Instagram" {...external}>
+        @{instagramHandle(restaurant.instagram)}
+      </a>
+    );
+  }
+  if (facebook) {
+    links.push(
+      <a key="facebook" href={facebook} {...external}>
+        Facebook
+      </a>
+    );
+  }
+  if (website) {
+    links.push(
+      <a key="website" href={website} {...external}>
+        {websiteLabel(restaurant.website)}
+      </a>
+    );
+  }
+
+  if (details.length === 0 && links.length === 0) return null;
+
+  const row = (items: React.ReactNode[], extraClass?: string, testId?: string) => (
+    <p className={['mq-ed-contact', extraClass, className].filter(Boolean).join(' ')} data-testid={testId}>
+      {items.map((item, index) => (
+        <React.Fragment key={index}>
           {index > 0 && <span className="mq-ed-contact-sep" aria-hidden="true">{separator}</span>}
-          <span>{part}</span>
+          {item}
         </React.Fragment>
       ))}
     </p>
+  );
+
+  return (
+    <>
+      {details.length > 0 && row(details, undefined, 'mq-cover-meta')}
+      {links.length > 0 && row(links, 'mq-ed-contact-links', details.length > 0 ? undefined : 'mq-cover-meta')}
+    </>
   );
 };
 

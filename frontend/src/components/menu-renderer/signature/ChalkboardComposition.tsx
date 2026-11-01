@@ -113,7 +113,7 @@ export const ChalkboardComposition: React.FC<SignatureProps> = ({ restaurant, ca
             compact || activeBoard === 'cover' ? 'mq-sig-cover-board' : 'mq-sig-cover-board mq-sig-board-mobile-hidden'
           }
         >
-            <p className="mq-sig-chalk-eyebrow">{restaurant.tagline || restaurant.cuisine || 'Welcome'}</p>
+            {(restaurant.tagline || restaurant.cuisine) && <p className="mq-sig-chalk-eyebrow">{restaurant.tagline || restaurant.cuisine}</p>}
             <h1 className="mq-display mq-sig-chalk-title">{restaurant.name}</h1>
 
             {heroItem?.imageUrl ? (

@@ -270,9 +270,10 @@ export const ShadrasaWheelAstragal: React.FC<{
 export const KansaDietMark: React.FC<{
   type?: 'veg' | 'non-veg' | 'vegan';
   className?: string;
-}> = ({ type = 'veg', className }) => {
+}> = ({ type, className }) => {
+  if (type !== 'veg' && type !== 'vegan' && type !== 'non-veg') return null;
   const isVeg = type === 'veg' || type === 'vegan';
-  const label = isVeg ? 'Saatvik Bhojan (Vegetarian)' : 'Rajasik Bhojan (Non-Vegetarian)';
+  const label = isVeg ? 'Vegetarian' : 'Non-vegetarian';
 
   return (
     <span
@@ -405,6 +406,7 @@ export const ThaliAndCoEdition: React.FC<EditionProps> = ({
   const sections = liveCategories(visible);
 
   const heroImage = tokens.cover.imageUrl || '/assets/themes/thali-and-co-hero.webp';
+  const stampText = (restaurant.cuisine || [restaurant.city, restaurant.state].filter(Boolean).join(', ')).trim();
 
   return (
     <div className={compact ? 'mq-ed mq-ed-thali is-compact' : 'mq-ed mq-ed-thali'}>
@@ -445,11 +447,13 @@ export const ThaliAndCoEdition: React.FC<EditionProps> = ({
 
         <div className="mq-ed-thali-cover-body">
           {/* Heritage Regional Eyebrow Banner */}
-          <div className="mq-ed-thali-heritage-badge">
-            <span aria-hidden="true">🏺</span>
-            <span>विरासत थाली • Curated Regional Feasts from the 28 States</span>
-            <span aria-hidden="true">🏺</span>
-          </div>
+          {stampText && (
+            <div className="mq-ed-thali-heritage-badge">
+              <span aria-hidden="true">🏺</span>
+              <span>{stampText}</span>
+              <span aria-hidden="true">🏺</span>
+            </div>
+          )}
 
           {/* 12-Katori Overhead Kansa Platter Cartouche */}
           <KansaThaliCartouche size={compact ? 120 : 156}>
@@ -467,11 +471,7 @@ export const ThaliAndCoEdition: React.FC<EditionProps> = ({
           <ShadrasaWheelAstragal variant="grand" />
 
           {/* Tagline / Subtitle */}
-          {restaurant.tagline ? (
-            <p className="mq-ed-thali-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>
-          ) : (
-            <p className="mq-ed-thali-tagline">Artisanal Grand Thalis, Earthen Hearth Breads &amp; Vedic Shadrasa Dining</p>
-          )}
+          {restaurant.tagline && <p className="mq-ed-thali-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>}
 
           {/* Category Teaser */}
           <CategoryTeaser
@@ -517,55 +517,16 @@ export const ThaliAndCoEdition: React.FC<EditionProps> = ({
           INTERIOR : Regional Platter Layout
           ========================================================================= */}
       <main className="mq-ed-thali-plate">
-        {/* Anatomy of an Indian Thali: Sacred Shadrasa Banner */}
-        {!compact && !hasQuery && (
-          <aside className="mq-ed-thali-anatomy-banner" aria-label="Thali Tradition">
-            <div className="mq-ed-thali-anatomy-head">
-              <span className="mq-ed-thali-section-eyebrow">◈ षड्रस • AYURVEDIC GASTRONOMY ◈</span>
-              <h3 className="mq-ed-thali-anatomy-title">The Grand Thali Experience • The 6 Sacred Tastes</h3>
-              <p className="mq-ed-thali-anatomy-desc">
-                Every thali is composed in harmonic balance across the 6 Ayurvedic tastes (Shadrasa) to nourish mind, body, and digestion:
-              </p>
-            </div>
-            <div className="mq-ed-thali-anatomy-tags">
-              <span className="mq-ed-thali-state-pill">
-                <strong>मधुर (Sweet)</strong> • Energy &amp; Grounding
-              </span>
-              <span className="mq-ed-thali-state-pill">
-                <strong>अम्ल (Sour)</strong> • Digestive Fire
-              </span>
-              <span className="mq-ed-thali-state-pill">
-                <strong>लवण (Salty)</strong> • Mineral Absorption
-              </span>
-              <span className="mq-ed-thali-state-pill">
-                <strong>कटु (Pungent)</strong> • Circulation &amp; Warmth
-              </span>
-              <span className="mq-ed-thali-state-pill">
-                <strong>तिक्त (Bitter)</strong> • Natural Cleansing
-              </span>
-              <span className="mq-ed-thali-state-pill">
-                <strong>कषाय (Astringent)</strong> • Cooling Harmony
-              </span>
-            </div>
-          </aside>
-        )}
-
         {/* 1. SIGNATURE THALIS SHOWCASE */}
         {signatures.length > 0 && !compact && !hasQuery && (
-          <section className="mq-ed-thali-showcase" aria-label="Thali Highlights">
+          <section className="mq-ed-thali-showcase" aria-label="Featured dishes">
             <div className="mq-ed-thali-showcase-header">
               <ShadrasaWheelAstragal />
-              <span className="mq-ed-thali-section-eyebrow">शाही थाली • Signature Platters</span>
-              <h2 className="mq-ed-thali-showcase-title mq-ed-thali-foil-text">
-                Maharaja&rsquo;s Royal Bhojan
-              </h2>
-              <p className="mq-ed-thali-showcase-subtitle">
-                Served on pure burnished Kansa bell metal platters, accompanied by stone-churned butter, raw pickles, and puffed hearth breads
-              </p>
+              <h2 className="mq-ed-thali-showcase-title mq-ed-thali-foil-text">Featured dishes</h2>
             </div>
 
             <div className="mq-ed-thali-showcase-grid">
-              {signatures.map((item, idx) => (
+              {signatures.map((item) => (
                 <article key={item.id} className="mq-ed-thali-card">
                   {/* Sanganeri Block-Print Corner Accents */}
                   <span className="mq-ed-thali-card-bracket bracket-tl">
@@ -590,9 +551,7 @@ export const ThaliAndCoEdition: React.FC<EditionProps> = ({
                         focal={item.focal}
                         aspectRatio="16 / 10"
                       />
-                      <span className="mq-ed-thali-card-badge">
-                        Royal Platter {idx === 0 ? '१' : '२'}
-                      </span>
+                      <span className="mq-ed-thali-card-badge">Featured</span>
                     </div>
                   )}
 
@@ -613,73 +572,11 @@ export const ThaliAndCoEdition: React.FC<EditionProps> = ({
                       </p>
                     )}
 
-                    {/* Katori Ensemble Pairing Ribbon */}
-                    <div className="mq-ed-thali-pairing-ribbon">
-                      <span aria-hidden="true">🏺</span>
-                      <span>
-                        {idx === 0
-                          ? '12-Katori Ensemble: Dal Baati Churma, Gatte ki Sabzi, Ker Sangri & Malpua'
-                          : '12-Katori Ensemble: Gujarati Kadhi, Sev Tameta, Ringna No Oro & Shrikhand'}
-                      </span>
-                    </div>
-
-                    {/* Ayurvedic Kansa Lore Tag */}
-                    <p className="mq-ed-thali-card-lore">
-                      <em>Kansa Bell Metal Benefit:</em> Handcrafted from 78% Copper &amp; 22% Tin alloy. Naturally alkalizes food, balances the tridoshas, and retains thermal purity.
-                    </p>
                   </div>
                 </article>
               ))}
             </div>
           </section>
-        )}
-
-        {/* 2. "KANSA & SHADRASA" EDITORIAL ASIDE PLAQUE */}
-        {!compact && !hasQuery && (
-          <aside className="mq-ed-thali-vedic-plaque" aria-label="The Science of Kansa and Shadrasa">
-            <span className="mq-ed-thali-plaque-bracket bracket-tl">
-              <SanganeriBlockPrintBracket position="top-left" size={32} />
-            </span>
-            <span className="mq-ed-thali-plaque-bracket bracket-tr">
-              <SanganeriBlockPrintBracket position="top-right" size={32} />
-            </span>
-            <span className="mq-ed-thali-plaque-bracket bracket-bl">
-              <SanganeriBlockPrintBracket position="bottom-left" size={32} />
-            </span>
-            <span className="mq-ed-thali-plaque-bracket bracket-br">
-              <SanganeriBlockPrintBracket position="bottom-right" size={32} />
-            </span>
-
-            <span className="mq-ed-thali-section-eyebrow">◈ कांस्य पात्र भोजनम् • VEDIC DINING SCIENCE ◈</span>
-            <h3 className="mq-ed-thali-plaque-title mq-ed-thali-foil-text">
-              Kansa &amp; Shadrasa: The Healing Bhojan
-            </h3>
-            <p className="mq-ed-thali-plaque-prose">
-              &ldquo;In the ancient Ayurvedic texts of Charaka Samhita, eating from a burnished Kansa (Bell Metal) platter is revered as an act of therapeutic healing. The alloy of copper and tin naturally balances acidity, purifies blood circulation, and enhances intellect. A true Indian feast is consumed in harmony with the clock: awakening the tongue with pungent radishes and salt, savoring rich dal and vegetables in the center, and concluding with cooling curd and sweet halwa to seal the digestive fire.&rdquo;
-            </p>
-
-            <ShadrasaWheelAstragal />
-
-            <div className="mq-ed-thali-plaque-pillars">
-              <div className="mq-ed-thali-plaque-col">
-                <h4 className="mq-ed-thali-col-title">VOL. I — ALCHEMICAL KANSA</h4>
-                <p className="mq-ed-thali-col-desc">
-                  Hand-hammered bell metal retains vital minerals and neutralizes harsh acid compounds, preserving the wholesome prana of every slow-simmered curry.
-                </p>
-              </div>
-              <div className="mq-ed-thali-plaque-sep" aria-hidden="true" />
-              <div className="mq-ed-thali-plaque-col">
-                <h4 className="mq-ed-thali-col-title">VOL. II — SHADRASA ORDERING</h4>
-                <p className="mq-ed-thali-col-desc">
-                  Arranged clockwise from left to right: salt, lemon, chutneys, lentils, dry vegetables, gravies, rice, breads, and ending with desi ghee sweets.
-                </p>
-              </div>
-            </div>
-
-            <p className="mq-ed-thali-plaque-footer">
-              🏺 A2 Cow Ghee • Cold-Pressed Mustard Oil • Himalayan Rock Salt • Hand-Pounded Spices 🏺
-            </p>
-          </aside>
         )}
 
         {/* 3. REGIONAL COURSES WITH DEVANAGARI MEDALLIONS & PRECISION LEADERS */}
@@ -700,7 +597,7 @@ export const ThaliAndCoEdition: React.FC<EditionProps> = ({
                 <BhojanalayaCourseMedallion index={catIdx} size={compact ? 42 : 52} />
                 <div className="mq-ed-thali-course-title-wrap">
                   <span className="mq-ed-thali-course-subtitle">
-                    विरासत थाली • भाग {['१', '२', '३', '४', '५', '६', '७', '८', '९', '१०'][catIdx] || (catIdx + 1)} • Course {catIdx + 1}
+                    Course {catIdx + 1}
                   </span>
                   <h2 id={`mq-ed-thali-${category.id}`} className="mq-ed-thali-course-title mq-ed-thali-foil-text">
                     {category.name}
@@ -734,17 +631,17 @@ export const ThaliAndCoEdition: React.FC<EditionProps> = ({
                     <div className="mq-ed-thali-dish-meta">
                       {item.isBestseller && (
                         <span className="mq-ed-thali-tag is-bestseller">
-                          🏺 Bhojan Special
+                          Bestseller
                         </span>
                       )}
                       {item.isSpecial && (
                         <span className="mq-ed-thali-tag is-special">
-                          👑 Royal Recipe
+                          Special
                         </span>
                       )}
-                      {item.spicyLevel && item.spicyLevel > 1 && (
+                      {(item.spicyLevel ?? 0) > 1 && (
                         <span className="mq-ed-thali-tag is-spice">
-                          {'🌶'.repeat(Math.min(item.spicyLevel, 3))} Shahi Kaaram
+                          {'🌶'.repeat(Math.min(item.spicyLevel ?? 0, 3))} Spicy
                         </span>
                       )}
                     </div>
@@ -757,35 +654,11 @@ export const ThaliAndCoEdition: React.FC<EditionProps> = ({
       </main>
 
       {/* =========================================================================
-          FOOTER & BHOJANALAYA KITCHEN BRIGADE COLOPHON
+          FOOTER
           ========================================================================= */}
       <footer className="mq-ed-thali-foot">
         <ShadrasaWheelAstragal variant="grand" />
         <p className="mq-ed-thali-foot-name mq-ed-thali-foil-text">{restaurant.name}</p>
-        <p className="mq-ed-thali-foot-sub">Shadrasa • The Sacred Six Tastes of Indian Regional Cuisine</p>
-
-        {/* Traditional Bhojanalaya Culinary Brigade Hierarchy */}
-        {!compact && (
-          <div className="mq-ed-thali-brigade-grid">
-            <div className="mq-ed-thali-brigade-item">
-              <span className="mq-ed-thali-brigade-title">Pradhan Bawarchi</span>
-              <span className="mq-ed-thali-brigade-role">Grand Master of the Royal Kitchen &amp; Heirloom Masalas</span>
-            </div>
-            <div className="mq-ed-thali-brigade-item">
-              <span className="mq-ed-thali-brigade-title">Maharaj-e-Mithai</span>
-              <span className="mq-ed-thali-brigade-role">Artisan of Pure Desi Ghee Halwas &amp; Confections</span>
-            </div>
-            <div className="mq-ed-thali-brigade-item">
-              <span className="mq-ed-thali-brigade-title">Ustad-e-Chulha</span>
-              <span className="mq-ed-thali-brigade-role">Master of Hand-Stretched Earthen Hearth Phulkas</span>
-            </div>
-            <div className="mq-ed-thali-brigade-item">
-              <span className="mq-ed-thali-brigade-title">Rasoi-e-Katori</span>
-              <span className="mq-ed-thali-brigade-role">Steward of 12-Flavour Balance &amp; Kansa Service</span>
-            </div>
-          </div>
-        )}
-
         <EditionContact restaurant={restaurant} />
       </footer>
     </div>

@@ -259,26 +259,6 @@ const BotanicalWreathSeal: React.FC<{
         );
       })}
 
-      {/* Bottom Archival Motto Ribbon */}
-      <path
-        d="M 44 128 L 116 128 L 110 142 L 50 142 Z"
-        fill="url(#herbSealBg)"
-        stroke="currentColor"
-        strokeWidth="0.8"
-      />
-      <text
-        x="80"
-        y="138"
-        textAnchor="middle"
-        fill="currentColor"
-        fontFamily="var(--mq-font-display, serif)"
-        fontSize="6"
-        fontWeight="700"
-        letterSpacing="0.22em"
-      >
-        FLORA &bull; TERROIR
-      </text>
-
       {/* Inner Recessed Coin Bed */}
       <circle cx="80" cy="76" r="44" fill="url(#herbSealBg)" stroke="currentColor" strokeWidth="1" />
       <circle cx="80" cy="76" r="41.5" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="3 2" opacity="0.6" />
@@ -368,11 +348,9 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
         <div className="mq-ed-herb-cover-body">
           {/* Natural History Accession Folio Header */}
           <div className="mq-ed-herb-folio">
-            <span className="mq-ed-herb-folio-badge">HORTUS BOTANICUS</span>
             <span className="mq-ed-herb-folio-dash" aria-hidden="true" />
-            <span className="mq-ed-herb-folio-num">FOLIO No. 02</span>
+            <span className="mq-ed-herb-folio-label">Menu</span>
             <span className="mq-ed-herb-folio-dash" aria-hidden="true" />
-            <span className="mq-ed-herb-folio-label">CARTE DU JOUR</span>
           </div>
 
           {/* Symmetrical Botanical Wreath Seal with integrated BrandMark */}
@@ -388,21 +366,11 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
           <div className="mq-ed-herb-identity">
             <h1 className="mq-ed-herb-title">{restaurant.name}</h1>
             <BotanicalEngravedDivider className="mq-ed-herb-title-divider" />
-            {restaurant.cuisine ? (
-              <p className="mq-ed-herb-cuisine">{restaurant.cuisine}</p>
-            ) : (
-              <p className="mq-ed-herb-cuisine">Artisanal Garden Bistro &bull; Farm-to-Table</p>
-            )}
+            {restaurant.cuisine && <p className="mq-ed-herb-cuisine">{restaurant.cuisine}</p>}
           </div>
 
           {/* Poetic Provenance / Tagline */}
-          <p className="mq-ed-herb-tagline">
-            {restaurant.tagline ? (
-              <>&ldquo;{restaurant.tagline}&rdquo;</>
-            ) : (
-              <>Heirloom grains, slow fermentation hearth, and seasonal botanicals picked at dawn.</>
-            )}
-          </p>
+          {restaurant.tagline && <p className="mq-ed-herb-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>}
 
           {/* Curated Category Teaser */}
           <CategoryTeaser
@@ -432,12 +400,6 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
                 />
               </div>
 
-              {/* Museum Accession Ticket */}
-              <figcaption className="mq-ed-herb-mount-caption">
-                <span className="caption-tag">SPECIMEN No. 1894</span>
-                <span className="caption-sep">&bull;</span>
-                <span className="caption-title">R&eacute;colte du Potager &amp; Fournil Artisanal</span>
-              </figcaption>
             </figure>
           )}
 
@@ -479,14 +441,10 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
       <main className="mq-ed-herb-plate-main">
         {/* 1. RÉCOLTE DU JARDIN — CURATED HARVEST SHOWCASE */}
         {signatures.length > 0 && !compact && !hasQuery && (
-          <section className="mq-ed-herb-showcase" aria-label="Récolte du Jardin">
+          <section className="mq-ed-herb-showcase" aria-label="Featured dishes">
             <div className="mq-ed-herb-showcase-header">
-              <span className="mq-ed-eyebrow">Sélection Maraîchère</span>
-              <h2 className="mq-ed-herb-showcase-title">R&eacute;colte du Jardin &bull; Harvest Specialties</h2>
+              <h2 className="mq-ed-herb-showcase-title">Featured dishes</h2>
               <BotanicalEngravedDivider className="mq-ed-herb-showcase-rule" />
-              <p className="mq-ed-herb-showcase-sub">
-                Hand-harvested estate greens, cold-pressed culinary botanicals, and wood-fired hearth delicacies.
-              </p>
             </div>
 
             <div className="mq-ed-herb-showcase-grid">
@@ -507,7 +465,7 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
                       aspectRatio="16 / 10"
                     />
                     <span className="mq-ed-herb-card-badge">
-                      Planche 0{idx + 1}
+                      {String(idx + 1).padStart(2, '0')}
                     </span>
                   </div>
 
@@ -526,11 +484,6 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
                       <p className="mq-ed-herb-card-desc mq-dish-desc">{cleanDescription(item)}</p>
                     )}
 
-                    {/* Botanical infusion provenance tag */}
-                    <div className="mq-ed-herb-card-infusion">
-                      <span className="infusion-icon">🌿</span>
-                      <span className="infusion-text">Infusion botanique de saison &bull; Terroir local</span>
-                    </div>
                   </div>
                 </article>
               ))}
@@ -544,7 +497,7 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
             <EmptyResults query={query.trim()} onClear={() => setQuery('')} />
           ) : (
             <p className="mq-ed-empty" role="status">
-              This garden menu has no dishes yet.
+              This menu has no dishes yet.
             </p>
           )
         ) : (
@@ -562,7 +515,7 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
                       {category.name}
                     </h2>
                     <span className="mq-ed-herb-section-count">
-                      {category.items.length} {category.items.length === 1 ? 'sélection' : 'sélections'}
+                      {category.items.length} {category.items.length === 1 ? 'item' : 'items'}
                     </span>
                   </div>
                   <BotanicalEngravedDivider className="mq-ed-herb-section-divider" />
@@ -581,29 +534,6 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
           </div>
         )}
 
-        {/* 3. GREENHOUSE CONSERVATORY EXPERIENCE PLAQUE */}
-        {!compact && !hasQuery && sections.length > 0 && (
-          <aside className="mq-ed-herb-conservatory-aside" aria-label="Conservatory & Hearth">
-            <span className="mq-ed-herb-corner mq-ed-herb-corner-tl"><BotanicalCornerFiligree size={24} /></span>
-            <span className="mq-ed-herb-corner mq-ed-herb-corner-tr"><BotanicalCornerFiligree size={24} /></span>
-            <span className="mq-ed-herb-corner mq-ed-herb-corner-bl"><BotanicalCornerFiligree size={24} /></span>
-            <span className="mq-ed-herb-corner mq-ed-herb-corner-br"><BotanicalCornerFiligree size={24} /></span>
-
-            <div className="mq-ed-herb-conservatory-inner">
-              <span className="mq-ed-herb-conservatory-surtitle">LE FOURNIL &amp; CONSERVATOIRE</span>
-              <h3 className="mq-ed-herb-conservatory-title">Artisan Hearth &amp; Wild Herbal Tisanes</h3>
-              <p className="mq-ed-herb-conservatory-text">
-                Every loaf of sourdough is naturally leavened over 36 hours from organic stone-ground heritage flour.
-                Our seasonal botanicals, edible blossoms, and herbal infusions are steeped fresh daily from the kitchen garden.
-              </p>
-              <div className="mq-ed-herb-conservatory-tags">
-                <span className="conservatory-pill">Stone-Milled Grains</span>
-                <span className="conservatory-pill">Organic Estate Olive Oil</span>
-                <span className="conservatory-pill">Wild Garden Herbs</span>
-              </div>
-            </div>
-          </aside>
-        )}
       </main>
 
       {/* =========================================================================
@@ -612,9 +542,6 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
       <footer className="mq-ed-herb-foot">
         <BotanicalSprig size={68} className="mq-ed-herb-foot-sprig" />
         <p className="mq-ed-herb-foot-name">{restaurant.name}</p>
-        <p className="mq-ed-herb-foot-motto">
-          Hortus Botanicus &bull; Cuisine Mara&icirc;ch&egrave;re du Terroir
-        </p>
         <EditionContact restaurant={restaurant} className="mq-ed-herb-foot-contact" />
       </footer>
     </div>

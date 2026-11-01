@@ -679,6 +679,30 @@ export const PRESETS: readonly Preset[] = [
     shadow: 'elevated',
     cover: { imageUrl: '/assets/themes/bombay-chowk-hero.webp', overlayStrength: 0.4 },
   },
+  {
+    id: 'atelier-rangeen',
+    label: 'Rangeen',
+    description:
+      'Festive, bold, food-forward art-directed menu on the 400-unit Atelier canvas with Lal Mirch palette.',
+    audience: 'Dhabas, North Indian eateries, biryani houses, street cafes, vibrant family restaurants',
+    category: 'contemporary',
+    seedColor: '#c5221f',
+    mode: 'light',
+    slots: {
+      cover: 'hero-photo',
+      nav: 'capsule-pills',
+      dishCard: 'compact-row',
+      section: 'ribbon',
+      footer: 'contact-block',
+    },
+    signatureId: 'atelier-rangeen',
+    typePair: 'bold-street',
+    texture: 'none',
+    density: 'balanced',
+    radius: 'md',
+    shadow: 'subtle',
+    cover: { overlayStrength: 0.35 },
+  },
 ];
 
 export const PRESET_IDS = PRESETS.map((preset) => preset.id);

@@ -3165,3 +3165,18 @@
   justify-content: center;
   text-align: center;
 }
+
+/* Tap-to-call and social links in the contact line keep each edition's own colour. */
+.mq-ed-contact a,
+.mq-ed-contact-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.mq-ed-contact a:hover {
+  text-decoration-thickness: 2px;
+}
+.mq-ed-contact-links {
+  margin-top: 0.25rem;
+}

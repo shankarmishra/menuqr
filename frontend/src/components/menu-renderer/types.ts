@@ -60,6 +60,7 @@ export type RenderMenuItem = {
    * accurate than an automatic crop because the owner knows which part of the plate is the hero.
    */
   focal?: { x: number; y: number };
+  i18n?: { hi?: { name?: string; description?: string } };
 };
 
 export type RenderCategory = {
@@ -67,6 +68,7 @@ export type RenderCategory = {
   name: string;
   description?: string;
   items: RenderMenuItem[];
+  i18n?: { hi?: { name?: string; description?: string } };
 };
 
 export type RenderRestaurant = {

@@ -70,6 +70,8 @@ const EDITION_PRESET_IDS = [
 ];
 
 /** Every preset that predates the Edition catalogue; all of them must stay resolvable. */
+const ATELIER_PRESET_IDS = ['atelier-rangeen'];
+
 const SUPERSEDED_PRESET_IDS = [...LIVE_TEMPLATE_IDS, ...SIGNATURE_PRESET_IDS];
 
 test('presets: catalogue integrity', async (t) => {
@@ -77,7 +79,7 @@ test('presets: catalogue integrity', async (t) => {
     for (const id of LIVE_TEMPLATE_IDS) {
       assert.ok(PRESET_IDS.includes(id), `no preset for live template "${id}"`);
     }
-    assert.equal(PRESETS.length, SUPERSEDED_PRESET_IDS.length + EDITION_PRESET_IDS.length);
+    assert.equal(PRESETS.length, SUPERSEDED_PRESET_IDS.length + EDITION_PRESET_IDS.length + ATELIER_PRESET_IDS.length);
     for (const id of EDITION_PRESET_IDS) {
       assert.ok(PRESET_IDS.includes(id), `missing Edition preset "${id}"`);
     }
@@ -86,8 +88,8 @@ test('presets: catalogue integrity', async (t) => {
   await t.test('the showcase offers the Editions and nothing superseded', () => {
     assert.deepEqual(
       SHOWCASE_PRESETS.map((preset) => preset.id),
-      EDITION_PRESET_IDS,
-      'the showcased catalogue must be exactly the Editions, in catalogue order'
+      [...EDITION_PRESET_IDS, ...ATELIER_PRESET_IDS],
+      'the showcased catalogue must be the Editions and Atelier presets, in catalogue order'
     );
 
     // The point of `legacy`: hidden from every picker, still resolvable for published menus.

@@ -1,0 +1,694 @@
+/**
+ * MENUQR Atelier — 400-Unit Canvas & Rangeen Visual Identity
+ *
+ * All sizing is designed for a fixed 400-unit canvas.
+ * On mobile and desktop viewports, the canvas is scaled uniformly via transform: scale(width / 400).
+ * No media queries or viewport units are used inside the canvas.
+ */
+
+.atelier-viewport {
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-color: var(--atelier-viewport-bg, #f5f0eb);
+  min-height: 100vh;
+}
+
+.atelier-canvas-scaler {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.atelier-canvas {
+  width: 400px;
+  min-width: 400px;
+  max-width: 400px;
+  box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* ────────────────────────────────── Rangeen Palette & Typography ────────────────────────────────── */
+
+.atelier-rangeen {
+  --atelier-primary: #c5221f;
+  --atelier-primary-dark: #9e1916;
+  --atelier-secondary: #f9ab00;
+  --atelier-accent: #e65100;
+  --atelier-bg: #fffbf5;
+  --atelier-surface-card: #ffffff;
+  --atelier-text: #1a1a1a;
+  --atelier-text-muted: #5a5a5a;
+  --atelier-border: #f0e6d8;
+  --atelier-border-strong: #dfcfbc;
+  --atelier-font-display: 'Anton', 'Bebas Neue', 'Oswald', 'Plus Jakarta Sans', sans-serif;
+  --atelier-font-body: 'Poppins', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --atelier-font-accent: 'Kaushan Script', cursive, sans-serif;
+  --atelier-font-hindi: 'Baloo 2', 'Mukta', sans-serif;
+
+  background-color: var(--atelier-bg);
+  color: var(--atelier-text);
+  font-family: var(--atelier-font-body);
+  position: relative;
+  min-height: 100%;
+}
+
+/* ────────────────────────────────── Block B1: Cover Name Poster ────────────────────────────────── */
+
+.atelier-b1-cover {
+  padding: 18px 16px 14px;
+  background: linear-gradient(180deg, #fff2e0 0%, #fffbf5 100%);
+  position: relative;
+}
+
+.atelier-cover-frame {
+  position: relative;
+  border: 3px double var(--atelier-primary);
+  border-radius: 12px;
+  padding: 24px 16px 20px;
+  background-color: var(--atelier-surface-card);
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(197, 34, 31, 0.06);
+}
+
+.atelier-corner-flourish {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  color: var(--atelier-primary);
+  pointer-events: none;
+}
+
+.atelier-corner-tl { top: 4px; left: 4px; }
+.atelier-corner-tr { top: 4px; right: 4px; transform: scaleX(-1); }
+
+.atelier-cover-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.atelier-eyebrow-rule {
+  flex: 1;
+  height: 1px;
+  background-color: var(--atelier-secondary);
+  max-width: 48px;
+}
+
+.atelier-eyebrow-pill {
+  font-family: var(--atelier-font-display);
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  color: var(--atelier-primary);
+  background-color: #fff2e0;
+  padding: 2px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--atelier-secondary);
+}
+
+.atelier-cover-logo-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.atelier-cover-logo-plate {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  padding: 6px;
+  background-color: #ffffff;
+  border: 2px solid var(--atelier-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.atelier-cover-logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.atelier-cover-title-group {
+  margin: 6px 0 10px;
+  line-height: 1.05;
+}
+
+.atelier-cover-top-line {
+  display: block;
+  font-family: var(--atelier-font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--atelier-accent);
+  margin-bottom: 2px;
+}
+
+.atelier-cover-main-line {
+  margin: 0;
+  font-family: var(--atelier-font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--atelier-primary);
+  letter-spacing: 0.5px;
+  line-height: 0.95;
+}
+
+.atelier-cover-tagline {
+  margin: 6px 0 10px;
+  font-size: 13px;
+  color: var(--atelier-text-muted);
+  font-weight: 500;
+  font-style: italic;
+}
+
+.atelier-cover-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 8px 0 12px;
+}
+
+.atelier-meta-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 14px;
+  background-color: #f7ede2;
+  color: var(--atelier-text);
+  border: 1px solid var(--atelier-border-strong);
+}
+
+.atelier-meta-chip-accent {
+  background-color: #fce8e6;
+  color: var(--atelier-primary);
+  border-color: rgba(197, 34, 31, 0.2);
+}
+
+.atelier-cover-divider {
+  width: 100%;
+  height: 10px;
+  color: var(--atelier-secondary);
+  margin: 8px 0 12px;
+}
+
+.atelier-cover-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.atelier-cover-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--atelier-primary);
+  background-color: #fff9f0;
+  border: 1px solid var(--atelier-secondary);
+  border-radius: 20px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.atelier-cover-action-btn:hover {
+  background-color: var(--atelier-primary);
+  color: #ffffff;
+}
+
+.atelier-cover-explore-wrap {
+  margin-top: 6px;
+}
+
+.atelier-cover-explore-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  font-family: var(--atelier-font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background-color: var(--atelier-primary);
+  color: #ffffff;
+  border-radius: 22px;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(197, 34, 31, 0.25);
+}
+
+.atelier-explore-arrow {
+  font-size: 14px;
+}
+
+/* ────────────────────────────────── Block B4: Contents Navigation ────────────────────────────────── */
+
+.atelier-b4-contents {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: rgba(255, 251, 245, 0.96);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 10px 16px 8px;
+  border-bottom: 2px solid var(--atelier-border);
+}
+
+.atelier-search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.atelier-search-input {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  font-size: 13px;
+  border: 1px solid var(--atelier-border-strong);
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: var(--atelier-text);
+  outline: none;
+}
+
+.atelier-search-input:focus {
+  border-color: var(--atelier-primary);
+  box-shadow: 0 0 0 2px rgba(197, 34, 31, 0.15);
+}
+
+.atelier-search-clear {
+  position: absolute;
+  right: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--atelier-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.atelier-diet-chips {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.atelier-diet-pill {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--atelier-border-strong);
+  background-color: #ffffff;
+  color: var(--atelier-text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.atelier-diet-pill.is-active {
+  background-color: var(--atelier-text);
+  color: #ffffff;
+  border-color: var(--atelier-text);
+}
+
+.atelier-diet-pill.is-veg.is-active {
+  background-color: #137333;
+  border-color: #137333;
+  color: #ffffff;
+}
+
+.atelier-diet-pill.is-nonveg.is-active {
+  background-color: #9e1916;
+  border-color: #9e1916;
+  color: #ffffff;
+}
+
+.atelier-cat-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+
+.atelier-cat-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.atelier-cat-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--atelier-text);
+  background-color: #ffffff;
+  border: 1px solid var(--atelier-border-strong);
+  border-radius: 20px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.atelier-cat-tab.is-active {
+  background-color: var(--atelier-primary);
+  color: #ffffff;
+  border-color: var(--atelier-primary);
+}
+
+.atelier-cat-tab-count {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+/* ────────────────────────────────── Block B5: Section Opener ────────────────────────────────── */
+
+.atelier-category-section {
+  padding: 16px 16px 8px;
+  scroll-margin-top: 110px;
+}
+
+.atelier-b5-section-opener {
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.atelier-section-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.atelier-section-num-pill {
+  font-family: var(--atelier-font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--atelier-accent);
+}
+
+.atelier-section-count-pill {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--atelier-text-muted);
+}
+
+.atelier-section-title {
+  margin: 2px 0 0;
+  font-family: var(--atelier-font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--atelier-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+
+.atelier-section-hindi-title {
+  display: block;
+  font-family: var(--atelier-font-hindi);
+  font-size: 14px;
+  color: var(--atelier-secondary);
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.atelier-section-desc {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--atelier-text-muted);
+  line-height: 1.4;
+}
+
+.atelier-section-divider {
+  width: 100%;
+  height: 8px;
+  color: var(--atelier-border-strong);
+  margin-top: 8px;
+}
+
+/* ────────────────────────────────── Block B6: List Row ────────────────────────────────── */
+
+.atelier-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.atelier-b6-row {
+  background-color: var(--atelier-surface-card);
+  border: 1px solid var(--atelier-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.atelier-dish-main-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.atelier-dish-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.atelier-dish-diet {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.atelier-dish-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--atelier-text);
+  line-height: 1.25;
+}
+
+.atelier-dish-hindi-name {
+  display: block;
+  font-family: var(--atelier-font-hindi);
+  font-size: 12px;
+  color: var(--atelier-text-muted);
+  margin-top: 2px;
+  margin-left: 18px;
+}
+
+.atelier-dish-desc {
+  margin: 4px 0 0 18px;
+  font-size: 12px;
+  color: var(--atelier-text-muted);
+  line-height: 1.35;
+}
+
+.atelier-dish-flags {
+  margin: 6px 0 0 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.atelier-dish-price-wrap {
+  margin-top: 8px;
+  margin-left: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.atelier-dish-media {
+  width: 68px;
+  height: 68px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--atelier-border);
+}
+
+.atelier-dish-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.atelier-empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  font-size: 14px;
+  color: var(--atelier-text-muted);
+}
+
+/* ────────────────────────── Block B15 / B16: Back Cover + About & Visit ────────────────────────── */
+
+.atelier-b15-back-cover {
+  margin-top: 24px;
+  padding: 16px;
+  background: linear-gradient(180deg, #fffbf5 0%, #fff2e0 100%);
+}
+
+.atelier-back-top-divider {
+  width: 100%;
+  height: 12px;
+  color: var(--atelier-secondary);
+  margin-bottom: 16px;
+}
+
+.atelier-back-frame {
+  border: 2px solid var(--atelier-border-strong);
+  border-radius: 12px;
+  background-color: var(--atelier-surface-card);
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.atelier-back-brand {
+  margin-bottom: 14px;
+}
+
+.atelier-back-name {
+  margin: 0;
+  font-family: var(--atelier-font-display);
+  font-size: 22px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--atelier-primary);
+}
+
+.atelier-back-tagline {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--atelier-text-muted);
+}
+
+.atelier-back-story {
+  margin: 12px 0;
+  padding: 10px 12px;
+  background-color: #fdfaf6;
+  border-radius: 8px;
+  border-left: 3px solid var(--atelier-secondary);
+  text-align: left;
+}
+
+.atelier-back-story-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--atelier-text);
+}
+
+.atelier-back-section {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--atelier-border);
+}
+
+.atelier-back-heading {
+  margin: 0 0 6px;
+  font-family: var(--atelier-font-display);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--atelier-accent);
+}
+
+.atelier-back-address {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--atelier-text);
+}
+
+.atelier-back-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.atelier-back-hours {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--atelier-text-muted);
+}
+
+.atelier-back-phones {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.atelier-back-phone-btn {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--atelier-primary);
+  text-decoration: none;
+}
+
+.atelier-back-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.atelier-back-social-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--atelier-primary);
+  background-color: #fff9f0;
+  padding: 4px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--atelier-secondary);
+  text-decoration: none;
+}
+
+.atelier-back-note {
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: var(--atelier-text-muted);
+}
+
+.atelier-back-fssai {
+  margin-top: 10px;
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--atelier-text-muted);
+}
+
+.atelier-back-seal-wrap {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.atelier-back-stamp {
+  width: 44px;
+  height: 44px;
+  color: var(--atelier-secondary);
+}

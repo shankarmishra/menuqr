@@ -58,8 +58,8 @@ export const NeonIchibanEdition: React.FC<EditionProps> = ({
           {restaurant.tagline && <p className="mq-ed-neon-tagline">{restaurant.tagline}</p>}
 
           <div className="mq-ed-neon-stickers" aria-hidden="true">
-            <span className="mq-ed-neon-sticker mq-ed-neon-sticker-a">Open Late</span>
-            <span className="mq-ed-neon-sticker mq-ed-neon-sticker-b">Counter Only</span>
+            {restaurant.openingHours && <span className="mq-ed-neon-sticker mq-ed-neon-sticker-a">{restaurant.openingHours}</span>}
+            {restaurant.city && <span className="mq-ed-neon-sticker mq-ed-neon-sticker-b">{restaurant.city}</span>}
           </div>
         </div>
 

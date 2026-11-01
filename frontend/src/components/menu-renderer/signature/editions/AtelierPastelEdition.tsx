@@ -320,33 +320,19 @@ export const RococoCornerFiligree: React.FC<{
  * Artisanal French Confectionery Dietary Badges.
  */
 export const PastelDietBadge: React.FC<{
-  type?: 'veg' | 'vegan' | 'gluten-free' | 'halal' | 'signature';
+  type?: 'veg' | 'vegan';
 }> = ({ type }) => {
   if (type === 'veg') {
     return (
-      <span className="mq-pastel-badge-diet mq-pastel-veg" title="Végétarien">
-        <span className="mq-pastel-badge-dot">❦</span> Végétarien
+      <span className="mq-pastel-badge-diet mq-pastel-veg" title="Vegetarian">
+        <span className="mq-pastel-badge-dot">❦</span> Vegetarian
       </span>
     );
   }
   if (type === 'vegan') {
     return (
-      <span className="mq-pastel-badge-diet mq-pastel-vegan" title="Végétalien Pur">
-        <span className="mq-pastel-badge-dot">🌱</span> Végétalien
-      </span>
-    );
-  }
-  if (type === 'gluten-free') {
-    return (
-      <span className="mq-pastel-badge-diet mq-pastel-gf" title="Sans Gluten">
-        <span className="mq-pastel-badge-dot">🌾</span> Sans Gluten
-      </span>
-    );
-  }
-  if (type === 'signature') {
-    return (
-      <span className="mq-pastel-badge-diet mq-pastel-signature" title="Création de la Maison">
-        <span className="mq-pastel-badge-dot">★</span> Maison
+      <span className="mq-pastel-badge-diet mq-pastel-vegan" title="Vegan">
+        <span className="mq-pastel-badge-dot">🌱</span> Vegan
       </span>
     );
   }
@@ -354,87 +340,7 @@ export const PastelDietBadge: React.FC<{
 };
 
 // =============================================================================
-// STORYTELLING ASIDE PLAQUE
-// =============================================================================
-
-export const AtelierPastelManifestoPlaque: React.FC = () => (
-  <aside className="mq-ed-pastel-manifesto" aria-label="Manifeste de l'Atelier">
-    <span className="mq-ed-pastel-plaque-bracket tl"><RococoCornerFiligree size={36} /></span>
-    <span className="mq-ed-pastel-plaque-bracket tr"><RococoCornerFiligree size={36} /></span>
-    <span className="mq-ed-pastel-plaque-bracket bl"><RococoCornerFiligree size={36} /></span>
-    <span className="mq-ed-pastel-plaque-bracket br"><RococoCornerFiligree size={36} /></span>
-
-    <div className="mq-ed-pastel-manifesto-inner">
-      <div className="mq-ed-pastel-manifesto-header">
-        <span className="mq-ed-pastel-prestige-pip">❦</span>
-        <span className="mq-ed-pastel-surtitle">HAUTE PÂTISSERIE &amp; SALON DE THÉ PARIS</span>
-        <span className="mq-ed-pastel-prestige-pip">❦</span>
-      </div>
-
-      <h3 className="mq-ed-pastel-manifesto-title">
-        Le Manifeste de l'Atelier : L'Art du Feuilletage &amp; du Salon de Thé
-      </h3>
-
-      <FleurDeLysOrchidAstragal width={260} className="mq-ed-pastel-manifesto-astragal" />
-
-      <p className="mq-ed-pastel-manifesto-lead">
-        Dans le silence de notre laboratoire avant l&apos;aurore, la haute pâtisserie se fait architecture
-        et recueillement. Chaque création honore les lois séculaires de la gourmandise française.
-      </p>
-
-      {/* The 3 Pillars Grid */}
-      <div className="mq-ed-pastel-pillars-grid">
-        <div className="mq-ed-pastel-pillar-card">
-          <div className="mq-ed-pastel-pillar-icon">🧈</div>
-          <h4 className="mq-ed-pastel-pillar-name">Les 729 Couches de Tourage</h4>
-          <p className="mq-ed-pastel-pillar-desc">
-            Dans le <em>feuilletage inversé</em>, la détrempe est emprisonnée dans un beurre de tourage
-            AOP Charentes-Poitou à 84% de matière grasse. Six tours successifs élèvent la pâte à exactement
-            729 feuillets microscopiques pour un croustillant sans égal.
-          </p>
-        </div>
-
-        <div className="mq-ed-pastel-pillar-sep" aria-hidden="true">❦</div>
-
-        <div className="mq-ed-pastel-pillar-card">
-          <div className="mq-ed-pastel-pillar-icon">🌿</div>
-          <h4 className="mq-ed-pastel-pillar-name">Extraction Froide 48 Heures</h4>
-          <p className="mq-ed-pastel-pillar-desc">
-            Nos gousses entières de vanille Bourbon de Madagascar et de Tahiti sont fendues à la main puis infusées
-            à froid durant 48 heures dans la crème fleurette de Normandie. Cette patience libère la totalité
-            des vanillines et notes boisées sans altération thermique.
-          </p>
-        </div>
-
-        <div className="mq-ed-pastel-pillar-sep" aria-hidden="true">❦</div>
-
-        <div className="mq-ed-pastel-pillar-card">
-          <div className="mq-ed-pastel-pillar-icon">🫖</div>
-          <h4 className="mq-ed-pastel-pillar-name">Le Rituel du Salon de Thé</h4>
-          <p className="mq-ed-pastel-pillar-desc">
-            L&apos;esprit des grands salons parisiens de la Belle Époque : théières en argent poli maintenues
-            à 85°C, porcelaine de Limoges fine et ballotins gaufrés au ruban de soie noué main pour
-            prolonger l&apos;émotion sucrée.
-          </p>
-        </div>
-      </div>
-
-      {/* Guarantee Seals Badges */}
-      <div className="mq-ed-pastel-manifesto-tags">
-        <span className="mq-ed-pastel-manifesto-tag">Beurre de Tourage Charentes-Poitou AOP</span>
-        <span className="mq-ed-pastel-pip-dot">·</span>
-        <span className="mq-ed-pastel-manifesto-tag">Gousses de Vanille Bourbon Givrée</span>
-        <span className="mq-ed-pastel-pip-dot">·</span>
-        <span className="mq-ed-pastel-manifesto-tag">Farine de Meule de Pierre T65</span>
-        <span className="mq-ed-pastel-pip-dot">·</span>
-        <span className="mq-ed-pastel-manifesto-tag">Pétales de Rose de Grasse</span>
-      </div>
-    </div>
-  </aside>
-);
-
-// =============================================================================
-// HAUTE PÂTISSERIE BRIGADE COLOPHON
+// FOOTER
 // =============================================================================
 
 export const AtelierPastelColophon: React.FC<{
@@ -446,68 +352,9 @@ export const AtelierPastelColophon: React.FC<{
     {/* Center Astragal */}
     <FleurDeLysOrchidAstragal width={280} className="mq-ed-pastel-foot-astragal" />
 
-    {/* Embossed Parisian Guarantee Medallion */}
-    <div className="mq-ed-pastel-guarantee-seal" aria-hidden="true">
-      <svg viewBox="0 0 120 120" width="88" height="88">
-        <defs>
-          <radialGradient id="sealGold" cx="50%" cy="45%" r="55%">
-            <stop offset="0%" stopColor="#fef08a" />
-            <stop offset="50%" stopColor="#d4af37" />
-            <stop offset="100%" stopColor="#b45309" />
-          </radialGradient>
-        </defs>
-        <circle cx="60" cy="60" r="54" fill="#2d4a3e" stroke="url(#sealGold)" strokeWidth="2.5" />
-        <circle cx="60" cy="60" r="48" fill="none" stroke="url(#sealGold)" strokeWidth="0.8" strokeDasharray="3 2" />
-        <path id="curveSeal" d="M 22 60 A 38 38 0 1 1 98 60 A 38 38 0 1 1 22 60" fill="none" />
-        <text fill="url(#sealGold)" fontSize="7" fontWeight="600" letterSpacing="0.14em">
-          <textPath href="#curveSeal" startOffset="50%" textAnchor="middle">
-            • HAUTE PÂTISSERIE FRANÇAISE • SALON DE THÉ D&apos;EXCEPTION
-          </textPath>
-        </text>
-        <g transform="translate(60, 60)">
-          <path d="M 0 -12 L 3 -3 L 12 0 L 3 3 L 0 12 L -3 3 L -12 0 L -3 -3 Z" fill="url(#sealGold)" />
-        </g>
-      </svg>
-    </div>
-
     <p className="mq-ed-pastel-foot-name">{restaurant.name}</p>
-    <p className="mq-ed-pastel-foot-sub">Haute Pâtisserie, Viennoiserie &amp; Salon de Thé Paris</p>
-
-    {/* 4 Master Brigade Officers */}
-    <div className="mq-ed-pastel-brigade-grid">
-      <div className="mq-ed-pastel-brigade-item">
-        <span className="mq-ed-pastel-brigade-title">Chef Pâtissier Exécutif</span>
-        <span className="mq-ed-pastel-brigade-role">Maître des Entremets &amp; Créations Architecturales</span>
-      </div>
-      <div className="mq-ed-pastel-brigade-item">
-        <span className="mq-ed-pastel-brigade-title">Chef Boulanger-Tourrier</span>
-        <span className="mq-ed-pastel-brigade-role">Maître du Levain Naturel &amp; Feuilletage Inversé</span>
-      </div>
-      <div className="mq-ed-pastel-brigade-item">
-        <span className="mq-ed-pastel-brigade-title">Chocolatier-Confiseur</span>
-        <span className="mq-ed-pastel-brigade-role">Artisan des Grands Crus Valrhona &amp; Ganaches Noires</span>
-      </div>
-      <div className="mq-ed-pastel-brigade-item">
-        <span className="mq-ed-pastel-brigade-title">Maître Sommelier du Thé</span>
-        <span className="mq-ed-pastel-brigade-role">Sélectionneur de Thés Rares &amp; Infusions Botaniques</span>
-      </div>
-    </div>
 
     <EditionContact restaurant={restaurant} />
-
-    {/* Regulatory, Butter Provenance & Tea Brewing Disclosures */}
-    <div className="mq-ed-pastel-disclosures">
-      <p className="mq-ed-pastel-disclosure-line">
-        <strong>Service et taxes compris.</strong> Tous nos prix sont nets en monnaie légale.
-      </p>
-      <p className="mq-ed-pastel-disclosure-line">
-        Toutes nos créations sont confectionnées au jour le jour au sein de notre atelier avec des matières
-        premières d&apos;origine certifiée (Beurres AOP, Chocolats Valrhona, Farines de tradition française sans additif).
-      </p>
-      <p className="mq-ed-pastel-disclosure-line">
-        Nos thés et infusions d&apos;origine sont infusés à l&apos;eau de source pure à température contrôlée (80°C - 95°C).
-      </p>
-    </div>
 
     {/* Finial Lozenge */}
     <div className="mq-ed-pastel-finial" aria-hidden="true">
@@ -545,6 +392,7 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
 
   const sections = liveCategories(visible);
   const featured = useFeatured(categories, 2);
+  const locationText = [restaurant.city, restaurant.state].filter(Boolean).join(', ').trim();
   const heroSrc =
     tokens.cover.imageUrl ||
     featured[0]?.imageUrl ||
@@ -556,11 +404,13 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
           COVER HEADER: BELLE ÉPOQUE VITRINE & SCALLOPED ARCH WINDOW
           ========================================================================= */}
       <header className="mq-ed-pastel-cover" data-edition-cover="atelier-pastel">
-        <div className="mq-ed-pastel-prestige-strip">
-          <span className="mq-ed-pastel-prestige-star">❦</span>
-          <span>HAUTE PÂTISSERIE • SALON DE THÉ • PARIS</span>
-          <span className="mq-ed-pastel-prestige-star">❦</span>
-        </div>
+        {locationText && (
+          <div className="mq-ed-pastel-prestige-strip">
+            <span className="mq-ed-pastel-prestige-star">❦</span>
+            <span>{locationText}</span>
+            <span className="mq-ed-pastel-prestige-star">❦</span>
+          </div>
+        )}
 
         {/* Arch Window containing 8K Haute Pâtisserie Photography */}
         <div className="mq-ed-pastel-arch">
@@ -589,23 +439,13 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
             />
           </PatisserieArchCartouche>
 
-          {restaurant.cuisine ? (
-            <p className="mq-ed-pastel-cuisine">{restaurant.cuisine}</p>
-          ) : (
-            <p className="mq-ed-pastel-cuisine">Haute Pâtisserie &amp; Salon de Thé</p>
-          )}
+          {restaurant.cuisine && <p className="mq-ed-pastel-cuisine">{restaurant.cuisine}</p>}
 
           <h1 className="mq-ed-pastel-title">{restaurant.name}</h1>
 
           <FleurDeLysOrchidAstragal width={compact ? 200 : 250} className="mq-ed-pastel-hero-astragal" />
 
-          {restaurant.tagline ? (
-            <p className="mq-ed-pastel-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>
-          ) : (
-            <p className="mq-ed-pastel-tagline">
-              Créations d&apos;Auteur, Tourage au Beurre AOP &amp; Grands Thés d&apos;Origine
-            </p>
-          )}
+          {restaurant.tagline && <p className="mq-ed-pastel-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>}
 
           <CategoryTeaser
             categories={categories}
@@ -648,124 +488,6 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
       )}
 
       {/* =========================================================================
-          DUAL SIGNATURE SHOWCASE (MILLEFEUILLE INVERSÉ & ISPAHAN ENTREMET)
-          ========================================================================= */}
-      {!compact && !hasQuery && (
-        <section className="mq-ed-pastel-showcase-section" aria-label="Créations Signatures de la Maison">
-          <div className="mq-ed-pastel-showcase-heading">
-            <span className="mq-ed-pastel-showcase-pre">LA SÉLECTION DE NOTRE MAÎTRE PÂTISSIER</span>
-            <h2 className="mq-ed-pastel-showcase-title">Créations Architecturales &amp; Entremets d&apos;Art</h2>
-            <FleurDeLysOrchidAstragal width={220} className="mq-ed-pastel-showcase-astragal" />
-          </div>
-
-          <div className="mq-ed-pastel-curation-grid">
-            {/* Signature 1: Millefeuille Inversé Vanille Bourbon */}
-            <article className="mq-ed-pastel-curation-card">
-              <span className="mq-ed-pastel-card-corner tl"><RococoCornerFiligree size={30} /></span>
-              <span className="mq-ed-pastel-card-corner tr"><RococoCornerFiligree size={30} /></span>
-              <span className="mq-ed-pastel-card-corner bl"><RococoCornerFiligree size={30} /></span>
-              <span className="mq-ed-pastel-card-corner br"><RococoCornerFiligree size={30} /></span>
-
-              <div className="mq-ed-pastel-card-media-wrapper">
-                <SmartImage
-                  src={heroSrc}
-                  alt="Millefeuille Inversé Vanille Bourbon"
-                  role="card"
-                  aspectRatio="16 / 10"
-                  priority
-                />
-                <span className="mq-ed-pastel-card-badge">Création Signature I</span>
-              </div>
-
-              <div className="mq-ed-pastel-card-info">
-                <div className="mq-ed-pastel-card-header">
-                  <div className="mq-ed-pastel-card-identity">
-                    <PastelDietBadge type="veg" />
-                    <h3 className="mq-dish-name mq-ed-pastel-card-name">Millefeuille Inversé Vanille Bourbon</h3>
-                  </div>
-                  <div className="mq-ed-pastel-card-price-slot">
-                    <span className="mq-price mq-pastel-price-pill">18,50 €</span>
-                  </div>
-                </div>
-
-                <p className="mq-dish-desc mq-ed-pastel-card-desc">
-                  Feuilletage inversé aux 729 couches croustillantes au beurre de Charentes-Poitou AOP,
-                  crème diplomate aérée à la vanille bourbon de Madagascar givrée, caramel blond
-                  à la fleur de sel de Guérande et éclats d&apos;or pur 24 carats.
-                </p>
-
-                {/* Tea Pairing Ribbon */}
-                <div className="mq-ed-pastel-tea-ribbon">
-                  <div className="mq-ed-pastel-tea-tag">
-                    <span className="mq-ed-pastel-tea-icon">🫖</span>
-                    <span className="mq-ed-pastel-tea-label">Rituel du Salon • Accord Thé</span>
-                    <span className="mq-ed-pastel-tea-origin">Oolong Dong Ding 1998</span>
-                  </div>
-                  <p className="mq-ed-pastel-tea-text">
-                    Notes miellées et boisées de châtaigne grillée prolongeant la rondeur de la vanille givrée.
-                  </p>
-                </div>
-              </div>
-            </article>
-
-            {/* Signature 2: Ispahan Rose, Framboise & Litchi */}
-            <article className="mq-ed-pastel-curation-card">
-              <span className="mq-ed-pastel-card-corner tl"><RococoCornerFiligree size={30} /></span>
-              <span className="mq-ed-pastel-card-corner tr"><RococoCornerFiligree size={30} /></span>
-              <span className="mq-ed-pastel-card-corner bl"><RococoCornerFiligree size={30} /></span>
-              <span className="mq-ed-pastel-card-corner br"><RococoCornerFiligree size={30} /></span>
-
-              <div className="mq-ed-pastel-card-media-wrapper">
-                <SmartImage
-                  src={heroSrc}
-                  alt="Ispahan Rose, Framboise & Litchi Macaron Entremet"
-                  role="card"
-                  aspectRatio="16 / 10"
-                />
-                <span className="mq-ed-pastel-card-badge">Création Signature II</span>
-              </div>
-
-              <div className="mq-ed-pastel-card-info">
-                <div className="mq-ed-pastel-card-header">
-                  <div className="mq-ed-pastel-card-identity">
-                    <PastelDietBadge type="gluten-free" />
-                    <h3 className="mq-dish-name mq-ed-pastel-card-name">
-                      Ispahan Rose, Framboise &amp; Litchi Entremet
-                    </h3>
-                  </div>
-                  <div className="mq-ed-pastel-card-price-slot">
-                    <span className="mq-price mq-pastel-price-pill">19,00 €</span>
-                  </div>
-                </div>
-
-                <p className="mq-dish-desc mq-ed-pastel-card-desc">
-                  Coque macaron soufflée aux amandes douces de Provence, crème mousseline parfumée
-                  aux pétales de rose de Grasse, framboises fraîches sauvages et compotée translucide de litchis de Madagascar.
-                </p>
-
-                {/* Tea Pairing Ribbon */}
-                <div className="mq-ed-pastel-tea-ribbon">
-                  <div className="mq-ed-pastel-tea-tag">
-                    <span className="mq-ed-pastel-tea-icon">🫖</span>
-                    <span className="mq-ed-pastel-tea-label">Rituel du Salon • Accord Infusion</span>
-                    <span className="mq-ed-pastel-tea-origin">Thé Blanc Pai Mu Tan Imperial</span>
-                  </div>
-                  <p className="mq-ed-pastel-tea-text">
-                    Infusion florale aux boutons de pivoine et bergamote fraîche sublimant l&apos;essence de rose.
-                  </p>
-                </div>
-              </div>
-            </article>
-          </div>
-        </section>
-      )}
-
-      {/* =========================================================================
-          STORYTELLING ASIDE PLAQUE
-          ========================================================================= */}
-      {!compact && !hasQuery && <AtelierPastelManifestoPlaque />}
-
-      {/* =========================================================================
           COURSES & CATEGORIES BODY
           ========================================================================= */}
       <main className="mq-ed-pastel-body">
@@ -773,7 +495,7 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
           hasQuery ? (
             <EmptyResults query={query.trim()} onClear={() => setQuery('')} />
           ) : (
-            <p className="mq-ed-empty" role="status">Ce menu ne contient aucun dessert pour l&apos;instant.</p>
+            <p className="mq-ed-empty" role="status">No items found.</p>
           )
         ) : (
           sections.map((category, catIdx) => (
@@ -805,7 +527,11 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
                       <div className="mq-ed-pastel-dish-identity">
                         {item.dietType === 'veg' && <PastelDietBadge type="veg" />}
                         {item.dietType === 'vegan' && <PastelDietBadge type="vegan" />}
-                        {item.isBestseller && <PastelDietBadge type="signature" />}
+                        {item.isBestseller && (
+                          <span className="mq-pastel-badge-diet mq-pastel-signature" title="Bestseller">
+                            <span className="mq-pastel-badge-dot">★</span> Bestseller
+                          </span>
+                        )}
                         <h3 className="mq-dish-name mq-ed-pastel-dish-title">{item.name}</h3>
                       </div>
 
@@ -829,17 +555,17 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
                       <div className="mq-ed-pastel-dish-meta">
                         {item.isBestseller && (
                           <span className="mq-ed-pastel-allergen-pill">
-                            ★ Maison Bestseller
+                            Bestseller
                           </span>
                         )}
                         {item.isSpecial && (
                           <span className="mq-ed-pastel-tag-pill">
-                            ❦ Spécialité du Chef
+                            Special
                           </span>
                         )}
                         {item.trending && (
                           <span className="mq-ed-pastel-allergen-pill">
-                            ✦ Favori du Moment
+                            Trending
                           </span>
                         )}
                       </div>
