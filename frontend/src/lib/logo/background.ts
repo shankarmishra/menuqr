@@ -18,7 +18,7 @@ export const MIN_COVERAGE = 0.85;
 const RESCUE_COVERAGE = 0.6;
 /** Mean delta E between neighbouring ring pixels above which the ring is textured (a photo), not smooth. */
 export const ROUGHNESS_LIMIT = 0.012;
-const MAX_SAMPLES = 40000;
+const MAX_SAMPLES = 12000;
 const CELL = 0.03;
 
 export interface BackgroundDetection {

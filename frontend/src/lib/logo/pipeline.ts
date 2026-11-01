@@ -159,5 +159,5 @@ export function processLogoPixels(input: RgbaImage, options: LogoPipelineOptions
     warnings,
   };
 
-  return { image, variants: wantVariants ? makeMonoVariants(image) : null, analysis };
+  return { image, variants: wantVariants ? makeMonoVariants(image, cut && det.rgb ? det.rgb : null) : null, analysis };
 }

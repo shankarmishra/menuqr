@@ -58,10 +58,19 @@ export const LIGHT_SHAPES = `
 
 /** Letter-like rings with small enclosed counters ("o" and "e" style): the counters must become transparent. */
 export const WORDMARK_SHAPES = `
-  <circle cx="170" cy="300" r="62" fill="none" stroke="#161616" stroke-width="40"/>
-  <circle cx="330" cy="300" r="62" fill="none" stroke="#161616" stroke-width="40"/>
-  <circle cx="490" cy="300" r="62" fill="none" stroke="#161616" stroke-width="40"/>
-  <rect x="85" y="215" width="12" height="170" fill="#161616"/>`;
+  <circle cx="70" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <circle cx="116" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <circle cx="162" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <circle cx="208" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <circle cx="254" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <circle cx="300" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <circle cx="346" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <circle cx="392" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <circle cx="438" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <circle cx="484" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <circle cx="530" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <circle cx="576" cy="300" r="15" fill="none" stroke="#161616" stroke-width="10"/>
+  <rect x="30" y="270" width="8" height="60" fill="#161616"/>`;
 
 /** A round badge: gold ring, black interior that must stay, gold shapes inside. */
 export const BADGE_SHAPES = `
@@ -75,12 +84,11 @@ export const BADGE_SHAPES = `
  * at the bottom. The white bay must stay; the gap to the bar underneath must go.
  */
 export const EMBLEM_SHAPES = `
-  <path d="M100 360 A200 200 0 1 1 500 360 Z" fill="#ffa400"/>
-  <rect x="100" y="300" width="115" height="70" rx="20" fill="#2a1a10"/>
-  <rect x="385" y="300" width="115" height="70" rx="20" fill="#2a1a10"/>
-  <rect x="215" y="160" width="170" height="60" fill="#d62d20"/>
-  <rect x="215" y="215" width="170" height="165" fill="#ffffff"/>
-  <rect x="150" y="430" width="300" height="46" rx="18" fill="#2a1a10"/>`;
+  <circle cx="300" cy="270" r="200" fill="#ffa400"/>
+  <rect x="170" y="300" width="70" height="140" fill="#d62d20"/>
+  <rect x="360" y="300" width="70" height="140" fill="#d62d20"/>
+  <rect x="240" y="290" width="120" height="240" fill="#ffffff"/>
+  <rect x="150" y="520" width="300" height="46" rx="18" fill="#2a1a10"/>`;
 
 export interface Fixture {
   name: string;

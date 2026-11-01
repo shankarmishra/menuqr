@@ -37,6 +37,8 @@ export interface CutoutResult {
   separation: number;
   /** Nearly everything matched the background: the caller keeps the source image. */
   empty: boolean;
+  /** The numbers behind the emblem decision, for tests and the contact sheets. */
+  diagnostics: { dominance: number; solidity: number; inkSolidity: number; aspect: number };
 }
 
 const MIN_FRINGE_ALPHA = 0.06;
@@ -54,7 +56,7 @@ function floodOutside(
   tolBg: number,
   tolStep: number,
   tolCap: number
-): Uint8Array {
+): { out: Uint8Array; count: number } {
   const n = w * h;
   const out = new Uint8Array(n);
   const queue = new Int32Array(n);
@@ -107,17 +109,11 @@ function floodOutside(
     if (i >= w) push(i, i - w);
     if (i < n - w) push(i, i + w);
   }
-  return out;
-}
-
-function countOnes(mask: Uint8Array): number {
-  let c = 0;
-  for (let i = 0; i < mask.length; i++) c += mask[i];
-  return c;
+  return { out, count: tail };
 }
 
 /** Colour of the edge pixels is unmixed from the background; see the file header. */
-function refineEdges(input: RgbaImage, out: Uint8Array, bay: Uint8Array, bg: Rgb, bandR: number): Uint8ClampedArray {
+function refineEdges(input: RgbaImage, out: Uint8Array, bay: Uint8Array, hasBay: boolean, bg: Rgb, bandR: number): Uint8ClampedArray {
   const { width: w, height: h, data } = input;
   const n = w * h;
   const res = new Uint8ClampedArray(data.length);
@@ -126,24 +122,19 @@ function refineEdges(input: RgbaImage, out: Uint8Array, bay: Uint8Array, bg: Rgb
   const layer = new Uint8Array(n);
   const layers: number[][] = [[]];
   const firstLayer: number[] = [];
-  for (let y = 0; y < h; y++) {
+  // 3 x 3 dilation of the removed area in two separable passes; its rim of ink pixels is layer 1.
+  const horizontal = new Uint8Array(n);
+  for (let y = 0, row = 0; y < h; y++, row += w) {
     for (let x = 0; x < w; x++) {
-      const i = y * w + x;
+      const i = row + x;
+      horizontal[i] = out[i] | (x > 0 ? out[i - 1] : 0) | (x < w - 1 ? out[i + 1] : 0);
+    }
+  }
+  for (let y = 0, row = 0; y < h; y++, row += w) {
+    for (let x = 0; x < w; x++) {
+      const i = row + x;
       if (out[i] !== 0) continue;
-      let touches = false;
-      for (let dy = -1; dy <= 1 && !touches; dy++) {
-        const yy = y + dy;
-        if (yy < 0 || yy >= h) continue;
-        for (let dx = -1; dx <= 1; dx++) {
-          const xx = x + dx;
-          if ((dx === 0 && dy === 0) || xx < 0 || xx >= w) continue;
-          if (out[yy * w + xx] !== 0) {
-            touches = true;
-            break;
-          }
-        }
-      }
-      if (touches) {
+      if ((horizontal[i] | (y > 0 ? horizontal[i - w] : 0) | (y < h - 1 ? horizontal[i + w] : 0)) !== 0) {
         layer[i] = 1;
         firstLayer.push(i);
       }
@@ -300,7 +291,7 @@ function refineEdges(input: RgbaImage, out: Uint8Array, bay: Uint8Array, bg: Rgb
   for (const i of gone) res[i * 4 + 3] = 0;
 
   // One pixel of feather where a kept bay meets the removed page.
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < n && hasBay; i++) {
     if (bay[i] === 0) continue;
     const x = i % w;
     if ((x > 0 && res[(i - 1) * 4 + 3] === 0) || (x < w - 1 && res[(i + 1) * 4 + 3] === 0) || (i >= w && res[(i - w) * 4 + 3] === 0) || (i < n - w && res[(i + w) * 4 + 3] === 0)) {
@@ -364,8 +355,9 @@ export function cutOutBackground(
   const { width: w, height: h } = input;
   const n = w * h;
   const planes = toOklabPlanes(input.data, n);
-  const out = floodOutside(planes, w, h, bg.lab, params.tolBg, params.tolStep, params.tolCap);
-  let outCount = countOnes(out);
+  const flood = floodOutside(planes, w, h, bg.lab, params.tolBg, params.tolStep, params.tolCap);
+  const out = flood.out;
+  let outCount = flood.count;
   const unchanged = (empty: boolean): CutoutResult => ({
     image: input,
     removedShare: 0,
@@ -375,6 +367,7 @@ export function cutOutBackground(
     bayPixels: 0,
     separation: 0,
     empty,
+    diagnostics: { dominance: 0, solidity: 0, inkSolidity: 0, aspect: 0 },
   });
   if (outCount === 0) return unchanged(false);
   if (outCount >= n * 0.985) return unchanged(true);
@@ -387,9 +380,7 @@ export function cutOutBackground(
   };
 
   // 1. Pieces of ink. Specks (JPEG noise the fill could not reach) are dropped; the biggest piece never is.
-  const fgMask = new Uint8Array(n);
-  for (let i = 0; i < n; i++) fgMask[i] = out[i] ^ 1;
-  const comps = labelComponents(fgMask, w, h, true);
+  const comps = labelComponents(out, w, h, true, 0);
   let main = 1;
   for (let l = 2; l <= comps.count; l++) if (comps.area[l] > comps.area[main]) main = l;
   const speckMax = Math.min(40, Math.max(3, Math.round(n * 1.5e-5)));
@@ -406,7 +397,6 @@ export function cutOutBackground(
       const l = comps.labels[i];
       if (l !== 0 && isSpeck[l] === 1) {
         out[i] = 1;
-        fgMask[i] = 0;
         outCount++;
       }
     }
@@ -446,20 +436,31 @@ export function cutOutBackground(
   const rows = rasterizeConvex(hull, h);
   let hullArea = 0;
   for (let y = 0; y < h; y++) if (rows.hi[y] >= rows.lo[y]) hullArea += rows.hi[y] - rows.lo[y] + 1;
-  const dominance = comps.area[main] / Math.max(1, inkArea);
-  const solidity = comps.area[main] / Math.max(1, hullArea);
-  const emblem = dominance >= 0.45 && solidity >= 0.78 && hullArea >= 400;
-
-  // 3. Enclosed background-coloured regions: counters, aprons, badge interiors.
+  // Background-coloured pixels the outside fill did not reach: counters, aprons, badge interiors.
   const tolBg2 = params.tolBg * params.tolBg;
   const holeMask = new Uint8Array(n);
   let anyHole = false;
+  let bgLikeInMain = 0;
   for (let i = 0; i < n; i++) {
     if (out[i] === 0 && distBg2(i) <= tolBg2) {
       holeMask[i] = 1;
       anyHole = true;
+      if (comps.labels[i] === main) bgLikeInMain++;
     }
   }
+
+  // One compact, roundish body with real ink mass is an emblem: it keeps its holes (teeth, a badge
+  // interior) and, with enough ink mass, the bays of the page inside its hull. Letters are neither
+  // roundish nor massive, so wordmarks never take this path.
+  const dominance = comps.area[main] / Math.max(1, inkArea);
+  const solidity = comps.area[main] / Math.max(1, hullArea);
+  const inkSolidity = (comps.area[main] - bgLikeInMain) / Math.max(1, hullArea);
+  const bodyW = comps.maxX[main] - comps.minX[main] + 1;
+  const bodyH = comps.maxY[main] - comps.minY[main] + 1;
+  const aspect = bodyW / bodyH;
+  const emblem = dominance >= 0.45 && solidity >= 0.78 && aspect >= 0.55 && aspect <= 1.8 && hullArea >= 400;
+  const fillBays = emblem && inkSolidity >= 0.6;
+
   let holesKept = 0;
   let holesPunched = 0;
   if (anyHole) {
@@ -485,7 +486,7 @@ export function cutOutBackground(
   // 4. Bays of the page inside the emblem's hull belong to the figure (white apron touching the page).
   const bay = new Uint8Array(n);
   let bayPixels = 0;
-  if (emblem && params.keepEnclosed) {
+  if (fillBays && params.keepEnclosed) {
     const rho = Math.max(2, Math.round(0.03 * Math.sqrt(hullArea)));
     const cols = rasterizeConvex(
       hull.map(([x, y]) => [y, x] as [number, number]),
@@ -519,25 +520,28 @@ export function cutOutBackground(
 
   // 5. Unmix the edges.
   const bandR = Math.min(4, Math.max(1, Math.round(Math.max(w, h) / 400)));
-  const data = refineEdges(input, out, bay, bg.rgb, bandR);
+  const data = refineEdges(input, out, bay, bayPixels > 0, bg.rgb, bandR);
 
   let transparent = 0;
-  const histogram = new Uint32Array(201);
   let kept = 0;
   for (let i = 0; i < n; i++) {
-    if (data[i * 4 + 3] === 0) {
-      transparent++;
-    } else {
-      kept++;
-      const d = Math.sqrt(distBg2(i));
-      histogram[Math.min(200, Math.round(d * 200))]++;
-    }
+    if (data[i * 4 + 3] === 0) transparent++;
+    else kept++;
+  }
+  // How far the remaining ink sits from the background colour (sampled: a percentile needs no more).
+  const histogram = new Uint32Array(201);
+  let sampled = 0;
+  const sampleStride = Math.max(1, Math.floor(n / 60000));
+  for (let i = 0; i < n; i += sampleStride) {
+    if (data[i * 4 + 3] === 0) continue;
+    sampled++;
+    histogram[Math.min(200, Math.round(Math.sqrt(distBg2(i)) * 200))]++;
   }
   let acc = 0;
   let separation = 0;
   for (let b = 0; b <= 200; b++) {
     acc += histogram[b];
-    if (acc >= 0.95 * kept) {
+    if (acc >= 0.95 * sampled) {
       separation = b / 200;
       break;
     }
@@ -551,5 +555,6 @@ export function cutOutBackground(
     bayPixels,
     separation,
     empty: kept === 0,
+    diagnostics: { dominance, solidity, inkSolidity, aspect },
   };
 }

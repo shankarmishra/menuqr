@@ -103,33 +103,31 @@ export function toOklabPlanes(data: ArrayLike<number>, pixels: number): OklabPla
   const L = new Float32Array(pixels);
   const A = new Float32Array(pixels);
   const B = new Float32Array(pixels);
-  let pr = -1;
-  let pg = -1;
-  let pb = -1;
-  let cl = 0;
-  let ca = 0;
-  let cb = 0;
+  // Direct-mapped cache: flat graphics and noisy flat backgrounds repeat a few hundred colours.
+  const CACHE = 1 << 14;
+  const keys = new Int32Array(CACHE).fill(-1);
+  const values = new Float32Array(CACHE * 3);
   for (let i = 0, j = 0; i < pixels; i++, j += 4) {
     const r = data[j];
     const g = data[j + 1];
     const b = data[j + 2];
-    if (r !== pr || g !== pg || b !== pb) {
-      pr = r;
-      pg = g;
-      pb = b;
+    const key = (r << 16) | (g << 8) | b;
+    const slot = ((r * 7 + g * 3 + b * 5) ^ (r << 6) ^ (g << 3) ^ b) & (CACHE - 1);
+    if (keys[slot] !== key) {
       const lr = SRGB_TO_LINEAR[r];
       const lg = SRGB_TO_LINEAR[g];
       const lb = SRGB_TO_LINEAR[b];
       const l = Math.cbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb);
       const m = Math.cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb);
       const s = Math.cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb);
-      cl = toe(0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s);
-      ca = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
-      cb = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+      keys[slot] = key;
+      values[slot * 3] = toe(0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s);
+      values[slot * 3 + 1] = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
+      values[slot * 3 + 2] = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
     }
-    L[i] = cl;
-    A[i] = ca;
-    B[i] = cb;
+    L[i] = values[slot * 3];
+    A[i] = values[slot * 3 + 1];
+    B[i] = values[slot * 3 + 2];
   }
   return { L, A, B };
 }

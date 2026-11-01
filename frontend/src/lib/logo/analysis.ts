@@ -62,11 +62,17 @@ export function detectRoundBadge(img: RgbaImage, content: Rect): boolean {
   const cw = content.width;
   const ch = content.height;
   if (cw < 24 || ch < 24 || Math.abs(cw / ch - 1) > 0.08) return false;
-  const n = cw * ch;
+  // Work on a grid of at most about 200 cells across: the shape test does not need every pixel.
+  const scale = Math.max(1, Math.floor(Math.max(cw, ch) / 200));
+  const gw = Math.ceil(cw / scale);
+  const gh = Math.ceil(ch / scale);
+  const n = gw * gh;
   const solid = new Uint8Array(n);
-  for (let y = 0; y < ch; y++) {
-    for (let x = 0; x < cw; x++) {
-      solid[y * cw + x] = img.data[((content.y + y) * img.width + content.x + x) * 4 + 3] >= 128 ? 1 : 0;
+  for (let y = 0; y < gh; y++) {
+    const sy = Math.min(ch - 1, y * scale + (scale >> 1));
+    for (let x = 0; x < gw; x++) {
+      const sx = Math.min(cw - 1, x * scale + (scale >> 1));
+      solid[y * gw + x] = img.data[((content.y + sy) * img.width + content.x + sx) * 4 + 3] >= 128 ? 1 : 0;
     }
   }
   const outside = new Uint8Array(n);
@@ -79,21 +85,21 @@ export function detectRoundBadge(img: RgbaImage, content: Rect): boolean {
       queue[tail++] = i;
     }
   };
-  for (let x = 0; x < cw; x++) {
+  for (let x = 0; x < gw; x++) {
     seed(x);
-    seed((ch - 1) * cw + x);
+    seed((gh - 1) * gw + x);
   }
-  for (let y = 1; y < ch - 1; y++) {
-    seed(y * cw);
-    seed(y * cw + cw - 1);
+  for (let y = 1; y < gh - 1; y++) {
+    seed(y * gw);
+    seed(y * gw + gw - 1);
   }
   while (head < tail) {
     const i = queue[head++];
-    const x = i % cw;
+    const x = i % gw;
     if (x > 0) seed(i - 1);
-    if (x < cw - 1) seed(i + 1);
-    if (i >= cw) seed(i - cw);
-    if (i < n - cw) seed(i + cw);
+    if (x < gw - 1) seed(i + 1);
+    if (i >= gw) seed(i - gw);
+    if (i < n - gw) seed(i + gw);
   }
   let area = 0;
   let sx = 0;
@@ -101,8 +107,8 @@ export function detectRoundBadge(img: RgbaImage, content: Rect): boolean {
   for (let i = 0; i < n; i++) {
     if (outside[i] === 0) {
       area++;
-      sx += i % cw;
-      sy += Math.floor(i / cw);
+      sx += i % gw;
+      sy += Math.floor(i / gw);
     }
   }
   const fill = area / n;
@@ -110,23 +116,19 @@ export function detectRoundBadge(img: RgbaImage, content: Rect): boolean {
   const cx = sx / area;
   const cy = sy / area;
   const radii: number[] = [];
-  for (let y = 0; y < ch; y++) {
-    for (let x = 0; x < cw; x++) {
-      const i = y * cw + x;
+  for (let y = 0; y < gh; y++) {
+    for (let x = 0; x < gw; x++) {
+      const i = y * gw + x;
       if (outside[i] === 1) continue;
-      const edge = x === 0 || y === 0 || x === cw - 1 || y === ch - 1 || outside[i - 1] === 1 || outside[i + 1] === 1 || outside[i - cw] === 1 || outside[i + cw] === 1;
+      const edge = x === 0 || y === 0 || x === gw - 1 || y === gh - 1 || outside[i - 1] === 1 || outside[i + 1] === 1 || outside[i - gw] === 1 || outside[i + gw] === 1;
       if (edge) radii.push(Math.hypot(x - cx, y - cy));
     }
   }
   if (radii.length < 16) return false;
   const mean = radii.reduce((a, b) => a + b, 0) / radii.length;
   let close = 0;
-  for (const r of radii) if (Math.abs(r - mean) / mean <= 0.08) close++;
+  for (const r of radii) if (Math.abs(r - mean) / mean <= 0.1) close++;
   return close / radii.length >= 0.9;
-}
-
-function sampleStep(count: number, cap: number): number {
-  return Math.max(1, Math.ceil(count / cap));
 }
 
 /**
@@ -136,25 +138,23 @@ function sampleStep(count: number, cap: number): number {
 export function extractPalette(img: RgbaImage, maxColours = 5): { entries: PaletteEntry[]; meanLightness: number } {
   const { width: w, height: h, data } = img;
   const total = w * h;
-  let opaque = 0;
-  for (let i = 0; i < total; i++) if (data[i * 4 + 3] >= 200) opaque++;
-  if (opaque === 0) return { entries: [], meanLightness: 0.5 };
-  const step = sampleStep(opaque, 14000);
-  const labs = new Float32Array(3 * Math.ceil(opaque / step) + 3);
+  const step = Math.max(1, Math.floor(Math.sqrt(total / 16000)));
+  const labs = new Float32Array(3 * Math.ceil(w / step) * Math.ceil(h / step) + 3);
   let m = 0;
-  let seen = 0;
   let lightSum = 0;
-  for (let i = 0; i < total; i++) {
-    const j = i * 4;
-    if (data[j + 3] < 200) continue;
-    if (seen++ % step !== 0) continue;
-    const lab = srgb8ToOklabR(data[j], data[j + 1], data[j + 2]);
-    labs[3 * m] = lab[0];
-    labs[3 * m + 1] = lab[1];
-    labs[3 * m + 2] = lab[2];
-    lightSum += oklabLightness(data[j], data[j + 1], data[j + 2]);
-    m++;
+  for (let y = 0; y < h; y += step) {
+    for (let x = 0; x < w; x += step) {
+      const j = (y * w + x) * 4;
+      if (data[j + 3] < 200) continue;
+      const lab = srgb8ToOklabR(data[j], data[j + 1], data[j + 2]);
+      labs[3 * m] = lab[0];
+      labs[3 * m + 1] = lab[1];
+      labs[3 * m + 2] = lab[2];
+      lightSum += oklabLightness(data[j], data[j + 1], data[j + 2]);
+      m++;
+    }
   }
+  if (m === 0) return { entries: [], meanLightness: 0.5 };
 
   // Candidate starting colours: means of the most populated 0.04-wide cells.
   const cells = new Map<number, { n: number; l: number; a: number; b: number }>();
@@ -266,45 +266,30 @@ function toProfile(weights: Float64Array, ySums: Float64Array): LumaBin[] {
  */
 export function lumaProfiles(img: RgbaImage): { area: LumaBin[]; rim: LumaBin[] } {
   const { width: w, height: h, data } = img;
-  const total = w * h;
   const areaW = new Float64Array(LUMA_BINS);
   const areaY = new Float64Array(LUMA_BINS);
   const rimW = new Float64Array(LUMA_BINS);
   const rimY = new Float64Array(LUMA_BINS);
-  const stride = sampleStep(total, 250000);
+  const step = Math.max(1, Math.floor(Math.sqrt((w * h) / 90000)));
   const binOf = (y: number) => Math.min(LUMA_BINS - 1, Math.floor(Math.cbrt(y) * LUMA_BINS));
   const alphaAt = (x: number, y: number) => (x < 0 || y < 0 || x >= w || y >= h ? 0 : data[(y * w + x) * 4 + 3]);
-  let rimCount = 0;
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
+  // The rim is sampled on a finer grid than the area, because it is a thin set.
+  const rimStep = Math.max(1, Math.floor(step / 2));
+  for (let y = 0; y < h; y += rimStep) {
+    for (let x = 0; x < w; x += rimStep) {
       const j = (y * w + x) * 4;
       const a = data[j + 3];
       if (a < 24) continue;
-      let isRim = false;
-      if (a >= 128) {
-        isRim = alphaAt(x - 2, y) < 64 || alphaAt(x + 2, y) < 64 || alphaAt(x, y - 2) < 64 || alphaAt(x, y + 2) < 64;
-      }
-      if (isRim) rimCount++;
-      if ((y * w + x) % stride === 0) {
-        const lum = relativeLuminance(data[j], data[j + 1], data[j + 2]);
-        const b = binOf(lum);
-        areaW[b] += a / 255;
-        areaY[b] += (a / 255) * lum;
-      }
-    }
-  }
-  const rimStep = sampleStep(rimCount, 60000);
-  let rimSeen = 0;
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const j = (y * w + x) * 4;
-      if (data[j + 3] < 128) continue;
-      if (!(alphaAt(x - 2, y) < 64 || alphaAt(x + 2, y) < 64 || alphaAt(x, y - 2) < 64 || alphaAt(x, y + 2) < 64)) continue;
-      if (rimSeen++ % rimStep !== 0) continue;
       const lum = relativeLuminance(data[j], data[j + 1], data[j + 2]);
-      const b = binOf(lum);
-      rimW[b] += 1;
-      rimY[b] += lum;
+      const bin = binOf(lum);
+      if (y % step === 0 && x % step === 0) {
+        areaW[bin] += a / 255;
+        areaY[bin] += (a / 255) * lum;
+      }
+      if (a >= 128 && (alphaAt(x - 2, y) < 64 || alphaAt(x + 2, y) < 64 || alphaAt(x, y - 2) < 64 || alphaAt(x, y + 2) < 64)) {
+        rimW[bin] += 1;
+        rimY[bin] += lum;
+      }
     }
   }
   return { area: toProfile(areaW, areaY), rim: toProfile(rimW, rimY) };

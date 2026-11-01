@@ -19,9 +19,9 @@ export interface Components {
 /**
  * Two-pass labelling with union-find. Use 8-connectivity for ink and 4-connectivity for the
  * background-coloured regions inside it (the standard dual pair, so thin diagonal strokes stay in
- * one piece and cannot be leaked through).
+ * one piece and cannot be leaked through). A pixel belongs to the set when `mask[i] === want`.
  */
-export function labelComponents(mask: Uint8Array, w: number, h: number, eight: boolean): Components {
+export function labelComponents(mask: Uint8Array, w: number, h: number, eight: boolean, want = 1): Components {
   const n = w * h;
   const labels = new Int32Array(n);
   const parent = new Int32Array((n >> 1) + 2);
@@ -35,7 +35,8 @@ export function labelComponents(mask: Uint8Array, w: number, h: number, eight: b
     }
     return x;
   };
-  const union = (a: number, b: number) => {
+  /** Joins the sets of a and b and returns the surviving root. */
+  const join = (a: number, b: number) => {
     const ra = find(a);
     const rb = find(b);
     if (ra === rb) return ra;
@@ -47,30 +48,31 @@ export function labelComponents(mask: Uint8Array, w: number, h: number, eight: b
     return rb;
   };
 
-  for (let y = 0; y < h; y++) {
-    const row = y * w;
+  for (let y = 0, row = 0; y < h; y++, row += w) {
     for (let x = 0; x < w; x++) {
       const i = row + x;
-      if (!mask[i]) continue;
-      let label = 0;
-      const consider = (l: number) => {
-        if (l === 0) return;
-        label = label === 0 ? l : union(label, l);
-      };
-      if (x > 0) consider(labels[i - 1]);
+      if (mask[i] !== want) continue;
+      let l = x > 0 ? labels[i - 1] : 0;
       if (y > 0) {
-        consider(labels[i - w]);
+        const up = labels[i - w];
+        if (up !== 0) l = l === 0 ? up : up === l ? l : join(l, up);
         if (eight) {
-          if (x > 0) consider(labels[i - w - 1]);
-          if (x < w - 1) consider(labels[i - w + 1]);
+          if (x > 0) {
+            const ul = labels[i - w - 1];
+            if (ul !== 0) l = l === 0 ? ul : ul === l ? l : join(l, ul);
+          }
+          if (x < w - 1) {
+            const ur = labels[i - w + 1];
+            if (ur !== 0) l = l === 0 ? ur : ur === l ? l : join(l, ur);
+          }
         }
       }
-      if (label === 0) {
-        label = next;
+      if (l === 0) {
+        l = next;
         parent[next] = next;
         next++;
       }
-      labels[i] = label;
+      labels[i] = l;
     }
   }
 
@@ -88,16 +90,14 @@ export function labelComponents(mask: Uint8Array, w: number, h: number, eight: b
   const minY = new Int32Array(count + 1).fill(h);
   const maxX = new Int32Array(count + 1).fill(-1);
   const maxY = new Int32Array(count + 1).fill(-1);
-  for (let y = 0; y < h; y++) {
-    const row = y * w;
+  for (let y = 0, row = 0; y < h; y++, row += w) {
     for (let x = 0; x < w; x++) {
-      const i = row + x;
-      const raw = labels[i];
+      const raw = labels[row + x];
       if (raw === 0) continue;
       const l = remap[raw];
-      labels[i] = l;
+      labels[row + x] = l;
       area[l]++;
-      if (first[l] < 0) first[l] = i;
+      if (first[l] < 0) first[l] = row + x;
       if (x < minX[l]) minX[l] = x;
       if (x > maxX[l]) maxX[l] = x;
       if (y < minY[l]) minY[l] = y;
