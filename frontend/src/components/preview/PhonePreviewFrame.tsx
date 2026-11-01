@@ -45,7 +45,7 @@ export default function PhonePreviewFrame({
   screenClassName = '',
   screenStyle,
   scrollRef,
-  useIframe = true,
+  useIframe = false,
   onSyncMessage,
   time = '9:41',
 }: PhonePreviewFrameProps) {
@@ -318,7 +318,7 @@ export default function PhonePreviewFrame({
               className="flex-1 min-h-0 w-full relative flex flex-col overflow-hidden"
               style={{ contain: 'paint' }}
             >
-              {useIframe && typeof window !== 'undefined' ? (
+              {useIframe && typeof window !== 'undefined' && iframeMountNode ? (
                 <>
                   <iframe
                     ref={iframeRef}
@@ -336,7 +336,7 @@ export default function PhonePreviewFrame({
               ) : (
                 <div
                   ref={scrollRef}
-                  className="w-full h-full overflow-y-auto mq-showcase-preview-frame"
+                  className="w-full h-full flex flex-col flex-1 min-h-0"
                   style={{ width: `${viewportWidth}px` }}
                 >
                   {children}
