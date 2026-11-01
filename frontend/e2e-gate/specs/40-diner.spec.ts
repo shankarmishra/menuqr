@@ -48,6 +48,8 @@ for (const vp of VIEWPORTS) {
     const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.mobile, hasTouch: vp.mobile });
     const page = await context.newPage();
     const telemetry = new Telemetry(page, [world.base]);
+    let sheetFacts = { role: '', modal: false };
+    let closedByEscape = false;
     const started = Date.now();
     await page.goto(`/qr/${lab.qrId}`);
     await page.locator('.mq-dish-name').first().waitFor({ timeout: 30_000 });
@@ -81,25 +83,39 @@ for (const vp of VIEWPORTS) {
     await g.check(`DIN-05-${vp.key}-hindi`, 'Devanagari dish names render with normal letter-spacing and no forced uppercase', async () => {
       const devanagari = scrape.dishNames.filter((name) => /[ऀ-ॿ]/.test(name));
       expect(devanagari.length).toBeGreaterThanOrEqual(80);
-      const bad = await page.evaluate(() => [...document.querySelectorAll('.mq-dish-name')]
-        .filter((element) => /[ऀ-ॿ]/.test(element.textContent || ''))
-        .filter((element) => {
+      const facts = await page.evaluate(() => {
+        const nodes = [...document.querySelectorAll('.mq-dish-name')].filter((element) => /[ऀ-ॿ]/.test(element.textContent || ''));
+        const bad = nodes.filter((element) => {
           const style = getComputedStyle(element);
           return (style.letterSpacing !== 'normal' && parseFloat(style.letterSpacing) !== 0) || style.textTransform === 'uppercase';
-        }).length);
-      expect(bad).toBe(0);
+        });
+        const style = getComputedStyle(nodes[0]);
+        const ratio = parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+        return { bad: bad.length, total: nodes.length, letterSpacing: style.letterSpacing, lineHeightRatio: Math.round(ratio * 100) / 100 };
+      });
+      expect(facts.bad, `${facts.bad}/${facts.total} Devanagari dish names have letter-spacing ${facts.letterSpacing} (line-height ratio ${facts.lineHeightRatio}; Devanagari needs 0 spacing and about 1.5)`).toBe(0);
+      expect(facts.lineHeightRatio, 'Devanagari line-height ratio').toBeGreaterThanOrEqual(1.4);
     });
     await g.check(`DIN-06-${vp.key}-half-full`, 'a half/full dish exposes both portions with their prices', async () => {
       const split = menu.items.find((item) => item.halfPrice != null)!;
       const row = page.locator('article', { has: page.locator('.mq-dish-name', { hasText: new RegExp(`^${split.name}$`) }) }).first();
       await row.scrollIntoViewIfNeeded();
       await row.getByRole('button', { name: /customi[sz]e/i }).first().click();
-      const sheet = page.getByRole('dialog').last();
+      const sheet = page.locator('.dish-customization-portal, [role="dialog"]').last();
       await expect(sheet).toContainText(/half/i);
       await expect(sheet).toContainText(/full/i);
       await expect(sheet).toContainText(inr(split.halfPrice!));
       await expect(sheet).toContainText(inr(split.fullPrice!));
+      sheetFacts = await sheet.evaluate((element) => ({ role: element.getAttribute('role') || element.querySelector('[role="dialog"]')?.getAttribute('role') || '', modal: element.querySelector('[aria-modal="true"]') !== null || element.getAttribute('aria-modal') === 'true' }));
       await page.keyboard.press('Escape');
+      await page.waitForTimeout(400);
+      closedByEscape = (await page.locator('.dish-customization-portal').count()) === 0;
+      if (!closedByEscape) await page.getByRole('button', { name: /close dish customization/i }).first().click();
+      await expect(page.locator('.dish-customization-portal')).toHaveCount(0);
+    });
+    await g.check(`DIN-17-${vp.key}-sheet-a11y`, 'the dish customise sheet is a labelled modal dialog and closes with Escape', async () => {
+      expect(sheetFacts.role === 'dialog' || sheetFacts.modal, 'sheet has no role="dialog" / aria-modal').toBe(true);
+      expect(closedByEscape, 'Escape does not close the sheet').toBe(true);
     });
     await g.check(`DIN-07-${vp.key}-links`, 'Instagram, Facebook, website, phone and map links are well formed', async () => {
       const hrefs = scrape.links.map((link) => link.href);

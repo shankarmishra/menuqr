@@ -51,7 +51,7 @@ export type MenuScrape = {
   priceTexts: string[];
   dishCount: number;
   articles: number;
-  images: { src: string; ok: boolean; w: number; h: number }[];
+  images: { src: string; ok: boolean; broken: boolean; w: number; h: number }[];
   brokenImages: string[];
   emptyFrames: string[];
   links: { href: string; text: string; label: string }[];
@@ -72,7 +72,7 @@ export async function scrapeMenu(page: Page): Promise<MenuScrape> {
       return box.width > 0 && box.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
     };
     const images = [...root.querySelectorAll('img')].map((img) => ({
-      src: img.currentSrc || img.src, ok: img.complete && img.naturalWidth > 0,
+      src: img.currentSrc || img.src, ok: img.complete && img.naturalWidth > 0, broken: img.complete && img.naturalWidth === 0,
       w: Math.round(img.getBoundingClientRect().width), h: Math.round(img.getBoundingClientRect().height),
     }));
     const frames = [...root.querySelectorAll('[class*="thumb"],[class*="photo"],[class*="image"],[class*="media"],[class*="frame"],[class*="avatar"]')]
@@ -90,7 +90,7 @@ export async function scrapeMenu(page: Page): Promise<MenuScrape> {
       dishCount: root.querySelectorAll('.mq-dish-name').length,
       articles: articles.length,
       images,
-      brokenImages: images.filter((image) => !image.ok).map((image) => image.src.slice(0, 100)),
+      brokenImages: images.filter((image) => image.broken).map((image) => image.src.slice(0, 100)),
       emptyFrames: frames.slice(0, 12),
       links: [...document.querySelectorAll('a[href]')].map((anchor) => ({ href: anchor.getAttribute('href') || '', text: (anchor.textContent || '').trim().slice(0, 40), label: anchor.getAttribute('aria-label') || '' })),
       scrollWidth: document.documentElement.scrollWidth,

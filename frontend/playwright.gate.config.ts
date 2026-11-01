@@ -26,6 +26,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     ignoreHTTPSErrors: true,
+    actionTimeout: 20_000,
+    navigationTimeout: 45_000,
   },
   projects: [{ name: 'gate' }],
 });
