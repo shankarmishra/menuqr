@@ -19,9 +19,17 @@ import type { DietType, RenderMenuItem } from '../types.ts';
 
 // --------------------------------------- diet mark ---------------------------------------
 
+/** True for the three diets the owner can declare. Anything else is unknown. */
+export function isKnownDiet(type: unknown): type is DietType {
+  return type === 'veg' || type === 'vegan' || type === 'non-veg';
+}
+
 export const DietMark: React.FC<{ type?: DietType; className?: string }> = ({ type, className }) => {
+  // A dish whose diet is unknown gets no mark: showing the green vegetarian mark by default would
+  // tell a vegetarian guest that a non-vegetarian dish is safe to order.
+  if (!isKnownDiet(type)) return null;
   // Vegan is marked with the vegetarian glyph, matching Indian menu convention.
-  const isVeg = type === 'veg' || type === 'vegan' || !type;
+  const isVeg = type === 'veg' || type === 'vegan';
   const label = isVeg ? (type === 'vegan' ? 'Vegan' : 'Vegetarian') : 'Non-vegetarian';
 
   return (
@@ -42,7 +50,8 @@ export const FssaiBadge: React.FC<{ type?: DietType; className?: string; promine
   className,
   prominent = false,
 }) => {
-  const isVeg = type === 'veg' || type === 'vegan' || !type;
+  if (!isKnownDiet(type)) return null;
+  const isVeg = type === 'veg' || type === 'vegan';
   const label = isVeg ? (type === 'vegan' ? '100% VEGAN' : '100% PURE VEG') : 'NON-VEG';
 
   if (!prominent) {
@@ -198,7 +207,9 @@ export const SpeedOrderButton: React.FC<{
     return null;
   }
 
-  const effectivePrice = price || String(item.price || 0);
+  // An item with no price cannot be ordered: there is nothing to charge, and "0" is not a price.
+  const effectivePrice = price || (Number(item.price) > 0 ? String(item.price) : '');
+  if (!effectivePrice) return null;
 
   if (quantity === 0) {
     return (
@@ -278,14 +289,17 @@ export const DishPrice: React.FC<DishPriceProps> = ({ item, readOnly = false }) 
   const pricing = parseItemPricing(item as Parameters<typeof parseItemPricing>[0]);
   const canOrder = !readOnly && Boolean(cart.isPremium && cart.onAddToCart);
 
-  if (pricing.hasVariants) {
+  // A variant with no price (0, blank or not a number) is dropped: "Half ₹0" is never true.
+  const pricedVariants = pricing.variants.filter((variant) => Number.isFinite(variant.price) && Number(variant.price) > 0);
+
+  if (pricing.hasVariants && pricedVariants.length > 0) {
     if (cart.onCustomizeDish) {
       return (
         <div className="mq-row" style={{ alignItems: 'center', gap: 'var(--mq-space-2)' }}>
-          <span className="mq-price">{pricing.variants[0]?.formattedPrice}</span>
-          {pricing.variants.length > 1 && (
+          <span className="mq-price">{pricedVariants[0]?.formattedPrice}</span>
+          {pricedVariants.length > 1 && (
             <span className="mq-price-label" style={{ fontSize: '11px', opacity: 0.85 }}>
-              ({pricing.variants.length} options)
+              ({pricedVariants.length} options)
             </span>
           )}
           {canOrder && (
@@ -307,7 +321,7 @@ export const DishPrice: React.FC<DishPriceProps> = ({ item, readOnly = false }) 
     }
     return (
       <div className="mq-stack" style={{ alignItems: 'flex-end' }}>
-        {pricing.variants.map((variant) => (
+        {pricedVariants.map((variant) => (
           <div key={variant.label} className="mq-row" style={{ alignItems: 'center' }}>
             <span className="mq-price-label">{variant.label}</span>
             <span className="mq-price">{variant.formattedPrice}</span>
@@ -321,7 +335,8 @@ export const DishPrice: React.FC<DishPriceProps> = ({ item, readOnly = false }) 
   return (
     <div className="mq-row" style={{ alignItems: 'center' }}>
       {pricing.formattedBasePrice && <span className="mq-price">{pricing.formattedBasePrice}</span>}
-      {canOrder && <Stepper item={item} price={String(pricing.basePrice ?? item.price)} />}
+      {/* An item with no price cannot be ordered: there is nothing to charge. */}
+      {canOrder && pricing.formattedBasePrice && <Stepper item={item} price={String(pricing.basePrice ?? item.price)} />}
     </div>
   );
 };

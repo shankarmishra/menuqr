@@ -209,19 +209,24 @@ const DegchiLogoCartouche: React.FC<{
  * Grand Trunk Road (NH 1) Milestone Heritage Tablet Badge.
  * Authentic curved stone highway milestone seen across Delhi, Haryana & Punjab.
  */
-const HighwayMilestoneBadge: React.FC<{ milestoneText?: string; routeText?: string }> = ({
-  milestoneText = 'NH 1 • GRAND TRUNK ROAD',
-  routeText = 'ESTD. 1984 • DHABA EDITION',
-}) => (
-  <aside className="mq-ed-punjab-milestone" aria-label="Highway Heritage Badge">
-    <div className="mq-ed-punjab-milestone-top">
-      <span className="mq-ed-punjab-milestone-route">{milestoneText}</span>
-    </div>
-    <div className="mq-ed-punjab-milestone-base">
-      <span className="mq-ed-punjab-milestone-edition">{routeText}</span>
-    </div>
-  </aside>
-);
+const HighwayMilestoneBadge: React.FC<{ milestoneText?: string; routeText?: string }> = ({ milestoneText, routeText }) => {
+  // Only the restaurant's own location and cuisine are ever drawn here.
+  if (!milestoneText && !routeText) return null;
+  return (
+    <aside className="mq-ed-punjab-milestone" aria-label="Location and cuisine">
+      {milestoneText && (
+        <div className="mq-ed-punjab-milestone-top">
+          <span className="mq-ed-punjab-milestone-route">{milestoneText}</span>
+        </div>
+      )}
+      {routeText && (
+        <div className="mq-ed-punjab-milestone-base">
+          <span className="mq-ed-punjab-milestone-edition">{routeText}</span>
+        </div>
+      )}
+    </aside>
+  );
+};
 
 /**
  * Phulkari Astragal (Horizontal Diamond & Grain Spike Divider).
@@ -248,7 +253,7 @@ const PhulkariAstragal: React.FC<{ className?: string }> = ({ className }) => (
  * Authentic Clay-Hearth Diet Mark with Brass Beaten Rim.
  */
 const ClayDietMark: React.FC<{ type?: string; isSpicy?: boolean }> = ({ type, isSpicy }) => {
-  const isVeg = type === 'veg';
+  const isVeg = type === 'veg' || type === 'vegan';
   const isNonVeg = type === 'non-veg';
 
   if (!isVeg && !isNonVeg) {
@@ -258,14 +263,14 @@ const ClayDietMark: React.FC<{ type?: string; isSpicy?: boolean }> = ({ type, is
   return (
     <span
       className={`mq-ed-punjab-diet ${isVeg ? 'is-veg' : 'is-nonveg'}`}
-      title={isVeg ? 'Vegetarian (Shakahari - Pure Desi Ghee)' : 'Non-Vegetarian (Mansaahari - Clay Tandoor)'}
-      aria-label={isVeg ? 'Pure Vegetarian' : 'Non-Vegetarian'}
+      title={isVeg ? 'Vegetarian' : 'Non-vegetarian'}
+      aria-label={isVeg ? 'Vegetarian' : 'Non-vegetarian'}
     >
       <span className="mq-ed-punjab-diet-rim">
         <span className="mq-ed-punjab-diet-core" />
       </span>
       {isSpicy && (
-        <span className="mq-ed-punjab-diet-chilli" title="Bhatthi Spiced" aria-hidden="true">
+        <span className="mq-ed-punjab-diet-chilli" title="Spicy" aria-hidden="true">
           🌶️
         </span>
       )}
@@ -340,8 +345,8 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
         <div className="mq-ed-punjab-cover-body">
           {/* Milestone Badge */}
           <HighwayMilestoneBadge
-            milestoneText="NH 1 • GRAND TRUNK ROAD"
-            routeText="ASLI DHABA • CLAY TANDOOR & BHATTHI"
+            milestoneText={[restaurant.city, restaurant.state].filter(Boolean).join(', ')}
+            routeText={restaurant.cuisine}
           />
 
           {/* Hammered Peetal Degchi Logo Cartouche */}
@@ -350,19 +355,8 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
           {/* Restaurant Title with Tandoori Brass Glow */}
           <h1 className="mq-ed-punjab-title">{restaurant.name}</h1>
 
-          {/* Gurmukhi Heritage Epithet */}
-          <div className="mq-ed-punjab-gurmukhi-epithet" aria-hidden="true">
-            ਸਵਾਦ ਪੰਜਾਬ ਦਾ • ਦਿਲ ਖੋਲ੍ਹ ਕੇ ਖਾਓ
-          </div>
-
           {/* Tagline */}
-          {restaurant.tagline ? (
-            <p className="mq-ed-punjab-tagline">{restaurant.tagline}</p>
-          ) : (
-            <p className="mq-ed-punjab-tagline">
-              Highway Bhatthi Fire, Slow-Simmered Copper Handis & Fresh Makhan Since 1984
-            </p>
-          )}
+          {restaurant.tagline && <p className="mq-ed-punjab-tagline">{restaurant.tagline}</p>}
 
           {/* Phulkari Astragal Divider */}
           <PhulkariAstragal className="mq-ed-punjab-cover-astragal" />
@@ -417,14 +411,9 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
       <main className="mq-ed-punjab-plate">
         {/* 1. BHATTHI DA SWAAD • SIGNATURE TANDOOR SHOWCASE */}
         {signatures.length > 0 && !compact && !hasQuery && (
-          <section className="mq-ed-punjab-showcase" aria-label="Bhatthi Highlights">
+          <section className="mq-ed-punjab-showcase" aria-label="Featured dishes">
             <header className="mq-ed-punjab-showcase-header">
-              <span className="mq-ed-punjab-showcase-kicker">ਖ਼ਾਸ ਤੰਦੂਰੀ ਸੁਗਾਤਾਂ • CHEF&apos;S CLAY OVEN PRIDE</span>
-              <h2 className="mq-ed-punjab-showcase-title">Bhatthi Te Tandoor Da Kamaal</h2>
-              <p className="mq-ed-punjab-showcase-sub">
-                Skewered over live hardwood charcoal embers, basted in spiced yellow mustard oil and
-                served sizzling with hand-churned white butter.
-              </p>
+              <h2 className="mq-ed-punjab-showcase-title">Featured dishes</h2>
               <PhulkariAstragal />
             </header>
 
@@ -439,24 +428,14 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
                       focal={item.focal}
                       aspectRatio="16 / 10"
                     />
-                    <span className="mq-ed-punjab-showcase-badge">
-                      <span className="mq-ed-punjab-showcase-badge-fire">🔥</span>
-                      BHATTHI SPECIAL
-                    </span>
+                    <span className="mq-ed-punjab-showcase-badge">Featured</span>
                   </div>
 
                   <div className="mq-ed-punjab-showcase-content">
                     <div className="mq-ed-punjab-showcase-row">
                       <div className="mq-ed-punjab-showcase-name-wrap">
                         <ClayDietMark
-                          type={
-                            item.dietType ||
-                            (item.name.toLowerCase().includes('paneer') ||
-                            item.name.toLowerCase().includes('dal') ||
-                            item.name.toLowerCase().includes('veg')
-                              ? 'veg'
-                              : 'non-veg')
-                          }
+                          type={item.dietType}
                           isSpicy={!!item.spicyLevel}
                         />
                         <h3 className="mq-dish-name mq-ed-punjab-showcase-dish-name">{item.name}</h3>
@@ -472,43 +451,11 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
                       </p>
                     )}
 
-                    <div className="mq-ed-punjab-showcase-footer">
-                      <span className="mq-ed-punjab-showcase-prep">
-                        Charcoal Pit Roasted • Basted in Desi Ghee
-                      </span>
-                    </div>
                   </div>
                 </article>
               ))}
             </div>
           </section>
-        )}
-
-        {/* 2. CULTURAL ASIDE PLAQUE : "Sanjha Chulha Te Grand Trunk Road" */}
-        {!compact && !hasQuery && (
-          <aside className="mq-ed-punjab-plaque" aria-label="Punjab Dhaba Heritage Tradition">
-            <div className="mq-ed-punjab-plaque-inner">
-              <span className="mq-ed-punjab-plaque-seal" aria-hidden="true">
-                ਧਾਬਾ
-              </span>
-              <span className="mq-ed-punjab-plaque-kicker">THE GRAND TRUNK ROAD TRADITION</span>
-              <h3 className="mq-ed-punjab-plaque-title">Sanjha Chulha: The Community Hearth</h3>
-              <p className="mq-ed-punjab-plaque-text">
-                For centuries along Sher Shah Suri&apos;s ancient highway, weary travelers, truckers, and
-                merchants found solace around the roaring heat of the village <em>Sanjha Chulha</em>.
-                Our black lentils simmer gently in seasoned copper cauldrons for over sixteen hours
-                through the night, while our rotis and kulchas are slapped against fiery earthenware walls
-                fed by seasoned babool charcoal. Food made with large hearts, rich dairy, and unhurried patience.
-              </p>
-              <div className="mq-ed-punjab-plaque-footer">
-                <span>PIND DA SWAAD</span>
-                <span>•</span>
-                <span>DESI GHEE TAAZA MAKHAN</span>
-                <span>•</span>
-                <span>KHULLA DILL</span>
-              </div>
-            </div>
-          </aside>
         )}
 
         {/* 3. DHABA COURSES & DOTTED PRICE LEADERS */}
@@ -546,18 +493,7 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
 
               <div className="mq-ed-punjab-list">
                 {category.items.map((item) => {
-                  const diet =
-                    item.dietType ||
-                    (item.name.toLowerCase().includes('paneer') ||
-                    item.name.toLowerCase().includes('dal') ||
-                    item.name.toLowerCase().includes('veg') ||
-                    item.name.toLowerCase().includes('paratha') ||
-                    item.name.toLowerCase().includes('roti') ||
-                    item.name.toLowerCase().includes('naan') ||
-                    item.name.toLowerCase().includes('chana') ||
-                    item.name.toLowerCase().includes('lassi')
-                      ? 'veg'
-                      : 'non-veg');
+                  const diet = item.dietType;
 
                   return (
                     <article key={item.id} className="mq-ed-punjab-dish-row">
@@ -588,15 +524,15 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
                         <div className="mq-ed-punjab-dish-tags" aria-label="Item notes">
                           {item.isSpecial && (
                             <span className="mq-ed-punjab-tag is-signature">
-                              <span aria-hidden="true">★</span> Ustad&apos;s Signature
+                              <span aria-hidden="true">★</span> Chef&rsquo;s Special
                             </span>
                           )}
                           {item.isBestseller && (
-                            <span className="mq-ed-punjab-tag is-popular">Dhaba Favourite</span>
+                            <span className="mq-ed-punjab-tag is-popular">Bestseller</span>
                           )}
-                          {item.spicyLevel && item.spicyLevel > 0 && (
+                          {(item.spicyLevel ?? 0) > 0 && (
                             <span className="mq-ed-punjab-tag is-spiced">
-                              {'🌶️'.repeat(Math.min(3, item.spicyLevel))} Teekha Bhatthi
+                              {'🌶️'.repeat(Math.min(3, item.spicyLevel ?? 0))} Spicy
                             </span>
                           )}
                         </div>
@@ -611,7 +547,7 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
       </main>
 
       {/* =========================================================================
-          FOOTER & DHABA KITCHEN BRIGADE
+          FOOTER
           ========================================================================= */}
       <footer className="mq-ed-punjab-foot">
         <PhulkariAstragal />
@@ -621,34 +557,6 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
         </div>
 
         <h3 className="mq-ed-punjab-foot-name">{restaurant.name}</h3>
-        <p className="mq-ed-punjab-foot-sub">
-          Slow-Simmered Copper Handis • Clay Tandoor Hearth • Desi Ghee
-        </p>
-
-        {/* Dhaba Brigade Hierarchy Colophon */}
-        <section className="mq-ed-punjab-brigade-grid" aria-label="Kitchen Brigade">
-          <div className="mq-ed-punjab-brigade-item">
-            <span className="mq-ed-punjab-brigade-title">Ustad-e-Bhatthi</span>
-            <span className="mq-ed-punjab-brigade-role">Master of the Hardwood Tandoor</span>
-          </div>
-          <div className="mq-ed-punjab-brigade-item">
-            <span className="mq-ed-punjab-brigade-title">Bawarchi-e-Handi</span>
-            <span className="mq-ed-punjab-brigade-role">Copper Cauldron & Daal Simmering</span>
-          </div>
-          <div className="mq-ed-punjab-brigade-item">
-            <span className="mq-ed-punjab-brigade-title">Halwai-e-Lassi</span>
-            <span className="mq-ed-punjab-brigade-role">Hand-Churned Makhan & Malai</span>
-          </div>
-          <div className="mq-ed-punjab-brigade-item">
-            <span className="mq-ed-punjab-brigade-title">Rotiwala-e-Tandoor</span>
-            <span className="mq-ed-punjab-brigade-role">Naan, Paratha & Kulcha Artisan</span>
-          </div>
-        </section>
-
-        <p className="mq-ed-punjab-foot-colophon">
-          &ldquo;ਜਿਥੇ ਦਿਲ ਮਿਲੇ, ਓਥੇ ਰੱਬ ਮਿਲੇ — Where hearts unite, the divine resides.&rdquo;
-        </p>
-
         <EditionContact restaurant={restaurant} />
       </footer>
     </div>

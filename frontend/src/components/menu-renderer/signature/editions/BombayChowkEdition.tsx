@@ -232,7 +232,7 @@ export const VictoriaStationCourseMedallion: React.FC<{
   index: number;
   size?: number;
 }> = ({ index, size = 52 }) => {
-  const devanagariNumerals = ['१', '२', '३', '४', '५', '६', '७', '੮', '९', '१०'];
+  const devanagariNumerals = ['१', '२', '३', '४', '५', '६', '७', '८', '९', '१०'];
   const numeral = devanagariNumerals[index] || `${index + 1}`;
 
   return (
@@ -430,14 +430,14 @@ export const ChowkDietMark: React.FC<{ type?: string; isSpicy?: boolean }> = ({
   return (
     <span
       className={`mq-ed-chowk-diet ${isVeg ? 'is-veg' : 'is-nonveg'}`}
-      title={isVeg ? 'शाकाहारी • 100% Vegetarian (Pure Butter & Milk Pav)' : 'मांसाहारी • Non-Vegetarian (Midnight Charcoal Sigri)'}
-      aria-label={isVeg ? 'Pure Vegetarian' : 'Non-Vegetarian'}
+      title={isVeg ? 'Vegetarian' : 'Non-vegetarian'}
+      aria-label={isVeg ? 'Vegetarian' : 'Non-vegetarian'}
     >
       <span className="mq-ed-chowk-diet-badge">
         <span className="mq-ed-chowk-diet-dot" />
       </span>
       {isSpicy && (
-        <span className="mq-ed-chowk-diet-spice" title="Tikha • Bombay Street Spiced" aria-hidden="true">
+        <span className="mq-ed-chowk-diet-spice" title="Spicy" aria-hidden="true">
           🔥
         </span>
       )}
@@ -473,6 +473,7 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
   const sections = liveCategories(visible);
 
   const heroImage = tokens.cover.imageUrl || '/assets/themes/bombay-chowk-hero.webp';
+  const stampText = (restaurant.cuisine || [restaurant.city, restaurant.state].filter(Boolean).join(', ')).trim();
 
   return (
     <div className={compact ? 'mq-ed mq-ed-chowk is-compact' : 'mq-ed mq-ed-chowk'}>
@@ -512,12 +513,14 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
         </span>
 
         <div className="mq-ed-chowk-cover-body">
-          {/* Heritage Municipal Stamp */}
-          <div className="mq-ed-chowk-stamp">
-            <span aria-hidden="true">★</span>
-            <span>EKDUM KADAK • असली मुम्बई जायका • ESTD. 1953</span>
-            <span aria-hidden="true">★</span>
-          </div>
+          {/* Heritage stamp: the restaurant's own cuisine or location, never invented copy. */}
+          {stampText && (
+            <div className="mq-ed-chowk-stamp">
+              <span aria-hidden="true">★</span>
+              <span>{stampText}</span>
+              <span aria-hidden="true">★</span>
+            </div>
+          )}
 
           {/* Gateway of India & Sunburst Cartouche */}
           <GatewayDecoCartouche size={compact ? 116 : 152}>
@@ -535,12 +538,8 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
           <MarineDriveWaveAstragal variant="grand" />
 
           {/* Tagline / Subtitle */}
-          {restaurant.tagline ? (
+          {restaurant.tagline && (
             <p className="mq-ed-chowk-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>
-          ) : (
-            <p className="mq-ed-chowk-tagline">
-              Nostalgic Irani Cafes • Midnight Charcoal Grills • Chowpatty Beach Chaat
-            </p>
           )}
 
           {/* Category Teaser */}
@@ -587,50 +586,17 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
           INTERIOR : Bombay Chowk Masterpiece Layout
           ========================================================================= */}
       <main className="mq-ed-chowk-plate">
-        {/* Mumbai Heritage Banner */}
-        {!compact && !hasQuery && (
-          <aside className="mq-ed-chowk-heritage-banner" aria-label="Bombay Street Food Heritage">
-            <div className="mq-ed-chowk-heritage-head">
-              <span className="mq-ed-chowk-section-eyebrow">⚡ THE SOUL OF MAXIMUM CITY ⚡</span>
-              <h3 className="mq-ed-chowk-heritage-title">From South Bombay Irani Cafes to Chowpatty Sands</h3>
-              <p className="mq-ed-chowk-heritage-desc">
-                Slow-brewed strong Assam tea with bruised green cardamom, freshly baked warm milk pavs slathered in cultured white butter, and fiery cast-iron griddles humming into the midnight breeze:
-              </p>
-            </div>
-            <div className="mq-ed-chowk-heritage-pills">
-              <span className="mq-ed-chowk-pill">
-                <strong>कटिंग चाय</strong> • Bruised Cardamom &amp; Steamed Milk
-              </span>
-              <span className="mq-ed-chowk-pill">
-                <strong>मस्का पाव</strong> • Freshly Baked Crusty Brun Bun
-              </span>
-              <span className="mq-ed-chowk-pill">
-                <strong>तवा पाव भाजी</strong> • Sizzling Amul Butter Iron Griddle
-              </span>
-              <span className="mq-ed-chowk-pill">
-                <strong>सीख कबाब</strong> • Charcoal Sigri with Mint Chutney
-              </span>
-            </div>
-          </aside>
-        )}
-
-        {/* 1. CHOWK SIGNATURES SHOWCASE */}
+        {/* 1. FEATURED DISHES SHOWCASE */}
         {signatures.length > 0 && !compact && !hasQuery && (
-          <section className="mq-ed-chowk-showcase" aria-label="Iconic Chowk Highlights">
+          <section className="mq-ed-chowk-showcase" aria-label="Featured dishes">
             <div className="mq-ed-chowk-showcase-header">
               <CuttingChaiCaddy size={44} />
-              <span className="mq-ed-chowk-section-eyebrow">असली मुम्बई जायका • SIGNATURE SPECIALITIES</span>
-              <h2 className="mq-ed-chowk-showcase-title mq-ed-chowk-foil-text">
-                The Midnight Tawa &amp; Irani Oven
-              </h2>
-              <p className="mq-ed-chowk-showcase-subtitle">
-                Cooked on sizzling cast-iron tawas and wood-fired bakery hearths, served garma-garam with lime wedges, pickled pink onions, and mint coriander chutney.
-              </p>
+              <h2 className="mq-ed-chowk-showcase-title mq-ed-chowk-foil-text">Featured dishes</h2>
               <MarineDriveWaveAstragal />
             </div>
 
             <div className="mq-ed-chowk-showcase-grid">
-              {signatures.map((item, idx) => (
+              {signatures.map((item) => (
                 <article key={item.id} className="mq-ed-chowk-card">
                   {/* Art Deco Stepped Corner Accents */}
                   <span className="mq-ed-chowk-card-bracket bracket-tl">
@@ -655,9 +621,7 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
                         focal={item.focal}
                         aspectRatio="16 / 10"
                       />
-                      <span className="mq-ed-chowk-card-badge">
-                        Chowk Pride {idx === 0 ? '१' : '२'}
-                      </span>
+                      <span className="mq-ed-chowk-card-badge">Featured</span>
                     </div>
                   )}
 
@@ -678,81 +642,11 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
                       </p>
                     )}
 
-                    {/* Bambaiya Street Accompaniment Ribbon */}
-                    <div className="mq-ed-chowk-pairing-ribbon">
-                      <span aria-hidden="true">⚡</span>
-                      <span>
-                        {idx === 0
-                          ? 'Accompaniment: Double-Toasted Maska Pav, Pickled Pink Shallots & Lemon Cheek'
-                          : 'Accompaniment: Hot Cutting Chai in Fluted Glass, Crisp Nylon Sev & Garlic Dip'}
-                      </span>
-                    </div>
-
-                    {/* Culinary Heritage Lore */}
-                    <p className="mq-ed-chowk-card-lore">
-                      <em>Bombay Chowk Heritage:</em> Slow-reduced on heavy 35kg hand-beaten cast iron. Finished with double dollops of golden butter and fragrant toasted pav.
-                    </p>
                   </div>
                 </article>
               ))}
             </div>
           </section>
-        )}
-
-        {/* 2. THE IRANI CAFE CODE & CHOWPATTY LORE (EDITORIAL ASIDE PLAQUE) */}
-        {!compact && !hasQuery && (
-          <aside className="mq-ed-chowk-irani-plaque" aria-label="The Irani Cafe Code and Lore">
-            <span className="mq-ed-chowk-plaque-bracket bracket-tl">
-              <ArtDecoCornerBracket position="top-left" size={30} />
-            </span>
-            <span className="mq-ed-chowk-plaque-bracket bracket-tr">
-              <ArtDecoCornerBracket position="top-right" size={30} />
-            </span>
-            <span className="mq-ed-chowk-plaque-bracket bracket-bl">
-              <ArtDecoCornerBracket position="bottom-left" size={30} />
-            </span>
-            <span className="mq-ed-chowk-plaque-bracket bracket-br">
-              <ArtDecoCornerBracket position="bottom-right" size={30} />
-            </span>
-
-            <span className="mq-ed-chowk-section-eyebrow">◈ IRANI CAFE RULES &amp; STREET CHOWK CODE ◈</span>
-            <h2 className="mq-ed-chowk-plaque-title mq-ed-chowk-foil-text">
-              The Legend of South Bombay Hospitality
-            </h2>
-            <p className="mq-ed-chowk-plaque-subtitle">
-              Cherished rules preserved since the 1930s on antique cafe mirrors across Colaba and Fort:
-            </p>
-
-            <div className="mq-ed-chowk-plaque-grid">
-              <div className="mq-ed-chowk-plaque-col">
-                <span className="mq-ed-chowk-col-badge">नियम १ • CAFE CODE</span>
-                <h3 className="mq-ed-chowk-col-heading">No Combing Hair, Only Kadak Chai</h3>
-                <p className="mq-ed-chowk-col-desc">
-                  &ldquo;No sleeping on chairs, no writing letters, no talking loud, no arguing with cashier, and no leaving without dipping warm bun maska in steaming cutting chai.&rdquo;
-                </p>
-              </div>
-
-              <div className="mq-ed-chowk-plaque-col">
-                <span className="mq-ed-chowk-col-badge">नियम २ • TAWA CRAFT</span>
-                <h3 className="mq-ed-chowk-col-heading">The Midnight Iron Flat-Top</h3>
-                <p className="mq-ed-chowk-col-desc">
-                  Seasoned over decades, our giant concave tawa retains intense volcanic heat. Spiced tomatoes, boiled potatoes, and whole crushed spices are hand-mashed to velvety perfection.
-                </p>
-              </div>
-
-              <div className="mq-ed-chowk-plaque-col">
-                <span className="mq-ed-chowk-col-badge">नियम ३ • CHOWPATTY SOUL</span>
-                <h3 className="mq-ed-chowk-col-heading">Crisp Sev &amp; Tangy Tamarind</h3>
-                <p className="mq-ed-chowk-col-desc">
-                  Freshly pounded coriander chutneys, sun-dried amchur, raw mango slivers, and feather-light nylon sev delivered straight from traditional Gujarati and Maharashtrian snack masters.
-                </p>
-              </div>
-            </div>
-
-            <p className="mq-ed-chowk-plaque-footer">
-              ⚓ Colaba • Fort • Dadar • Bandra • Chowpatty • Mohammad Ali Road ⚓
-            </p>
-          </aside>
         )}
 
         {/* 3. COURSES WITH VICTORIA STATION MEDALLIONS & PRECISION LEADERS */}
@@ -773,7 +667,7 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
                 <VictoriaStationCourseMedallion index={catIdx} size={compact ? 42 : 52} />
                 <div className="mq-ed-chowk-course-title-wrap">
                   <span className="mq-ed-chowk-course-subtitle">
-                    मुम्बई मेन्यू • भाग {['१', '२', '३', '४', '५', '६', '७', '८', '९', '१०'][catIdx] || (catIdx + 1)} • Track {catIdx + 1}
+                    Section {catIdx + 1}
                   </span>
                   <h2 id={`mq-ed-chowk-${category.id}`} className="mq-ed-chowk-course-title mq-ed-chowk-foil-text">
                     {category.name}
@@ -807,17 +701,17 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
                     <div className="mq-ed-chowk-dish-meta">
                       {item.isBestseller && (
                         <span className="mq-ed-chowk-tag is-bestseller">
-                          ⚡ Chowk Bestseller
+                          Bestseller
                         </span>
                       )}
                       {item.isSpecial && (
                         <span className="mq-ed-chowk-tag is-special">
-                          ★ Irani Heritage
+                          Special
                         </span>
                       )}
-                      {item.spicyLevel && item.spicyLevel > 1 && (
+                      {(item.spicyLevel ?? 0) > 1 && (
                         <span className="mq-ed-chowk-tag is-spice">
-                          {'🌶'.repeat(Math.min(item.spicyLevel, 3))} Ekdum Tikha
+                          {'🌶'.repeat(Math.min(item.spicyLevel ?? 0, 3))} Spicy
                         </span>
                       )}
                     </div>
@@ -830,37 +724,11 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
       </main>
 
       {/* =========================================================================
-          FOOTER & BOMBAY CHOWK KITCHEN BRIGADE COLOPHON
+          FOOTER
           ========================================================================= */}
       <footer className="mq-ed-chowk-foot">
         <MarineDriveWaveAstragal variant="grand" />
         <p className="mq-ed-chowk-foot-name mq-ed-chowk-foil-text">{restaurant.name}</p>
-        <p className="mq-ed-chowk-foot-sub">
-          Irani Cafes • Sizzling Tawa Pav Bhaji • Cutting Chai • Marine Drive Breezes
-        </p>
-
-        {/* Traditional Bombay Chowk Culinary Brigade Hierarchy */}
-        {!compact && (
-          <div className="mq-ed-chowk-brigade-grid">
-            <div className="mq-ed-chowk-brigade-item">
-              <span className="mq-ed-chowk-brigade-title">Ustad-e-Kadak</span>
-              <span className="mq-ed-chowk-brigade-role">Master of CTC Assam Decoctions &amp; Bruised Cardamom Chai</span>
-            </div>
-            <div className="mq-ed-chowk-brigade-item">
-              <span className="mq-ed-chowk-brigade-title">Khansama-e-Tawa</span>
-              <span className="mq-ed-chowk-brigade-role">Commander of the Sizzling 35kg Cast-Iron Midnight Flat-Top</span>
-            </div>
-            <div className="mq-ed-chowk-brigade-item">
-              <span className="mq-ed-chowk-brigade-title">Ustad-e-Sigri</span>
-              <span className="mq-ed-chowk-brigade-role">Coastal Pomfret, Seekh Kebab &amp; Charcoal Boti Artisan</span>
-            </div>
-            <div className="mq-ed-chowk-brigade-item">
-              <span className="mq-ed-chowk-brigade-title">Maharaj-e-Maska</span>
-              <span className="mq-ed-chowk-brigade-role">Baker of Crusty Brun Muska &amp; Pillowy Golden Hearth Pavs</span>
-            </div>
-          </div>
-        )}
-
         <EditionContact restaurant={restaurant} />
       </footer>
     </div>

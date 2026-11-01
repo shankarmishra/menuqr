@@ -86,9 +86,9 @@ export const SmartImage: React.FC<SmartImageProps> = ({
     return (
       <div className={['mq-image-frame', className].filter(Boolean).join(' ')} style={frameStyle}>
         {placeholder ?? (
-          <div className="mq-image-placeholder flex items-center justify-center bg-white/[0.04] text-white/30" aria-hidden="true">
-            <span className="text-[10px] uppercase font-bold tracking-widest text-white/40">Delicious</span>
-          </div>
+          // A dish with no photo gets a quiet tinted frame. A placeholder word such as "Delicious" is a claim
+          // the restaurant never made, and an unlabelled frame is the honest alternative.
+          <div className="mq-image-placeholder bg-white/[0.04]" aria-hidden="true" />
         )}
       </div>
     );

@@ -159,7 +159,9 @@ export const DarbarEdition: React.FC<EditionProps> = ({
               aspectRatio="var(--mq-aspect-hero)"
             />
             <figcaption>
-              <span className="mq-ed-eyebrow">Khaas Pasand</span>
+              {(royal.isBestseller || royal.isSpecial) && (
+                <span className="mq-ed-eyebrow">{royal.isBestseller ? 'Bestseller' : 'Chef’s Special'}</span>
+              )}
               <strong>{royal.name}</strong>
             </figcaption>
           </figure>

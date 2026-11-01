@@ -148,7 +148,7 @@ const CeralaccaWaxSeal: React.FC<{
           opacity="0.85"
         >
           <textPath href="#waxMottoArc" startOffset="50%" textAnchor="middle">
-            TRATTORIA ARTIGIANALE &bull; FATTO CON AMORE &bull;
+            {restaurant.name.toUpperCase()}
           </textPath>
         </text>
 
@@ -176,72 +176,6 @@ const CeralaccaWaxSeal: React.FC<{
     </div>
   );
 };
-
-/**
- * Woodcut Hearth & Olive Oil Aside Plaque (*La Nostra Tradizione*)
- */
-const HearthTraditionPlaque: React.FC = () => (
-  <aside className="mq-ed-carta-hearth-plaque" aria-label="La Nostra Tradizione">
-    <div className="mq-ed-carta-plaque-inner">
-      <span className="mq-ed-carta-plaque-corner corner-tl" aria-hidden="true">✤</span>
-      <span className="mq-ed-carta-plaque-corner corner-tr" aria-hidden="true">✤</span>
-      <span className="mq-ed-carta-plaque-corner corner-bl" aria-hidden="true">✤</span>
-      <span className="mq-ed-carta-plaque-corner corner-br" aria-hidden="true">✤</span>
-
-      {/* Woodcut Brick Hearth Oven SVG */}
-      <div className="mq-ed-carta-plaque-icon" aria-hidden="true">
-        <svg viewBox="0 0 64 64" width="46" height="46" fill="none" stroke="currentColor">
-          {/* Stone Hearth Dome */}
-          <path
-            d="M 10 52 L 10 36 C 10 22 20 12 32 12 C 44 12 54 22 54 36 L 54 52 Z"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          {/* Inner Oven Fire Arch */}
-          <path
-            d="M 20 52 C 20 40 26 32 32 32 C 38 32 44 40 44 52 Z"
-            fill="currentColor"
-            opacity="0.18"
-            strokeWidth="1.8"
-          />
-          {/* Wood Hearth Base Line */}
-          <line x1="6" y1="52" x2="58" y2="52" strokeWidth="2.5" strokeLinecap="round" />
-          {/* Roaring Woodfire Flame */}
-          <path
-            d="M 32 48 C 30 45 28 43 30 39 C 32 41 33 38 34 36 C 36 39 37 42 35 45 C 37 46 38 48 35 50 C 33 51 32 50 32 48 Z"
-            fill="currentColor"
-          />
-          {/* Chimney & Smoke wisps */}
-          <rect x="27" y="6" width="10" height="7" strokeWidth="1.5" />
-          <path d="M 30 4 Q 32 1 35 2" strokeWidth="1.2" strokeLinecap="round" strokeDasharray="1.5 1.5" />
-        </svg>
-      </div>
-
-      <div className="mq-ed-carta-plaque-head">
-        <span className="mq-ed-carta-plaque-eyebrow">Cucina Tradizionale &bull; Dal Cuore del Forno</span>
-        <h4 className="mq-ed-carta-plaque-title">
-          La Nostra Tradizione &mdash; Il Forno a Legna e L&rsquo;Olio Buono
-        </h4>
-      </div>
-
-      <p className="mq-ed-carta-plaque-story">
-        La nostra cucina vive al calore del forno a legna di quercia e faggio.
-        La pasta fresca &egrave; tirata a mano al mattarello ogni mattina, preparata con
-        farine di grani selezionati, lievito madre naturale e condita con puro olio
-        extravergine d&rsquo;oliva toscano spremuto a freddo.
-      </p>
-
-      {/* Terroir / Craft badges */}
-      <div className="mq-ed-carta-pills" role="list" aria-label="Tradizioni culinarie">
-        <span className="mq-ed-carta-pill" role="listitem">Grano Antico Macinato a Pietra</span>
-        <span className="mq-ed-carta-pill" role="listitem">Lievito Madre Naturale</span>
-        <span className="mq-ed-carta-pill" role="listitem">Olio Extravergine IGP</span>
-        <span className="mq-ed-carta-pill" role="listitem">Cottura su Pietra Refrattaria</span>
-        <span className="mq-ed-carta-pill" role="listitem">Pomodoro San Marzano DOP</span>
-      </div>
-    </div>
-  </aside>
-);
 
 export const CartaRusticaEdition: React.FC<EditionProps> = ({
   restaurant,
@@ -277,7 +211,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
           {/* Archival Folio Ledger Eyebrow */}
           <div className="mq-ed-carta-folio-header">
             <span className="folio-wheat">🌾</span>
-            <span className="folio-text">CUCINA CASALINGA &bull; EDIZIONE N. 04 &bull; MENU DEL GIORNO</span>
+            <span className="folio-text">Menu</span>
             <span className="folio-wheat">🌾</span>
           </div>
 
@@ -297,7 +231,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
           </div>
 
           {/* Pinned Photographic Mounts (Taped Polaroids at Fixed Angles) */}
-          <div className="mq-ed-carta-collage" aria-label="Fotografie dei piatti">
+          <div className="mq-ed-carta-collage" aria-label="Dish photos">
             {/* If we have featured items, render up to 3 polaroids */}
             {pinned.length > 0 ? (
               pinned.map((item, index) => {
@@ -322,7 +256,6 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
                     </div>
                     <figcaption className="mq-ed-carta-snap-caption">
                       <span className="snap-title">{item.name}</span>
-                      <span className="snap-craft">Fatto a Mano</span>
                     </figcaption>
                   </figure>
                 );
@@ -343,8 +276,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
                   />
                 </div>
                 <figcaption className="mq-ed-carta-snap-caption">
-                  <span className="snap-title">Forno a Legna &bull; Cucina Tipica</span>
-                  <span className="snap-craft">Tradizione di Famiglia</span>
+                  <span className="snap-title">{restaurant.name}</span>
                 </figcaption>
               </figure>
             )}
@@ -352,7 +284,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
 
           {/* Category Preview Teaser Ribbon */}
           {categories.length > 0 && (
-            <nav className="mq-ed-carta-teasers" aria-label="Portate del menu">
+            <nav className="mq-ed-carta-teasers" aria-label="Menu sections">
               {categories.map((cat, idx) => (
                 <React.Fragment key={cat.id}>
                   {idx > 0 && <span className="teaser-dot">&bull;</span>}
@@ -403,11 +335,9 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
       <main className="mq-ed-carta-body">
         {/* Curated "Specialità della Casa" Showcase (House Signature Dishes) */}
         {!compact && !hasQuery && houseSpecialties.length > 0 && (
-          <section className="mq-ed-carta-showcase" aria-label="Specialità della Casa">
+          <section className="mq-ed-carta-showcase" aria-label="Featured dishes">
             <div className="mq-ed-carta-showcase-header">
-              <span className="mq-ed-carta-showcase-eyebrow">Dalla Nostra Cucina &amp; Forno</span>
-              <h3 className="mq-ed-carta-showcase-title">Specialit&agrave; della Casa</h3>
-              <p className="mq-ed-carta-showcase-sub">Piatti simbolo preparati a mano secondo tradizione</p>
+              <h3 className="mq-ed-carta-showcase-title">Featured dishes</h3>
               <TuscanWheatDivider className="mq-ed-carta-showcase-divider" />
             </div>
 
@@ -431,9 +361,6 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
                         focal={item.focal}
                         aspectRatio="16 / 10"
                       />
-                      <span className="mq-ed-carta-craft-ribbon">
-                        <span className="ribbon-star">★</span> Fatto a Mano &bull; Forno a Legna
-                      </span>
                     </div>
 
                     <div className="mq-ed-carta-showcase-body">
@@ -451,10 +378,10 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
 
                       <div className="mq-ed-carta-item-flags">
                         {item.isBestseller && (
-                          <span className="mq-ed-carta-badge badge-bestseller">★ Più Venduto</span>
+                          <span className="mq-ed-carta-badge badge-bestseller">Bestseller</span>
                         )}
                         {item.isSpecial && (
-                          <span className="mq-ed-carta-badge badge-special">★ Consigliato dallo Chef</span>
+                          <span className="mq-ed-carta-badge badge-special">Special</span>
                         )}
                         <DishFlags item={item} />
                       </div>
@@ -471,7 +398,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
           hasQuery ? (
             <EmptyResults query={query.trim()} onClear={() => setQuery('')} />
           ) : (
-            <p className="mq-ed-empty" role="status">Il menu non contiene ancora portate.</p>
+            <p className="mq-ed-empty" role="status">This menu has no dishes yet.</p>
           )
         ) : (
           <div className="mq-ed-carta-columns">
@@ -480,7 +407,6 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
               return (
                 <React.Fragment key={category.id}>
                   {/* Embedded Hearth Aside Plaque after the first 2 sections */}
-                  {catIndex === 2 && !compact && !hasQuery && <HearthTraditionPlaque />}
 
                   <section
                     className="mq-ed-carta-section"
@@ -494,7 +420,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
                         <h2 id={`mq-ed-carta-${category.id}`} className="section-title">
                           {category.name}
                         </h2>
-                        <span className="section-count">{category.items.length} piatti</span>
+                        <span className="section-count">{category.items.length} {category.items.length === 1 ? 'item' : 'items'}</span>
                       </div>
                     </div>
 
@@ -528,10 +454,10 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
                             {/* TIER 3: Badges and Dietary Flags */}
                             <div className="mq-ed-carta-item-flags">
                               {item.isBestseller && (
-                                <span className="mq-ed-carta-badge badge-bestseller">★ Più Venduto</span>
+                                <span className="mq-ed-carta-badge badge-bestseller">Bestseller</span>
                               )}
                               {item.isSpecial && (
-                                <span className="mq-ed-carta-badge badge-special">★ Specialità dello Chef</span>
+                                <span className="mq-ed-carta-badge badge-special">Special</span>
                               )}
                               <DishFlags item={item} />
                             </div>
@@ -580,7 +506,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
                 fill="currentColor"
               >
                 <textPath href="#cartaFootStampArc" startOffset="50%" textAnchor="middle">
-                  TRATTORIA TIPICA &bull; QUALIT&Agrave; GARANTITA &bull;
+                  {restaurant.name.toUpperCase()}
                 </textPath>
               </text>
               {/* Crossed Wheat & Pizza Peel motif */}
@@ -594,9 +520,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
           </div>
 
           <h3 className="mq-ed-carta-foot-name">{restaurant.name}</h3>
-          <p className="mq-ed-carta-motto">&ldquo;Buon Appetito &bull; Fatto con Amore e Tradizione&rdquo;</p>
           <EditionContact restaurant={restaurant} className="mq-ed-carta-foot-contact" separator="·" />
-          <p className="mq-ed-carta-legal">Ospitalit&agrave; e Cucina Tipica di Famiglia</p>
         </div>
 
         <TovagliaGinghamBand className="mq-ed-carta-foot-check-bottom" />

@@ -312,11 +312,12 @@ const ShahiAstragalDivider: React.FC<{
  * Custom Imperial Veg & Non-Veg Brass-Ring Emblems.
  */
 const RoyalDietMark: React.FC<{ type?: 'veg' | 'non-veg' | 'vegan'; className?: string }> = ({
-  type = 'veg',
+  type,
   className,
 }) => {
+  if (type !== 'veg' && type !== 'vegan' && type !== 'non-veg') return null;
   const isVeg = type === 'veg' || type === 'vegan';
-  const label = isVeg ? 'Shakahari (Vegetarian)' : 'Mamsahari (Non-Vegetarian)';
+  const label = isVeg ? 'Vegetarian' : 'Non-vegetarian';
 
   return (
     <span
@@ -400,6 +401,7 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
   const sections = liveCategories(visible);
 
   const heroImage = tokens.cover.imageUrl || '/assets/themes/maharaja-table-hero.webp';
+  const stampText = (restaurant.cuisine || [restaurant.city, restaurant.state].filter(Boolean).join(', ')).trim();
 
   return (
     <div className={compact ? 'mq-ed mq-ed-maharaja is-compact' : 'mq-ed mq-ed-maharaja'}>
@@ -435,11 +437,13 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
 
         <div className="mq-ed-maharaja-cover-body">
           {/* Prestige Sur-Titre Strip */}
-          <div className="mq-ed-maharaja-heritage-badge">
-            <span aria-hidden="true">⚜</span>
-            <span>Shahi Dastarkhwan • Imperial Darbar Feast</span>
-            <span aria-hidden="true">⚜</span>
-          </div>
+          {stampText && (
+            <div className="mq-ed-maharaja-heritage-badge">
+              <span aria-hidden="true">⚜</span>
+              <span>{stampText}</span>
+              <span aria-hidden="true">⚜</span>
+            </div>
+          )}
 
           {/* Imperial Royal Darbar Cartouche */}
           <DarbarLogoCartouche size={compact ? 124 : 156}>
@@ -457,11 +461,7 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
           <ShahiAstragalDivider variant="grand" />
 
           {/* Tagline / Subtitle */}
-          {restaurant.tagline ? (
-            <p className="mq-ed-maharaja-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>
-          ) : (
-            <p className="mq-ed-maharaja-tagline">Awadhi &amp; Rajputana Imperial Recipes Since Antiquity</p>
-          )}
+          {restaurant.tagline && <p className="mq-ed-maharaja-tagline">&ldquo;{restaurant.tagline}&rdquo;</p>}
 
           {/* Category Teaser Strip */}
           <CategoryTeaser
@@ -509,20 +509,14 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
       <main className="mq-ed-maharaja-plate">
         {/* 1. SHAHI KHAS — SIGNATURE SHOWCASE (DUAL-CARD EDITORIAL) */}
         {signatures.length > 0 && !compact && !hasQuery && (
-          <section className="mq-ed-maharaja-showcase" aria-label="Royal Highlights">
+          <section className="mq-ed-maharaja-showcase" aria-label="Featured dishes">
             <div className="mq-ed-maharaja-showcase-header">
               <ShahiAstragalDivider />
-              <span className="mq-ed-maharaja-section-eyebrow">Daur-e-Khaas • Royal Selection</span>
-              <h2 className="mq-ed-maharaja-showcase-title mq-ed-maharaja-foil-text">
-                Khaas Dastarkhwan
-              </h2>
-              <p className="mq-ed-maharaja-showcase-subtitle">
-                Slow-simmered culinary crown jewels prepared according to ancient royal decrees
-              </p>
+              <h2 className="mq-ed-maharaja-showcase-title mq-ed-maharaja-foil-text">Featured dishes</h2>
             </div>
 
             <div className="mq-ed-maharaja-showcase-grid">
-              {signatures.map((item, idx) => (
+              {signatures.map((item) => (
                 <article key={item.id} className="mq-ed-maharaja-card">
                   {/* Stepped brass corner brackets on showcase cards */}
                   <span className="mq-ed-maharaja-card-bracket bracket-tl"><RoyalCornerBracket size={20} /></span>
@@ -539,9 +533,7 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
                         focal={item.focal}
                         aspectRatio="16 / 10"
                       />
-                      <span className="mq-ed-maharaja-card-badge">
-                        Royal Service {idx === 0 ? 'I' : 'II'}
-                      </span>
+                      <span className="mq-ed-maharaja-card-badge">Featured</span>
                     </div>
                   )}
 
@@ -560,59 +552,11 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
                       <p className="mq-ed-maharaja-card-desc mq-dish-desc">{cleanDescription(item)}</p>
                     )}
 
-                    {/* Royal Dum Pukht & Saffron Pairing Ribbon */}
-                    <div className="mq-ed-maharaja-pairing-ribbon">
-                      <span aria-hidden="true">✦</span>
-                      <span>
-                        {idx === 0
-                          ? 'Paired with: Warqi Sheermal & Burani Garlic Raita'
-                          : 'Paired with: Roghani Khameeri Roti & Saffron Rice'}
-                      </span>
-                    </div>
-
-                    {/* Culinary Lore Tag */}
-                    <p className="mq-ed-maharaja-card-lore">
-                      <em>Dum Pukht Tradition:</em> Hand-sealed with whole-wheat dough, steeped overnight over fragrant charcoal embers with Kashmiri saffron &amp; damask rose.
-                    </p>
                   </div>
                 </article>
               ))}
             </div>
           </section>
-        )}
-
-        {/* 2. THE NAWAB'S DASTARKHWAN PROTOCOL (EDITORIAL PLAQUE ASIDE) */}
-        {!compact && !hasQuery && (
-          <aside className="mq-ed-maharaja-dastarkhwan-plaque" aria-label="Imperial Dining Protocol">
-            <span className="mq-ed-maharaja-plaque-bracket mq-ed-maharaja-plaque-bracket-tl"><RoyalCornerBracket size={28} /></span>
-            <span className="mq-ed-maharaja-plaque-bracket mq-ed-maharaja-plaque-bracket-tr"><RoyalCornerBracket size={28} /></span>
-            <span className="mq-ed-maharaja-plaque-bracket mq-ed-maharaja-plaque-bracket-bl"><RoyalCornerBracket size={28} /></span>
-            <span className="mq-ed-maharaja-plaque-bracket mq-ed-maharaja-plaque-bracket-br"><RoyalCornerBracket size={28} /></span>
-
-            <span className="mq-ed-maharaja-section-eyebrow">◈ Shahi Protocol &amp; Culinary Ritual ◈</span>
-            <h3 className="mq-ed-maharaja-plaque-title mq-ed-maharaja-foil-text">The Grand Imperial Dastarkhwan</h3>
-            <p className="mq-ed-maharaja-plaque-prose">
-              &ldquo;In the grand courts of Awadh and Rajputana, dining was an elevated spiritual art form. The banquet commenced with the ceremonial hand-washing from a beaten brass Aftaba and Sailabchi, progressed through gentle aromatics and slow-simmered handi gravies, and concluded with silver-leafed royal confections.&rdquo;
-            </p>
-
-            <ShahiAstragalDivider />
-
-            <div className="mq-ed-maharaja-plaque-pillars">
-              <div className="mq-ed-maharaja-plaque-col">
-                <h4 className="mq-ed-maharaja-col-title">VOL. I — DUM PUKHT TRADITION</h4>
-                <p className="mq-ed-maharaja-col-desc">Clay and copper pots sealed with hand-kneaded dough, capturing every volatile aromatic vapor over gentle embers.</p>
-              </div>
-              <div className="mq-ed-maharaja-plaque-sep" aria-hidden="true" />
-              <div className="mq-ed-maharaja-plaque-col">
-                <h4 className="mq-ed-maharaja-col-title">VOL. II — SHAHI MASALEDAR</h4>
-                <p className="mq-ed-maharaja-col-desc">Heirloom potli of 32 botanicals, Kannauj rose attar, stone-ground mace, and royal Kashmiri saffron stigmas.</p>
-              </div>
-            </div>
-
-            <p className="mq-ed-maharaja-plaque-footer">
-              ✦ Imperial Courses • Served Family-Style in Beaten Brass &amp; Kansa ✦
-            </p>
-          </aside>
         )}
 
         {/* 3. ROYAL COURSES : DOTTED LEADER ROWS */}
@@ -633,7 +577,7 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
                 <MultifoilArch size={compact ? 44 : 64} className="mq-ed-maharaja-course-arch" />
                 <ShahiCourseMedallion index={catIdx} size={compact ? 42 : 52} />
                 <div className="mq-ed-maharaja-course-title-wrap">
-                  <span className="mq-ed-maharaja-course-subtitle">Daur {['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][catIdx] || (catIdx + 1)}</span>
+                  <span className="mq-ed-maharaja-course-subtitle">Section {['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][catIdx] || (catIdx + 1)}</span>
                   <h2 id={`mq-ed-royal-${category.id}`} className="mq-ed-maharaja-course-title mq-ed-maharaja-foil-text">
                     {category.name}
                   </h2>
@@ -666,17 +610,17 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
                     <div className="mq-ed-maharaja-dish-meta">
                       {item.isBestseller && (
                         <span className="mq-ed-maharaja-tag is-bestseller">
-                          ⚜ Khaas Pasand
+                          Bestseller
                         </span>
                       )}
                       {item.isSpecial && (
                         <span className="mq-ed-maharaja-tag is-special">
-                          ✦ Royal Recipe
+                          Special
                         </span>
                       )}
-                      {item.spicyLevel && item.spicyLevel > 1 && (
+                      {(item.spicyLevel ?? 0) > 1 && (
                         <span className="mq-ed-maharaja-tag is-spice">
-                          {'🌶'.repeat(Math.min(item.spicyLevel, 3))} Shahi Teekha
+                          {'🌶'.repeat(Math.min(item.spicyLevel ?? 0, 3))} Spicy
                         </span>
                       )}
                     </div>
@@ -689,35 +633,11 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
       </main>
 
       {/* =========================================================================
-          FOOTER & IMPERIAL BRIGADE COLOPHON
+          FOOTER
           ========================================================================= */}
       <footer className="mq-ed-maharaja-foot">
         <ShahiAstragalDivider variant="grand" />
         <p className="mq-ed-maharaja-foot-name mq-ed-maharaja-foil-text">{restaurant.name}</p>
-        <p className="mq-ed-maharaja-foot-sub">Royal Indian Hospitality &amp; Heirloom Palace Recipes</p>
-
-        {/* Imperial Chef Brigade Hierarchy */}
-        {!compact && (
-          <div className="mq-ed-maharaja-brigade-grid">
-            <div className="mq-ed-maharaja-brigade-item">
-              <span className="mq-ed-maharaja-brigade-title">Khansama-e-Aazam</span>
-              <span className="mq-ed-maharaja-brigade-role">Master Royal Custodian</span>
-            </div>
-            <div className="mq-ed-maharaja-brigade-item">
-              <span className="mq-ed-maharaja-brigade-title">Bawarchi-e-Khas</span>
-              <span className="mq-ed-maharaja-brigade-role">Master of Dum Pukht</span>
-            </div>
-            <div className="mq-ed-maharaja-brigade-item">
-              <span className="mq-ed-maharaja-brigade-title">Ustad-e-Tandoor</span>
-              <span className="mq-ed-maharaja-brigade-role">Clay Hearth Sigri Master</span>
-            </div>
-            <div className="mq-ed-maharaja-brigade-item">
-              <span className="mq-ed-maharaja-brigade-title">Halwai-e-Shahi</span>
-              <span className="mq-ed-maharaja-brigade-role">Imperial Confections</span>
-            </div>
-          </div>
-        )}
-
         <EditionContact restaurant={restaurant} />
       </footer>
     </div>

@@ -42,9 +42,9 @@ export const PresseBrutEdition: React.FC<EditionProps> = ({
     <div className={compact ? 'mq-ed mq-ed-brut is-compact' : 'mq-ed mq-ed-brut'}>
       <header className="mq-ed-brut-cover" data-edition-cover="presse-brut">
         <div className="mq-ed-brut-meta" data-testid="mq-cover-mark">
-          <span>{restaurant.cuisine || 'Kitchen'}</span>
+          {restaurant.cuisine && <span>{restaurant.cuisine}</span>}
           <span>{String(total).padStart(3, '0')} Items</span>
-          <span>{restaurant.city || 'Menu'}</span>
+          {restaurant.city && <span>{restaurant.city}</span>}
         </div>
 
         <h1 className="mq-ed-brut-title">{restaurant.name}</h1>
