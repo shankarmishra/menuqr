@@ -33,6 +33,7 @@ import { RangEPunjabEdition } from './editions/RangEPunjabEdition.tsx';
 import { DakshinHeritageEdition } from './editions/DakshinHeritageEdition.tsx';
 import { ThaliAndCoEdition } from './editions/ThaliAndCoEdition.tsx';
 import { BombayChowkEdition } from './editions/BombayChowkEdition.tsx';
+import { AtelierRangeen } from '../atelier/AtelierRangeen.tsx';
 
 export const SIGNATURE_COMPONENTS: Record<SignatureCompositionId, React.FC<SignatureProps>> = {
   // Generation 1 — retained for backward compatibility with stored themes.
@@ -58,6 +59,7 @@ export const SIGNATURE_COMPONENTS: Record<SignatureCompositionId, React.FC<Signa
   'dakshin-heritage': DakshinHeritageEdition,
   'thali-and-co': ThaliAndCoEdition,
   'bombay-chowk': BombayChowkEdition,
+  'atelier-rangeen': AtelierRangeen,
 };
 
 /**
@@ -99,4 +101,5 @@ export const SIGNATURE_COVER_CAPS: Record<
   'dakshin-heritage': { coverPhoto: true, dishPhotos: true },
   'thali-and-co': { coverPhoto: true, dishPhotos: true },
   'bombay-chowk': { coverPhoto: true, dishPhotos: true },
+  'atelier-rangeen': { coverPhoto: true, dishPhotos: true },
 };

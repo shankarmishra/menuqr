@@ -309,6 +309,27 @@ for (const presetId of PRESET_IDS) {
   });
 }
 
+test('render lint: atelier-rangeen prints only data, computed facts and neutral labels', async () => {
+  const problems: string[] = [];
+  for (const [label, fixture, ordering] of [
+    ['minimal data', MINIMAL, false],
+    ['rich data', RICH, false],
+    ['rich data with ordering on', RICH, true],
+    ['no dishes', EMPTY, false],
+  ] as const) {
+    const html = await renderPreset('atelier-rangeen', fixture, ordering);
+    assert.ok(html.length > 200, `atelier-rangeen rendered almost nothing for ${label}`);
+    for (const problem of inventionsIn(html, fixture)) problems.push(`[${label}] ${problem}`);
+    assert.ok(!/₹\s*0(?![\d.,])/.test(html), `[${label}] atelier-rangeen shows a price of 0`);
+    assert.ok(!html.includes('@https'), `[${label}] atelier-rangeen prints an "@https" handle`);
+    assert.ok(!/instagram\.com/i.test(html), `[${label}] atelier-rangeen links to Instagram from a malformed value`);
+    for (const href of anchorHrefs(html)) {
+      assert.ok(ALLOWED_HREF.some((pattern) => pattern.test(href)), `[${label}] atelier-rangeen has an unexpected link: ${href}`);
+    }
+  }
+  assert.deepEqual(problems, [], `atelier-rangeen prints text that is not from the data:\n${problems.join('\n')}`);
+});
+
 // ------------------------------------ behaviour the lint relies on ------------------------------------
 
 test('a dish whose diet is unknown gets no diet mark, and the three known diets each get a label', async () => {

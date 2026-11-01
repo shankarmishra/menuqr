@@ -72,7 +72,8 @@ export type SignatureCompositionId =
   | 'rang-e-punjab'
   | 'dakshin-heritage'
   | 'thali-and-co'
-  | 'bombay-chowk';
+  | 'bombay-chowk'
+  | 'atelier-rangeen';
 
 export const SIGNATURE_COMPOSITION_IDS: readonly SignatureCompositionId[] = [
   'heritage-booklet',
@@ -93,6 +94,7 @@ export const SIGNATURE_COMPOSITION_IDS: readonly SignatureCompositionId[] = [
   'dakshin-heritage',
   'thali-and-co',
   'bombay-chowk',
+  'atelier-rangeen',
 ];
 
 export const COVER_SLOTS: readonly CoverSlot[] = ['hero-photo', 'monogram', 'heritage-arch', 'bento-collage'];
