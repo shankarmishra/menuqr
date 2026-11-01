@@ -88,7 +88,9 @@
 .mq-ed-mark img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 8%;
+  box-sizing: border-box;
 }
 
 .mq-ed-mark-letters {
@@ -419,6 +421,12 @@
           drop-shadow(0 2px 6px rgba(0, 0, 0, 0.95));
 }
 
+.mq-ed-noir-cartouche-logo img {
+  object-fit: contain;
+  padding: 8%;
+  box-sizing: border-box;
+}
+
 .mq-ed-noir-cartouche-logo {
   position: relative;
   z-index: 2;
@@ -454,7 +462,8 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 4px;
+  padding: 8%;
+  box-sizing: border-box;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
 }
 
@@ -1579,6 +1588,12 @@
           drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1));
 }
 
+.mq-ed-herb-seal-logo img {
+  object-fit: contain;
+  padding: 8%;
+  box-sizing: border-box;
+}
+
 .mq-ed-herb-seal-logo {
   position: relative;
   z-index: 2;
@@ -1608,7 +1623,8 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 4px;
+  padding: 8%;
+  box-sizing: border-box;
 }
 
 .mq-ed-mark-herb .mq-ed-mark-letters {

@@ -143,7 +143,9 @@
 .mq-ed-carta-seal-brand {
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 8%;
+  box-sizing: border-box;
   border-radius: 50%;
 }
 
