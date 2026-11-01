@@ -21,6 +21,7 @@ import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
 import { DietMark, DishPrice } from '../../primitives/DishMeta.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
+import { CapsulePillsNav } from '../../slots/navs.tsx';
 import {
   BrandMark,
   CategoryTeaser,
@@ -324,7 +325,7 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter, activeCategoryId, setActiveCategoryId, navigableCategories } = useMenuFilters(categories);
   const signatures = useFeatured(categories, 3);
   const sections = liveCategories(visible);
 
@@ -435,6 +436,14 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
             spiceFilter={spiceFilter}
             onSpiceFilterChange={setSpiceFilter}
           />
+          <CapsulePillsNav
+            restaurant={restaurant}
+            categories={visible}
+            allCategories={navigableCategories}
+            activeCategoryId={activeCategoryId}
+            onSelectCategory={setActiveCategoryId}
+            compact={compact}
+          />
         </>
       )}
 
@@ -505,6 +514,7 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
             {sections.map((category) => (
               <section
                 key={category.id}
+                id={`mq-section-${category.id}`}
                 className="mq-ed-herb-section"
                 aria-labelledby={`mq-ed-herb-${category.id}`}
               >

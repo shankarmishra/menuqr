@@ -16,6 +16,7 @@ import { useMenuFilters } from '../useMenuFilters.ts';
 import { DietMark, DishFlags, DishPrice } from '../primitives/DishMeta.tsx';
 import { SmartImage } from '../primitives/SmartImage.tsx';
 import { EmptyResults, MenuToolbar } from '../primitives/MenuToolbar.tsx';
+import { BrandMark } from './editions/shared.tsx';
 import { parseItemPricing } from '../../menu-builder/templates/shared/pricingUtils';
 import { useMenuCart } from '../../menu-builder/templates/shared/MenuCartContext';
 import type { RenderMenuItem, SignatureProps } from '../types.ts';
@@ -113,6 +114,7 @@ export const ChalkboardComposition: React.FC<SignatureProps> = ({ restaurant, ca
             compact || activeBoard === 'cover' ? 'mq-sig-cover-board' : 'mq-sig-cover-board mq-sig-board-mobile-hidden'
           }
         >
+            <BrandMark restaurant={restaurant} size={64} className="mq-sig-chalk-mark" />
             {(restaurant.tagline || restaurant.cuisine) && <p className="mq-sig-chalk-eyebrow">{restaurant.tagline || restaurant.cuisine}</p>}
             <h1 className="mq-display mq-sig-chalk-title">{restaurant.name}</h1>
 

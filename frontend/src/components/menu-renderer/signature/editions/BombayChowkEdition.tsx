@@ -18,7 +18,8 @@ import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
-import { DishPrice } from '../../primitives/DishMeta.tsx';
+import { CapsulePillsNav } from '../../slots/navs.tsx';
+import { Badge, DishPrice } from '../../primitives/DishMeta.tsx';
 import {
   BrandMark,
   CategoryTeaser,
@@ -468,6 +469,9 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
     setAllergenFilter,
     spiceFilter,
     setSpiceFilter,
+  activeCategoryId,
+  setActiveCategoryId,
+  navigableCategories,
   } = useMenuFilters(categories);
   const signatures = useFeatured(categories, 2);
   const sections = liveCategories(visible);
@@ -579,6 +583,14 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
             spiceFilter={spiceFilter}
             onSpiceFilterChange={setSpiceFilter}
           />
+          <CapsulePillsNav
+            restaurant={restaurant}
+            categories={visible}
+            allCategories={navigableCategories}
+            activeCategoryId={activeCategoryId}
+            onSelectCategory={setActiveCategoryId}
+            compact={compact}
+          />
         </>
       )}
 
@@ -660,6 +672,7 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
           sections.map((category, catIdx) => (
             <section
               key={category.id}
+              id={`mq-section-${category.id}`}
               className="mq-ed-chowk-course"
               aria-labelledby={`mq-ed-chowk-${category.id}`}
             >
@@ -713,6 +726,12 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
                         <span className="mq-ed-chowk-tag is-spice">
                           {'🌶'.repeat(Math.min(item.spicyLevel ?? 0, 3))} Spicy
                         </span>
+                      )}
+                      {item.trending && !item.isBestseller && <Badge>🔥 Trending</Badge>}
+                      {item.tags?.jain && <Badge quiet>Jain</Badge>}
+                      {item.tags?.eggless && <Badge quiet>Eggless</Badge>}
+                      {(item.tags?.allergens?.length ?? 0) > 0 && (
+                        <Badge quiet>Contains: {item.tags?.allergens?.join(', ')}</Badge>
                       )}
                     </div>
                   </article>

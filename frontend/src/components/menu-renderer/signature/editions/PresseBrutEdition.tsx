@@ -14,6 +14,7 @@ import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
+import { CapsulePillsNav } from '../../slots/navs.tsx';
 import { DietMark, DishFlags, DishPrice } from '../../primitives/DishMeta.tsx';
 import {
   EditionContact,
@@ -33,7 +34,7 @@ export const PresseBrutEdition: React.FC<EditionProps> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter, activeCategoryId, setActiveCategoryId, navigableCategories } = useMenuFilters(categories);
   const sections = liveCategories(visible);
   const slab = useFeatured(categories, 1)[0];
   const total = categories.reduce((sum, category) => sum + category.items.length, 0);
@@ -72,7 +73,7 @@ export const PresseBrutEdition: React.FC<EditionProps> = ({
         </div>
 
         {restaurant.logoUrl && (
-          <img src={restaurant.logoUrl} alt="" className="mq-ed-brut-logo" loading="eager" decoding="async" />
+          <img src={restaurant.logoUrl} alt={restaurant.name} className="mq-ed-brut-logo" loading="eager" decoding="async" />
         )}
       </header>
 
@@ -92,6 +93,14 @@ export const PresseBrutEdition: React.FC<EditionProps> = ({
             spiceFilter={spiceFilter}
             onSpiceFilterChange={setSpiceFilter}
           />
+          <CapsulePillsNav
+            restaurant={restaurant}
+            categories={visible}
+            allCategories={navigableCategories}
+            activeCategoryId={activeCategoryId}
+            onSelectCategory={setActiveCategoryId}
+            compact={compact}
+          />
         </>
       )}
 
@@ -106,6 +115,7 @@ export const PresseBrutEdition: React.FC<EditionProps> = ({
           sections.map((category, sectionIndex) => (
             <section
               key={category.id}
+              id={`mq-section-${category.id}`}
               className="mq-ed-brut-section"
               aria-labelledby={`mq-ed-brut-${category.id}`}
             >

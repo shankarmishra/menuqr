@@ -11,6 +11,7 @@ import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
+import { CapsulePillsNav } from '../../slots/navs.tsx';
 import {
   BrandMark,
   CategoryTeaser,
@@ -51,7 +52,7 @@ export const LittoraleEdition: React.FC<EditionProps> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter, activeCategoryId, setActiveCategoryId, navigableCategories } = useMenuFilters(categories);
   const sections = liveCategories(visible);
   const horizon = useFeatured(categories, 4);
   const bandSrc = tokens.cover.imageUrl ?? horizon[0]?.imageUrl;
@@ -102,6 +103,14 @@ export const LittoraleEdition: React.FC<EditionProps> = ({
             spiceFilter={spiceFilter}
             onSpiceFilterChange={setSpiceFilter}
           />
+          <CapsulePillsNav
+            restaurant={restaurant}
+            categories={visible}
+            allCategories={navigableCategories}
+            activeCategoryId={activeCategoryId}
+            onSelectCategory={setActiveCategoryId}
+            compact={compact}
+          />
         </>
       )}
 
@@ -120,6 +129,7 @@ export const LittoraleEdition: React.FC<EditionProps> = ({
             return (
               <section
                 key={category.id}
+                id={`mq-section-${category.id}`}
                 className="mq-ed-litt-section"
                 aria-labelledby={`mq-ed-litt-${category.id}`}
               >

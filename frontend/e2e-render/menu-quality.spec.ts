@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { SHOWCASE_PRESETS } from '../src/design-system/presets.ts';
 
 /**
  * Menu renderer quality gate.
@@ -226,5 +227,51 @@ test.describe('menu renderer quality', () => {
 
     // A couple of pixels of rounding is tolerable; a real overflow is not.
     expect(overflow.scrollWidth - overflow.clientWidth).toBeLessThanOrEqual(2);
+  });
+
+  // Every Signature Edition is an independent, hand-written component (see
+  // `signature/registry.ts`) with no shared mobile safety net enforced by the type system — so
+  // the one check above, run against whichever preset the gallery happens to default to, is not
+  // enough. This loop is what would have actually caught the raw-px grid floors that overflowed
+  // only on a handful of Editions: it visits each one by its own `?preset=` deep-link (added to
+  // `TemplateShowcasePage.tsx` for exactly this) rather than relying on UI clicks through the
+  // picker.
+  const signaturePresets = SHOWCASE_PRESETS.filter((preset) => preset.signatureId);
+
+  test.describe('every Signature Edition, individually', () => {
+    for (const preset of signaturePresets) {
+      test(`${preset.id}: no horizontal overflow`, async ({ page }) => {
+        await page.goto(`${SHOWCASE}?preset=${preset.id}`, { waitUntil: 'networkidle' });
+        await expect(page.locator('.mq-root').first()).toBeVisible();
+
+        const overflow = await page.evaluate(() => ({
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        }));
+        expect(overflow.scrollWidth - overflow.clientWidth).toBeLessThanOrEqual(2);
+      });
+    }
+
+    // A single assertion across every preset — rather than one test per preset — because the bug
+    // this catches is a *relationship* between presets (one fixed size everywhere) not a
+    // per-preset pass/fail: `BrandMark` once forced every logo to render at a flat 40px
+    // regardless of the container size each Edition asked for.
+    test('logo size varies across Editions with different intended sizes, not a constant', async ({ page }) => {
+      const widths: number[] = [];
+      for (const preset of signaturePresets) {
+        await page.goto(`${SHOWCASE}?preset=${preset.id}`, { waitUntil: 'networkidle' });
+        const mark = page.locator('[data-testid="mq-cover-mark"] img').first();
+        if (await mark.count() === 0) continue;
+        const box = await mark.boundingBox();
+        if (box) widths.push(Math.round(box.width));
+      }
+
+      expect(widths.length, 'no preset exposed a logo image to measure').toBeGreaterThan(2);
+      const distinctSizes = new Set(widths);
+      expect(
+        distinctSizes.size,
+        `every measured logo rendered at the same width (${widths.join(', ')}) — likely the fixed-size regression`
+      ).toBeGreaterThan(1);
+    });
   });
 });

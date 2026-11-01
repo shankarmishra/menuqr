@@ -50,8 +50,17 @@ const CATEGORY_LABELS: Partial<Record<PresetCategory, string>> = {
   signature: 'Signature',
 };
 
+/** `?preset=<id>` deep-links the gallery to one design — used by the render-quality test suite to
+ * walk every preset without needing UI interaction, and handy for sharing a direct link to one. */
+function initialPresetId(): string {
+  if (typeof window === 'undefined') return SHOWCASE_PRESETS[0]?.id ?? '';
+  const requested = new URLSearchParams(window.location.search).get('preset');
+  if (requested && SHOWCASE_PRESETS.some((preset) => preset.id === requested)) return requested;
+  return SHOWCASE_PRESETS[0]?.id ?? '';
+}
+
 export default function TemplateShowcasePage() {
-  const [selectedId, setSelectedId] = useState<string>(SHOWCASE_PRESETS[0]?.id ?? '');
+  const [selectedId, setSelectedId] = useState<string>(initialPresetId);
   const [viewport, setViewport] = useState<Viewport>('phone');
   const [isFullBleed, setIsFullBleed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

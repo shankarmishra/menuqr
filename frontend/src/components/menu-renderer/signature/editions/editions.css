@@ -161,6 +161,11 @@
   font-weight: 600;
   line-height: var(--mq-leading-snug);
   color: var(--mq-color-heading);
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 /* Eats the space between the dish name and its price, at any name length. */
@@ -185,6 +190,11 @@
   font-size: var(--mq-text-sm);
   line-height: var(--mq-leading-relaxed);
   color: var(--mq-color-text-muted);
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-leader-flags {
@@ -197,6 +207,42 @@
 
 .mq-ed-leader-flags:empty {
   display: none;
+}
+
+/* ------------------------- universal Signature Edition mobile safety net -------------------------
+ * `MenuRenderer` mounts every Signature Edition directly under `.mq-root`, bypassing the generic
+ * `.mq-page` mobile relief in `menu-renderer.css`. This block is the shared stylesheet every
+ * Edition imports, so it reaches all of them (current and future) in one place, rather than each
+ * Edition needing its own `@media` rule. */
+@media (max-width: 480px) {
+  .mq-ed-leader-name {
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+
+  .mq-ed-leader-desc {
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  /* `:where()` keeps this at zero specificity. A plain `.mq-root img` rule (0,1,1) outranks
+   * class-based frame rules such as `.mq-image { height: 100% }` and `.atelier-dish-img`, so
+   * `height: auto` here left photos shorter than their aspect-ratio frames on phones (visible gap
+   * under the photo in Neon Ichiban, Herbarium, Carta Rustica; shrunken dish thumbnails in
+   * Rangeen). At zero specificity the frame rules win and this only affects bare images. */
+  :where(.mq-root) :where(img, svg, picture) {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Backstop only — collapses any multi-column grid (current or introduced by a future Edition) to
+ * one column on genuinely small phones, in case a specific grid wasn't given its own narrower
+ * `min(100%, …)` floor. Narrower than 480px so it only engages where it's actually needed. */
+@media (max-width: 420px) {
+  .mq-root [class*="-grid"] {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* ---------------------------------- photo dish ---------------------------------- */
@@ -868,12 +914,17 @@
 .mq-ed-noir-card-name {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: 1.05rem;
+  font-size: var(--mq-text-base);
   font-weight: 500;
   letter-spacing: 0.05em;
   line-height: 1.25;
   text-transform: uppercase;
   color: var(--mq-color-heading);
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   overflow-wrap: break-word;
   word-break: normal;
 }
@@ -891,6 +942,10 @@
   color: var(--noir-text-muted, rgba(223, 219, 207, 0.75));
   font-style: italic;
   overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 /* Sommelier Wine Pairing Ribbon pinned to bottom of card */
@@ -1056,7 +1111,7 @@
   min-width: 0;
   max-width: calc(100% - 4.5rem);
   font-family: var(--mq-font-display);
-  font-size: clamp(0.92rem, 2.4cqw, 1.12rem);
+  font-size: var(--mq-text-base);
   font-weight: 600;
   letter-spacing: 0.04em;
   line-height: 1.35;
@@ -1124,11 +1179,15 @@
 .mq-ed-noir .mq-ed-leader-desc {
   margin: var(--mq-space-1) 0 0;
   max-width: 54ch;
-  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+  font-size: var(--mq-text-sm);
   line-height: var(--mq-leading-relaxed);
   color: rgba(235, 230, 218, 0.82);
   font-style: italic;
   overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 /* Luxury Art Deco Accolade Badges */
@@ -1377,7 +1436,7 @@
 
 .mq-ed-noir-brigade-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
   gap: var(--mq-space-3);
   width: 100%;
   max-width: 44rem;
@@ -1930,10 +1989,15 @@
 .mq-ed-herb-card-name {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-size: var(--mq-text-base);
   font-weight: 600;
   color: #1e1b18;
   letter-spacing: 0.02em;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-herb-card-price {
@@ -1946,10 +2010,15 @@
 
 .mq-ed-herb-card-desc {
   margin: 0;
-  font-size: clamp(0.78rem, 2cqw, 0.88rem);
+  font-size: var(--mq-text-sm);
   font-style: italic;
   color: #554c42;
   line-height: 1.45;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-herb-card-infusion {
@@ -2100,7 +2169,7 @@
   min-width: 0;
   max-width: calc(100% - 4.25rem);
   font-family: var(--mq-font-display);
-  font-size: clamp(0.92rem, 2.4cqw, 1.12rem);
+  font-size: var(--mq-text-base);
   font-weight: 600;
   letter-spacing: 0.03em;
   line-height: 1.35;
@@ -2145,11 +2214,15 @@
 
 .mq-ed-herb .mq-ed-leader-desc {
   margin: 3px 0 0;
-  font-size: clamp(0.78rem, 2cqw, 0.88rem);
+  font-size: var(--mq-text-sm);
   font-style: italic;
   color: #554c42;
   line-height: 1.45;
   overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-herb .mq-ed-leader-flags {
@@ -2801,10 +2874,15 @@
 .mq-ed-noren-card-name {
   margin: 0;
   font-family: var(--mq-font-display, inherit);
-  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-size: var(--mq-text-base);
   font-weight: 600;
   color: #1c1917;
   letter-spacing: 0.02em;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-noren-card-price {
@@ -2817,10 +2895,15 @@
 
 .mq-ed-noren-card-desc {
   margin: 0;
-  font-size: clamp(0.78rem, 2cqw, 0.88rem);
+  font-size: var(--mq-text-sm);
   font-style: italic;
   color: #57534e;
   line-height: 1.45;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-noren-card-accent {

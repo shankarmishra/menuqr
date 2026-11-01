@@ -235,7 +235,7 @@ export const BrandMark: React.FC<{
     data-testid="mq-cover-mark"
   >
     {restaurant.logoUrl ? (
-      <LogoMark logoUrl={restaurant.logoUrl} restaurantName={restaurant.name} size="sm" />
+      <LogoMark logoUrl={restaurant.logoUrl} restaurantName={restaurant.name} size={size} />
     ) : (
       <span className="mq-ed-mark-letters">{initials(restaurant.name)}</span>
     )}

@@ -20,6 +20,7 @@ import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
+import { CapsulePillsNav } from '../../slots/navs.tsx';
 import { DishPrice } from '../../primitives/DishMeta.tsx';
 import {
   BrandMark,
@@ -388,6 +389,9 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
     setAllergenFilter,
     spiceFilter,
     setSpiceFilter,
+  activeCategoryId,
+  setActiveCategoryId,
+  navigableCategories,
   } = useMenuFilters(categories);
 
   const sections = liveCategories(visible);
@@ -484,6 +488,14 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
             spiceFilter={spiceFilter}
             onSpiceFilterChange={setSpiceFilter}
           />
+          <CapsulePillsNav
+            restaurant={restaurant}
+            categories={visible}
+            allCategories={navigableCategories}
+            activeCategoryId={activeCategoryId}
+            onSelectCategory={setActiveCategoryId}
+            compact={compact}
+          />
         </>
       )}
 
@@ -501,6 +513,7 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
           sections.map((category, catIdx) => (
             <section
               key={category.id}
+              id={`mq-section-${category.id}`}
               className="mq-ed-pastel-section"
               aria-labelledby={`mq-ed-pastel-${category.id}`}
             >
@@ -550,8 +563,8 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
                       </p>
                     )}
 
-                    {/* Meta badges (bestseller, special, trending) */}
-                    {(item.isBestseller || item.isSpecial || item.trending) ? (
+                    {/* Meta badges (bestseller, special, trending, allergen/diet notes) */}
+                    {(item.isBestseller || item.isSpecial || item.trending || item.tags?.jain || item.tags?.eggless || (item.tags?.allergens?.length ?? 0) > 0) ? (
                       <div className="mq-ed-pastel-dish-meta">
                         {item.isBestseller && (
                           <span className="mq-ed-pastel-allergen-pill">
@@ -566,6 +579,13 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
                         {item.trending && (
                           <span className="mq-ed-pastel-allergen-pill">
                             Trending
+                          </span>
+                        )}
+                        {item.tags?.jain && <span className="mq-ed-pastel-tag-pill">Jain</span>}
+                        {item.tags?.eggless && <span className="mq-ed-pastel-tag-pill">Eggless</span>}
+                        {(item.tags?.allergens?.length ?? 0) > 0 && (
+                          <span className="mq-ed-pastel-allergen-pill">
+                            Contains: {item.tags?.allergens?.join(', ')}
                           </span>
                         )}
                       </div>

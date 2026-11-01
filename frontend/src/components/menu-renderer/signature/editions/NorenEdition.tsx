@@ -22,7 +22,8 @@ import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
-import { DietMark, DishPrice } from '../../primitives/DishMeta.tsx';
+import { CapsulePillsNav } from '../../slots/navs.tsx';
+import { Badge, DietMark, DishPrice } from '../../primitives/DishMeta.tsx';
 import {
   CategoryTeaser,
   EditionContact,
@@ -126,7 +127,7 @@ const HankoChopSeal: React.FC<{
         {restaurant.logoUrl ? (
           <img
             src={restaurant.logoUrl}
-            alt=""
+            alt={restaurant.name}
             className="mq-ed-noren-hanko-img"
             loading="eager"
             decoding="async"
@@ -146,7 +147,7 @@ export const NorenEdition: React.FC<EditionProps> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter, activeCategoryId, setActiveCategoryId, navigableCategories } = useMenuFilters(categories);
   const sections = liveCategories(visible);
   const signatures = useFeatured(categories, 2);
   const coverImage = tokens.cover.imageUrl || signatures[0]?.imageUrl || '/assets/themes/noren-hero.webp';
@@ -247,6 +248,14 @@ export const NorenEdition: React.FC<EditionProps> = ({
             spiceFilter={spiceFilter}
             onSpiceFilterChange={setSpiceFilter}
           />
+          <CapsulePillsNav
+            restaurant={restaurant}
+            categories={visible}
+            allCategories={navigableCategories}
+            activeCategoryId={activeCategoryId}
+            onSelectCategory={setActiveCategoryId}
+            compact={compact}
+          />
         </>
       )}
 
@@ -308,6 +317,7 @@ export const NorenEdition: React.FC<EditionProps> = ({
             {sections.map((category, sectionIndex) => (
               <section
                 key={category.id}
+                id={`mq-section-${category.id}`}
                 className="mq-ed-noren-section"
                 aria-labelledby={`mq-ed-noren-${category.id}`}
               >
@@ -354,6 +364,12 @@ export const NorenEdition: React.FC<EditionProps> = ({
                             {item.isSpecial && <span className="noren-badge special">Special</span>}
                             {(item.spicyLevel ?? 0) > 0 && (
                               <span className="noren-badge spice">Spicy {'🌶️'.repeat(Math.min(item.spicyLevel ?? 0, 3))}</span>
+                            )}
+                            {item.trending && !item.isBestseller && <Badge>🔥 Trending</Badge>}
+                            {item.tags?.jain && <Badge quiet>Jain</Badge>}
+                            {item.tags?.eggless && <Badge quiet>Eggless</Badge>}
+                            {(item.tags?.allergens?.length ?? 0) > 0 && (
+                              <Badge quiet>Contains: {item.tags?.allergens?.join(', ')}</Badge>
                             )}
                           </div>
                         )}

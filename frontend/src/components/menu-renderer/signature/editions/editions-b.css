@@ -402,7 +402,7 @@
 
 @container carta-edition (min-width: 52rem) {
   .mq-ed-carta-showcase-grid {
-    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
   }
 }
 
@@ -1531,7 +1531,7 @@
 
 .mq-ed-pastel-curation-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
   gap: var(--mq-space-6);
 }
 
@@ -1603,10 +1603,15 @@
 .mq-ed-pastel-card-name {
   margin: 0;
   font-family: var(--mq-font-display, 'Playfair Display', Georgia, serif);
-  font-size: max(14px, 1.25rem);
+  font-size: var(--mq-text-base);
   font-weight: 600;
   color: var(--mq-pastel-deep-green);
   line-height: 1.25;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-pastel-price-pill {
@@ -1619,9 +1624,14 @@
 
 .mq-ed-pastel-card-desc {
   margin: 0;
-  font-size: max(12px, 0.88rem);
+  font-size: var(--mq-text-sm);
   color: #4b5563;
   line-height: 1.5;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 /* Sommelier Tea Pairing Ribbon */
@@ -1926,9 +1936,14 @@
 
 .mq-ed-pastel-dish-desc {
   margin: 0;
-  font-size: max(12px, 0.85rem);
+  font-size: var(--mq-text-sm);
   color: #4b5563;
   line-height: 1.45;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-pastel-dish-meta {
@@ -2039,7 +2054,7 @@
 
 .mq-ed-pastel-brigade-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: var(--mq-space-4);
   max-width: 54rem;
   width: 100%;
@@ -2632,6 +2647,15 @@
   text-transform: uppercase;
   color: var(--mq-color-accent-contrast);
   background-color: var(--mq-color-accent);
+}
+
+.mq-ed-neon-logo-badge {
+  position: absolute;
+  top: var(--mq-space-5);
+  right: var(--mq-space-5);
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4);
 }
 
 .mq-ed-neon-contact {

@@ -403,9 +403,14 @@
 .mq-ed-maharaja-card-name {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(1rem, 2.5cqw, 1.25rem);
+  font-size: var(--mq-text-base);
   font-weight: 600;
   color: #fbf8f0;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-maharaja-card-price-slot {
@@ -414,9 +419,14 @@
 
 .mq-ed-maharaja-card-desc {
   margin: 0;
-  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+  font-size: var(--mq-text-sm);
   color: rgba(236, 220, 185, 0.85);
   line-height: var(--mq-leading-relaxed);
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-maharaja-pairing-ribbon {
@@ -635,11 +645,16 @@
 .mq-ed-maharaja-dish-name {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-size: var(--mq-text-base);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #fbf8f0;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-maharaja-dish-rule {
@@ -664,10 +679,15 @@
 .mq-ed-maharaja-dish-desc {
   margin: 2px 0 0;
   max-width: 54ch;
-  font-size: clamp(0.8rem, 2cqw, 0.9rem);
+  font-size: var(--mq-text-sm);
   line-height: var(--mq-leading-relaxed);
   color: rgba(236, 220, 185, 0.85);
   font-style: italic;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-maharaja-dish-meta {
@@ -741,7 +761,7 @@
 
 .mq-ed-maharaja-brigade-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr));
   gap: var(--mq-space-4);
   width: min(40rem, 100%);
   margin: var(--mq-space-6) 0;
@@ -1138,7 +1158,7 @@
 
 .mq-ed-punjab-showcase-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17.5rem), 1fr));
   gap: clamp(1rem, 2.5cqw, 1.75rem);
 }
 
@@ -1212,11 +1232,16 @@
 .mq-ed-punjab-showcase-dish-name {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(1rem, 2.5cqw, 1.25rem);
+  font-size: var(--mq-text-base);
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: #fff8ed;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-punjab-showcase-price {
@@ -1461,12 +1486,17 @@
 .mq-ed-punjab-dish-name {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(0.95rem, 2.4cqw, 1.18rem);
+  font-size: var(--mq-text-base);
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #fff8ed;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-punjab-dish-rule {
@@ -1497,11 +1527,16 @@
 .mq-ed-punjab-dish-desc {
   margin: 2px 0 0;
   max-width: 56ch;
-  font-size: max(12px, clamp(0.8rem, 2cqw, 0.9rem));
+  font-size: var(--mq-text-sm);
   font-style: italic;
   line-height: var(--mq-leading-relaxed);
   color: #f5ebe6;
   opacity: 0.86;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 /* Authentic Clay-Hearth Diet Mark */
@@ -1630,7 +1665,7 @@
 
 .mq-ed-punjab-brigade-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
   gap: var(--mq-space-4);
   width: min(44rem, 100%);
   margin: var(--mq-space-6) 0;
@@ -2096,10 +2131,15 @@
 .mq-ed-dakshin-card-name {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(1.05rem, 2.5cqw, 1.3rem);
+  font-size: var(--mq-text-base);
   font-weight: 700;
   letter-spacing: 0.03em;
   color: #142417;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-dakshin-card-price-slot {
@@ -2112,10 +2152,15 @@
 
 .mq-ed-dakshin-card-desc {
   margin: 0;
-  font-size: max(12px, 0.85rem);
+  font-size: var(--mq-text-sm);
   line-height: var(--mq-leading-relaxed);
   color: #374151;
   font-style: italic;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-dakshin-pairing-ribbon {
@@ -2350,12 +2395,16 @@
   min-width: 0;
   max-width: calc(100% - 5rem);
   font-family: var(--mq-font-display);
-  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-size: var(--mq-text-base);
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: #142417;
   overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-dakshin-dish-rule {
@@ -2385,10 +2434,15 @@
 .mq-ed-dakshin-dish-desc {
   margin: var(--mq-space-1) 0 0;
   max-width: 56ch;
-  font-size: max(12px, 0.84rem);
+  font-size: var(--mq-text-sm);
   line-height: var(--mq-leading-relaxed);
   color: #4b5563;
   font-style: italic;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-dakshin-dish-meta {
@@ -2462,7 +2516,7 @@
 
 .mq-ed-dakshin-brigade-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12.5rem), 1fr));
   gap: 1rem;
   width: 100%;
   max-width: 52rem;
@@ -2962,10 +3016,15 @@
 .mq-ed-thali-card-name {
   margin: 0;
   font-family: var(--mq-font-display);
-  font-size: clamp(1.05rem, 2.5cqw, 1.3rem);
+  font-size: var(--mq-text-base);
   font-weight: 700;
   letter-spacing: 0.03em;
   color: #2c1e18;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-thali-card-price-slot {
@@ -2978,10 +3037,15 @@
 
 .mq-ed-thali-card-desc {
   margin: 0;
-  font-size: max(12px, 0.85rem);
+  font-size: var(--mq-text-sm);
   line-height: var(--mq-leading-relaxed);
   color: #4b5563;
   font-style: italic;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-thali-pairing-ribbon {
@@ -3211,12 +3275,16 @@
   min-width: 0;
   max-width: calc(100% - 5rem);
   font-family: var(--mq-font-display);
-  font-size: clamp(0.95rem, 2.4cqw, 1.15rem);
+  font-size: var(--mq-text-base);
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: #2c1e18;
   overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-thali-dish-rule {
@@ -3246,10 +3314,15 @@
 .mq-ed-thali-dish-desc {
   margin: var(--mq-space-1) 0 0;
   max-width: 56ch;
-  font-size: max(12px, 0.84rem);
+  font-size: var(--mq-text-sm);
   line-height: var(--mq-leading-relaxed);
   color: #5d4237;
   font-style: italic;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-thali-dish-meta {
@@ -3323,7 +3396,7 @@
 
 .mq-ed-thali-brigade-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12.5rem), 1fr));
   gap: 1rem;
   width: 100%;
   max-width: 52rem;
@@ -3380,7 +3453,11 @@
   container-name: chowk;
   font-family: var(--mq-font-body, 'Plus Jakarta Sans', system-ui, sans-serif);
   line-height: var(--mq-leading-normal, 1.5);
+  /* `hidden` makes this element a scroll container (the other axis computes to `auto`), which
+   * stops the sticky category bar from ever sticking to the viewport. `clip` clips identically
+   * without creating one; `hidden` stays as the fallback for browsers without `clip`. */
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Gold & Tomato Red Foil Text Shimmer */
@@ -3756,9 +3833,14 @@
 .mq-ed-chowk-card-name {
   margin: 0;
   font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
-  font-size: clamp(1.1rem, 2.5cqw, 1.35rem);
+  font-size: var(--mq-text-base);
   font-weight: 800;
   color: #fffbf5;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 .mq-ed-chowk-card-price-slot {
   font-family: var(--mq-font-display, 'Cinzel', serif);
@@ -3769,9 +3851,14 @@
 }
 .mq-ed-chowk-card-desc {
   margin: 0;
-  font-size: max(12px, 0.85rem);
+  font-size: var(--mq-text-sm);
   color: rgba(250, 248, 243, 0.8);
   line-height: var(--mq-leading-relaxed, 1.6);
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-chowk-pairing-ribbon {
@@ -3967,10 +4054,15 @@
 .mq-ed-chowk-dish-name {
   margin: 0;
   font-family: var(--mq-font-display, 'Rozha One', 'Cinzel', serif);
-  font-size: clamp(0.95rem, 2.2cqw, 1.15rem);
+  font-size: var(--mq-text-base);
   font-weight: 700;
   color: #fffbf5;
   white-space: normal;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 /* Precision Dotted Leader Rule anchored to last baseline */
@@ -3996,10 +4088,15 @@
 
 .mq-ed-chowk-dish-desc {
   margin: 0;
-  font-size: max(12px, 0.84rem);
+  font-size: var(--mq-text-sm);
   color: rgba(250, 248, 243, 0.75);
   line-height: var(--mq-leading-relaxed, 1.6);
   max-width: 48rem;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .mq-ed-chowk-dish-meta {

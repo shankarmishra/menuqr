@@ -14,8 +14,10 @@ import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
+import { CapsulePillsNav } from '../../slots/navs.tsx';
 import { DietMark, DishFlags, DishPrice } from '../../primitives/DishMeta.tsx';
 import {
+  BrandMark,
   EditionContact,
   cleanDescription,
   liveCategories,
@@ -32,7 +34,7 @@ export const NeonIchibanEdition: React.FC<EditionProps> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter, activeCategoryId, setActiveCategoryId, navigableCategories } = useMenuFilters(categories);
   const sections = liveCategories(visible);
   const hero = useFeatured(categories, 1)[0];
   const heroSrc = tokens.cover.imageUrl ?? hero?.imageUrl;
@@ -77,6 +79,10 @@ export const NeonIchibanEdition: React.FC<EditionProps> = ({
           </div>
         )}
 
+        {restaurant.logoUrl && (
+          <BrandMark restaurant={restaurant} size={40} className="mq-ed-neon-logo-badge" />
+        )}
+
         <EditionContact restaurant={restaurant} separator="•" className="mq-ed-neon-contact" />
       </header>
 
@@ -96,6 +102,14 @@ export const NeonIchibanEdition: React.FC<EditionProps> = ({
             spiceFilter={spiceFilter}
             onSpiceFilterChange={setSpiceFilter}
           />
+          <CapsulePillsNav
+            restaurant={restaurant}
+            categories={visible}
+            allCategories={navigableCategories}
+            activeCategoryId={activeCategoryId}
+            onSelectCategory={setActiveCategoryId}
+            compact={compact}
+          />
         </>
       )}
 
@@ -110,6 +124,7 @@ export const NeonIchibanEdition: React.FC<EditionProps> = ({
           sections.map((category) => (
             <section
               key={category.id}
+              id={`mq-section-${category.id}`}
               className="mq-ed-neon-section"
               aria-labelledby={`mq-ed-neon-${category.id}`}
             >

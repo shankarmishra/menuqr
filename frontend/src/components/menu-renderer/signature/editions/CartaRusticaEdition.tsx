@@ -18,6 +18,7 @@ import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
+import { CapsulePillsNav } from '../../slots/navs.tsx';
 import { DietMark, DishFlags, DishPrice } from '../../primitives/DishMeta.tsx';
 import {
   BrandMark,
@@ -184,14 +185,14 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
   readOnly,
 }) => {
   const tokens = useMenuTheme();
-  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter } = useMenuFilters(categories);
+  const { query, setQuery, dietFilter, setDietFilter, counts, visible, hasQuery, allergenFilter, setAllergenFilter, spiceFilter, setSpiceFilter, activeCategoryId, setActiveCategoryId, navigableCategories } = useMenuFilters(categories);
   const sections = liveCategories(visible);
   const pinned = useFeatured(categories, 3);
 
   // House Specialties (*Specialità della Casa*): Top 2-3 items with images or bestsellers
   const houseSpecialties = useMemo(() => {
     const pool = categories.flatMap((cat) => cat.items);
-    const withImages = pool.filter((item) => item.imageUrl || item.isBestseller || item.isSpecial);
+    const withImages = pool.filter((item) => item.imageUrl);
     return withImages.slice(0, 3);
   }, [categories]);
 
@@ -326,6 +327,14 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
             spiceFilter={spiceFilter}
             onSpiceFilterChange={setSpiceFilter}
           />
+          <CapsulePillsNav
+            restaurant={restaurant}
+            categories={visible}
+            allCategories={navigableCategories}
+            activeCategoryId={activeCategoryId}
+            onSelectCategory={setActiveCategoryId}
+            compact={compact}
+          />
         </>
       )}
 
@@ -344,7 +353,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
             <div className="mq-ed-carta-showcase-grid">
               {houseSpecialties.map((item, idx) => {
                 const tilt = idx % 2 === 0 ? '-1.5deg' : '1.5deg';
-                const itemImg = item.imageUrl || heroCoverImage;
+                const itemImg = item.imageUrl as string;
                 const desc = cleanDescription(item);
                 return (
                   <article
@@ -377,12 +386,6 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
                       {desc && <p className="mq-ed-carta-showcase-desc mq-dish-desc">{desc}</p>}
 
                       <div className="mq-ed-carta-item-flags">
-                        {item.isBestseller && (
-                          <span className="mq-ed-carta-badge badge-bestseller">Bestseller</span>
-                        )}
-                        {item.isSpecial && (
-                          <span className="mq-ed-carta-badge badge-special">Special</span>
-                        )}
                         <DishFlags item={item} />
                       </div>
                     </div>
@@ -409,6 +412,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
                   {/* Embedded Hearth Aside Plaque after the first 2 sections */}
 
                   <section
+                    id={`mq-section-${category.id}`}
                     className="mq-ed-carta-section"
                     aria-labelledby={`mq-ed-carta-${category.id}`}
                   >

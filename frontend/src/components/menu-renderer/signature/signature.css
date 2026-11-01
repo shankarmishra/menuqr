@@ -141,6 +141,11 @@
   padding: var(--mq-space-6) var(--mq-space-5);
 }
 
+.mq-sig-chalk-mark {
+  display: grid !important;
+  margin: 0 auto var(--mq-space-2);
+}
+
 .mq-sig-chalk-eyebrow {
   text-align: center;
   font-size: var(--mq-text-xs);

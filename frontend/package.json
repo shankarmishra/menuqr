@@ -10,7 +10,9 @@
     "lint": "oxlint",
     "test:e2e": "playwright test --config=playwright.config.ts",
     "preview": "vite preview",
-    "test:unit": "node --test \"src/**/*.test.ts\""
+    "test:unit": "node --test \"src/**/*.test.ts\"",
+    "check:editions": "node scripts/check-editions.mjs",
+    "test:render-quality": "playwright test e2e-render/menu-quality.spec.ts --config=playwright.config.ts --project=\"Mobile Chrome\""
   },
   "dependencies": {
     "@playwright/test": "^1.63.0",

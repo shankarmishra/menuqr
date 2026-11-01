@@ -41,17 +41,20 @@ function useCategoryScrollSpy(
   const scrollerRef = useRef<HTMLDivElement>(null);
   const isClickingRef = useRef(false);
 
-  // Auto-scroll the active pill horizontally into view
+  // Centre the active pill inside the pill bar. This must move only the bar's own horizontal
+  // scroll: `Element.scrollIntoView` also scrolls the WINDOW to reveal the bar, and since the bar
+  // sits below the cover, every menu opened already scrolled past its logo and title (and a tap's
+  // smooth scroll to a section was cancelled by the same call).
   useEffect(() => {
-    if (!scrollerRef.current) return;
-    const activeButton = scrollerRef.current.querySelector<HTMLButtonElement>(`[data-category-id="${activeCategoryId}"]`);
-    if (activeButton) {
-      activeButton.scrollIntoView({
-        behavior: 'smooth',
-        inline: 'center',
-        block: 'nearest',
-      });
-    }
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const activeButton = scroller.querySelector<HTMLButtonElement>(`[data-category-id="${activeCategoryId}"]`);
+    if (!activeButton) return;
+    const bar = scroller.getBoundingClientRect();
+    const pill = activeButton.getBoundingClientRect();
+    const delta = pill.left - bar.left - (bar.width - pill.width) / 2;
+    if (Math.abs(delta) < 1) return;
+    scroller.scrollBy({ left: delta, behavior: 'smooth' });
   }, [activeCategoryId]);
 
   // Scroll listener for spy tracking
