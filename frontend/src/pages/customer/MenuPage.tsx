@@ -19,6 +19,7 @@ import {
   Trash2,
   Globe,
   Info,
+  Megaphone,
   CheckCircle2,
   Sparkles,
   BellRing,
@@ -913,11 +914,11 @@ export default function MenuPage() {
         canonicalUrl={`/menu/${slug}`} 
         index={false} 
       />
-      <header className="px-4 py-3 border-b border-white/10 flex items-center justify-between backdrop-blur-md relative z-30 bg-black/40">
+      <header className="px-4 py-2.5 border-b border-white/10 flex flex-wrap items-center gap-x-3 gap-y-2 backdrop-blur-md relative z-30 bg-black/40">
         <Link className="menu-wordmark flex items-center gap-2" to={`/menu/${slug}`} aria-label="MenusQR menu">
           <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2">
           {infoModel?.hasContent && (
             <button type="button" className="header-info-btn" onClick={openInfo} aria-haspopup="dialog" aria-label="Restaurant info and contact">
               <Info size={15} aria-hidden="true" />
@@ -942,8 +943,11 @@ export default function MenuPage() {
               ))}
             </div>
           )}
+        </div>
+        {(client?.city || whatsappChatHref || accessibilityEnabled) && (
+        <div className="flex basis-full items-center justify-end gap-2 sm:basis-auto">
           {client?.city && (
-            <span className="text-xs font-mono opacity-80 flex items-center gap-1"><MapPin size={12} />{[client.city, client.state].filter(Boolean).join(', ')}</span>
+            <span className="hidden md:flex text-xs font-mono opacity-80 items-center gap-1"><MapPin size={12} />{[client.city, client.state].filter(Boolean).join(', ')}</span>
           )}
           {whatsappChatHref && (
             <a
@@ -978,16 +982,19 @@ export default function MenuPage() {
             </div>
           )}
         </div>
+        )}
       </header>
 
       {/* Promotional Announcement Banner (Blueprint §3.2 I, §6.2). Light amber with dark text so it reads on every theme. */}
       {client.announcement && (
-        <div role="region" aria-label="Announcement" className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-b border-amber-300 bg-amber-100 px-4 py-2.5 text-center text-sm font-medium text-amber-950">
-          <span aria-hidden="true">⚑</span>
-          <span>{client.announcement.text}</span>
+        <div role="region" aria-label="Announcement" className="border-b border-amber-300 bg-amber-100 px-4 py-2.5 text-center text-sm font-medium leading-snug text-amber-950">
+          <Megaphone size={15} aria-hidden="true" className="mr-1.5 -mt-0.5 inline" />
+          {client.announcement.text}
           {announcementLink && (
-            <a href={announcementLink} target="_blank" rel="noopener noreferrer" className="font-bold underline">
-              View ↗
+            <a href={announcementLink} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center gap-1 font-bold underline">
+              View
+              <ExternalLink size={12} aria-hidden="true" />
+              <span className="sr-only">(opens in a new tab)</span>
             </a>
           )}
         </div>
