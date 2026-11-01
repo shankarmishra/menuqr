@@ -26,8 +26,14 @@ import {
 } from '../profileService.js';
 import { orderingSettingsFromRow } from '../publicMenuPayload.js';
 import { contactsFromLegacyPhone } from '../legacyProfile.js';
+import { requireEntitlement } from '../authorization.js';
+import { activeOfferLimit, validateAnnouncementInput, validateOfferInput } from '../offers.js';
 import { sanitizeText } from '../validation.js';
 import { randomUUID } from 'node:crypto';
+
+const SETUP_STEPS = ['S0', 'S1', 'S2', 'S3', 'S4'];
+const TABLE_LABEL_MAX = 50;
+const TABLE_MAX = 200;
 
 export async function handleProfileRoutes(request, response, url, user, authorization) {
   const tenantId = user.tenantId;
@@ -103,30 +109,23 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
         fssai: input.fssai,
       };
     } else if (section === 'brand') {
-      // Update brand_kits table
-      const brandUpdates = {};
-      if (input.colourMood !== undefined) brandUpdates.colour_mood = input.colourMood;
-      if (input.palette !== undefined) brandUpdates.palette = input.palette;
-      if (input.logo !== undefined) brandUpdates.logo = input.logo;
-      if (input.coverMediaId !== undefined) brandUpdates.cover_media_id = input.coverMediaId;
+      // Update brand_kits. A field that was not sent is passed as NULL so COALESCE keeps the stored
+      // value: saving the colour mood alone must not wipe the logo or the palette.
+      const asJson = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? JSON.stringify(value) : null);
+      const colourMood = input.colourMood === undefined ? null : (sanitizeText(String(input.colourMood ?? ''), 30) || null);
+      const coverMediaId = input.coverMediaId ? String(input.coverMediaId).slice(0, 255) : null;
 
       await pool.query(
         `INSERT INTO brand_kits (tenant_id, colour_mood, palette, logo, cover_media_id, version, updated_at)
-         VALUES ($1, $2, $3, $4, $5, 1, NOW())
+         VALUES ($1, COALESCE($2::varchar, 'default'), COALESCE($3::jsonb, '{}'::jsonb), COALESCE($4::jsonb, '{}'::jsonb), $5::varchar, 1, NOW())
          ON CONFLICT (tenant_id) DO UPDATE SET
-           colour_mood = COALESCE(EXCLUDED.colour_mood, brand_kits.colour_mood),
-           palette = COALESCE(EXCLUDED.palette, brand_kits.palette),
-           logo = COALESCE(EXCLUDED.logo, brand_kits.logo),
-           cover_media_id = COALESCE(EXCLUDED.cover_media_id, brand_kits.cover_media_id),
+           colour_mood = COALESCE($2::varchar, brand_kits.colour_mood),
+           palette = COALESCE($3::jsonb, brand_kits.palette),
+           logo = COALESCE($4::jsonb, brand_kits.logo),
+           cover_media_id = COALESCE($5::varchar, brand_kits.cover_media_id),
            version = brand_kits.version + 1,
            updated_at = NOW()`,
-        [
-          tenantId,
-          brandUpdates.colour_mood || 'default',
-          JSON.stringify(brandUpdates.palette || {}),
-          JSON.stringify(brandUpdates.logo || {}),
-          brandUpdates.cover_media_id || null,
-        ]
+        [tenantId, colourMood, asJson(input.palette), asJson(input.logo), coverMediaId]
       );
       sendJson(response, 200, { success: true });
       return true;
@@ -273,11 +272,15 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
 
     if (request.method === 'POST') {
       const input = await readJson(request);
+      const clean = validateAnnouncementInput(input);
+      // Only an id this tenant owns is reused (an update); any other id gets a fresh one.
       let id = randomUUID();
       if (input.id) {
-        const check = await pool.query('SELECT id FROM restaurant_announcements WHERE id = $1 AND tenant_id = $2', [input.id, tenantId]);
-        if (check.rows.length > 0) id = input.id;
+        const check = await pool.query('SELECT id FROM restaurant_announcements WHERE id = $1 AND tenant_id = $2', [String(input.id), tenantId]);
+        if (check.rows.length > 0) id = check.rows[0].id;
       }
+      // The WHERE on DO UPDATE is a second lock: even if an id from another tenant ever got
+      // here, the conflicting row would be left alone.
       const res = await pool.query(
         `INSERT INTO restaurant_announcements (id, tenant_id, text, link_type, link_target, starts_at, ends_at, is_active, i18n)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -290,20 +293,12 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
            is_active = EXCLUDED.is_active,
            i18n = EXCLUDED.i18n,
            updated_at = NOW()
+         WHERE restaurant_announcements.tenant_id = EXCLUDED.tenant_id
          RETURNING *`,
-        [
-          id,
-          tenantId,
-          input.text,
-          input.linkType || 'none',
-          input.linkTarget || null,
-          input.startsAt || null,
-          input.endsAt || null,
-          input.isActive !== false,
-          JSON.stringify(input.i18n || {}),
-        ]
+        [id, tenantId, clean.text, clean.linkType, clean.linkTarget, clean.startsAt, clean.endsAt, clean.isActive, JSON.stringify(clean.i18n)]
       );
-      try { invalidatePublicMenuCache(tenantId); } catch (e) {}
+      if (res.rows.length === 0) throw apiError(404, 'Announcement not found.');
+      await invalidatePublicMenuCache(tenantId);
       sendJson(response, 200, res.rows[0]);
       return true;
     }
@@ -312,12 +307,16 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
     if (request.method === 'DELETE' && delMatch) {
       const id = decodeURIComponent(delMatch[1]);
       await pool.query('DELETE FROM restaurant_announcements WHERE id = $1 AND tenant_id = $2', [id, tenantId]);
+      await invalidatePublicMenuCache(tenantId);
       sendJson(response, 200, { success: true });
       return true;
     }
   }
 
   // ── 6. Offers: GET & POST & DELETE /api/app/offers ─────────────────────────
+  // Offer ids are public (the menu payload lists them), so an id in a request body is never
+  // trusted: it is only used when this tenant owns it, and the upsert itself refuses to touch a
+  // row that belongs to another tenant.
   if (url.pathname.startsWith('/api/app/offers')) {
     if (request.method === 'GET') {
       const res = await pool.query(
@@ -329,36 +328,75 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
     }
 
     if (request.method === 'POST') {
+      requireEntitlement(authorization, 'digital_menu');
       const input = await readJson(request);
-      const id = input.id || randomUUID();
-      const res = await pool.query(
-        `INSERT INTO restaurant_offers (id, tenant_id, title, details, price_text, schedule, item_ids, media_id, is_active, i18n)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-         ON CONFLICT (id) DO UPDATE SET
-           title = EXCLUDED.title,
-           details = EXCLUDED.details,
-           price_text = EXCLUDED.price_text,
-           schedule = EXCLUDED.schedule,
-           item_ids = EXCLUDED.item_ids,
-           media_id = EXCLUDED.media_id,
-           is_active = EXCLUDED.is_active,
-           i18n = EXCLUDED.i18n,
-           updated_at = NOW()
-         RETURNING *`,
-        [
-          id,
-          tenantId,
-          input.title,
-          input.details || '',
-          input.priceText || '',
-          JSON.stringify(input.schedule || {}),
-          input.itemIds || [],
-          input.mediaId || null,
-          input.isActive !== false,
-          JSON.stringify(input.i18n || {}),
-        ]
-      );
-      sendJson(response, 200, res.rows[0]);
+      const clean = validateOfferInput(input);
+
+      const tx = await pool.connect();
+      let saved;
+      try {
+        await tx.query('BEGIN');
+        // One writer per tenant at a time, so the active-offer count below cannot be raced.
+        await tx.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`offers:${tenantId}`]);
+
+        let id = randomUUID();
+        if (input.id !== undefined && input.id !== null && input.id !== '') {
+          const owned = await tx.query('SELECT id FROM restaurant_offers WHERE id = $1 AND tenant_id = $2', [String(input.id), tenantId]);
+          if (owned.rows.length === 0) throw apiError(404, 'Offer not found.');
+          id = owned.rows[0].id;
+        }
+
+        if (clean.itemIds.length > 0) {
+          const items = await tx.query('SELECT id FROM menu_items WHERE tenant_id = $1 AND id = ANY($2::text[])', [tenantId, clean.itemIds]);
+          if (items.rows.length !== clean.itemIds.length) {
+            throw apiError(400, 'One or more of the selected dishes are not on your menu.');
+          }
+        }
+        if (clean.mediaId) {
+          const media = await tx.query('SELECT id FROM menu_media WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL', [clean.mediaId, tenantId]);
+          if (media.rows.length === 0) throw apiError(400, 'That photo is not in your library.');
+        }
+
+        if (clean.isActive) {
+          const limit = activeOfferLimit(authorization.planId);
+          const active = await tx.query(
+            'SELECT count(*)::int AS n FROM restaurant_offers WHERE tenant_id = $1 AND is_active = true AND id <> $2',
+            [tenantId, id]
+          );
+          if (Number(active.rows[0]?.n || 0) >= limit) {
+            throw apiError(403, `Your ${authorization.planId} plan allows ${limit} active offer${limit === 1 ? '' : 's'}. Switch one off or upgrade your plan to add another.`);
+          }
+        }
+
+        const res = await tx.query(
+          `INSERT INTO restaurant_offers (id, tenant_id, title, details, price_text, schedule, item_ids, media_id, is_active, i18n)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           ON CONFLICT (id) DO UPDATE SET
+             title = EXCLUDED.title,
+             details = EXCLUDED.details,
+             price_text = EXCLUDED.price_text,
+             schedule = EXCLUDED.schedule,
+             item_ids = EXCLUDED.item_ids,
+             media_id = EXCLUDED.media_id,
+             is_active = EXCLUDED.is_active,
+             i18n = EXCLUDED.i18n,
+             updated_at = NOW()
+           WHERE restaurant_offers.tenant_id = EXCLUDED.tenant_id
+           RETURNING *`,
+          [id, tenantId, clean.title, clean.details, clean.priceText, JSON.stringify(clean.schedule), clean.itemIds, clean.mediaId, clean.isActive, JSON.stringify(clean.i18n)]
+        );
+        if (res.rows.length === 0) throw apiError(404, 'Offer not found.');
+        saved = res.rows[0];
+        await tx.query('COMMIT');
+      } catch (err) {
+        await tx.query('ROLLBACK');
+        throw err;
+      } finally {
+        tx.release();
+      }
+
+      await invalidatePublicMenuCache(tenantId);
+      sendJson(response, 200, saved);
       return true;
     }
 
@@ -366,6 +404,7 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
     if (request.method === 'DELETE' && delMatch) {
       const id = decodeURIComponent(delMatch[1]);
       await pool.query('DELETE FROM restaurant_offers WHERE id = $1 AND tenant_id = $2', [id, tenantId]);
+      await invalidatePublicMenuCache(tenantId);
       sendJson(response, 200, { success: true });
       return true;
     }
@@ -384,27 +423,29 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
 
     if (request.method === 'POST') {
       const input = await readJson(request);
-      // Bulk or single creation
-      if (Array.isArray(input.tables)) {
-        for (let i = 0; i < input.tables.length; i++) {
-          const t = input.tables[i];
-          const label = String(t.label || t).trim();
-          if (label) {
-            await pool.query(
-              `INSERT INTO dining_tables (id, tenant_id, label, sort_order)
-               VALUES ($1, $2, $3, $4)
-               ON CONFLICT (tenant_id, label) DO UPDATE SET is_active = true, sort_order = EXCLUDED.sort_order`,
-              [randomUUID(), tenantId, label, i]
-            );
-          }
-        }
-      } else if (input.label) {
-        const label = String(input.label).trim();
+      const toLabel = (entry) => {
+        const raw = entry && typeof entry === 'object' ? entry.label : entry;
+        return typeof raw === 'string' || typeof raw === 'number' ? sanitizeText(String(raw), TABLE_LABEL_MAX) : '';
+      };
+      // Bulk or single creation. Ids are always generated here, never taken from the request, and
+      // every statement is keyed by (tenant_id, label), so one tenant can never touch another's tables.
+      const labels = Array.isArray(input.tables)
+        ? input.tables.map(toLabel).filter(Boolean)
+        : [toLabel(input.label)].filter(Boolean);
+      if (labels.length > TABLE_MAX) throw apiError(400, `You can save up to ${TABLE_MAX} tables.`);
+      const sortOrder = Number.isInteger(input.sortOrder) && input.sortOrder >= 0 && input.sortOrder <= 1000 ? input.sortOrder : 0;
+
+      const existing = await pool.query('SELECT label FROM dining_tables WHERE tenant_id = $1', [tenantId]);
+      const known = new Set(existing.rows.map((r) => r.label));
+      const total = known.size + labels.filter((l) => !known.has(l)).length;
+      if (total > TABLE_MAX) throw apiError(400, `You can save up to ${TABLE_MAX} tables.`);
+
+      for (let i = 0; i < labels.length; i++) {
         await pool.query(
           `INSERT INTO dining_tables (id, tenant_id, label, sort_order)
            VALUES ($1, $2, $3, $4)
-           ON CONFLICT (tenant_id, label) DO UPDATE SET is_active = true`,
-          [randomUUID(), tenantId, label, input.sortOrder || 0]
+           ON CONFLICT (tenant_id, label) DO UPDATE SET is_active = true, sort_order = EXCLUDED.sort_order, updated_at = NOW()`,
+          [randomUUID(), tenantId, labels[i], Array.isArray(input.tables) ? i : sortOrder]
         );
       }
       sendJson(response, 200, { success: true });
@@ -420,8 +461,9 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
     }
   }
 
-  // 8. Setup Progress: GET & PATCH /api/app/setup-progress
+  // 8. Setup Progress: GET & PATCH /api/app/setup-progress (always the session tenant's own row)
   if (url.pathname === '/api/app/setup-progress') {
+    const UNMIGRATED = '42P01'; // undefined_table: the only failure that falls back to the default
     if (request.method === 'GET') {
       try {
         const res = await pool.query(
@@ -432,7 +474,9 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
           sendJson(response, 200, res.rows[0]);
           return true;
         }
-      } catch (err) {}
+      } catch (err) {
+        if (err.code !== UNMIGRATED) throw err;
+      }
       sendJson(response, 200, {
         currentStep: 'S0',
         steps: { s0: false, s1: false, s2: false, s3: false, s4: false },
@@ -443,15 +487,27 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
 
     if (request.method === 'PATCH' || request.method === 'POST') {
       const input = await readJson(request);
-      const currentStep = input.currentStep ? String(input.currentStep).toUpperCase() : 'S0';
-      const steps = input.steps && typeof input.steps === 'object' ? input.steps : {};
-      const completed = Boolean(input.completed);
+      let currentStep = null;
+      if (input.currentStep !== undefined && input.currentStep !== null && input.currentStep !== '') {
+        currentStep = String(input.currentStep).toUpperCase();
+        if (!SETUP_STEPS.includes(currentStep)) throw apiError(400, 'Setup step must be S0, S1, S2, S3 or S4.');
+      }
+      const steps = {};
+      if (input.steps && typeof input.steps === 'object' && !Array.isArray(input.steps)) {
+        for (const key of SETUP_STEPS.map((s) => s.toLowerCase())) {
+          if (input.steps[key] !== undefined) {
+            if (typeof input.steps[key] !== 'boolean') throw apiError(400, `Setup step ${key} must be true or false.`);
+            steps[key] = input.steps[key];
+          }
+        }
+      }
+      const completed = input.completed === true;
       try {
         const res = await pool.query(
           `INSERT INTO setup_progress (tenant_id, current_step, steps, completed_at, updated_at)
-           VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+           VALUES ($1, COALESCE($2::varchar, 'S0'), $3::jsonb, $4, CURRENT_TIMESTAMP)
            ON CONFLICT (tenant_id) DO UPDATE SET
-             current_step = EXCLUDED.current_step,
+             current_step = COALESCE($2::varchar, setup_progress.current_step),
              steps = setup_progress.steps || EXCLUDED.steps,
              completed_at = CASE WHEN EXCLUDED.completed_at IS NOT NULL THEN EXCLUDED.completed_at ELSE setup_progress.completed_at END,
              updated_at = CURRENT_TIMESTAMP
@@ -461,7 +517,8 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
         sendJson(response, 200, res.rows[0]);
         return true;
       } catch (err) {
-        sendJson(response, 200, { currentStep, steps, completedAt: completed ? new Date().toISOString() : null });
+        if (err.code !== UNMIGRATED) throw err;
+        sendJson(response, 200, { currentStep: currentStep || 'S0', steps, completedAt: completed ? new Date().toISOString() : null });
         return true;
       }
     }

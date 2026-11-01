@@ -29,6 +29,17 @@ export function allowHit(store, key, now = Date.now(), limit = 120, windowMs = 6
   return true;
 }
 
+/**
+ * Drops expired entries once a limiter map has grown large, so a flood of distinct keys (for
+ * example one request from each of many IPs) cannot grow it without bound.
+ */
+export function pruneHits(store, now = Date.now(), windowMs = 60 * 60 * 1000, maxEntries = 5000) {
+  if (store.size <= maxEntries) return;
+  for (const [key, entry] of store) {
+    if (now - entry.start >= windowMs) store.delete(key);
+  }
+}
+
 /** Upserts one hit. `source` is 'qr' (scanned a code) or anything else (direct link / typed URL). */
 export async function recordMenuHit(db, tenantId, source, now = new Date()) {
   const { day, hour } = istHourBucket(now);

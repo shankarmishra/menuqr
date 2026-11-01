@@ -1,6 +1,6 @@
 import { pool } from '../db.js';
 import { istDateString } from '../istTime.js';
-import { allowHit, isBotAgent, recordMenuHit } from '../menuStats.js';
+import { allowHit, isBotAgent, pruneHits, recordMenuHit } from '../menuStats.js';
 import { saveFeedback, validateFeedback } from '../feedback.js';
 import { applyLiveFlags, isScheduleActive, scheduleLabel } from '../schedule.js';
 import { apiError, sendJson, readJson, getClientIp } from '../utils.js';
@@ -20,6 +20,12 @@ import { randomUUID } from 'node:crypto';
 const contactRateLimits = new Map();
 const menuHitRateLimits = new Map();
 const feedbackRateLimits = new Map();
+// POST track-click is unauthenticated and writes a row, so it is limited per IP and per restaurant.
+const trackClickIpLimits = new Map();
+const trackClickTenantLimits = new Map();
+const TRACK_CLICK_WINDOW_MS = 60 * 1000;
+const TRACK_CLICK_IP_PER_WINDOW = 30;
+const TRACK_CLICK_TENANT_PER_WINDOW = 600;
 const publicMenuCache = new Map();
 const PUBLIC_MENU_CACHE_TTL_MS = 60 * 1000;
 
@@ -365,6 +371,15 @@ export default async function publicRoutes(request, response, url) {
     /^\/api\/public\/menus\/([^/]+)\/track-click$/
   );
   if (request.method === 'POST' && trackClickMatch) {
+    // A diner's tap must never surface an error, so a request over the limit is dropped silently
+    // (answered like a success, nothing stored). The per-IP check runs before any database work.
+    const clickNow = Date.now();
+    pruneHits(trackClickIpLimits, clickNow, TRACK_CLICK_WINDOW_MS);
+    pruneHits(trackClickTenantLimits, clickNow, TRACK_CLICK_WINDOW_MS);
+    if (!allowHit(trackClickIpLimits, getClientIp(request), clickNow, TRACK_CLICK_IP_PER_WINDOW, TRACK_CLICK_WINDOW_MS)) {
+      sendJson(response, 200, { success: true });
+      return true;
+    }
     const slug = decodeURIComponent(trackClickMatch[1]);
     const body = await readJson(request);
     const ALLOWED_KINDS = ['instagram', 'whatsapp', 'call', 'directions', 'website', 'share', 'zomato', 'swiggy', 'custom'];
@@ -383,6 +398,11 @@ export default async function publicRoutes(request, response, url) {
         );
         tenantId = histRes.rows[0]?.tenant_id;
       } catch (err) {}
+    }
+
+    if (tenantId && !allowHit(trackClickTenantLimits, tenantId, clickNow, TRACK_CLICK_TENANT_PER_WINDOW, TRACK_CLICK_WINDOW_MS)) {
+      sendJson(response, 200, { success: true });
+      return true;
     }
 
     if (tenantId) {

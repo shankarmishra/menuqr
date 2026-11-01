@@ -9,7 +9,9 @@ name: CI
 # Scope note: this does NOT run the ~50 backend integration tests that need a live Postgres
 # database and third-party credentials (payments, email, auth). Those still require a separate,
 # larger CI setup (a Postgres service container plus secret provisioning) and are not yet wired
-# in here.
+# in here. The backend tests listed below need no database: the privacy canary, cross-tenant
+# (IDOR), rate-limit, default-behaviour and backfill tests inject a fake pool with setPool()
+# (see backend/test/helpers) and run the real route code against it.
 
 on:
   pull_request:
@@ -65,6 +67,11 @@ jobs:
           test/pdf_menu_reconstruction.test.js
           test/item_sold_out.test.js
           test/item_tags.test.js
+          test/public_defaults.test.js
+          test/public_privacy_canary.test.js
+          test/owner_api_idor.test.js
+          test/track_click_rate_limit.test.js
+          test/backfill.test.js
 
       - name: Build frontend
         working-directory: frontend
