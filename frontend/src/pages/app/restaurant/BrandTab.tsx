@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Upload, Trash2, CheckCircle2, Sparkles } from 'lucide-react';
 import { AppearsOnChips, type SurfaceTarget } from './AppearsOnChips';
 import { uploadImage } from '../appStore';
+import { processLogoFile } from '../../../lib/logo/browserAdapter.ts';
+import type { LogoAnalysis } from '../../../lib/logo/types.ts';
+import { LogoMark } from '../../../components/brand/LogoMark.tsx';
 
 interface BrandTabProps {
   logoUrl?: string;
@@ -33,6 +36,7 @@ export const BrandTab: React.FC<BrandTabProps> = ({
 }) => {
   const [uploading, setUploading] = useState(false);
   const [logoIncludesName, setLogoIncludesName] = useState(false);
+  const [logoAnalysis, setLogoAnalysis] = useState<LogoAnalysis | null>(null);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,14 +44,35 @@ export const BrandTab: React.FC<BrandTabProps> = ({
 
     try {
       setUploading(true);
+      let targetBlob: Blob = file;
+
+      try {
+        const proc = await processLogoFile(file);
+        if (proc.ok) {
+          targetBlob = proc.mainBlob ?? proc.blob;
+          setLogoAnalysis(proc.analysis);
+        }
+      } catch {
+        targetBlob = file;
+      }
+
       const reader = new FileReader();
       reader.onload = async () => {
-        const base64 = reader.result as string;
-        const res = await uploadImage(base64, 'logos');
-        onUpdateLogo(res.url);
+        try {
+          const base64 = reader.result as string;
+          const res = await uploadImage(base64, 'logos', 1200);
+          onUpdateLogo(res.url);
+        } catch (uploadErr: any) {
+          alert('Failed to upload logo: ' + (uploadErr?.message || 'Unknown error'));
+        } finally {
+          setUploading(false);
+        }
+      };
+      reader.onerror = () => {
+        alert('Failed to read image file.');
         setUploading(false);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(targetBlob);
     } catch (err: any) {
       alert('Failed to upload logo: ' + (err.message || 'Unknown error'));
       setUploading(false);
@@ -78,14 +103,18 @@ export const BrandTab: React.FC<BrandTabProps> = ({
           <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-[#2a3832] bg-[#151c19] flex items-center justify-center p-3 relative group overflow-hidden shrink-0 shadow-inner">
             {logoUrl ? (
               <>
-                <img
-                  src={logoUrl}
-                  alt="Logo preview"
-                  className="max-w-full max-h-full object-contain filter drop-shadow-md"
+                <LogoMark
+                  logoUrl={logoUrl}
+                  analysis={logoAnalysis}
+                  size={88}
+                  className="filter drop-shadow-md"
                 />
                 <button
                   type="button"
-                  onClick={() => onUpdateLogo(null)}
+                  onClick={() => {
+                    onUpdateLogo(null);
+                    setLogoAnalysis(null);
+                  }}
                   className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-rose-400 font-semibold text-xs gap-1"
                   title="Remove logo"
                 >

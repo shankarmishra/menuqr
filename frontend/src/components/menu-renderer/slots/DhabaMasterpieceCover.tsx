@@ -2,6 +2,7 @@ import React from 'react';
 import { Phone, Globe, MessageCircle } from 'lucide-react';
 import { facebookUrl, firstPhone, instagramHandle, instagramUrl, phoneLinks, websiteLabel, websiteUrl } from '../../../utils/socialLinks.ts';
 import { fittedSize, splitRestaurantName } from './coverText.ts';
+import { LogoMark } from '../../brand/LogoMark.tsx';
 import type { SlotProps } from '../types.ts';
 
 /**
@@ -156,20 +157,9 @@ export const DhabaMasterpieceCover: React.FC<SlotProps> = ({ restaurant, categor
 
         {/* The restaurant's own logo when it has one; otherwise a generic chef illustration. The
             logo is contained, never cropped, on a round plate so a wide or tall logo still fits. */}
-        <div className="relative pointer-events-none z-10 -mb-5 sm:-mb-6" style={{ width: mascotWidth }}>
+        <div className="relative pointer-events-none z-10 -mb-5 sm:-mb-6 flex items-center justify-center" style={{ width: mascotWidth }}>
           {restaurant.logoUrl ? (
-            <div
-              className="mx-auto rounded-full bg-white shadow-[0_8px_16px_rgba(0,0,0,0.22)] flex items-center justify-center overflow-hidden"
-              style={{ width: mascotWidth, height: mascotWidth, padding: Math.round(mascotWidth * 0.1) }}
-            >
-              <img
-                src={restaurant.logoUrl}
-                alt={name}
-                className="max-w-full max-h-full object-contain"
-                loading="eager"
-                decoding="async"
-              />
-            </div>
+            <LogoMark logoUrl={restaurant.logoUrl} restaurantName={restaurant.name} size="lg" />
           ) : (
             <img
               src="/assets/dhaba-cover/chef_mascot.webp"

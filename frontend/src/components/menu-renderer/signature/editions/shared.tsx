@@ -15,6 +15,7 @@ import { DietMark, DishFlags, DishPrice } from '../../primitives/DishMeta.tsx';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
 import { parseItemPricing } from '../../../menu-builder/templates/shared/pricingUtils';
 import { facebookUrl, instagramHandle, instagramUrl, phoneLinks, websiteLabel, websiteUrl } from '../../../../utils/socialLinks.ts';
+import { LogoMark } from '../../../brand/LogoMark.tsx';
 import type { RenderCategory, RenderMenuItem, RenderRestaurant, SignatureProps } from '../../types.ts';
 
 export type EditionProps = SignatureProps;
@@ -234,14 +235,7 @@ export const BrandMark: React.FC<{
     data-testid="mq-cover-mark"
   >
     {restaurant.logoUrl ? (
-      <img
-        src={restaurant.logoUrl}
-        alt={restaurant.name}
-        width={size}
-        height={size}
-        loading="eager"
-        decoding="async"
-      />
+      <LogoMark logoUrl={restaurant.logoUrl} restaurantName={restaurant.name} size="sm" />
     ) : (
       <span className="mq-ed-mark-letters">{initials(restaurant.name)}</span>
     )}

@@ -13,6 +13,24 @@ import type { LogoAnalysis } from '../../lib/logo/types.ts';
 
 export type PresentationMode = 'plain' | 'plate' | 'mono';
 
+export type LogoSize = number | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+
+export const LOGO_SIZE_MAP: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', number> = {
+  xs: 32,
+  sm: 40,
+  md: 56,
+  lg: 72,
+  xl: 96,
+};
+
+export function resolveLogoSize(size?: LogoSize): number {
+  if (typeof size === 'number') return size;
+  if (typeof size === 'string' && size in LOGO_SIZE_MAP) {
+    return LOGO_SIZE_MAP[size as keyof typeof LOGO_SIZE_MAP];
+  }
+  return 72;
+}
+
 export interface LogoPresentationOptions {
   /** Surface/background colour behind the logo mark (hex, rgb, hsl, or CSS name). Default #ffffff. */
   surfaceColor?: string;

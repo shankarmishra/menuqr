@@ -1,5 +1,6 @@
 import { Phone } from 'lucide-react';
 import { firstDialNumber } from '../../utils/dialNumber';
+import { LogoMark } from '../../components/brand/LogoMark';
 
 type MenuComingSoonProps = {
   name: string;
@@ -23,13 +24,9 @@ export function MenuComingSoon({ name, tagline, logoUrl, phone, background, text
       style={{ backgroundColor: background, color: textColor }}
     >
       {logoUrl && (
-        <img
-          src={logoUrl}
-          alt={name}
-          className="mb-6 h-24 w-24 rounded-full bg-white object-contain p-2 shadow-lg"
-          loading="eager"
-          decoding="async"
-        />
+        <div className="mb-6">
+          <LogoMark logoUrl={logoUrl} restaurantName={name} size="lg" loading="eager" />
+        </div>
       )}
       <h1 className="text-3xl font-bold tracking-tight">{name}</h1>
       {tagline && <p className="mt-2 max-w-sm opacity-80">{tagline}</p>}

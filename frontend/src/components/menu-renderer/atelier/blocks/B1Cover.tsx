@@ -2,6 +2,7 @@ import React from 'react';
 import { splitRestaurantName, fittedSize } from '../../slots/coverText.ts';
 import { WaveDivider, CornerFlourish } from '../rangeen-art.tsx';
 import { phoneLinks, instagramUrl, websiteUrl } from '../../../../utils/socialLinks.ts';
+import { LogoMark } from '../../../brand/LogoMark.tsx';
 import type { RenderRestaurant } from '../../types.ts';
 
 export interface B1CoverProps {
@@ -36,11 +37,10 @@ export const B1Cover: React.FC<B1CoverProps> = ({ restaurant, onExplore }) => {
         {hasLogo && (
           <div className="atelier-cover-logo-wrapper">
             <div className="atelier-cover-logo-plate">
-              <img
-                src={restaurant.logoUrl!}
-                alt={restaurant.name}
-                className="atelier-cover-logo-img"
-                style={{ objectFit: 'contain' }}
+              <LogoMark
+                logoUrl={restaurant.logoUrl}
+                restaurantName={restaurant.name}
+                size="lg"
               />
             </div>
           </div>

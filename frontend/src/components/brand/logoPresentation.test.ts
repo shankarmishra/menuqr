@@ -6,6 +6,7 @@ import {
   choosePresentation,
   fitInCircle,
   getBrandInitials,
+  resolveLogoSize,
 } from './logoPresentation.ts';
 
 describe('logoPresentation: choosePresentation', () => {
@@ -159,5 +160,25 @@ describe('logoPresentation: getBrandInitials fallback lockup', () => {
   it('handles empty or blank names safely without throwing', () => {
     assert.equal(getBrandInitials(''), '');
     assert.equal(getBrandInitials('   '), '');
+  });
+});
+
+describe('LogoMark: resolveLogoSize tokens and props', () => {
+  it('maps standard size tokens to exact pixel dimensions', () => {
+    assert.equal(resolveLogoSize('xs'), 32);
+    assert.equal(resolveLogoSize('sm'), 40);
+    assert.equal(resolveLogoSize('md'), 56);
+    assert.equal(resolveLogoSize('lg'), 72);
+    assert.equal(resolveLogoSize('xl'), 96);
+  });
+
+  it('preserves numeric sizes directly', () => {
+    assert.equal(resolveLogoSize(64), 64);
+    assert.equal(resolveLogoSize(120), 120);
+  });
+
+  it('defaults to 72 when size is omitted or unknown', () => {
+    assert.equal(resolveLogoSize(undefined), 72);
+    assert.equal(resolveLogoSize('invalid' as any), 72);
   });
 });

@@ -81,13 +81,15 @@ import OnboardingShell, { type ShellStep } from './onboarding/OnboardingShell';
 import DishPhotosStep from './onboarding/steps/DishPhotosStep';
 import MenuTableEditor from './onboarding/steps/MenuTableEditor';
 import { OB, DISPLAY } from './onboarding/chrome';
+import { processLogoFile } from '../../lib/logo/browserAdapter.ts';
+import { LogoMark } from '../../components/brand/LogoMark.tsx';
 
 // Reads a file as a data URL, then runs it through the real optimize+storage
 // pipeline (sharp resize, AVIF/WebP variants, durable storage driver) instead
 // of holding a raw base64 blob in component state — that pipeline already
 // exists (appStore.uploadImage -> POST /api/app/upload-image) but nothing in
 // this wizard called it before.
-async function uploadImageFile(file: File, category: 'dishes' | 'logos' | 'covers'): Promise<string> {
+async function uploadImageFile(file: File | Blob, category: 'dishes' | 'logos' | 'covers'): Promise<string> {
   if (file.size > 5 * 1024 * 1024) {
     throw new Error('Image file size must be less than 5MB');
   }
@@ -144,7 +146,18 @@ function ImageSelector({
     setIsUploading(true);
     setUploadError(null);
     try {
-      const url = await uploadImageFile(file, category);
+      let uploadTarget: Blob = file;
+      if (category === 'logos') {
+        try {
+          const proc = await processLogoFile(file);
+          if (proc.ok) {
+            uploadTarget = proc.mainBlob ?? proc.blob;
+          }
+        } catch {
+          uploadTarget = file;
+        }
+      }
+      const url = await uploadImageFile(uploadTarget, category);
       onChange(url);
       setJustUploaded(true);
     } catch (err: any) {
@@ -248,29 +261,46 @@ function ImageSelector({
  * whether their PNG has a white box behind it, and sees that the cover is never blank without one
  * (the Editions set the initials in their own display face, via `editions/shared.tsx`'s BrandMark).
  */
-function BrandLockPreview({ logoUrl, name }: { logoUrl: string; name: string }) {
-  const initials = (name || 'MQ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word.charAt(0).toUpperCase())
-    .join('') || 'MQ';
-
+function BrandLockPreview({
+  logoUrl,
+  name,
+  originalLogoUrl,
+}: {
+  logoUrl: string;
+  name: string;
+  originalLogoUrl?: string | null;
+}) {
   return (
     <div className="flex flex-col items-center gap-2 rounded-xl border border-[#D4AF37]/15 bg-[#0E0C09] p-4">
-      <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#A3957E]">On your menu cover</span>
-      <div className="flex h-20 w-20 items-center justify-center rounded-full border border-[#D4AF37]/50 bg-[#141009] p-2.5 shadow-inner">
-        {logoUrl ? (
-          <img src={logoUrl} alt="" className="h-full w-full object-contain" decoding="async" />
-        ) : (
-          <span className="text-xl tracking-[0.12em] text-[#D4AF37]" style={{ fontFamily: DISPLAY }}>
-            {initials}
-          </span>
-        )}
-      </div>
+      <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#A3957E]">
+        {originalLogoUrl ? 'Logo Preview: Before & After' : 'On your menu cover'}
+      </span>
+      {originalLogoUrl ? (
+        <div className="flex items-center gap-4 my-1">
+          <div className="flex flex-col items-center">
+            <span className="text-[9px] font-mono text-[#A3957E] uppercase mb-1">Uploaded</span>
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-white/20 bg-white/5 p-2">
+              <img src={originalLogoUrl} alt="Original" className="h-full w-full object-contain" />
+            </div>
+          </div>
+          <span className="text-[#D4AF37] text-lg font-bold">&rarr;</span>
+          <div className="flex flex-col items-center">
+            <span className="text-[9px] font-mono text-emerald-400 uppercase mb-1 font-semibold">Processed (Transparent)</span>
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-emerald-400/50 bg-[#141009] p-2 shadow-inner">
+              <LogoMark logoUrl={logoUrl} restaurantName={name} size={48} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-[#D4AF37]/50 bg-[#141009] p-2.5 shadow-inner">
+          <LogoMark logoUrl={logoUrl} restaurantName={name} size={60} />
+        </div>
+      )}
       <p className="max-w-xs text-center text-[10px] leading-relaxed text-[#766A58]">
         {logoUrl
-          ? 'A transparent PNG sits best on the darker Editions — anything else shows its own background.'
+          ? (originalLogoUrl
+              ? 'Background automatically cut out and contrast verified for your menu surfaces.'
+              : 'A transparent PNG sits best on the darker Editions — anything else shows its own background.')
           : 'Without a logo your initials are set in the Edition’s display face, so the cover is never blank.'}
       </p>
     </div>
@@ -476,6 +506,8 @@ export default function OnboardingWizard() {
     categories: [],
     items: [],
   });
+
+  const [logoOriginalUrl, setLogoOriginalUrl] = useState<string | null>(null);
 
   const [studioSubTab, setStudioSubTab] = useState<'design' | 'cover' | 'layout' | 'brand'>('design');
   const [designCategory, setDesignCategory] = useState<string>('all');
@@ -931,7 +963,11 @@ export default function OnboardingWizard() {
                       )}
                     </div>
 
-                    <BrandLockPreview logoUrl={restaurantData.logoUrl} name={restaurantData.name} />
+                    <BrandLockPreview
+                      logoUrl={restaurantData.logoUrl}
+                      name={restaurantData.name}
+                      originalLogoUrl={logoOriginalUrl}
+                    />
 
                     {/* Brand Logo Section in Preloaded View */}
                     <div className="p-4 bg-[#231E18]/90 rounded-xl border border-[#D4AF37]/15 flex items-center justify-between gap-3 flex-wrap">
@@ -984,8 +1020,20 @@ export default function OnboardingWizard() {
                               if (!file) return;
                               setIsLogoUploading(true);
                               try {
-                                const url = await uploadImageFile(file, 'logos');
+                                let uploadFile: Blob = file;
+                                let origUrl: string | null = null;
+                                try {
+                                  const proc = await processLogoFile(file);
+                                  if (proc.ok) {
+                                    uploadFile = proc.mainBlob ?? proc.blob;
+                                    origUrl = URL.createObjectURL(file);
+                                  }
+                                } catch {
+                                  uploadFile = file;
+                                }
+                                const url = await uploadImageFile(uploadFile, 'logos');
                                 setRestaurantData((prev) => ({ ...prev, logoUrl: url }));
+                                if (origUrl) setLogoOriginalUrl(origUrl);
                                 setJustUploadedLogo(true);
                               } catch (err: any) {
                                 showToast('error', err?.message || 'Could not upload logo. Please try again.');
@@ -1054,7 +1102,11 @@ export default function OnboardingWizard() {
                           onChange={(val) => setRestaurantData((prev) => ({ ...prev, logoUrl: val }))}
                           placeholder="https://example.com/logo.png"
                         />
-                        <BrandLockPreview logoUrl={restaurantData.logoUrl} name={restaurantData.name} />
+                        <BrandLockPreview
+                          logoUrl={restaurantData.logoUrl}
+                          name={restaurantData.name}
+                          originalLogoUrl={logoOriginalUrl}
+                        />
                       </div>
                     </div>
                   </div>

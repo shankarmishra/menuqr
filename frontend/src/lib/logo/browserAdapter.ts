@@ -16,6 +16,8 @@ export type LogoProcessSuccess = {
   ok: true;
   /** The processed logo as a transparent PNG blob */
   blob: Blob;
+  /** Alias for blob: the processed logo as a transparent PNG blob */
+  mainBlob: Blob;
   /** The processed RGBA pixel buffer */
   image: RgbaImage;
   /** One-colour variants as PNG blobs, when requested and available */
@@ -205,6 +207,7 @@ export async function processLogoFile(
     return {
       ok: true,
       blob: mainBlob,
+      mainBlob,
       image: pipelineResult.image,
       variants: variantsBlobs,
       analysis: pipelineResult.analysis,

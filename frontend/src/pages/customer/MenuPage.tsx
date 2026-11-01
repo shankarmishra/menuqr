@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
+import { LogoMark } from '../../components/brand/LogoMark';
 import { InfoSheet } from '../../components/customer/InfoSheet';
 import { MenuLoadingSkeleton } from '../../components/customer/MenuLoadingSkeleton';
 import { FacebookIcon, InstagramIcon } from '../../components/customer/ContactIcons';
@@ -987,9 +988,14 @@ export default function MenuPage() {
         index={false} 
       />
       <header className="px-4 py-2.5 border-b border-white/10 flex flex-wrap items-center gap-x-3 gap-y-2 backdrop-blur-md relative z-30 bg-black/40">
-        <Link className="menu-wordmark flex items-center gap-2" to={`/menu/${slug}`} aria-label="MenusQR menu">
-          <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <Link className="menu-wordmark flex items-center gap-2" to={`/menu/${slug}`} aria-label="MenusQR menu">
+            <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
+          </Link>
+          {client?.logoUrl && (
+            <LogoMark logoUrl={client.logoUrl} restaurantName={client.businessName} size="sm" />
+          )}
+        </div>
         <div className="ml-auto flex items-center gap-2">
           {infoModel?.hasContent && (
             <button type="button" className="header-info-btn" onClick={openInfo} aria-haspopup="dialog" aria-label="Restaurant info and contact">

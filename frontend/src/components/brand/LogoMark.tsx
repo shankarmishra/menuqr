@@ -16,8 +16,12 @@ import {
   choosePresentation,
   fitInCircle,
   getBrandInitials,
+  resolveLogoSize,
+  type LogoSize,
   type PresentationMode,
 } from './logoPresentation.ts';
+
+export { resolveLogoSize, type LogoSize } from './logoPresentation.ts';
 
 export interface LogoMarkProps {
   /** Restaurant data holding name and optional logoUrl */
@@ -29,10 +33,12 @@ export interface LogoMarkProps {
   logoUrl?: string | null;
   /** Explicit restaurant name override */
   name?: string;
+  /** Explicit restaurant name override alias */
+  restaurantName?: string;
   /** Precomputed logo analysis from logo pipeline */
   analysis?: LogoAnalysis | null;
-  /** Desired bounding dimension (width/height or diameter) in pixels. Default 72. */
-  size?: number;
+  /** Desired bounding dimension (width/height or diameter) in pixels or size keyword ('xs'|'sm'|'md'|'lg'|'xl'). Default 72. */
+  size?: LogoSize;
   /** Background/surface colour behind the mark to evaluate contrast against */
   surfaceColor?: string;
   /** Presentation mode override */
@@ -55,8 +61,9 @@ export const LogoMark: React.FC<LogoMarkProps> = ({
   restaurant,
   logoUrl: propLogoUrl,
   name: propName,
+  restaurantName: propRestaurantName,
   analysis,
-  size = 72,
+  size: rawSize = 72,
   surfaceColor = '#ffffff',
   mode: explicitMode,
   allowedModes = ['plain', 'plate', 'mono'],
@@ -68,8 +75,9 @@ export const LogoMark: React.FC<LogoMarkProps> = ({
   style,
   onClick,
 }) => {
+  const size = resolveLogoSize(rawSize);
   const finalLogoUrl = propLogoUrl ?? restaurant?.logoUrl ?? null;
-  const restaurantName = propName ?? restaurant?.name ?? '';
+  const restaurantName = propRestaurantName ?? propName ?? restaurant?.name ?? '';
 
   const decision = useMemo(() => {
     if (!finalLogoUrl) return null;

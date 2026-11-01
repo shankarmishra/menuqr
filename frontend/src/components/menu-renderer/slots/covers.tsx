@@ -12,35 +12,10 @@ import React, { useState } from 'react';
 import { useMenuTheme } from '../MenuThemeProvider.tsx';
 import { SmartImage } from '../primitives/SmartImage.tsx';
 import { DhabaMasterpieceCover } from './DhabaMasterpieceCover.tsx';
+import { LogoMark } from '../../brand/LogoMark.tsx';
 import type { SlotProps } from '../types.ts';
 
 type CoverProps = SlotProps;
-
-
-/** Logo, sized by role and shaped per the owner's choice. */
-const BrandLogo: React.FC<{ size: number; onCover?: boolean }> = ({ size, onCover }) => {
-  const { brand, cover } = useMenuTheme();
-  const url = brand.logoUrl;
-  if (!url) return null;
-
-  const shapeClass =
-    brand.logoShape === 'circle' ? 'mq-logo-circle' : brand.logoShape === 'square' ? 'mq-logo-square' : '';
-
-  return (
-    <img
-      className={['mq-logo', shapeClass].filter(Boolean).join(' ')}
-      src={url}
-      alt=""
-      width={size}
-      height={size}
-      style={{ width: size, height: size }}
-      // The logo is the one thing worth fetching eagerly on a photo cover: it is above the fold
-      // and it is the brand.
-      loading={onCover || cover.showCoverPage ? 'eager' : 'lazy'}
-      decoding="async"
-    />
-  );
-};
 
 const Announcement: React.FC = () => {
   const { announcement } = useMenuTheme();
@@ -78,7 +53,7 @@ export const HeroPhotoCover: React.FC<CoverProps> = ({ restaurant, compact }) =>
     return (
       <header className="mq-cover" style={{ paddingBlock: compact ? 'var(--mq-space-8)' : 'var(--mq-space-14)' }}>
         <div className="mq-cover-content" style={{ alignItems: 'center', textAlign: 'center' }}>
-          <BrandLogo size={compact ? 48 : 68} />
+          <LogoMark logoUrl={restaurant.logoUrl} restaurantName={restaurant.name} size="lg" loading="eager" />
           <Announcement />
           <h1 className="mq-display mq-display-xl">{restaurant.name}</h1>
           {restaurant.tagline && <p className="mq-tagline">{restaurant.tagline}</p>}
@@ -103,7 +78,7 @@ export const HeroPhotoCover: React.FC<CoverProps> = ({ restaurant, compact }) =>
       </div>
       <div className="mq-cover-scrim" />
       <div className="mq-cover-content" style={{ justifyContent: 'flex-end', minHeight: 'inherit' }}>
-        <BrandLogo size={compact ? 48 : 68} onCover />
+        <LogoMark logoUrl={restaurant.logoUrl} restaurantName={restaurant.name} size="lg" loading="eager" />
         <Announcement />
         <h1 className="mq-display mq-display-xl">{restaurant.name}</h1>
         {restaurant.tagline && <p className="mq-tagline">{restaurant.tagline}</p>}
@@ -121,37 +96,10 @@ export const HeroPhotoCover: React.FC<CoverProps> = ({ restaurant, compact }) =>
  * deliberate, whereas an empty photo cover looks broken.
  */
 export const MonogramCover: React.FC<CoverProps> = ({ restaurant, compact }) => {
-  const { brand } = useMenuTheme();
-  const initials = restaurant.name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase();
-
   return (
     <header className="mq-cover" style={{ paddingBlock: compact ? 'var(--mq-space-8)' : 'var(--mq-space-16)' }}>
       <div className="mq-cover-content" style={{ alignItems: 'center', textAlign: 'center' }}>
-        {brand.logoUrl ? (
-          <BrandLogo size={compact ? 56 : 84} />
-        ) : (
-          <span
-            className="mq-display mq-display-lg"
-            aria-hidden="true"
-            style={{
-              display: 'grid',
-              placeItems: 'center',
-              width: compact ? 56 : 84,
-              height: compact ? 56 : 84,
-              borderRadius: '50%',
-              border: '1px solid var(--mq-color-accent)',
-              color: 'var(--mq-color-accent-text)',
-            }}
-          >
-            {initials}
-          </span>
-        )}
+        <LogoMark logoUrl={restaurant.logoUrl} restaurantName={restaurant.name} size="lg" />
         <Announcement />
         <h1 className="mq-display mq-display-lg">{restaurant.name}</h1>
         <hr className="mq-divider" style={{ width: '4rem', backgroundColor: 'var(--mq-color-accent)' }} />
@@ -173,6 +121,9 @@ const ClassicHeritageArchCover: React.FC<CoverProps> = ({ restaurant, categories
   return (
     <header className="mq-cover" style={{ paddingBlock: compact ? 'var(--mq-space-6)' : 'var(--mq-space-12)' }}>
       <div className="mq-cover-content" style={{ alignItems: 'center', textAlign: 'center' }}>
+        {restaurant.logoUrl && (
+          <LogoMark logoUrl={restaurant.logoUrl} restaurantName={restaurant.name} size="lg" loading="eager" />
+        )}
         <svg
           viewBox="0 0 200 120"
           width={compact ? 150 : 230}
@@ -229,7 +180,7 @@ export const HeritageArchCover: React.FC<CoverProps> = (props) => {
  *
  * Three real dish photographs plus the brand block. Pulls from the menu's own bestsellers, so a
  */
-export const BentoCollageCover: React.FC<CoverProps> = ({ restaurant, categories, compact }) => {
+export const BentoCollageCover: React.FC<CoverProps> = ({ restaurant, categories }) => {
   const photographed = categories
     .flatMap((category) => category.items)
     .filter((item) => Boolean(item.imageUrl));
@@ -243,7 +194,7 @@ export const BentoCollageCover: React.FC<CoverProps> = ({ restaurant, categories
     <header className="mq-cover" style={{ paddingBlock: 'var(--mq-space-5)' }}>
       <div className="mq-cover-content">
         <div className="mq-row" style={{ alignItems: 'center' }}>
-          <BrandLogo size={compact ? 44 : 60} />
+          <LogoMark logoUrl={restaurant.logoUrl} restaurantName={restaurant.name} size="lg" />
           <div className="mq-grow mq-stack">
             <Announcement />
             <h1 className="mq-display mq-display-md">{restaurant.name}</h1>

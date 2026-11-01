@@ -22,6 +22,8 @@ import {
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
 import PremiumIPhoneMockup from '../../components/marketing/PremiumIPhoneMockup';
 import { MenusQRBrand } from '../../components/brand/MenusQRBrand';
+import { LogoMark } from '../../components/brand/LogoMark';
+import { processLogoFile } from '../../lib/logo/browserAdapter';
 import { SHOWCASE_PRESETS, PRESETS, themeFromPresetId } from '../../design-system/presets';
 import { derivePalette } from '../../design-system/palette';
 import { useToast } from '../../components/feedback/ToastProvider';
@@ -102,6 +104,16 @@ export default function Appearance() {
 
     setUploadingLogo(true);
     try {
+      let targetBlob: Blob = file;
+      try {
+        const proc = await processLogoFile(file);
+        if (proc.ok) {
+          targetBlob = proc.mainBlob ?? proc.blob;
+        }
+      } catch {
+        targetBlob = file;
+      }
+
       const reader = new FileReader();
       reader.onload = async () => {
         try {
@@ -119,7 +131,7 @@ export default function Appearance() {
         showToast('error', 'Could not read image file.');
         setUploadingLogo(false);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(targetBlob);
     } catch {
       showToast('error', 'Failed to process logo image.');
       setUploadingLogo(false);
@@ -331,12 +343,11 @@ export default function Appearance() {
                 <span className="text-xs font-semibold text-[#849a90]">Brand Logo</span>
                 <div className="relative group w-24 h-24 rounded-2xl border-2 border-dashed border-[#2a3832] hover:border-[#e8783c] bg-[#151c19] flex items-center justify-center overflow-hidden transition-all shadow-inner">
                   {brandLogo ? (
-                    <img 
-                      src={brandLogo} 
-                      alt="Brand Logo" 
-                      className="w-full h-full object-contain p-2"
-                      decoding="async"
-                      loading="lazy"
+                    <LogoMark
+                      logoUrl={brandLogo}
+                      restaurantName={displayName}
+                      size={80}
+                      className="p-1"
                     />
                   ) : (
                     <div className="flex flex-col items-center text-center p-2 text-[#849a90]">
