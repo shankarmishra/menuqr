@@ -97,13 +97,13 @@ async function renderHtml(el: React.ReactElement): Promise<string> {
 }
 
 test('Unified Architecture: layoutVersion version gating & validation', () => {
-  // 1. Missing layoutVersion defaults to 1 (existing customer protection)
+  // 1. Missing layoutVersion defaults to 2 (standard modern unified experience)
   const legacyThemeInput = { ...FALLBACK_THEME };
   delete legacyThemeInput.layoutVersion;
   const coercedLegacy = coerceTheme(legacyThemeInput);
-  assert.equal(coercedLegacy.layoutVersion, 1, 'Missing layoutVersion must strictly default to 1');
+  assert.equal(coercedLegacy.layoutVersion, 2, 'Missing layoutVersion must default to 2');
 
-  // 2. Explicit layoutVersion: 1 stays 1
+  // 2. Explicit layoutVersion: 1 stays 1 (legacy backwards compatibility)
   const v1ThemeInput = { ...FALLBACK_THEME, layoutVersion: 1 };
   const coercedV1 = coerceTheme(v1ThemeInput);
   assert.equal(coercedV1.layoutVersion, 1, 'Explicit layoutVersion: 1 must remain 1');
@@ -117,15 +117,15 @@ test('Unified Architecture: layoutVersion version gating & validation', () => {
   const invalidResult = validateTheme({ ...FALLBACK_THEME, layoutVersion: 3 });
   assert.equal(invalidResult.ok, false);
   assert.ok(invalidResult.errors.some((e: string) => e.includes('layoutVersion must be 1 or 2')));
-  assert.equal(invalidResult.theme.layoutVersion, 1, 'Invalid layoutVersion coerces safely to 1');
+  assert.equal(invalidResult.theme.layoutVersion, 2, 'Invalid layoutVersion coerces safely to 2');
 
-  // 5. themeFromPresetId defaults to 1
+  // 5. themeFromPresetId defaults to 2
   const presetTheme = themeFromPresetId('royal-maharaja');
-  assert.equal(presetTheme.layoutVersion, 1, 'themeFromPresetId must default to layoutVersion: 1');
+  assert.equal(presetTheme.layoutVersion, 2, 'themeFromPresetId must default to layoutVersion: 2');
 
-  // 6. themeFromPresetId accepts explicit layoutVersion: 2
-  const presetThemeV2 = themeFromPresetId('royal-maharaja', { layoutVersion: 2 });
-  assert.equal(presetThemeV2.layoutVersion, 2, 'themeFromPresetId must accept explicit layoutVersion: 2');
+  // 6. themeFromPresetId accepts explicit layoutVersion: 1
+  const presetThemeV1 = themeFromPresetId('royal-maharaja', { layoutVersion: 1 });
+  assert.equal(presetThemeV1.layoutVersion, 1, 'themeFromPresetId must accept explicit layoutVersion: 1');
 });
 
 test('Unified Architecture: resolveTheme token integration', () => {

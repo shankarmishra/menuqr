@@ -476,7 +476,7 @@ export default function OnboardingWizard() {
         const safeTemplateId = isShowcase ? draft.restaurantData.templateId : DEFAULT_SHOWCASE_PRESET_ID;
         setCurrentStepIdx(draft.currentStepIdx);
         setRestaurantData({ ...draft.restaurantData, templateId: safeTemplateId });
-        setStudioTheme(isShowcase ? draft.studioTheme : themeFromPresetId(safeTemplateId));
+        setStudioTheme(isShowcase ? { ...draft.studioTheme, layoutVersion: (draft.studioTheme.layoutVersion === 1 ? 1 : 2) } : themeFromPresetId(safeTemplateId, { layoutVersion: 2 }));
         if (draft.restaurantData.name || draft.restaurantData.phone) setIsPreloaded(true);
       } else if (rawProfile) {
         const resolvedName = rawProfile.businessName || canonical?.displayName || '';
@@ -539,7 +539,7 @@ export default function OnboardingWizard() {
   const [customHexInput, setCustomHexInput] = useState('');
 
   const [studioTheme, setStudioTheme] = useState<MenuTheme>(() => {
-    return themeFromPresetId(DEFAULT_SHOWCASE_PRESET_ID);
+    return themeFromPresetId(DEFAULT_SHOWCASE_PRESET_ID, { layoutVersion: 2 });
   });
 
   const scrollToSection = (section: 'cover' | 'dishes') => {

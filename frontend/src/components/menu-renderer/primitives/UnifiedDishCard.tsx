@@ -76,7 +76,7 @@ export const UnifiedDishCard: React.FC<UnifiedDishCardProps> = ({
   // Entitlement check: ordering is strictly enabled ONLY when onAddToCart exists and plan is premium/authorized
   const canOrder = !readOnly && Boolean(cart.isPremium && cart.onAddToCart);
 
-  const pricedVariants = pricing.variants.filter((v) => v.price != null);
+  const pricedVariants = pricing.variants.filter((v) => v.price != null && Number(v.price) > 0);
   const hasVariants = pricedVariants.length > 0;
   const hasMultipleVariants = pricedVariants.length > 1;
 
@@ -210,7 +210,7 @@ export const UnifiedDishCard: React.FC<UnifiedDishCardProps> = ({
                 <span className="mq-price mq-unified-price">{pricedVariants[0].formattedPrice}</span>
               )
             ) : (
-              pricing.formattedBasePrice && (
+              pricing.formattedBasePrice && Number(pricing.basePrice) > 0 && (
                 <span className="mq-price mq-unified-price">{pricing.formattedBasePrice}</span>
               )
             )}

@@ -137,7 +137,7 @@ function pickSignatureId(value, fallback) {
 
 export const FALLBACK_THEME = {
   version: THEME_VERSION,
-  layoutVersion: 1,
+  layoutVersion: 2,
   presetId: 'the-reserve',
   mode: 'dark',
   brand: { seedColor: '#d4af37', logoUrl: null, logoShape: 'circle' },
@@ -171,7 +171,7 @@ export function coerceTheme(input, base = FALLBACK_THEME) {
 
   return {
     version: THEME_VERSION,
-    layoutVersion: raw.layoutVersion === 2 ? 2 : (base.layoutVersion === 2 ? 2 : 1),
+    layoutVersion: raw.layoutVersion === 1 ? 1 : (base.layoutVersion === 1 ? 1 : 2),
     presetId: pickPresetId(raw.presetId, base.presetId),
     mode: pick(raw.mode, MODES, base.mode),
     brand: {

@@ -782,7 +782,7 @@ export function getPreset(id: string | null | undefined): Preset {
 export function themeFromPreset(preset: Preset, overrides: Partial<MenuTheme> = {}): MenuTheme {
   return {
     version: THEME_VERSION,
-    layoutVersion: (overrides.layoutVersion === 2 ? 2 : 1),
+    layoutVersion: (overrides.layoutVersion === 1 ? 1 : 2),
     presetId: preset.id,
     mode: preset.mode,
     brand: { seedColor: preset.seedColor, logoUrl: null, logoShape: 'circle' },

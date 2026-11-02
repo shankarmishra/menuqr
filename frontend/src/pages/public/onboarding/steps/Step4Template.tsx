@@ -69,6 +69,8 @@ export default function Step4Template({
     });
   }, [categoryFilter, searchQuery]);
 
+  const effectiveTheme: MenuTheme | undefined = useMemo(() => (theme ? { ...theme, layoutVersion: (theme.layoutVersion === 1 ? 1 : 2) as 1 | 2 } : undefined), [theme]);
+
   const activePalette = useMemo(() => {
     return derivePalette(theme?.brand?.seedColor || activePreset.seedColor, activePreset.mode);
   }, [theme?.brand?.seedColor, activePreset]);
@@ -203,7 +205,7 @@ export default function Step4Template({
           viewportWidth={390}
           viewportHeight={844}
           scaleToFit={true}
-          theme={theme}
+          theme={effectiveTheme}
           presetId={selectedPresetId}
           palette={activePalette}
           badgeText={`${activePreset.label} Edition`}
@@ -213,7 +215,7 @@ export default function Step4Template({
           <div className="w-full h-full overflow-y-auto mq-showcase-preview-frame">
             <MenuTemplateRenderer
               templateId={selectedPresetId}
-              theme={theme}
+              theme={effectiveTheme}
               restaurant={{
                 name: restaurant.name || 'Your Restaurant',
                 tagline: restaurant.tagline,

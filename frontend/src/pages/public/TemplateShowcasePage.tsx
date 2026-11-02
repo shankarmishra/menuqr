@@ -127,7 +127,7 @@ export default function TemplateShowcasePage() {
   }, [step]);
 
   const layoutVersion =
-    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('layoutVersion') === '2' ? 2 : 1;
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('layoutVersion') === '1' ? 1 : 2;
 
   const preview = (
     <div
