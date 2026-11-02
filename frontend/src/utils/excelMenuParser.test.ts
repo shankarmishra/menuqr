@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import { parseImageUrl, parsePrice, parseDietType, getDemoMenuData } from './excelMenuParser.ts';
 
 describe('excelMenuParser: parseImageUrl', () => {
+  it('drops search-page links that are not photos', () => {
+    assert.equal(parseImageUrl('https://www.google.com/search?tbm=isch&q=%22Matar+Mushroom%22'), '');
+  });
+
   it('extracts standard web URLs', () => {
     const url = 'https://images.unsplash.com/photo-1567184109191-37a69f369f24?w=600';
     assert.equal(parseImageUrl(url), url);

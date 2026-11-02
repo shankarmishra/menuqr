@@ -775,6 +775,9 @@ export default function OnboardingWizard() {
       setUploadedFileName(file.name);
       setExcelSummary(parsed.summary);
       showToast('success', `Success! Extracted ${parsed.summary.totalDishes} dishes across ${parsed.summary.categoriesCount} categories with Half/Full prices.`);
+      if (parsed.summary.ignoredImageLinks) {
+        showToast('info', `${parsed.summary.ignoredImageLinks} image links in your sheet were search-page links (e.g. Google Images), not photos, so they were skipped and matched with stock photos. Use direct image links (.jpg/.webp) or upload photos in the next step.`);
+      }
     } catch (err: any) {
       showToast('error', err.message || 'Failed to parse spreadsheet. Please use our sample template format.');
     } finally {

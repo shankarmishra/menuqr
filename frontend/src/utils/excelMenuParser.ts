@@ -46,6 +46,8 @@ export interface ParseResult {
     vegCount: number;
     nonVegCount: number;
     dualPriceCount: number;
+    /** Image cells that held a search-results page (not a photo) and were ignored. */
+    ignoredImageLinks?: number;
   };
 }
 
@@ -238,6 +240,7 @@ export async function parseExcelMenuFile(file: File): Promise<ParseResult> {
   const categoryMap = new Map<string, ParsedCategory>();
   const parsedItems: ParsedMenuItem[] = [];
 
+  let ignoredImageLinks = 0;
   for (let r = 1; r < rawMatrix.length; r++) {
     const row = rawMatrix[r];
     if (!row || row.length === 0) continue;
@@ -281,7 +284,11 @@ export async function parseExcelMenuFile(file: File): Promise<ParseResult> {
       category: cat.id,
       dietType,
       available: true,
-      imageUrl: parseImageUrl(rowObj.imageUrl),
+      imageUrl: ((): string => {
+        const url = parseImageUrl(rowObj.imageUrl);
+        if (!url && cleanString(rowObj.imageUrl)) ignoredImageLinks += 1;
+        return url;
+      })(),
       isBestseller: parseFlag(rowObj.bestseller),
     });
   }
@@ -304,6 +311,7 @@ export async function parseExcelMenuFile(file: File): Promise<ParseResult> {
       vegCount,
       nonVegCount,
       dualPriceCount,
+      ignoredImageLinks,
     },
   };
 }
