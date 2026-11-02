@@ -233,6 +233,7 @@ export async function getFullPublicMenuData(tenantId) {
         // `applyLiveFlags` turns this into `soldOut` on every request.
         soldOutOn: i.metadata?.soldOutOn || null,
         image: i.image_url || '',
+        imageUrl: i.image_url || '',
         // Owner-set photo focal point, stored in the previously-unused `metadata` JSONB column
         // (no migration needed). Absent for the common case of no focal point set, in which
         // case the renderer defaults to a centred crop.
