@@ -22,8 +22,18 @@ export function getCsrfToken(): string | null {
   return null;
 }
 
-export async function ensureCsrfToken(): Promise<string | null> {
-  const existing = getCsrfToken();
+/**
+ * Drop any cached/cookie token and fetch a fresh one bound to the CURRENT session. A token minted
+ * for an earlier session (re-login, rotated cookie, 15-day cookie left over) is rejected with
+ * "Invalid or missing CSRF token"; callers retry once with the token this returns.
+ */
+export async function refreshCsrfToken(): Promise<string | null> {
+  activeCsrfToken = null;
+  return ensureCsrfToken({ force: true });
+}
+
+export async function ensureCsrfToken(options: { force?: boolean } = {}): Promise<string | null> {
+  const existing = options.force ? null : getCsrfToken();
   if (existing) return existing;
 
   try {

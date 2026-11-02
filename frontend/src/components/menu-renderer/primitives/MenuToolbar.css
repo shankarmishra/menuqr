@@ -47,11 +47,16 @@
   flex-shrink: 0;
 }
 
-.mq-search-input {
+/* Scoped under the wrapper: menu-renderer.css still has a legacy bare `.mq-search-input`
+ * (own border, pill radius, padding-inline) that otherwise wins by source order and pushes the
+ * text under the search icon with a doubled border. */
+.mq-search-wrapper .mq-search-input {
   width: 100%;
   height: 44px;
+  min-height: 44px;
   padding: 0 40px 0 42px;
   border: none;
+  border-radius: 0;
   background: transparent;
   color: var(--mq-color-text, #111827);
   font-family: var(--mq-font-body, inherit);
@@ -60,7 +65,7 @@
   box-sizing: border-box;
 }
 
-.mq-search-input::placeholder {
+.mq-search-wrapper .mq-search-input::placeholder {
   color: var(--mq-color-text-muted, #9ca3af);
   opacity: 0.85;
 }

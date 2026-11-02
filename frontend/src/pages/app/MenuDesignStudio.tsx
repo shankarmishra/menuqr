@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 
 import MenuRenderer from '../../components/menu-renderer/MenuRenderer';
+import { MenuCartContext } from '../../components/menu-builder/templates/shared/MenuCartContext';
 import { FocalPointPicker } from '../../components/menu-renderer/primitives/FocalPointPicker';
 import PhonePreviewFrame from '../../components/preview/PhonePreviewFrame';
 import { useToast } from '../../components/feedback/ToastProvider';
@@ -574,11 +575,10 @@ export default function MenuDesignStudio() {
                   ref={phoneScrollRef}
                   className="w-full h-full overflow-y-auto mq-showcase-preview-frame"
                 >
-                  <MenuRenderer
+                  <StudioPreviewMenu
                     theme={theme}
                     restaurant={restaurant}
                     categories={previewCategories}
-                    compact={false}
                   />
                 </div>
               </PhonePreviewFrame>
@@ -589,11 +589,10 @@ export default function MenuDesignStudio() {
                 ref={phoneScrollRef}
                 className="w-full h-[620px] rounded-[20px] overflow-y-auto mq-showcase-preview-frame"
               >
-                <MenuRenderer
+                <StudioPreviewMenu
                   theme={theme}
                   restaurant={restaurant}
                   categories={previewCategories}
-                  compact={false}
                 />
               </div>
             </div>
@@ -629,16 +628,42 @@ export default function MenuDesignStudio() {
             </button>
           </div>
           <div className="flex-1 max-w-5xl w-full mx-auto mt-4 overflow-y-auto rounded-2xl border border-white/15 bg-black/50 shadow-2xl mq-showcase-preview-frame p-2 sm:p-4">
-            <MenuRenderer
+            <StudioPreviewMenu
               theme={theme}
               restaurant={restaurant}
               categories={previewCategories}
-              compact={false}
             />
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * The customer menu shows ordering controls (+ ADD, quantity stepper) through MenuCartContext. The
+ * studio preview used to render MenuRenderer with no cart context, so its dish cards had no ADD
+ * button and did not match the live menu. This gives the mockup an in-memory cart so it looks and
+ * behaves like the real thing; nothing is sent anywhere.
+ */
+function StudioPreviewMenu(props: React.ComponentProps<typeof MenuRenderer>) {
+  const [qty, setQty] = useState<Record<string, number>>({});
+  const key = (id: string, variant?: string) => (variant ? `${id}::${variant}` : id);
+  const cart = useMemo(
+    () => ({
+      isPremium: true,
+      onAddToCart: (item: { id: string }, _price?: string, variant?: string) =>
+        setQty((prev) => ({ ...prev, [key(item.id, variant)]: (prev[key(item.id, variant)] ?? 0) + 1 })),
+      onRemoveFromCart: (itemId: string, variant?: string) =>
+        setQty((prev) => ({ ...prev, [key(itemId, variant)]: Math.max(0, (prev[key(itemId, variant)] ?? 0) - 1) })),
+      getItemQuantity: (itemId: string, variant?: string) => qty[key(itemId, variant)] ?? 0,
+    }),
+    [qty]
+  );
+  return (
+    <MenuCartContext.Provider value={cart}>
+      <MenuRenderer {...props} />
+    </MenuCartContext.Provider>
   );
 }
 

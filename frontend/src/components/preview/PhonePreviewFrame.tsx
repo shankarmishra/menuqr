@@ -269,7 +269,7 @@ export default function PhonePreviewFrame({
               <div className="flex items-center gap-1.5 pl-0.5">
                 <span className="font-semibold tracking-tight">{time}</span>
                 {badgeText && (
-                  <span className="hidden sm:inline-block text-[9px] px-1.5 py-0.2 rounded-full bg-white/20 font-bold uppercase tracking-wider backdrop-blur-xs">
+                  <span className="hidden sm:inline-block whitespace-nowrap overflow-hidden text-ellipsis max-w-[84px] text-[9px] px-1.5 py-0.2 rounded-full bg-white/20 font-bold uppercase tracking-wider backdrop-blur-xs">
                     {badgeText}
                   </span>
                 )}

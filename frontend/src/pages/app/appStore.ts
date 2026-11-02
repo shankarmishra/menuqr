@@ -1,4 +1,4 @@
-import { ensureCsrfToken } from '../../utils/csrf';
+import { ensureCsrfToken, refreshCsrfToken } from '../../utils/csrf';
 
 import { parseApiResponse } from '../../utils/api';
 
@@ -35,25 +35,31 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const authToken = getStoredAuthToken();
   const authHeaders: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
-  try {
-    response = await fetch(`${apiBaseUrl}/api/app${path}`, {
+  const send = (csrf: Record<string, string>) =>
+    fetch(`${apiBaseUrl}/api/app${path}`, {
       ...init,
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         ...authHeaders,
-        ...csrfHeaders,
+        ...csrf,
         ...init?.headers,
       },
     });
 
+  try {
+    response = await send(csrfHeaders);
+    // A stale CSRF token (new login, rotated session) is the one 403 worth a silent retry.
+    if (isStateChanging && response.status === 403) {
+      const body = await response.clone().json().catch(() => null);
+      if (typeof body?.error === 'string' && /csrf/i.test(body.error)) {
+        const fresh = await refreshCsrfToken();
+        if (fresh) response = await send({ 'X-CSRF-Token': fresh });
+      }
+    }
   } catch {
-
     throw new Error('We could not reach MenusQR. Check your connection and try again.');
-
   }
-
-
 
   if (response.status === 401) {
 
