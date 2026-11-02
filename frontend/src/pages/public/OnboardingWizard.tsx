@@ -766,7 +766,8 @@ export default function OnboardingWizard() {
     setIsParsingExcel(true);
     try {
       const parsed = await parseExcelMenuFile(file);
-      const itemsWithPhotos = await resolveMissingPhotos(parsed.items, parsed.categories);
+      // Photos come only from the spreadsheet's own image links (no stock-photo substitution).
+      const itemsWithPhotos = parsed.items;
       setRestaurantData((prev) => ({
         ...prev,
         categories: parsed.categories,
@@ -776,7 +777,7 @@ export default function OnboardingWizard() {
       setExcelSummary(parsed.summary);
       showToast('success', `Success! Extracted ${parsed.summary.totalDishes} dishes across ${parsed.summary.categoriesCount} categories with Half/Full prices.`);
       if (parsed.summary.ignoredImageLinks) {
-        showToast('info', `${parsed.summary.ignoredImageLinks} image links in your sheet were search-page links (e.g. Google Images), not photos, so they were skipped and matched with stock photos. Use direct image links (.jpg/.webp) or upload photos in the next step.`);
+        showToast('info', `${parsed.summary.ignoredImageLinks} image links in your sheet were search-page links (e.g. Google Images), not photos, so they were skipped. Use direct image links (.jpg/.webp) in the sheet, or upload photos in the next step.`);
       }
     } catch (err: any) {
       showToast('error', err.message || 'Failed to parse spreadsheet. Please use our sample template format.');
@@ -798,8 +799,6 @@ export default function OnboardingWizard() {
     setExcelSummary(demo.summary);
     showToast('success', 'Loaded authentic demo menu with Starters, Mains, Breads, Beverages and Half/Full pricing.');
 
-    const withPhotos = await resolveMissingPhotos(demo.items, demo.categories);
-    setRestaurantData((prev) => ({ ...prev, items: withPhotos }));
   };
 
   // Download Sample Template

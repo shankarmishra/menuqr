@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { queryPortable } from './db.js';
 import { apiError } from './utils.js';
-import { resolveDishImage } from './culinaryImageService.js';
 
 // A search-results page (e.g. google.com/search?tbm=isch&q=...) is not an image file; stored as a
 // dish photo it never loads. Treat it as "no image" so the stock-photo fallback applies.
@@ -284,16 +283,14 @@ export async function executeImportTransaction(client, tenantId, menuId, parsedC
       
       let itemId;
       const pricingType = item.pricingType || (item.variants?.length > 0 ? 'variants' : 'single');
-      // The PDF import path has always photographed every dish via resolveDishImage; the Excel
-      // path never did, so a spreadsheet with no "image" column produced a menu with zero
-      // photos. Only fills a gap — an image column in the sheet always wins.
-      const finalImageUrl =
-        [item.imageUrl, item.image, item.image_url].find(isUsableImageUrl) || resolveDishImage(item.name, cat.name, [], 0, tenantId);
-      
+      // Only a photo the spreadsheet itself supplies is used. No stock-photo substitution: a dish
+      // without a usable link stays photo-less (and on update keeps the photo it already has).
+      const finalImageUrl = [item.imageUrl, item.image, item.image_url].find(isUsableImageUrl) || null;
+
       if (existingItem && mode === 'update') {
         itemId = existingItem.id;
         await queryPortable(client,
-          'UPDATE menu_items SET category_id = ?, name = ?, description = ?, price = ?, half_price = ?, full_price = ?, image_url = ?, diet_type = ?, is_available = ?, pricing_type = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
+          'UPDATE menu_items SET category_id = ?, name = ?, description = ?, price = ?, half_price = ?, full_price = ?, image_url = COALESCE(?, image_url), diet_type = ?, is_available = ?, pricing_type = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
           [categoryId, item.name, item.description || null, item.price || 0, item.halfPrice || null, item.fullPrice || null, finalImageUrl, item.dietType || 'veg', item.available !== false, pricingType, itemId, tenantId]
         );
         itemsUpdated++;
