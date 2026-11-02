@@ -146,7 +146,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 32px;
+  min-height: 44px;
 }
 
 .mq-unified-price {
@@ -190,7 +190,7 @@
   justify-content: flex-end;
   margin-left: auto;
   flex-shrink: 0;
-  min-height: 32px;
+  min-height: 44px;
 }
 
 /* ADD Button: Matching Reference Screenshot (+ ADD red pill) */
@@ -200,7 +200,7 @@
   justify-content: center;
   gap: 4px;
   min-width: 76px;
-  height: 32px;
+  height: 44px;
   padding: 0 14px;
   background-color: var(--mq-card-btn-bg, #b91c1c);
   color: var(--mq-card-btn-text, #ffffff);
@@ -233,7 +233,7 @@
   align-items: center;
   justify-content: center;
   min-width: 84px;
-  height: 32px;
+  height: 44px;
   background-color: var(--mq-card-btn-bg, #b91c1c);
   color: var(--mq-card-btn-text, #ffffff);
   border-radius: var(--mq-radius-sm, 8px);
