@@ -368,7 +368,7 @@ function PublicAppRoutes() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AppDashboard />} />
           <Route path="menu" element={<AppMenu />} />
-          <Route path="appearance" element={<FeatureGate capability="menu_management"><AppAppearance /></FeatureGate>} />
+          <Route path="appearance" element={<AppAppearance />} />
           <Route path="restaurant" element={<AppRestaurant />} />
           <Route path="analytics" element={<FeatureGate capability="analytics"><AppAnalytics /></FeatureGate>} />
           <Route path="feedback" element={<AppFeedback />} />
