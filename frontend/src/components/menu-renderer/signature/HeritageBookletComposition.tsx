@@ -18,6 +18,7 @@ import { useMenuTheme } from '../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../useMenuFilters.ts';
 import { DietMark, DishFlags, DishPrice } from '../primitives/DishMeta.tsx';
 import { SmartImage } from '../primitives/SmartImage.tsx';
+import { UnifiedDishCard } from '../primitives/UnifiedDishCard.tsx';
 import { EmptyResults, MenuToolbar } from '../primitives/MenuToolbar.tsx';
 import { parseItemPricing } from '../../menu-builder/templates/shared/pricingUtils';
 import type { RenderCategory, SignatureProps } from '../types.ts';
@@ -33,6 +34,7 @@ const Chapter: React.FC<{ category: RenderCategory; index: number; readOnly?: bo
   index,
   readOnly,
 }) => {
+  const tokens = useMenuTheme();
   const hero = chapterHeroImage(category);
   const flipped = index % 2 === 1;
 
@@ -59,7 +61,19 @@ const Chapter: React.FC<{ category: RenderCategory; index: number; readOnly?: bo
       </div>
 
       <div className="mq-sig-chapter-list">
-        {category.items.map((item) => {
+        {category.items.map((item, itemIdx) => {
+          if (tokens.layoutVersion === 2) {
+            return (
+              <UnifiedDishCard
+                key={item.id}
+                item={item}
+                index={itemIdx}
+                readOnly={readOnly}
+                className="mq-card-booklet"
+              />
+            );
+          }
+
           const pricing = parseItemPricing(item as Parameters<typeof parseItemPricing>[0]);
           const description = (pricing.cleanDescription ?? item.description ?? '').trim();
 

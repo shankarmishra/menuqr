@@ -126,6 +126,7 @@ function pickSignatureId(
 
 export const FALLBACK_THEME: MenuTheme = {
   version: THEME_VERSION,
+  layoutVersion: 1,
   presetId: 'the-reserve',
   mode: 'dark',
   brand: { seedColor: DEFAULT_SEED.toLowerCase(), logoUrl: null, logoShape: 'circle' },
@@ -162,6 +163,7 @@ export function coerceTheme(input: unknown, base: MenuTheme = FALLBACK_THEME): M
 
   return {
     version: THEME_VERSION,
+    layoutVersion: (raw.layoutVersion === 2 ? 2 : (base.layoutVersion === 2 ? 2 : 1)) as 1 | 2,
     presetId: pickPresetId(raw.presetId, base.presetId),
     mode: pick(raw.mode, MODES, base.mode),
     brand: {
@@ -218,6 +220,10 @@ export function validateTheme(input: unknown): ThemeValidationResult {
 
   if (raw.version !== THEME_VERSION) {
     errors.push(`version must be ${THEME_VERSION}, received ${JSON.stringify(raw.version)}`);
+  }
+
+  if (raw.layoutVersion != null && raw.layoutVersion !== 1 && raw.layoutVersion !== 2) {
+    errors.push(`layoutVersion must be 1 or 2, received ${JSON.stringify(raw.layoutVersion)}`);
   }
 
   const brand = (raw.brand ?? {}) as Record<string, unknown>;

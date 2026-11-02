@@ -27,7 +27,7 @@ import {
   Utensils,
 } from 'lucide-react';
 import { DEMO_RESTAURANT } from '../../data/menuTemplates';
-import { SHOWCASE_PRESETS, type Preset, type PresetCategory } from '../../design-system/presets';
+import { PRESETS, SHOWCASE_PRESETS, type Preset, type PresetCategory } from '../../design-system/presets';
 import { derivePalette } from '../../design-system/palette';
 import { FONT_PAIRINGS } from '../../design-system/fonts';
 import MenuTemplateRenderer from '../../components/menu-builder/MenuTemplateRenderer';
@@ -55,14 +55,26 @@ const CATEGORY_LABELS: Partial<Record<PresetCategory, string>> = {
 function initialPresetId(): string {
   if (typeof window === 'undefined') return SHOWCASE_PRESETS[0]?.id ?? '';
   const requested = new URLSearchParams(window.location.search).get('preset');
-  if (requested && SHOWCASE_PRESETS.some((preset) => preset.id === requested)) return requested;
+  if (requested && PRESETS.some((preset) => preset.id === requested)) return requested;
   return SHOWCASE_PRESETS[0]?.id ?? '';
+}
+
+function initialViewport(): Viewport {
+  if (typeof window === 'undefined') return 'phone';
+  const param = new URLSearchParams(window.location.search).get('viewport');
+  if (param === 'desktop' || param === 'tablet') return param;
+  return 'phone';
+}
+
+function initialFullBleed(): boolean {
+  if (typeof window === 'undefined') return false;
+  return new URLSearchParams(window.location.search).get('fullBleed') === '1';
 }
 
 export default function TemplateShowcasePage() {
   const [selectedId, setSelectedId] = useState<string>(initialPresetId);
-  const [viewport, setViewport] = useState<Viewport>('phone');
-  const [isFullBleed, setIsFullBleed] = useState(false);
+  const [viewport, setViewport] = useState<Viewport>(initialViewport);
+  const [isFullBleed, setIsFullBleed] = useState(initialFullBleed);
   const [searchQuery, setSearchQuery] = useState('');
 
   const filtered = useMemo(() => {
@@ -77,7 +89,7 @@ export default function TemplateShowcasePage() {
   }, [searchQuery]);
 
   const current = useMemo<Preset>(
-    () => SHOWCASE_PRESETS.find((preset) => preset.id === selectedId) ?? SHOWCASE_PRESETS[0],
+    () => PRESETS.find((preset) => preset.id === selectedId) ?? SHOWCASE_PRESETS[0],
     [selectedId]
   );
 
@@ -114,6 +126,9 @@ export default function TemplateShowcasePage() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [step]);
 
+  const layoutVersion =
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('layoutVersion') === '2' ? 2 : 1;
+
   const preview = (
     <div
       className="mx-auto h-full overflow-y-auto overflow-x-hidden shadow-2xl mq-showcase-preview-frame"
@@ -124,11 +139,12 @@ export default function TemplateShowcasePage() {
       }}
     >
       <MenuTemplateRenderer
-        key={`${current.id}-${viewport}-${isFullBleed}`}
+        key={`${current.id}-${viewport}-${isFullBleed}-${layoutVersion}`}
         templateId={current.id}
         restaurant={DEMO_RESTAURANT}
         categories={DEMO_RESTAURANT.categories}
         items={DEMO_RESTAURANT.items}
+        theme={layoutVersion === 2 ? { layoutVersion: 2 } : undefined}
       />
     </div>
   );

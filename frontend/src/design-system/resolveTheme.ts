@@ -130,6 +130,7 @@ export function resolveTheme(theme: MenuTheme): ThemeTokens {
   cssVariables[`${TOKEN_PREFIX}-color-on-cover-muted`] = 'rgba(255, 255, 255, 0.78)';
 
   return {
+    layoutVersion: (theme.layoutVersion === 2 ? 2 : 1) as 1 | 2,
     presetId: theme.presetId,
     mode: theme.mode,
     palette,

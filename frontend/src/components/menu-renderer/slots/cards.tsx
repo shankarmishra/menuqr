@@ -12,6 +12,8 @@
 import React from 'react';
 import { DietMark, DishFlags, DishPrice } from '../primitives/DishMeta.tsx';
 import { SmartImage } from '../primitives/SmartImage.tsx';
+import { useMenuTheme } from '../MenuThemeProvider.tsx';
+import { UnifiedDishCard } from '../primitives/UnifiedDishCard.tsx';
 import { useMenuCart } from '../../menu-builder/templates/shared/MenuCartContext';
 import { parseItemPricing } from '../../menu-builder/templates/shared/pricingUtils';
 import type { DishCardSlot } from '../../../design-system/theme.types.ts';
@@ -64,7 +66,12 @@ export const DISH_CARD_CONTAINER: Record<DishCardSlot, React.CSSProperties> = {
  * The highest-converting layout when the client has real photography, and the worst when they
  * do not, which is why the photo library work in Phase 3 pairs with it.
  */
-export const MagazineCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
+export const MagazineCard: React.FC<DishCardProps> = (props) => {
+  const tokens = useMenuTheme();
+  if (tokens.layoutVersion === 2) {
+    return <UnifiedDishCard {...props} />;
+  }
+  const { item, readOnly } = props;
   const description = dishDescription(item);
   const cart = useMenuCart();
 
@@ -112,7 +119,12 @@ export const MagazineCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
  * The classic fine-dining form. Photographs are reduced to a small thumbnail because at this
  * price point the typography is the product; a large photo actively cheapens it.
  */
-export const MichelinLeaderCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
+export const MichelinLeaderCard: React.FC<DishCardProps> = (props) => {
+  const tokens = useMenuTheme();
+  if (tokens.layoutVersion === 2) {
+    return <UnifiedDishCard {...props} />;
+  }
+  const { item, readOnly } = props;
   const description = dishDescription(item);
   const cart = useMenuCart();
 
@@ -180,7 +192,12 @@ export const MichelinLeaderCard: React.FC<DishCardProps> = ({ item, readOnly }) 
  * for a price. Dropping images here is the point, not a compromise: it is what makes a long menu
  * usable and fast on mobile data.
  */
-export const CompactRowCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
+export const CompactRowCard: React.FC<DishCardProps> = (props) => {
+  const tokens = useMenuTheme();
+  if (tokens.layoutVersion === 2) {
+    return <UnifiedDishCard {...props} />;
+  }
+  const { item, readOnly } = props;
   const cart = useMenuCart();
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -213,7 +230,12 @@ export const CompactRowCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
   );
 };
 
-export const BentoTileCard: React.FC<DishCardProps> = ({ item, readOnly }) => {
+export const BentoTileCard: React.FC<DishCardProps> = (props) => {
+  const tokens = useMenuTheme();
+  if (tokens.layoutVersion === 2) {
+    return <UnifiedDishCard {...props} />;
+  }
+  const { item, readOnly } = props;
   const cart = useMenuCart();
 
   const handleCardClick = (e: React.MouseEvent) => {

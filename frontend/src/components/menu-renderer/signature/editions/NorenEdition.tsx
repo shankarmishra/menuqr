@@ -21,6 +21,7 @@ import React from 'react';
 import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
+import { UnifiedDishCard } from '../../primitives/UnifiedDishCard.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
 import { CapsulePillsNav } from '../../slots/navs.tsx';
 import { Badge, DietMark, DishPrice } from '../../primitives/DishMeta.tsx';
@@ -341,7 +342,20 @@ export const NorenEdition: React.FC<EditionProps> = ({
                 </header>
 
                 <ul className="mq-ed-noren-list">
-                  {category.items.map((item) => {
+                  {category.items.map((item, itemIdx) => {
+                    if (tokens.layoutVersion === 2) {
+                      return (
+                        <UnifiedDishCard
+                          key={item.id}
+                          item={item}
+                          index={itemIdx}
+                          compact={compact}
+                          readOnly={readOnly}
+                          className="mq-card-noren"
+                        />
+                      );
+                    }
+
                     const description = cleanDescription(item);
                     return (
                       <li key={item.id} className="mq-ed-noren-row">

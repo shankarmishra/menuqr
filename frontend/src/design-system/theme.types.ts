@@ -129,6 +129,13 @@ export const CENTRE_FOCAL: FocalPoint = { x: 0.5, y: 0.5 };
 export type MenuTheme = {
   version: typeof THEME_VERSION;
 
+  /**
+   * Layout Engine Generation:
+   *   1 = Legacy baseline presentation (default for all existing stored customer menus)
+   *   2 = Unified world-class split-row experience (modern opt-in)
+   */
+  layoutVersion: 1 | 2;
+
   /** Which preset this started from. Used for analytics and for "reset to preset". */
   presetId: string;
 
@@ -180,6 +187,7 @@ export type ResolvedTypography = {
 };
 
 export type ThemeTokens = {
+  layoutVersion: 1 | 2;
   presetId: string;
   mode: PaletteMode;
   palette: Palette;

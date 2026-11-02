@@ -16,6 +16,7 @@ import React from 'react';
 import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
+import { UnifiedDishCard } from '../../primitives/UnifiedDishCard.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
 import { CapsulePillsNav } from '../../slots/navs.tsx';
 import { DietMark, DishPrice } from '../../primitives/DishMeta.tsx';
@@ -606,9 +607,21 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
               </div>
 
               <div className="mq-ed-noir-list">
-                {category.items.map((item) => (
-                  <Leader key={item.id} item={item} readOnly={readOnly} showFlags={!compact} />
-                ))}
+                {category.items.map((item, itemIdx) => {
+                  if (tokens.layoutVersion === 2) {
+                    return (
+                      <UnifiedDishCard
+                        key={item.id}
+                        item={item}
+                        index={itemIdx}
+                        readOnly={readOnly}
+                        compact={compact}
+                        className="mq-card-luxury"
+                      />
+                    );
+                  }
+                  return <Leader key={item.id} item={item} readOnly={readOnly} showFlags={!compact} />;
+                })}
               </div>
             </section>
           ))

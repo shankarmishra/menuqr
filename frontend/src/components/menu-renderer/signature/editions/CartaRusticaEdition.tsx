@@ -17,6 +17,7 @@ import React, { useMemo } from 'react';
 import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
+import { UnifiedDishCard } from '../../primitives/UnifiedDishCard.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
 import { CapsulePillsNav } from '../../slots/navs.tsx';
 import { DietMark, DishFlags, DishPrice } from '../../primitives/DishMeta.tsx';
@@ -430,7 +431,20 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
 
                     {/* Dish rows with Anti-Squash Architecture */}
                     <div className="mq-ed-carta-list">
-                      {category.items.map((item) => {
+                      {category.items.map((item, itemIdx) => {
+                        if (tokens.layoutVersion === 2) {
+                          return (
+                            <UnifiedDishCard
+                              key={item.id}
+                              item={item}
+                              index={itemIdx}
+                              compact={compact}
+                              readOnly={readOnly}
+                              className="mq-card-carta"
+                            />
+                          );
+                        }
+
                         const description = cleanDescription(item);
                         return (
                           <article key={item.id} className="mq-ed-carta-row">

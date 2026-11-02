@@ -77,7 +77,7 @@ const MenuBody: React.FC<Omit<MenuRendererProps, 'theme' | 'className'>> = ({
     compact,
   };
 
-  const itemContainerStyle = DISH_CARD_CONTAINER[tokens.slots.dishCard];
+  const itemContainerStyle = tokens.layoutVersion === 2 ? { display: 'grid', gap: 'var(--mq-space-3)' } : DISH_CARD_CONTAINER[tokens.slots.dishCard];
   const usesSidebar = tokens.slots.nav === 'sidebar-index';
 
   return (

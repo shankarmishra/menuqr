@@ -1,0 +1,833 @@
+/**
+ * MENUQR Menu Renderer — UnifiedDishCard Styles
+ *
+ * Scoped styles for the Unified Split-Row Dish Card under layoutVersion: 2.
+ * Matches the reference design:
+ * - Rounded card container with subtle shadow & border
+ * - Left column: DietMark, Dish Name, soft-tinted Badges, Description, Bottom Row (Price + ADD button)
+ * - Right column: Compact, clean 1:1 squircle food thumbnail (completely unobstructed)
+ * - Elastic no-image layout: Right column omitted, left column occupies 100% card width
+ */
+
+.mq-unified-dish-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: var(--mq-space-3, 14px);
+  padding: var(--mq-space-3, 14px) var(--mq-space-4, 16px);
+  background-color: var(--mq-color-surface, #ffffff);
+  border: 1px solid var(--mq-color-border, rgba(0, 0, 0, 0.08));
+  border-radius: var(--mq-radius-lg, 16px);
+  box-shadow: var(--mq-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+  position: relative;
+  overflow: visible;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 130px;
+}
+
+@media (hover: hover) {
+  .mq-unified-dish-card:hover {
+    box-shadow: var(--mq-shadow-md, 0 4px 14px rgba(0, 0, 0, 0.08));
+  }
+}
+
+.mq-unified-dish-card.is-customizable {
+  cursor: pointer;
+}
+
+/* Elastic No-Image Layout: Expands smoothly to 100% width with 0 gap */
+.mq-unified-dish-card.mq-no-image {
+  display: block;
+}
+
+/* Left Column: Food Information */
+.mq-unified-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 4px;
+}
+
+.mq-unified-meta-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 20px;
+}
+
+.mq-unified-dish-name {
+  margin: 0;
+  font-family: var(--mq-font-display, inherit);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.28;
+  color: var(--mq-color-text, #111827);
+  letter-spacing: -0.01em;
+  word-break: break-word;
+}
+
+/* Flags & Badges row (TRATTORIA SPECIAL / Bestseller) with soft tint */
+.mq-unified-flags-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.mq-unified-flags-row .mq-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background-color: var(--mq-badge-tint-bg, rgba(220, 38, 38, 0.08));
+  color: var(--mq-badge-tint-text, #b91c1c);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border: none;
+}
+
+.mq-unified-flags-row .mq-badge-quiet {
+  background-color: var(--mq-color-surface-alt, rgba(0, 0, 0, 0.04));
+  color: var(--mq-color-text-muted, #4b5563);
+  border: 1px solid var(--mq-color-border, rgba(0, 0, 0, 0.08));
+}
+
+/* Description & Accessible Expansion */
+.mq-unified-desc {
+  margin: 2px 0 0 0;
+  font-family: var(--mq-font-body, inherit);
+  font-size: 0.82rem;
+  line-height: 1.42;
+  color: var(--mq-color-text-muted, #6b7280);
+  word-break: break-word;
+}
+
+.mq-unified-more-btn {
+  display: inline;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--mq-color-primary, #b91c1c);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.mq-unified-more-btn:hover {
+  opacity: 0.85;
+}
+
+/* Bottom Action Row: Price on left, ADD / Stepper on right */
+.mq-unified-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.mq-unified-price-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mq-unified-price {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--mq-color-text, #111827);
+  letter-spacing: -0.01em;
+}
+
+.mq-unified-variant-pills {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mq-unified-variant-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  background-color: var(--mq-color-surface-alt, rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--mq-color-border, rgba(0, 0, 0, 0.08));
+  border-radius: var(--mq-radius-sm, 6px);
+  font-size: 0.8rem;
+}
+
+.mq-unified-v-label {
+  font-weight: 500;
+  color: var(--mq-color-text-muted, #6b7280);
+}
+
+.mq-unified-v-price {
+  font-weight: 700;
+  color: var(--mq-color-text, #111827);
+}
+
+.mq-unified-action-slot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+/* ADD Button: Matching Reference Screenshot (+ ADD red pill) */
+.mq-unified-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 76px;
+  height: 32px;
+  padding: 0 14px;
+  background-color: var(--mq-card-btn-bg, #b91c1c);
+  color: var(--mq-card-btn-text, #ffffff);
+  border: none;
+  border-radius: var(--mq-radius-sm, 8px);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.mq-unified-add-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.mq-unified-add-plus {
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Stepper Quantity Controls */
+.mq-unified-stepper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 84px;
+  height: 32px;
+  background-color: var(--mq-card-btn-bg, #b91c1c);
+  color: var(--mq-card-btn-text, #ffffff);
+  border-radius: var(--mq-radius-sm, 8px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.mq-unified-step-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 100%;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.mq-unified-step-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.mq-unified-step-count {
+  min-width: 24px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* Right Column: Clean Food Photograph Thumbnail */
+.mq-unified-media-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.mq-unified-thumb-wrapper {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 14px;
+  overflow: hidden;
+  background-color: var(--mq-color-surface-alt, rgba(0, 0, 0, 0.04));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.mq-unified-thumb-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Monospaced section index tag (used by editorial themes) */
+.mq-unified-index {
+  display: inline-block;
+  font-family: var(--mq-font-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  background-color: var(--mq-color-surface-hover, rgba(0, 0, 0, 0.06));
+  color: var(--mq-color-text, #111827);
+  border-radius: var(--mq-radius-sm, 4px);
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+/* =========================================================================
+   PILOT THEME VARIANT 1: Rang-e-Punjab (.mq-card-dhaba)
+   Grand Highway Dhaba & Royal Punjabi Dining Identity
+   ========================================================================= */
+.mq-layout-v2 .mq-card-dhaba {
+  background: radial-gradient(ellipse at 50% 0%, rgba(42, 18, 14, 0.85) 0%, rgba(20, 9, 7, 0.96) 100%), #120806;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-left: 5px solid #c8321a;
+  border-radius: 8px;
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.45);
+  color: #fff8ed;
+}
+
+.mq-layout-v2 .mq-card-dhaba .mq-unified-dish-name {
+  font-family: var(--mq-font-display, serif);
+  font-weight: 800;
+  color: #fff8ed;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+}
+
+.mq-layout-v2 .mq-card-dhaba .mq-unified-price {
+  color: #ffd875;
+  font-family: var(--mq-font-display, serif);
+  font-weight: 900;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.35);
+}
+
+.mq-layout-v2 .mq-card-dhaba .mq-unified-desc {
+  color: #f5ebe6;
+  opacity: 0.88;
+  font-style: italic;
+}
+
+.mq-layout-v2 .mq-card-dhaba .mq-unified-thumb-wrapper {
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 8px;
+}
+
+.mq-layout-v2 .mq-card-dhaba .mq-unified-thumb-img {
+  border-radius: 7px;
+}
+
+.mq-layout-v2 .mq-card-dhaba .mq-unified-add-btn {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  color: #1a0b06;
+  font-weight: 800;
+  border: 1px solid #ffd875;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.mq-layout-v2 .mq-card-dhaba .mq-unified-stepper {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  color: #1a0b06;
+  font-weight: 800;
+  border: 1px solid #ffd875;
+}
+
+/* =========================================================================
+   PILOT THEME VARIANT 2: Maison Noir (.mq-card-luxury)
+   Haute Gastronomie Art Déco Obsidian & Gold Identity
+   ========================================================================= */
+.mq-layout-v2 .mq-card-luxury {
+  background: linear-gradient(180deg, #181818 0%, #0d0d0d 100%);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 4px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  color: #fdfaf0;
+}
+
+.mq-layout-v2 .mq-card-luxury .mq-unified-dish-name {
+  font-family: var(--mq-font-display, 'Cinzel', serif);
+  font-weight: 700;
+  color: #fbf5b7;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mq-layout-v2 .mq-card-luxury .mq-unified-price {
+  color: #d4af37;
+  font-family: var(--mq-font-display, 'Cinzel', serif);
+  font-weight: 700;
+}
+
+.mq-layout-v2 .mq-card-luxury .mq-unified-desc {
+  color: rgba(255, 255, 255, 0.72);
+  font-style: italic;
+  font-size: 0.88rem;
+}
+
+.mq-layout-v2 .mq-card-luxury .mq-unified-thumb-wrapper {
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 4px;
+}
+
+.mq-layout-v2 .mq-card-luxury .mq-unified-thumb-img {
+  border-radius: 3px;
+}
+
+.mq-layout-v2 .mq-card-luxury .mq-unified-add-btn {
+  background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #8a6117 100%);
+  color: #0d0d0d;
+  font-family: var(--mq-font-display, 'Cinzel', serif);
+  font-weight: 800;
+  border: 1px solid #bf953f;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+.mq-layout-v2 .mq-card-luxury .mq-unified-stepper {
+  background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #8a6117 100%);
+  color: #0d0d0d;
+  font-weight: 800;
+  border: 1px solid #bf953f;
+}
+
+/* =========================================================================
+   PILOT THEME VARIANT 3: Presse Brut (.mq-card-editorial)
+   Brutalist Modern Numbered Editorial Identity
+   ========================================================================= */
+.mq-layout-v2 .mq-card-editorial {
+  background-color: var(--mq-color-surface, #ffffff);
+  border: 2px solid var(--mq-color-text, #000000);
+  border-radius: 0px;
+  box-shadow: 4px 4px 0px var(--mq-color-text, #000000);
+  color: var(--mq-color-text, #000000);
+}
+
+.mq-layout-v2 .mq-card-editorial .mq-unified-index {
+  background-color: var(--mq-color-text, #000000);
+  color: var(--mq-color-surface, #ffffff);
+  border-radius: 0px;
+  font-family: var(--mq-font-mono, monospace);
+  font-weight: 900;
+  font-size: 0.82rem;
+  padding: 2px 6px;
+  letter-spacing: 0.05em;
+}
+
+.mq-layout-v2 .mq-card-editorial .mq-unified-dish-name {
+  font-family: var(--mq-font-display, sans-serif);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: var(--mq-color-text, #000000);
+}
+
+.mq-layout-v2 .mq-card-editorial .mq-unified-price {
+  font-family: var(--mq-font-mono, monospace);
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: var(--mq-color-text, #000000);
+}
+
+.mq-layout-v2 .mq-card-editorial .mq-unified-desc {
+  font-family: var(--mq-font-body, sans-serif);
+  color: var(--mq-color-text, #000000);
+  opacity: 0.85;
+}
+
+.mq-layout-v2 .mq-card-editorial .mq-unified-thumb-wrapper {
+  border: 2px solid var(--mq-color-text, #000000);
+  border-radius: 0px;
+}
+
+.mq-layout-v2 .mq-card-editorial .mq-unified-thumb-img {
+  border-radius: 0px;
+}
+
+.mq-layout-v2 .mq-card-editorial .mq-unified-add-btn {
+  background-color: var(--mq-color-text, #000000);
+  color: var(--mq-color-surface, #ffffff);
+  border: 2px solid var(--mq-color-text, #000000);
+  border-radius: 0px;
+  box-shadow: 2px 2px 0px var(--mq-color-text, #000000);
+  font-family: var(--mq-font-mono, monospace);
+  font-weight: 900;
+}
+
+.mq-layout-v2 .mq-card-editorial .mq-unified-stepper {
+  background-color: var(--mq-color-text, #000000);
+  color: var(--mq-color-surface, #ffffff);
+  border: 2px solid var(--mq-color-text, #000000);
+  border-radius: 0px;
+  box-shadow: 2px 2px 0px var(--mq-color-text, #000000);
+  font-family: var(--mq-font-mono, monospace);
+  font-weight: 900;
+}
+
+/* V2 Course list spacing */
+.mq-layout-v2 .mq-ed-punjab-list,
+.mq-layout-v2 .mq-ed-noir-list,
+.mq-layout-v2 .mq-ed-brut-list,
+.mq-layout-v2 .mq-ed-maharaja-list,
+.mq-layout-v2 .mq-ed-dakshin-list,
+.mq-layout-v2 .mq-ed-thali-list,
+.mq-layout-v2 .mq-ed-bombay-list,
+.mq-layout-v2 .mq-ed-herbarium-list,
+.mq-layout-v2 .mq-ed-noren-list,
+.mq-layout-v2 .mq-ed-carta-list,
+.mq-layout-v2 .mq-ed-chalk-list,
+.mq-layout-v2 .mq-ed-pastel-list,
+.mq-layout-v2 .mq-ed-littorale-list,
+.mq-layout-v2 .mq-ed-ichiban-list,
+.mq-layout-v2 .atelier-category-list,
+.mq-layout-v2 .mq-sig-chapter-list,
+.mq-layout-v2 .mq-sig-graphic-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3, 14px);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* =========================================================================
+   INDIAN REGIONAL & SHOWCASE THEME ACCENTS FOR UNIFIED CARDS
+   ========================================================================= */
+
+/* Maharaja's Table & Darbar (.mq-card-maharaja) */
+.mq-layout-v2 .mq-card-maharaja {
+  background: radial-gradient(ellipse at 50% 0%, rgba(46, 16, 20, 0.9) 0%, rgba(18, 6, 8, 0.98) 100%), #150608;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-left: 4px solid #d4af37;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+  color: #fff9ed;
+}
+
+.mq-layout-v2 .mq-card-maharaja .mq-unified-dish-name {
+  font-family: var(--mq-font-display, serif);
+  font-weight: 700;
+  color: #fff9ed;
+  letter-spacing: 0.02em;
+}
+
+.mq-layout-v2 .mq-card-maharaja .mq-unified-price {
+  color: #ffd700;
+  font-family: var(--mq-font-display, serif);
+  font-weight: 800;
+}
+
+.mq-layout-v2 .mq-card-maharaja .mq-unified-add-btn {
+  background: linear-gradient(135deg, #d4af37 0%, #aa771c 100%);
+  color: #120608;
+  font-weight: 800;
+  border: 1px solid #ffd700;
+}
+
+/* Dakshin Heritage (.mq-card-dakshin) */
+.mq-layout-v2 .mq-card-dakshin {
+  background: radial-gradient(ellipse at 50% 0%, rgba(30, 24, 16, 0.9) 0%, rgba(14, 11, 7, 0.98) 100%), #0e0b07;
+  border: 1px solid rgba(205, 133, 63, 0.4);
+  border-left: 4px solid #15803d;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+  color: #fdfaf2;
+}
+
+.mq-layout-v2 .mq-card-dakshin .mq-unified-dish-name {
+  font-family: var(--mq-font-display, serif);
+  font-weight: 700;
+  color: #fdfaf2;
+}
+
+.mq-layout-v2 .mq-card-dakshin .mq-unified-price {
+  color: #f59e0b;
+  font-weight: 800;
+}
+
+.mq-layout-v2 .mq-card-dakshin .mq-unified-add-btn {
+  background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+  color: #ffffff;
+  font-weight: 800;
+  border: 1px solid #22c55e;
+}
+
+/* Thali & Co. (.mq-card-thali) */
+.mq-layout-v2 .mq-card-thali {
+  background: radial-gradient(ellipse at 50% 0%, rgba(34, 22, 12, 0.88) 0%, rgba(16, 10, 5, 0.96) 100%), #100a05;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  color: #fffbeb;
+}
+
+.mq-layout-v2 .mq-card-thali .mq-unified-dish-name {
+  font-family: var(--mq-font-display, serif);
+  font-weight: 700;
+  color: #fffbeb;
+}
+
+.mq-layout-v2 .mq-card-thali .mq-unified-price {
+  color: #f59e0b;
+  font-weight: 800;
+}
+
+.mq-layout-v2 .mq-card-thali .mq-unified-add-btn {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #ffffff;
+  font-weight: 800;
+  border: 1px solid #f59e0b;
+}
+
+/* Bombay Chowk (.mq-card-chowk) */
+.mq-layout-v2 .mq-card-chowk {
+  background: radial-gradient(ellipse at 50% 0%, rgba(20, 24, 38, 0.9) 0%, rgba(10, 12, 20, 0.98) 100%), #0a0c14;
+  border: 1px solid rgba(234, 88, 12, 0.35);
+  border-left: 4px solid #ea580c;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+  color: #f8fafc;
+}
+
+.mq-layout-v2 .mq-card-chowk .mq-unified-dish-name {
+  font-family: var(--mq-font-display, sans-serif);
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.mq-layout-v2 .mq-card-chowk .mq-unified-price {
+  color: #fb923c;
+  font-weight: 800;
+}
+
+.mq-layout-v2 .mq-card-chowk .mq-unified-add-btn {
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+  color: #ffffff;
+  font-weight: 800;
+  border: 1px solid #fb923c;
+}
+
+/* Herbarium (.mq-card-herbarium) */
+.mq-layout-v2 .mq-card-herbarium {
+  background-color: var(--mq-color-surface, #faf8f5);
+  border: 1px solid rgba(74, 93, 79, 0.25);
+  border-radius: 14px;
+  color: var(--mq-color-text, #1c2826);
+}
+
+.mq-layout-v2 .mq-card-herbarium .mq-unified-dish-name {
+  font-family: var(--mq-font-display, 'Cormorant Garamond', serif);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.01em;
+}
+
+.mq-layout-v2 .mq-card-herbarium .mq-unified-add-btn {
+  background-color: #2d4a3e;
+  color: #ffffff;
+}
+
+/* Carta Rustica (.mq-card-carta) */
+.mq-layout-v2 .mq-card-carta {
+  background-color: #fbf7ee;
+  border: 1px solid rgba(139, 90, 43, 0.28);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(139, 90, 43, 0.08);
+  color: #2b1810;
+}
+
+.mq-layout-v2 .mq-card-carta .mq-unified-dish-name {
+  font-family: var(--mq-font-display, serif);
+  font-weight: 700;
+  color: #2b1810;
+}
+
+.mq-layout-v2 .mq-card-carta .mq-unified-price {
+  color: #8b3a1a;
+  font-weight: 800;
+}
+
+.mq-layout-v2 .mq-card-carta .mq-unified-add-btn {
+  background-color: #8b3a1a;
+  color: #ffffff;
+}
+
+/* Noren (.mq-card-noren) */
+.mq-layout-v2 .mq-card-noren {
+  background-color: #faf9f6;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  color: #1a1a1a;
+}
+
+.mq-layout-v2 .mq-card-noren .mq-unified-dish-name {
+  font-family: var(--mq-font-display, serif);
+  font-weight: 700;
+  color: #111111;
+  letter-spacing: 0.02em;
+}
+
+.mq-layout-v2 .mq-card-noren .mq-unified-add-btn {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  border-radius: 4px;
+}
+
+/* Chalk House (.mq-card-chalk) */
+.mq-layout-v2 .mq-card-chalk {
+  background-color: #1c1d1f;
+  border: 1.5px dashed rgba(255, 255, 255, 0.35);
+  border-radius: 12px;
+  color: #f5f5f5;
+}
+
+.mq-layout-v2 .mq-card-chalk .mq-unified-dish-name {
+  font-family: var(--mq-font-display, sans-serif);
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.mq-layout-v2 .mq-card-chalk .mq-unified-price {
+  color: #ffd875;
+  font-weight: 800;
+}
+
+.mq-layout-v2 .mq-card-chalk .mq-unified-add-btn {
+  background-color: #ffffff;
+  color: #111111;
+  font-weight: 800;
+}
+
+/* Atelier Pastel (.mq-card-pastel) */
+.mq-layout-v2 .mq-card-pastel {
+  background-color: #fdfaf6;
+  border: 1px solid rgba(224, 169, 142, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(224, 169, 142, 0.12);
+  color: #2d2424;
+}
+
+.mq-layout-v2 .mq-card-pastel .mq-unified-dish-name {
+  font-family: var(--mq-font-display, serif);
+  font-weight: 700;
+  color: #2d2424;
+}
+
+.mq-layout-v2 .mq-card-pastel .mq-unified-price {
+  color: #b85d38;
+  font-weight: 800;
+}
+
+.mq-layout-v2 .mq-card-pastel .mq-unified-add-btn {
+  background-color: #b85d38;
+  color: #ffffff;
+  border-radius: 20px;
+}
+
+/* Littorale (.mq-card-littorale) */
+.mq-layout-v2 .mq-card-littorale {
+  background-color: #ffffff;
+  border: 1px solid rgba(14, 116, 144, 0.2);
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(14, 116, 144, 0.06);
+  color: #0f172a;
+}
+
+.mq-layout-v2 .mq-card-littorale .mq-unified-dish-name {
+  font-family: var(--mq-font-display, serif);
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.mq-layout-v2 .mq-card-littorale .mq-unified-price {
+  color: #0891b2;
+  font-weight: 800;
+}
+
+.mq-layout-v2 .mq-card-littorale .mq-unified-add-btn {
+  background-color: #0891b2;
+  color: #ffffff;
+}
+
+/* Neon Ichiban (.mq-card-ichiban) */
+.mq-layout-v2 .mq-card-ichiban {
+  background-color: #0d0f17;
+  border: 1.5px solid #06b6d4;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
+  color: #f1f5f9;
+}
+
+.mq-layout-v2 .mq-card-ichiban .mq-unified-dish-name {
+  font-family: var(--mq-font-display, sans-serif);
+  font-weight: 800;
+  color: #f8fafc;
+  text-transform: uppercase;
+}
+
+.mq-layout-v2 .mq-card-ichiban .mq-unified-price {
+  color: #38bdf8;
+  font-weight: 900;
+}
+
+.mq-layout-v2 .mq-card-ichiban .mq-unified-add-btn {
+  background-color: #06b6d4;
+  color: #000000;
+  font-weight: 900;
+}
+
+/* Atelier Rangeen (.mq-card-rangeen) */
+.mq-layout-v2 .mq-card-rangeen {
+  background-color: #ffffff;
+  border: 2px solid #ea580c;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0px #ea580c;
+  color: #111827;
+}
+
+.mq-layout-v2 .mq-card-rangeen .mq-unified-dish-name {
+  font-family: var(--mq-font-display, sans-serif);
+  font-weight: 800;
+  color: #111827;
+}
+
+.mq-layout-v2 .mq-card-rangeen .mq-unified-price {
+  color: #ea580c;
+  font-weight: 900;
+}
+
+.mq-layout-v2 .mq-card-rangeen .mq-unified-add-btn {
+  background-color: #ea580c;
+  color: #ffffff;
+  border: 1.5px solid #111827;
+  box-shadow: 2px 2px 0px #111827;
+  font-weight: 800;
+}
+

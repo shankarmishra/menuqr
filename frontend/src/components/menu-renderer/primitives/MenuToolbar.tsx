@@ -1,21 +1,28 @@
 /**
- * MENUQR Menu Renderer — Search and Diet Filter
+ * MENUQR Menu Renderer — Search and Diet Filter Toolbar
  *
- * Cross-cutting rather than a slot: every preset needs these, and a diner should not lose the
- * ability to find a dish because the owner picked a different cover style. The old
- * `MenuTemplateRenderer` built this inline with hardcoded colours and 10px type; here it is one
- * token-driven component shared by all 288 layout combinations.
+ * Cross-cutting component providing search and dietary filters across every template.
+ * - Prominent Search bar with icon and instant clear button
+ * - Clean diet filter pills (All, Pure Veg, Non-Veg, Jain) with verified FSSAI dots and live counters
+ * - Optional allergen exclusion and spice level ceiling rows
  */
 
 import React from 'react';
+import { Search, X } from 'lucide-react';
+import './MenuToolbar.css';
 
 export type DietFilter = 'all' | 'veg' | 'non-veg' | 'jain';
 
-/** Matches `ITEM_ALLERGENS` in `backend/routes/app.js` — the whitelist the owner's tag editor
- * already enforces, so every allergen this chip row could ever need to show already exists. */
 const ALLERGEN_LABELS: Record<string, string> = {
-  nuts: 'Nuts', peanuts: 'Peanuts', dairy: 'Dairy', gluten: 'Gluten', soy: 'Soy',
-  egg: 'Egg', fish: 'Fish', shellfish: 'Shellfish', sesame: 'Sesame',
+  nuts: 'Nuts',
+  peanuts: 'Peanuts',
+  dairy: 'Dairy',
+  gluten: 'Gluten',
+  soy: 'Soy',
+  egg: 'Egg',
+  fish: 'Fish',
+  shellfish: 'Shellfish',
+  sesame: 'Sesame',
 };
 
 export type MenuToolbarProps = {
@@ -23,13 +30,14 @@ export type MenuToolbarProps = {
   onQueryChange: (value: string) => void;
   dietFilter: DietFilter;
   onDietFilterChange: (value: DietFilter) => void;
-  counts: { all: number; veg: number; nonVeg: number; jain?: number; allergens?: Record<string, number>; spicy?: number };
-  /**
-   * Allergen and spice filtering, both optional — a caller that doesn't pass them simply doesn't
-   * get the extra chip rows (every existing call site keeps compiling and rendering unchanged).
-   * The owner's on/off switches for these (`menuFeatures.allergenFilter`/`spiceFilter`) are
-   * applied by the caller choosing whether to pass these props at all, not inside this component.
-   */
+  counts: {
+    all: number;
+    veg: number;
+    nonVeg: number;
+    jain?: number;
+    allergens?: Record<string, number>;
+    spicy?: number;
+  };
   allergenFilter?: string[];
   onAllergenFilterChange?: (value: string[]) => void;
   spiceFilter?: number | null;
@@ -47,7 +55,6 @@ export const MenuToolbar: React.FC<MenuToolbarProps> = ({
   spiceFilter,
   onSpiceFilterChange,
 }) => {
-  // With nothing to filter, the toolbar is noise.
   if (counts.all === 0) return null;
 
   const allergenEntries = Object.entries(counts.allergens ?? {}).filter(([, count]) => count > 0);
@@ -61,10 +68,25 @@ export const MenuToolbar: React.FC<MenuToolbarProps> = ({
     { id: 'jain', label: 'Jain', count: counts.jain ?? 0 },
   ];
 
+  const getActiveChipClass = (id: DietFilter) => {
+    if (dietFilter !== id) return '';
+    switch (id) {
+      case 'veg':
+        return 'is-active-veg';
+      case 'non-veg':
+        return 'is-active-nonveg';
+      case 'jain':
+        return 'is-active-jain';
+      default:
+        return 'is-active-all';
+    }
+  };
+
   return (
-    <div className="mq-toolbar">
-      <label className="mq-search">
-        <span className="mq-sr-only">Search dishes</span>
+    <div className="mq-toolbar" role="region" aria-label="Search and filter">
+      {/* Search Input Bar */}
+      <div className="mq-search-wrapper">
+        <Search className="mq-search-icon" size={18} aria-hidden="true" />
         <input
           type="search"
           className="mq-search-input"
@@ -72,37 +94,71 @@ export const MenuToolbar: React.FC<MenuToolbarProps> = ({
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Search dishes"
           autoComplete="off"
+          aria-label="Search dishes"
         />
-      </label>
-
-      {/* A single-group toggle, so it is announced as a group rather than three loose buttons. */}
-      <div className="mq-row" role="group" aria-label="Filter by diet" style={{ flexWrap: 'wrap' }}>
-        {filters
-          .filter((filter) => filter.count > 0 || filter.id === 'all')
-          .map((filter) => (
-            <button
-              key={filter.id}
-              type="button"
-              className="mq-nav-item"
-              aria-pressed={dietFilter === filter.id}
-              aria-current={dietFilter === filter.id}
-              onClick={() => onDietFilterChange(filter.id)}
-            >
-              {filter.label}
-              <span className="mq-price-label" style={{ color: 'inherit', opacity: 0.7, marginInlineStart: '0.4em' }}>
-                {filter.count}
-              </span>
-            </button>
-          ))}
+        {query ? (
+          <button
+            type="button"
+            className="mq-search-clear"
+            onClick={() => onQueryChange('')}
+            aria-label="Clear search"
+          >
+            <X size={15} />
+          </button>
+        ) : null}
       </div>
 
+      {/* Diet Filters Row */}
+      <div className="mq-filter-row" role="group" aria-label="Filter by diet">
+        {filters
+          .filter((filter) => filter.count > 0 || filter.id === 'all')
+          .map((filter) => {
+            const isActive = dietFilter === filter.id;
+            return (
+              <button
+                key={filter.id}
+                type="button"
+                className={`mq-filter-chip ${isActive ? getActiveChipClass(filter.id) : ''}`}
+                aria-pressed={isActive}
+                aria-current={isActive}
+                onClick={() => onDietFilterChange(filter.id)}
+              >
+                {filter.id === 'veg' && (
+                  <span className="mq-chip-fssai-icon is-veg" aria-hidden="true">
+                    <span className="mq-chip-dot" />
+                  </span>
+                )}
+                {filter.id === 'non-veg' && (
+                  <span className="mq-chip-fssai-icon is-nonveg" aria-hidden="true">
+                    <span className="mq-chip-dot" />
+                  </span>
+                )}
+                {filter.id === 'all' && (
+                  <span className="mq-chip-all-icon" aria-hidden="true">
+                    🍽️
+                  </span>
+                )}
+                {filter.id === 'jain' && (
+                  <span className="mq-chip-all-icon" aria-hidden="true">
+                    🌱
+                  </span>
+                )}
+
+                <span>{filter.label}</span>
+                <span className="mq-chip-count">{filter.count}</span>
+              </button>
+            );
+          })}
+      </div>
+
+      {/* Spice Filter Row (Optional) */}
       {showSpiceRow && (
-        <div className="mq-row" role="group" aria-label="Filter by spice level" style={{ flexWrap: 'wrap' }}>
+        <div className="mq-filter-row" role="group" aria-label="Filter by spice level">
           {[1, 2, 3].map((level) => (
             <button
               key={level}
               type="button"
-              className="mq-nav-item"
+              className={`mq-filter-chip ${spiceFilter === level ? 'is-active-spice' : ''}`}
               aria-pressed={spiceFilter === level}
               aria-current={spiceFilter === level}
               onClick={() => onSpiceFilterChange!(level)}
@@ -114,27 +170,32 @@ export const MenuToolbar: React.FC<MenuToolbarProps> = ({
         </div>
       )}
 
+      {/* Allergen Exclusion Row (Optional) */}
       {showAllergenRow && (
-        <div className="mq-row" role="group" aria-label="Exclude an allergen" style={{ flexWrap: 'wrap' }}>
+        <div className="mq-filter-row" role="group" aria-label="Exclude an allergen">
           {allergenEntries.map(([allergen, count]) => {
             const active = (allergenFilter ?? []).includes(allergen);
             return (
               <button
                 key={allergen}
                 type="button"
-                className="mq-nav-item"
+                className={`mq-filter-chip ${active ? 'is-active-allergen' : ''}`}
                 aria-pressed={active}
                 onClick={() =>
                   onAllergenFilterChange!(
-                    active ? (allergenFilter ?? []).filter((a) => a !== allergen) : [...(allergenFilter ?? []), allergen]
+                    active
+                      ? (allergenFilter ?? []).filter((a) => a !== allergen)
+                      : [...(allergenFilter ?? []), allergen]
                   )
                 }
-                title={active ? `Showing dishes without ${ALLERGEN_LABELS[allergen] ?? allergen}` : `Hide dishes containing ${ALLERGEN_LABELS[allergen] ?? allergen}`}
+                title={
+                  active
+                    ? `Showing dishes without ${ALLERGEN_LABELS[allergen] ?? allergen}`
+                    : `Hide dishes containing ${ALLERGEN_LABELS[allergen] ?? allergen}`
+                }
               >
-                {active ? 'No ' : ''}{ALLERGEN_LABELS[allergen] ?? allergen}
-                <span className="mq-price-label" style={{ color: 'inherit', opacity: 0.7, marginInlineStart: '0.4em' }}>
-                  {count}
-                </span>
+                <span>{active ? 'No ' : ''}{ALLERGEN_LABELS[allergen] ?? allergen}</span>
+                <span className="mq-chip-count">{count}</span>
               </button>
             );
           })}
@@ -147,11 +208,12 @@ export const MenuToolbar: React.FC<MenuToolbarProps> = ({
 export type EmptyResultsProps = { query: string; onClear: () => void };
 
 export const EmptyResults: React.FC<EmptyResultsProps> = ({ query, onClear }) => (
-  <div className="mq-stack" style={{ alignItems: 'center', textAlign: 'center', paddingBlock: 'var(--mq-space-12)' }}>
-    <p className="mq-dish-name">No dishes match &ldquo;{query}&rdquo;</p>
-    <p className="mq-tagline">Try a shorter search, or clear it to see the full menu.</p>
-    <button type="button" className="mq-button" onClick={onClear}>
-      Clear search
+  <div className="mq-empty-results-box" role="status">
+    <h3 className="mq-empty-results-title">No dishes match &ldquo;{query}&rdquo;</h3>
+    <p className="mq-empty-results-sub">Try a shorter search, or clear it to see the full menu.</p>
+    <button type="button" className="mq-empty-clear-btn" onClick={onClear}>
+      <X size={16} />
+      <span>Clear search</span>
     </button>
   </div>
 );

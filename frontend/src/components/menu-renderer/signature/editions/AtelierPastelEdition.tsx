@@ -19,6 +19,7 @@ import React from 'react';
 import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
+import { UnifiedDishCard } from '../../primitives/UnifiedDishCard.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
 import { CapsulePillsNav } from '../../slots/navs.tsx';
 import { DishPrice } from '../../primitives/DishMeta.tsx';
@@ -534,64 +535,79 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
 
               {/* Items List with Precision Dotted Leaders */}
               <div className="mq-ed-pastel-items-list">
-                {category.items.map((item) => (
-                  <article key={item.id} className="mq-ed-pastel-dish-row">
-                    <div className="mq-ed-pastel-dish-top">
-                      <div className="mq-ed-pastel-dish-identity">
-                        {item.dietType === 'veg' && <PastelDietBadge type="veg" />}
-                        {item.dietType === 'vegan' && <PastelDietBadge type="vegan" />}
-                        {item.isBestseller && (
-                          <span className="mq-pastel-badge-diet mq-pastel-signature" title="Bestseller">
-                            <span className="mq-pastel-badge-dot">★</span> Bestseller
-                          </span>
-                        )}
-                        <h3 className="mq-dish-name mq-ed-pastel-dish-title">{item.name}</h3>
+                {category.items.map((item, itemIdx) => {
+                  if (tokens.layoutVersion === 2) {
+                    return (
+                      <UnifiedDishCard
+                        key={item.id}
+                        item={item}
+                        index={itemIdx}
+                        compact={compact}
+                        readOnly={readOnly}
+                        className="mq-card-pastel"
+                      />
+                    );
+                  }
+
+                  return (
+                    <article key={item.id} className="mq-ed-pastel-dish-row">
+                      <div className="mq-ed-pastel-dish-top">
+                        <div className="mq-ed-pastel-dish-identity">
+                          {item.dietType === 'veg' && <PastelDietBadge type="veg" />}
+                          {item.dietType === 'vegan' && <PastelDietBadge type="vegan" />}
+                          {item.isBestseller && (
+                            <span className="mq-pastel-badge-diet mq-pastel-signature" title="Bestseller">
+                              <span className="mq-pastel-badge-dot">★</span> Bestseller
+                            </span>
+                          )}
+                          <h3 className="mq-dish-name mq-ed-pastel-dish-title">{item.name}</h3>
+                        </div>
+
+                        {/* Precision Last-Baseline Radial Dotted Leader Rule */}
+                        <span className="mq-ed-leader-rule" aria-hidden="true" />
+
+                        <div className="mq-ed-pastel-dish-price-wrap">
+                          <DishPrice item={item} readOnly={readOnly} />
+                        </div>
                       </div>
 
-                      {/* Precision Last-Baseline Radial Dotted Leader Rule */}
-                      <span className="mq-ed-leader-rule" aria-hidden="true" />
+                      {/* Dish Description with Strict Invariant */}
+                      {item.description && (
+                        <p className="mq-dish-desc mq-ed-pastel-dish-desc">
+                          {cleanDescription(item)}
+                        </p>
+                      )}
 
-                      <div className="mq-ed-pastel-dish-price-wrap">
-                        <DishPrice item={item} readOnly={readOnly} />
-                      </div>
-                    </div>
-
-                    {/* Dish Description with Strict Invariant */}
-                    {item.description && (
-                      <p className="mq-dish-desc mq-ed-pastel-dish-desc">
-                        {cleanDescription(item)}
-                      </p>
-                    )}
-
-                    {/* Meta badges (bestseller, special, trending, allergen/diet notes) */}
-                    {(item.isBestseller || item.isSpecial || item.trending || item.tags?.jain || item.tags?.eggless || (item.tags?.allergens?.length ?? 0) > 0) ? (
-                      <div className="mq-ed-pastel-dish-meta">
-                        {item.isBestseller && (
-                          <span className="mq-ed-pastel-allergen-pill">
-                            Bestseller
-                          </span>
-                        )}
-                        {item.isSpecial && (
-                          <span className="mq-ed-pastel-tag-pill">
-                            Special
-                          </span>
-                        )}
-                        {item.trending && (
-                          <span className="mq-ed-pastel-allergen-pill">
-                            Trending
-                          </span>
-                        )}
-                        {item.tags?.jain && <span className="mq-ed-pastel-tag-pill">Jain</span>}
-                        {item.tags?.eggless && <span className="mq-ed-pastel-tag-pill">Eggless</span>}
-                        {(item.tags?.allergens?.length ?? 0) > 0 && (
-                          <span className="mq-ed-pastel-allergen-pill">
-                            Contains: {item.tags?.allergens?.join(', ')}
-                          </span>
-                        )}
-                      </div>
-                    ) : null}
-                  </article>
-                ))}
+                      {/* Meta badges (bestseller, special, trending, allergen/diet notes) */}
+                      {(item.isBestseller || item.isSpecial || item.trending || item.tags?.jain || item.tags?.eggless || (item.tags?.allergens?.length ?? 0) > 0) ? (
+                        <div className="mq-ed-pastel-dish-meta">
+                          {item.isBestseller && (
+                            <span className="mq-ed-pastel-allergen-pill">
+                              Bestseller
+                            </span>
+                          )}
+                          {item.isSpecial && (
+                            <span className="mq-ed-pastel-tag-pill">
+                              Special
+                            </span>
+                          )}
+                          {item.trending && (
+                            <span className="mq-ed-pastel-allergen-pill">
+                              Trending
+                            </span>
+                          )}
+                          {item.tags?.jain && <span className="mq-ed-pastel-tag-pill">Jain</span>}
+                          {item.tags?.eggless && <span className="mq-ed-pastel-tag-pill">Eggless</span>}
+                          {(item.tags?.allergens?.length ?? 0) > 0 && (
+                            <span className="mq-ed-pastel-allergen-pill">
+                              Contains: {item.tags?.allergens?.join(', ')}
+                            </span>
+                          )}
+                        </div>
+                      ) : null}
+                    </article>
+                  );
+                })}
               </div>
             </section>
           ))

@@ -13,6 +13,7 @@ import React from 'react';
 import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
+import { UnifiedDishCard } from '../../primitives/UnifiedDishCard.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
 import { CapsulePillsNav } from '../../slots/navs.tsx';
 import { DietMark, DishFlags, DishPrice } from '../../primitives/DishMeta.tsx';
@@ -128,6 +129,19 @@ export const PresseBrutEdition: React.FC<EditionProps> = ({
 
               <ol className="mq-ed-brut-list">
                 {category.items.map((item, index) => {
+                  if (tokens.layoutVersion === 2) {
+                    return (
+                      <li key={item.id} className="mq-ed-brut-unified-item">
+                        <UnifiedDishCard
+                          item={item}
+                          index={index}
+                          readOnly={readOnly}
+                          compact={compact}
+                          className="mq-card-editorial"
+                        />
+                      </li>
+                    );
+                  }
                   const description = cleanDescription(item);
                   return (
                     <li key={item.id} className="mq-ed-brut-row">

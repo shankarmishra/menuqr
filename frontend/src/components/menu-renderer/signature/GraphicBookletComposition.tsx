@@ -14,6 +14,7 @@ import { useMenuTheme } from '../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../useMenuFilters.ts';
 import { DietMark, DishFlags, DishPrice } from '../primitives/DishMeta.tsx';
 import { SmartImage } from '../primitives/SmartImage.tsx';
+import { UnifiedDishCard } from '../primitives/UnifiedDishCard.tsx';
 import { EmptyResults, MenuToolbar } from '../primitives/MenuToolbar.tsx';
 import { parseItemPricing } from '../../menu-builder/templates/shared/pricingUtils';
 import {
@@ -207,6 +208,18 @@ export const GraphicBookletComposition: React.FC<SignatureProps> = ({
 
                   <div className="mq-sig-graphic-grid">
                     {category.items.map((item, index) => {
+                      if (tokens.layoutVersion === 2) {
+                        return (
+                          <UnifiedDishCard
+                            key={item.id}
+                            item={item}
+                            index={index}
+                            readOnly={readOnly}
+                            className="mq-card-booklet"
+                          />
+                        );
+                      }
+
                       const pricing = parseItemPricing(item as Parameters<typeof parseItemPricing>[0]);
                       const description = (pricing.cleanDescription ?? item.description ?? '').trim();
                       return (

@@ -1,4 +1,6 @@
 import React from 'react';
+import { useMenuTheme } from '../MenuThemeProvider.tsx';
+import { UnifiedDishCard } from '../primitives/UnifiedDishCard.tsx';
 import { AtelierCanvas } from './AtelierCanvas.tsx';
 import { B1Cover } from './blocks/B1Cover.tsx';
 import { B4Contents } from './blocks/B4Contents.tsx';
@@ -15,6 +17,7 @@ export const AtelierRangeen: React.FC<SignatureProps> = ({
   categories,
   readOnly,
 }) => {
+  const tokens = useMenuTheme();
   const {
     activeCategoryId,
     setActiveCategoryId,
@@ -74,14 +77,27 @@ export const AtelierRangeen: React.FC<SignatureProps> = ({
 
               {/* Block B6: List rows */}
               <div className="atelier-items-list">
-                {category.items.map((item, itemIdx) => (
-                  <B6ListRow
-                    key={item.id}
-                    item={item}
-                    index={itemIdx}
-                    readOnly={readOnly}
-                  />
-                ))}
+                {category.items.map((item, itemIdx) => {
+                  if (tokens.layoutVersion === 2) {
+                    return (
+                      <UnifiedDishCard
+                        key={item.id}
+                        item={item}
+                        index={itemIdx}
+                        readOnly={readOnly}
+                        className="mq-card-rangeen"
+                      />
+                    );
+                  }
+                  return (
+                    <B6ListRow
+                      key={item.id}
+                      item={item}
+                      index={itemIdx}
+                      readOnly={readOnly}
+                    />
+                  );
+                })}
               </div>
             </section>
           ))

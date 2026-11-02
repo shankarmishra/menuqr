@@ -13,6 +13,7 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { fontPreloadsFor } from '../../design-system/fonts.ts';
 import { resolveTheme } from '../../design-system/resolveTheme.ts';
+import { FALLBACK_THEME } from '../../design-system/validateTheme.ts';
 import type { MenuTheme, ThemeTokens } from '../../design-system/theme.types.ts';
 
 /**
@@ -37,12 +38,11 @@ function usePreloadActiveFontPairing(typePair: MenuTheme['typePair']) {
 const ThemeContext = createContext<ThemeTokens | null>(null);
 
 /** Resolved tokens for the nearest enclosing menu. Throws outside a provider, by design. */
+const DEFAULT_TOKENS = resolveTheme(FALLBACK_THEME);
+
 export function useMenuTheme(): ThemeTokens {
   const tokens = useContext(ThemeContext);
-  if (!tokens) {
-    throw new Error('useMenuTheme must be used inside a MenuThemeProvider.');
-  }
-  return tokens;
+  return tokens ?? DEFAULT_TOKENS;
 }
 
 export type MenuThemeProviderProps = {
@@ -67,7 +67,8 @@ export const MenuThemeProvider: React.FC<MenuThemeProviderProps> = ({
   return (
     <ThemeContext.Provider value={tokens}>
       <div
-        className={['mq-root', className].filter(Boolean).join(' ')}
+        className={['mq-root', tokens.layoutVersion === 2 ? 'mq-layout-v2' : 'mq-layout-v1', className].filter(Boolean).join(' ')}
+        data-mq-layout-version={tokens.layoutVersion}
         data-mq-preset={tokens.presetId}
         data-mq-mode={tokens.mode}
         data-mq-density={tokens.density}

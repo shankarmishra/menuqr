@@ -17,6 +17,7 @@ import React from 'react';
 import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
+import { UnifiedDishCard } from '../../primitives/UnifiedDishCard.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
 import { CapsulePillsNav } from '../../slots/navs.tsx';
 import { Badge, DishPrice } from '../../primitives/DishMeta.tsx';
@@ -819,49 +820,64 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
               </div>
 
               <div className="mq-ed-dakshin-list">
-                {category.items.map((item) => (
-                  <article key={item.id} className="mq-ed-dakshin-dish-row">
-                    <div className="mq-ed-dakshin-dish-head">
-                      <ChettinadDietMark type={item.dietType} />
-                      <h3 className="mq-ed-dakshin-dish-name mq-dish-name">{item.name}</h3>
-                      <span className="mq-ed-dakshin-dish-rule" aria-hidden="true" />
-                      <div className="mq-ed-dakshin-dish-price">
-                        <DishPrice item={item} readOnly={readOnly} />
+                {category.items.map((item, itemIdx) => {
+                  if (tokens.layoutVersion === 2) {
+                    return (
+                      <UnifiedDishCard
+                        key={item.id}
+                        item={item}
+                        index={itemIdx}
+                        compact={compact}
+                        readOnly={readOnly}
+                        className="mq-card-dakshin"
+                      />
+                    );
+                  }
+
+                  return (
+                    <article key={item.id} className="mq-ed-dakshin-dish-row">
+                      <div className="mq-ed-dakshin-dish-head">
+                        <ChettinadDietMark type={item.dietType} />
+                        <h3 className="mq-ed-dakshin-dish-name mq-dish-name">{item.name}</h3>
+                        <span className="mq-ed-dakshin-dish-rule" aria-hidden="true" />
+                        <div className="mq-ed-dakshin-dish-price">
+                          <DishPrice item={item} readOnly={readOnly} />
+                        </div>
                       </div>
-                    </div>
 
-                    {item.description && (
-                      <p className="mq-ed-dakshin-dish-desc mq-dish-desc">
-                        {cleanDescription(item)}
-                      </p>
-                    )}
+                      {item.description && (
+                        <p className="mq-ed-dakshin-dish-desc mq-dish-desc">
+                          {cleanDescription(item)}
+                        </p>
+                      )}
 
-                    {/* Regional Badges & Spiciness */}
-                    <div className="mq-ed-dakshin-dish-meta">
-                      {item.isBestseller && (
-                        <span className="mq-ed-dakshin-tag is-bestseller">
-                          Bestseller
-                        </span>
-                      )}
-                      {item.isSpecial && (
-                        <span className="mq-ed-dakshin-tag is-special">
-                          Special
-                        </span>
-                      )}
-                      {(item.spicyLevel ?? 0) > 1 && (
-                        <span className="mq-ed-dakshin-tag is-spice">
-                          {'🌶'.repeat(Math.min(item.spicyLevel ?? 0, 3))} Spicy
-                        </span>
-                      )}
-                      {item.trending && !item.isBestseller && <Badge>🔥 Trending</Badge>}
-                      {item.tags?.jain && <Badge quiet>Jain</Badge>}
-                      {item.tags?.eggless && <Badge quiet>Eggless</Badge>}
-                      {(item.tags?.allergens?.length ?? 0) > 0 && (
-                        <Badge quiet>Contains: {item.tags?.allergens?.join(', ')}</Badge>
-                      )}
-                    </div>
-                  </article>
-                ))}
+                      {/* Regional Badges & Spiciness */}
+                      <div className="mq-ed-dakshin-dish-meta">
+                        {item.isBestseller && (
+                          <span className="mq-ed-dakshin-tag is-bestseller">
+                            Bestseller
+                          </span>
+                        )}
+                        {item.isSpecial && (
+                          <span className="mq-ed-dakshin-tag is-special">
+                            Special
+                          </span>
+                        )}
+                        {(item.spicyLevel ?? 0) > 1 && (
+                          <span className="mq-ed-dakshin-tag is-spice">
+                            {'🌶'.repeat(Math.min(item.spicyLevel ?? 0, 3))} Spicy
+                          </span>
+                        )}
+                        {item.trending && !item.isBestseller && <Badge>🔥 Trending</Badge>}
+                        {item.tags?.jain && <Badge quiet>Jain</Badge>}
+                        {item.tags?.eggless && <Badge quiet>Eggless</Badge>}
+                        {(item.tags?.allergens?.length ?? 0) > 0 && (
+                          <Badge quiet>Contains: {item.tags?.allergens?.join(', ')}</Badge>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             </section>
           ))

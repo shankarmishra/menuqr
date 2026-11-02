@@ -12,6 +12,7 @@ import React from 'react';
 import { useMenuTheme } from '../../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../../useMenuFilters.ts';
 import { SmartImage } from '../../primitives/SmartImage.tsx';
+import { UnifiedDishCard } from '../../primitives/UnifiedDishCard.tsx';
 import { EmptyResults, MenuToolbar } from '../../primitives/MenuToolbar.tsx';
 import { CapsulePillsNav } from '../../slots/navs.tsx';
 import { DietMark, DishFlags, DishPrice } from '../../primitives/DishMeta.tsx';
@@ -171,7 +172,20 @@ export const ChalkHouseEdition: React.FC<EditionProps> = ({
               <ChalkSwoosh className="mq-ed-chalk-swoosh mq-ed-chalk-swoosh-section" />
 
               <div className="mq-ed-chalk-list">
-                {category.items.map((item) => {
+                {category.items.map((item, itemIdx) => {
+                  if (tokens.layoutVersion === 2) {
+                    return (
+                      <UnifiedDishCard
+                        key={item.id}
+                        item={item}
+                        index={itemIdx}
+                        compact={compact}
+                        readOnly={readOnly}
+                        className="mq-card-chalk"
+                      />
+                    );
+                  }
+
                   const description = cleanDescription(item);
                   return (
                     <article key={item.id} className="mq-ed-chalk-row">

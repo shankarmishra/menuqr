@@ -35,8 +35,9 @@ before(async () => {
     root: frontendRoot,
     logLevel: 'error',
     appType: 'custom',
+    cacheDir: path.join(frontendRoot, 'node_modules', '.vite_test_atelier'),
     server: { middlewareMode: true, hmr: false, watch: null, ws: false },
-    optimizeDeps: { noDiscovery: true, include: [] },
+    optimizeDeps: { disabled: true, noDiscovery: true, include: [] },
     plugins: [stubCss, react()],
   });
 

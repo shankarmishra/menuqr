@@ -1,0 +1,285 @@
+/**
+ * MENUQR Menu Renderer — Search & Filter Toolbar Styles
+ *
+ * Provides a world-class search and dietary filtering experience:
+ * - Search bar with prominent search icon, clear button, and smooth focus ring
+ * - Polished diet filter pills with FSSAI green/red indicator dots and live count badges
+ * - Responsive layout adapted to all viewports (360px to 1280px)
+ */
+
+.mq-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mq-space-3, 12px);
+  padding: var(--mq-space-3, 12px) var(--mq-space-4, 16px);
+  margin-inline: auto;
+  width: 100%;
+  max-width: 56rem;
+  box-sizing: border-box;
+}
+
+/* ------------------------------------- Search Input ------------------------------------- */
+
+.mq-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  background-color: var(--mq-color-surface, #ffffff);
+  border: 1.5px solid var(--mq-color-border, rgba(0, 0, 0, 0.12));
+  border-radius: var(--mq-radius-lg, 14px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.mq-search-wrapper:focus-within {
+  border-color: var(--mq-color-primary, #b91c1c);
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.mq-search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--mq-color-text-muted, #9ca3af);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.mq-search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 40px 0 42px;
+  border: none;
+  background: transparent;
+  color: var(--mq-color-text, #111827);
+  font-family: var(--mq-font-body, inherit);
+  font-size: max(15px, var(--mq-text-base, 15px));
+  outline: none;
+  box-sizing: border-box;
+}
+
+.mq-search-input::placeholder {
+  color: var(--mq-color-text-muted, #9ca3af);
+  opacity: 0.85;
+}
+
+.mq-search-clear {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--mq-color-surface-hover, rgba(0, 0, 0, 0.08));
+  color: var(--mq-color-text-muted, #6b7280);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mq-search-clear:hover {
+  background-color: var(--mq-color-text, #111827);
+  color: var(--mq-color-surface, #ffffff);
+}
+
+/* ----------------------------------- Diet Filter Chips ----------------------------------- */
+
+.mq-filter-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.mq-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--mq-color-border, rgba(0, 0, 0, 0.12));
+  border-radius: var(--mq-radius-pill, 9999px);
+  background-color: var(--mq-color-surface, #ffffff);
+  color: var(--mq-color-text, #374151);
+  font-family: var(--mq-font-body, inherit);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  user-select: none;
+}
+
+.mq-filter-chip:hover {
+  background-color: var(--mq-color-surface-hover, rgba(0, 0, 0, 0.04));
+  border-color: var(--mq-color-text-muted, rgba(0, 0, 0, 0.2));
+  transform: translateY(-1px);
+}
+
+/* FSSAI Visual Indicator Dots inside Filter Chips */
+.mq-chip-fssai-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.mq-chip-fssai-icon.is-veg {
+  border: 1.5px solid #16a34a;
+}
+
+.mq-chip-fssai-icon.is-veg .mq-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #16a34a;
+}
+
+.mq-chip-fssai-icon.is-nonveg {
+  border: 1.5px solid #dc2626;
+}
+
+.mq-chip-fssai-icon.is-nonveg .mq-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #dc2626;
+}
+
+.mq-chip-all-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* Filter Chip Count Badges */
+.mq-chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9999px;
+  background-color: var(--mq-color-surface-hover, rgba(0, 0, 0, 0.06));
+  color: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+/* Active State: All */
+.mq-filter-chip.is-active-all {
+  background-color: var(--mq-color-text, #111827);
+  border-color: var(--mq-color-text, #111827);
+  color: var(--mq-color-surface, #ffffff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.mq-filter-chip.is-active-all .mq-chip-count {
+  background-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+/* Active State: Pure Veg */
+.mq-filter-chip.is-active-veg {
+  background-color: #f0fdf4;
+  border-color: #22c55e;
+  color: #15803d;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.18);
+}
+
+.mq-filter-chip.is-active-veg .mq-chip-count {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+/* Active State: Non-Veg */
+.mq-filter-chip.is-active-nonveg {
+  background-color: #fef2f2;
+  border-color: #ef4444;
+  color: #b91c1c;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.18);
+}
+
+.mq-filter-chip.is-active-nonveg .mq-chip-count {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Active State: Jain */
+.mq-filter-chip.is-active-jain {
+  background-color: #fefce8;
+  border-color: #eab308;
+  color: #a16207;
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.18);
+}
+
+.mq-filter-chip.is-active-jain .mq-chip-count {
+  background-color: #fef9c3;
+  color: #a16207;
+}
+
+/* Spice & Allergen Filter Chips */
+.mq-filter-chip.is-active-spice,
+.mq-filter-chip.is-active-allergen {
+  background-color: var(--mq-color-text, #111827);
+  border-color: var(--mq-color-text, #111827);
+  color: var(--mq-color-surface, #ffffff);
+}
+
+/* Empty Results State */
+.mq-empty-results-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 20px;
+  gap: 12px;
+}
+
+.mq-empty-results-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--mq-color-text, #111827);
+}
+
+.mq-empty-results-sub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--mq-color-text-muted, #6b7280);
+}
+
+.mq-empty-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 8px 18px;
+  background-color: var(--mq-color-primary, #b91c1c);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--mq-radius-pill, 9999px);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  transition: all 0.15s ease;
+}
+
+.mq-empty-clear-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}

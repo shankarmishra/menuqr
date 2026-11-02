@@ -42,6 +42,7 @@ const SIGNATURE_COMPOSITION_IDS = [
   'dakshin-heritage',
   'thali-and-co',
   'bombay-chowk',
+  'atelier-rangeen',
 ];
 
 export const MAX_ANNOUNCEMENT_LENGTH = 120;
@@ -136,6 +137,7 @@ function pickSignatureId(value, fallback) {
 
 export const FALLBACK_THEME = {
   version: THEME_VERSION,
+  layoutVersion: 1,
   presetId: 'the-reserve',
   mode: 'dark',
   brand: { seedColor: '#d4af37', logoUrl: null, logoShape: 'circle' },
@@ -169,6 +171,7 @@ export function coerceTheme(input, base = FALLBACK_THEME) {
 
   return {
     version: THEME_VERSION,
+    layoutVersion: raw.layoutVersion === 2 ? 2 : (base.layoutVersion === 2 ? 2 : 1),
     presetId: pickPresetId(raw.presetId, base.presetId),
     mode: pick(raw.mode, MODES, base.mode),
     brand: {
@@ -220,6 +223,10 @@ export function validateTheme(input) {
 
   if (input.version !== THEME_VERSION) {
     errors.push(`version must be ${THEME_VERSION}, received ${JSON.stringify(input.version)}`);
+  }
+
+  if (input.layoutVersion != null && input.layoutVersion !== 1 && input.layoutVersion !== 2) {
+    errors.push(`layoutVersion must be 1 or 2, received ${JSON.stringify(input.layoutVersion)}`);
   }
 
   const brand = input.brand && typeof input.brand === 'object' ? input.brand : {};

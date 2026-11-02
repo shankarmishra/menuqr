@@ -15,6 +15,7 @@ import { useMenuTheme } from '../MenuThemeProvider.tsx';
 import { useMenuFilters } from '../useMenuFilters.ts';
 import { DietMark, DishFlags, DishPrice } from '../primitives/DishMeta.tsx';
 import { SmartImage } from '../primitives/SmartImage.tsx';
+import { UnifiedDishCard } from '../primitives/UnifiedDishCard.tsx';
 import { EmptyResults, MenuToolbar } from '../primitives/MenuToolbar.tsx';
 import { BrandMark } from './editions/shared.tsx';
 import { parseItemPricing } from '../../menu-builder/templates/shared/pricingUtils';
@@ -191,9 +192,22 @@ export const ChalkboardComposition: React.FC<SignatureProps> = ({ restaurant, ca
                           {category.name}
                         </span>
                         <div className="mq-stack" style={{ gap: 'var(--mq-space-2)', marginTop: 'var(--mq-space-2)' }}>
-                          {category.items.map((item) => (
-                            <DottedRow key={item.id} item={item} readOnly={readOnly} />
-                          ))}
+                          {category.items.map((item, itemIdx) => {
+                            if (tokens.layoutVersion === 2) {
+                              return (
+                                <UnifiedDishCard
+                                  key={item.id}
+                                  item={item}
+                                  index={itemIdx}
+                                  readOnly={readOnly}
+                                  className="mq-card-chalkboard"
+                                />
+                              );
+                            }
+                            return (
+                              <DottedRow key={item.id} item={item} readOnly={readOnly} />
+                            );
+                          })}
                         </div>
                       </section>
                     ))}
