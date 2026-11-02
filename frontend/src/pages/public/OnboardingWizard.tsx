@@ -2139,6 +2139,9 @@ export default function OnboardingWizard() {
                             categories={previewCategories}
                             items={previewItems}
                             compact={false}
+                            isPremium={true}
+                            onAddToCart={() => {}}
+                            getItemQuantity={() => 0}
                           />
                         </div>
                       </PhonePreviewFrame>
@@ -2334,6 +2337,9 @@ export default function OnboardingWizard() {
                             categories={previewCategories}
                             items={previewItems}
                             compact={false}
+                            isPremium={true}
+                            onAddToCart={() => {}}
+                            getItemQuantity={() => 0}
                           />
                         </div>
                       </PhonePreviewFrame>
