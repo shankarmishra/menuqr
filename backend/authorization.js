@@ -52,7 +52,7 @@ export async function resolveTenantAuthorization(user, now = new Date()) {
     validUntil,
     entitlements: active ? (
       (tenantId === 'tenant_shobharams' || tenantId === '21fd932b-4374-4731-b93e-1e8acecc5881' || user?.email === 'sr.shobharams@gmail.com')
-        ? [...(PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC), 'templates']
+        ? [...(PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC), 'templates', 'add_item', 'edit_item', 'delete_item', 'menu_management']
         : (PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC)
     ) : [],
     renewalPending: status === 'RENEWAL_PENDING',
@@ -130,14 +130,14 @@ export async function withContentChange(authorization, mutation) {
       );
       
       await client.query('COMMIT');
-      invalidatePublicMenuCache(authorization.tenantId);
+      await invalidatePublicMenuCache(authorization.tenantId);
       return result;
     }
 
     if (!PLAN_CAPABILITIES[planId]) throw apiError(403, 'Your plan does not allow menu changes.');
     const result = await mutation(client);
     await client.query('COMMIT');
-    invalidatePublicMenuCache(authorization.tenantId);
+    await invalidatePublicMenuCache(authorization.tenantId);
     return result;
   } catch (error) {
     await client.query('ROLLBACK');

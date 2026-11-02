@@ -252,16 +252,32 @@ export default function Menu() {
 
     if (item) {
       setEditingItem(item);
+      const hasHalfFull = (item as any).half_price != null || (item as any).full_price != null || (item as any).halfPrice != null || (item as any).fullPrice != null;
+      const existingVariants = (item.variants && item.variants.length > 0) ? item.variants : [];
+      let initialVariants = existingVariants;
+      if (initialVariants.length === 0 && hasHalfFull) {
+        const hPrice = Number((item as any).half_price ?? (item as any).halfPrice ?? 0);
+        const fPrice = Number((item as any).full_price ?? (item as any).fullPrice ?? 0);
+        initialVariants = [
+          { name: 'Half', price: hPrice },
+          { name: 'Full', price: fPrice }
+        ];
+      }
+      const isVariantsPricing = item.pricing_type === 'variants' || initialVariants.length > 0;
+
       setItemForm({
         name: item.name,
         description: item.description || '',
         price: String(item.price || ''),
-        imageUrl: item.image_url || '',
+        imageUrl: item.image_url || (item as any).imageUrl || '',
         categoryId: item.category_id,
         dietType: item.diet_type || 'veg',
         isAvailable: item.is_available ?? true,
-        pricingType: item.pricing_type || (item.variants && item.variants.length > 0 ? 'variants' : 'single'),
-        variants: item.variants || [],
+        pricingType: isVariantsPricing ? 'variants' : 'single',
+        variants: initialVariants.length > 0 ? initialVariants : [
+          { name: 'Half', price: 0 },
+          { name: 'Full', price: 0 }
+        ],
         addonGroups: item.addon_groups || [],
         tags: { ...EMPTY_TAGS, ...(item.metadata?.tags ?? {}) }
       });
@@ -295,13 +311,30 @@ export default function Menu() {
       return;
     }
 
-    const basePrice = itemForm.pricingType === 'single' ? Number(itemForm.price || 0) : 0;
+    let halfPrice: number | null = null;
+    let fullPrice: number | null = null;
+    let basePrice = Number(itemForm.price || 0);
+
+    if (itemForm.pricingType === 'variants') {
+      const activeVariants = itemForm.variants.filter(v => v.name.trim() && Number.isFinite(Number(v.price)));
+      for (const v of activeVariants) {
+        const vLower = v.name.toLowerCase();
+        if (vLower.includes('half')) halfPrice = Number(v.price);
+        if (vLower.includes('full')) fullPrice = Number(v.price);
+      }
+      const validPrices = activeVariants.map(v => Number(v.price)).filter(p => p > 0);
+      if (validPrices.length > 0) {
+        basePrice = Math.min(...validPrices);
+      }
+    }
 
     const payload = {
       categoryId: itemForm.categoryId,
       name: itemForm.name.trim(),
       description: itemForm.description,
       price: basePrice,
+      halfPrice,
+      fullPrice,
       imageUrl: itemForm.imageUrl,
       dietType: itemForm.dietType,
       isAvailable: itemForm.isAvailable,

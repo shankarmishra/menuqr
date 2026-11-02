@@ -1634,9 +1634,9 @@
   position: relative;
   display: inline-grid;
   place-items: center;
-  width: clamp(120px, 30cqw, 156px);
-  height: clamp(120px, 30cqw, 156px);
-  margin-block: clamp(4px, 1.5cqw, 12px);
+  width: clamp(134px, 34cqw, 168px);
+  height: clamp(134px, 34cqw, 168px);
+  margin-block: clamp(6px, 2cqw, 14px);
   color: var(--mq-color-primary, #8c1d24);
   flex-shrink: 0;
 }
@@ -1652,7 +1652,7 @@
 
 .mq-ed-herb-seal-logo img {
   object-fit: contain;
-  padding: 8%;
+  padding: 2%;
   box-sizing: border-box;
 }
 
@@ -1661,8 +1661,8 @@
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 72%;
-  height: 72%;
+  width: 80%;
+  height: 80%;
   margin-top: -3%;
 }
 
@@ -2213,6 +2213,22 @@
   letter-spacing: 0.02em;
   color: #2b5232;
   white-space: nowrap;
+}
+
+.mq-ed-herb .mq-unified-variant-pill .mq-price,
+.mq-ed-herb .mq-unified-v-price {
+  font-family: var(--mq-font-body, system-ui, -apple-system, sans-serif);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  color: #1a3321;
+}
+
+.mq-ed-herb .mq-unified-v-label {
+  font-family: var(--mq-font-body, system-ui, -apple-system, sans-serif);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #44554a;
 }
 
 .mq-ed-herb .mq-ed-leader-desc {

@@ -1861,7 +1861,7 @@ export default async function appRoutes(request, response, url) {
       if (price !== null && (!Number.isFinite(price) || price < 0)) throw apiError(400, 'Enter a valid menu item price.');
       
       const result = await withContentChange(authorization, async (client) => {
-        const existing = await queryPortable(client, 'SELECT menu_id, category_id, metadata FROM menu_items WHERE id = ? AND tenant_id = ?', [itemId, user.tenantId]);
+        const existing = await queryPortable(client, 'SELECT menu_id, category_id, metadata, image_url, half_price, full_price, price FROM menu_items WHERE id = ? AND tenant_id = ?', [itemId, user.tenantId]);
         if (!existing.rows[0]) throw apiError(404, 'Menu item could not be found.');
         const categoryId = input.categoryId || existing.rows[0].category_id;
 
@@ -1881,9 +1881,30 @@ export default async function appRoutes(request, response, url) {
         
         const pricingType = input.pricingType || (Array.isArray(input.variants) && input.variants.length > 0 ? 'variants' : 'single');
 
+        let halfPrice = input.halfPrice !== undefined ? (input.halfPrice === null ? null : Number(input.halfPrice)) : null;
+        let fullPrice = input.fullPrice !== undefined ? (input.fullPrice === null ? null : Number(input.fullPrice)) : null;
+        if (Array.isArray(input.variants) && input.variants.length > 0) {
+          for (const v of input.variants) {
+            const vLower = String(v.name || '').toLowerCase();
+            const vPrice = Number(v.price);
+            if (vLower.includes('half') && Number.isFinite(vPrice) && vPrice > 0) halfPrice = vPrice;
+            if (vLower.includes('full') && Number.isFinite(vPrice) && vPrice > 0) fullPrice = vPrice;
+          }
+        } else if (input.halfPrice === undefined && input.fullPrice === undefined) {
+          halfPrice = existing.rows[0].half_price ? Number(existing.rows[0].half_price) : null;
+          fullPrice = existing.rows[0].full_price ? Number(existing.rows[0].full_price) : null;
+        }
+
+        let effectivePrice = price !== null ? price : Number(existing.rows[0].price || 0);
+        if (pricingType === 'variants' && (!effectivePrice || effectivePrice <= 0)) {
+          effectivePrice = halfPrice || fullPrice || 0;
+        }
+
+        const nextImageUrl = input.imageUrl !== undefined ? (inputText(input.imageUrl, 2048) || null) : existing.rows[0].image_url;
+
         await queryPortable(client,
-          'UPDATE menu_items SET category_id = ?, name = COALESCE(?, name), description = ?, price = COALESCE(?, price), half_price = COALESCE(?, half_price), full_price = COALESCE(?, full_price), image_url = COALESCE(?, image_url), diet_type = COALESCE(?, diet_type), is_available = COALESCE(?, is_available), pricing_type = ?, metadata = COALESCE(?, metadata), updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
-          [categoryId, name, input.description === undefined ? null : inputText(input.description, 2000) || null, price, input.halfPrice === undefined ? null : input.halfPrice, input.fullPrice === undefined ? null : input.fullPrice, input.imageUrl === undefined ? null : inputText(input.imageUrl, 2048) || null, input.dietType === undefined ? null : input.dietType, input.isAvailable === undefined ? null : input.isAvailable !== false, pricingType, metadataJson, itemId, user.tenantId]
+          'UPDATE menu_items SET category_id = ?, name = COALESCE(?, name), description = ?, price = ?, half_price = ?, full_price = ?, image_url = ?, diet_type = COALESCE(?, diet_type), is_available = COALESCE(?, is_available), pricing_type = ?, metadata = COALESCE(?, metadata), updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
+          [categoryId, name, input.description === undefined ? null : inputText(input.description, 2000) || null, effectivePrice, halfPrice, fullPrice, nextImageUrl, input.dietType === undefined ? null : input.dietType, input.isAvailable === undefined ? null : input.isAvailable !== false, pricingType, metadataJson, itemId, user.tenantId]
         );
 
         if (Array.isArray(input.variants)) {
