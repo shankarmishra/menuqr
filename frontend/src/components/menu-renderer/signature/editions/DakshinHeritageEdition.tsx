@@ -655,14 +655,10 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
             </div>
           )}
 
-          {/* Kuthu Vilakku Lamp Logo Cartouche */}
-          <KuthuvilakkuCartouche size={compact ? 120 : 156}>
-            <BrandMark
-              restaurant={restaurant}
-              size={compact ? 72 : 92}
-              className="mq-ed-mark-in-cartouche"
-            />
-          </KuthuvilakkuCartouche>
+          {/* Frameless Restaurant Logo */}
+          <div className="mq-ed-cover-logo-frameless">
+            <BrandMark restaurant={restaurant} size={compact ? 80 : 120} className="mq-ed-mark-bare" />
+          </div>
 
           {/* Restaurant Title in Kumbakonam Turmeric Foil */}
           <h1 className="mq-ed-dakshin-title mq-ed-dakshin-foil-text">{restaurant.name}</h1>

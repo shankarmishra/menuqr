@@ -92,7 +92,7 @@ const DecoCornerZiggurat: React.FC<{ size?: number }> = ({ size }) => (
  * Grand Art Deco architectural crest & cartouche housing the restaurant logo.
  * STRICT LOCATION: Kept directly in the central upper-third position above the title.
  */
-const DecoLogoCartouche: React.FC<{ children: React.ReactNode; size?: number }> = ({
+export const DecoLogoCartouche: React.FC<{ children: React.ReactNode; size?: number }> = ({
   children,
   size,
 }) => (
@@ -449,13 +449,14 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
           </div>
 
           {/* STRICT DEDICATED LOCATION: Architectural Central Logo Cartouche directly above title */}
-          <DecoLogoCartouche size={compact ? 130 : undefined}>
+          {/* Frameless Restaurant Logo */}
+          <div className="mq-ed-cover-logo-frameless">
             <BrandMark
               restaurant={restaurant}
-              size={compact ? 84 : 116}
-              className="mq-ed-mark-in-cartouche"
+              size={compact ? 80 : 120}
+              className="mq-ed-mark-bare"
             />
-          </DecoLogoCartouche>
+          </div>
 
           {/* Grand Chiseled Title with Dorure à Chaud Gold Foil Shader */}
           <h1 className="mq-ed-noir-title mq-ed-noir-foil-text">{restaurant.name}</h1>

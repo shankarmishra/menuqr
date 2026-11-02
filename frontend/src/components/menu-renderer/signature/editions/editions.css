@@ -3266,3 +3266,31 @@
 .mq-ed-contact-links {
   margin-top: 0.25rem;
 }
+
+
+/* =========================================================================
+   FRAMELESS COVER LOGO: No SVG frames, rings, pots, or clipping plates
+   ========================================================================= */
+.mq-ed-cover-logo-frameless {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto 16px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.mq-ed-cover-logo-frameless .mq-ed-mark,
+.mq-ed-cover-logo-frameless .mq-logo-wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.mq-ed-cover-logo-frameless img {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+  object-fit: contain !important;
+  max-width: 100% !important;
+}

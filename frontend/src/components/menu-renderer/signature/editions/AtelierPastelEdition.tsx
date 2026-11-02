@@ -434,21 +434,11 @@ export const AtelierPastelEdition: React.FC<EditionProps> = ({
           <span className="mq-ed-pastel-arch-ring" aria-hidden="true" />
         </div>
 
-        {/* Brand Identity & Monogram Cartouche */}
         <div className="mq-ed-pastel-cover-body">
-          {restaurant.logoUrl ? (
-            <div className="mq-ed-pastel-logo-clean" style={{ margin: '0 auto 12px', display: 'flex', justifyContent: 'center' }}>
-              <BrandMark restaurant={restaurant} size={compact ? 80 : 120} />
-            </div>
-          ) : (
-            <PatisserieArchCartouche size={compact ? 130 : 165}>
-              <BrandMark
-                restaurant={restaurant}
-                size={compact ? 48 : 64}
-                className="mq-ed-mark-in-cartouche"
-              />
-            </PatisserieArchCartouche>
-          )}
+          {/* Frameless Restaurant Logo */}
+          <div className="mq-ed-cover-logo-frameless">
+            <BrandMark restaurant={restaurant} size={compact ? 80 : 120} className="mq-ed-mark-bare" />
+          </div>
 
           {restaurant.cuisine && <p className="mq-ed-pastel-cuisine">{restaurant.cuisine}</p>}
 

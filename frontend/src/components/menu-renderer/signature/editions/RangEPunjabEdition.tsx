@@ -108,7 +108,7 @@ const PhulkariCornerBracket: React.FC<{
  * Hammered Brass (Peetal) Degchi Logo Cartouche.
  * Modeled after slow-simmering handis and degchis with 28 stamped brass rivets.
  */
-const DegchiLogoCartouche: React.FC<{
+export const DegchiLogoCartouche: React.FC<{
   restaurant: { name: string; logoUrl?: string };
   size?: number;
 }> = ({ restaurant, size = 104 }) => {
@@ -351,8 +351,10 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
             routeText={restaurant.cuisine}
           />
 
-          {/* Hammered Peetal Degchi Logo Cartouche */}
-          <DegchiLogoCartouche restaurant={restaurant} size={compact ? 80 : 110} />
+          {/* Frameless Restaurant Logo */}
+          <div className="mq-ed-cover-logo-frameless">
+            <BrandMark restaurant={restaurant} size={compact ? 80 : 120} className="mq-ed-mark-bare" />
+          </div>
 
           {/* Restaurant Title with Tandoori Brass Glow */}
           <h1 className="mq-ed-punjab-title">{restaurant.name}</h1>
@@ -582,7 +584,7 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
         <PhulkariAstragal />
 
         <div className="mq-ed-punjab-foot-crest">
-          <DegchiLogoCartouche restaurant={restaurant} size={68} />
+          <BrandMark restaurant={restaurant} size={64} className="mq-ed-mark-bare" />
         </div>
 
         <h3 className="mq-ed-punjab-foot-name">{restaurant.name}</h3>

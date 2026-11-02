@@ -62,7 +62,7 @@ export const LittoraleEdition: React.FC<EditionProps> = ({
     <div className={compact ? 'mq-ed mq-ed-litt is-compact' : 'mq-ed mq-ed-litt'}>
       <header className="mq-ed-litt-cover" data-edition-cover="littorale">
         <div className="mq-ed-litt-head">
-          <BrandMark restaurant={restaurant} size={compact ? 30 : 48} className="mq-ed-mark-ring" />
+          <BrandMark restaurant={restaurant} size={compact ? 30 : 48} className="mq-ed-mark-bare" />
           {restaurant.cuisine && <p className="mq-ed-litt-cuisine">{restaurant.cuisine}</p>}
           <h1 className="mq-ed-litt-title">{restaurant.name}</h1>
           <WaveRule className="mq-ed-litt-wave" />

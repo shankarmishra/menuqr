@@ -97,7 +97,7 @@ export const ChalkHouseEdition: React.FC<EditionProps> = ({
         <div className="mq-ed-chalk-cover-body">
           <p className="mq-ed-chalk-kicker">Menu</p>
 
-          <BrandMark restaurant={restaurant} size={compact ? 32 : 56} className="mq-ed-mark-ring" />
+          <BrandMark restaurant={restaurant} size={compact ? 32 : 56} className="mq-ed-mark-bare" />
 
           <h1 className="mq-ed-chalk-title">{restaurant.name}</h1>
           <ChalkSwoosh className="mq-ed-chalk-swoosh" />

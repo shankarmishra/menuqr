@@ -457,14 +457,10 @@ export const ThaliAndCoEdition: React.FC<EditionProps> = ({
             </div>
           )}
 
-          {/* 12-Katori Overhead Kansa Platter Cartouche */}
-          <KansaThaliCartouche size={compact ? 120 : 156}>
-            <BrandMark
-              restaurant={restaurant}
-              size={compact ? 72 : 92}
-              className="mq-ed-mark-in-cartouche"
-            />
-          </KansaThaliCartouche>
+          {/* Frameless Restaurant Logo */}
+          <div className="mq-ed-cover-logo-frameless">
+            <BrandMark restaurant={restaurant} size={compact ? 80 : 120} className="mq-ed-mark-bare" />
+          </div>
 
           {/* Restaurant Title with Burnished Kansa Bronze Foil */}
           <h1 className="mq-ed-thali-title mq-ed-thali-foil-text">{restaurant.name}</h1>

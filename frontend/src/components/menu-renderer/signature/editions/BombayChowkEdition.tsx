@@ -527,14 +527,10 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
             </div>
           )}
 
-          {/* Gateway of India & Sunburst Cartouche */}
-          <GatewayDecoCartouche size={compact ? 116 : 152}>
-            <BrandMark
-              restaurant={restaurant}
-              size={compact ? 70 : 88}
-              className="mq-ed-mark-in-cartouche"
-            />
-          </GatewayDecoCartouche>
+          {/* Frameless Restaurant Logo */}
+          <div className="mq-ed-cover-logo-frameless">
+            <BrandMark restaurant={restaurant} size={compact ? 80 : 120} className="mq-ed-mark-bare" />
+          </div>
 
           {/* Restaurant Title with Foil Glow */}
           <h1 className="mq-ed-chowk-title mq-ed-chowk-foil-text">{restaurant.name}</h1>

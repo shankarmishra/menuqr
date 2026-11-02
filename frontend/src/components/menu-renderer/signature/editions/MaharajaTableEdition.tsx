@@ -188,7 +188,7 @@ const RoyalCornerBracket: React.FC<{ size?: number; className?: string }> = ({
  * Imperial Royal Darbar Cartouche with 36 Micro-Beaded Brass Pearls,
  * Lotus Kalasa Finial, Flanking Acanthus/Mor-Pankh Wings, and Velvet Coin Bed.
  */
-const DarbarLogoCartouche: React.FC<{
+export const DarbarLogoCartouche: React.FC<{
   children: React.ReactNode;
   size?: number;
 }> = ({ children, size = 156 }) => (
@@ -447,14 +447,10 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
             </div>
           )}
 
-          {/* Imperial Royal Darbar Cartouche */}
-          <DarbarLogoCartouche size={compact ? 124 : 156}>
-            <BrandMark
-              restaurant={restaurant}
-              size={compact ? 78 : 98}
-              className="mq-ed-mark-in-cartouche"
-            />
-          </DarbarLogoCartouche>
+          {/* Frameless Restaurant Logo */}
+          <div className="mq-ed-cover-logo-frameless">
+            <BrandMark restaurant={restaurant} size={compact ? 80 : 120} className="mq-ed-mark-bare" />
+          </div>
 
           {/* Grand 24K Gold Foil Title */}
           <h1 className="mq-ed-maharaja-title mq-ed-maharaja-foil-text">{restaurant.name}</h1>
