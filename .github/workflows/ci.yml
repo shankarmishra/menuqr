@@ -64,6 +64,7 @@ jobs:
           test/culinary_image_service.test.js
           test/focal_point.test.js
           test/menu_importer.test.js
+          test/external_image_mirror.test.js
           test/pdf_menu_reconstruction.test.js
           test/item_sold_out.test.js
           test/item_tags.test.js

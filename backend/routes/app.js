@@ -8,6 +8,7 @@ import { apiError, sendJson, readJson } from '../utils.js';
 import { randomUUID } from 'node:crypto';
 import { resolveTenantAuthorization, requireEntitlement, withContentChange, getContentUsage } from '../authorization.js';
 import { detectColumnMappings, validateAndPreviewImport, executeImportTransaction } from '../menuImporter.js';
+import { mirrorExternalImages } from '../externalImageMirror.js';
 import { resolveDishImage } from '../culinaryImageService.js';
 import { invalidatePublicMenuCache } from './public.js';
 import { extractMenuFromPdf, refinePdfDesign } from '../pdfMenuService.js';
@@ -250,6 +251,10 @@ export default async function appRoutes(request, response, url) {
         metadata: Object.keys(metadata).length ? JSON.stringify(metadata) : null,
       };
     });
+
+    // Host external dish photos ourselves (fast, no third-party rate limits). Failures keep the original link.
+    const mirrorStats = await mirrorExternalImages(normalizedItems, user.tenantId);
+    if (mirrorStats.mirrored || mirrorStats.failed) console.log('[onboarding] image mirror', JSON.stringify(mirrorStats));
 
     const client = await pool.connect();
     let createdMenuId;
@@ -1792,6 +1797,10 @@ export default async function appRoutes(request, response, url) {
       menuId = randomUUID();
       await queryPortable(pool, 'INSERT INTO menus (id, tenant_id, name) VALUES (?, ?, ?)', [menuId, user.tenantId, 'Main Menu']);
     }
+
+    // Same for spreadsheet imports: copy linked photos into our storage before the transaction.
+    const importItems = categories.flatMap((cat) => (Array.isArray(cat?.items) ? cat.items : []));
+    await mirrorExternalImages(importItems, user.tenantId);
 
     const client = await pool.connect();
     let stats;

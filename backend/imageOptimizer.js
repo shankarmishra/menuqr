@@ -39,6 +39,7 @@ function parseInput(input) {
  * @param {object} [opts]
  * @param {number} [opts.maxWidth=1200]
  * @param {number} [opts.quality=80]
+ * @param {boolean} [opts.variants=true] - set false to skip the responsive WebP/AVIF variants
  */
 export async function optimizeAndSaveImage(input, tenantId, category = 'dishes', opts = {}) {
   if (!input) throw new Error('No image data provided.');
@@ -83,7 +84,8 @@ export async function optimizeAndSaveImage(input, tenantId, category = 'dishes',
 
   // Responsive variants: width-only resize (no height cap), so a tall portrait photo is not
   // squared off the way the legacy primary file is.
-  const variantResults = await Promise.all(
+  // `opts.variants === false` writes only the primary WebP (used when mirroring many photos at once).
+  const variantResults = opts.variants === false ? [] : await Promise.all(
     RESPONSIVE_WIDTHS.flatMap((width) => [
       sharp(buffer)
         .rotate()
