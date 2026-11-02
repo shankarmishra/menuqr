@@ -583,6 +583,7 @@ export const DEMO_RESTAURANT = {
       category: 'cat-1',
       dietType: 'veg' as const,
       available: true,
+      image: '/img/photos/photo-1540420773420-3366772f4999-w600.webp',
     },
     {
       id: 'demo-4',
@@ -614,6 +615,7 @@ export const DEMO_RESTAURANT = {
       category: 'cat-2',
       dietType: 'non-veg' as const,
       available: true,
+      image: '/img/photos/photo-1544025162-d76694265947-w600.webp',
     },
     {
       id: 'demo-7',

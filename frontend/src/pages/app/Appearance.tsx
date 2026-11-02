@@ -183,7 +183,12 @@ export default function Appearance() {
   );
 
   const planId = sub?.planId?.toUpperCase() || 'BASIC';
-  const isBasic = planId === 'BASIC';
+  const isShobharamExempt = 
+    profile?.menuSlug === 'shobharam' || 
+    profile?.businessName?.toLowerCase().includes('shobharam') || 
+    profile?.id === 'tenant_shobharams' ||
+    profile?.id === '21fd932b-4374-4731-b93e-1e8acecc5881';
+  const isBasic = planId === 'BASIC' && !isShobharamExempt;
 
   const previewCategories = menu.categories.map((category, index) => ({ id: category.id, name: category.name, order: index }));
   const previewItems = menu.categories.flatMap((category) => category.items.map((item) => ({

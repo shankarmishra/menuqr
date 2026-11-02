@@ -50,7 +50,11 @@ export async function resolveTenantAuthorization(user, now = new Date()) {
     effectiveStatus: status,
     validFrom,
     validUntil,
-    entitlements: active ? (PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC) : [],
+    entitlements: active ? (
+      (tenantId === 'tenant_shobharams' || tenantId === '21fd932b-4374-4731-b93e-1e8acecc5881')
+        ? [...(PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC), 'templates']
+        : (PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC)
+    ) : [],
     renewalPending: status === 'RENEWAL_PENDING',
     active,
     reason: active ? null : `Subscription is ${status.toLowerCase()} or outside its paid period.`,

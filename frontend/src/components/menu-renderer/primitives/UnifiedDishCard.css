@@ -22,9 +22,10 @@
   transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
   position: relative;
   overflow: visible;
-  content-visibility: auto;
-  contain-intrinsic-size: 0 130px;
+  /* content-visibility: auto; */
+  /* contain-intrinsic-size: 0 130px; */
   min-height: 120px;
+  flex-shrink: 0;
 }
 
 @media (hover: hover) {
@@ -854,3 +855,20 @@
   font-weight: 800;
 }
 
+
+/* Minimalist placeholder for dishes without photos */
+.mq-unified-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mq-color-surface-alt, rgba(0, 0, 0, 0.03));
+  border: 1px dashed var(--mq-color-border, rgba(0, 0, 0, 0.12));
+  border-radius: 14px;
+}
+
+.mq-unified-placeholder-diet {
+  opacity: 0.6;
+  transform: scale(1.15);
+}
