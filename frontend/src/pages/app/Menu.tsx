@@ -31,6 +31,7 @@ import {
   setMenuItemSoldOut,
   updateMenuCategory,
   updateMenuItem,
+  uploadImage,
   type AppMenuData,
   type AppMenuItem,
   type AppVariant,
@@ -81,15 +82,9 @@ export default function Menu() {
     setUploadingImage(true);
     try {
       const compressed = await compressImageBeforeUpload(file, 1000, 0.78);
-      const res = await fetch('/api/app/upload-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ image: compressed.dataUrl, category: 'dishes' })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Upload failed');
-      setItemForm(prev => ({ ...prev, imageUrl: data.url }));
+      const res = await uploadImage(compressed.dataUrl, 'dishes', 1200);
+      if (!res?.url) throw new Error('Upload failed: No image URL returned');
+      setItemForm(prev => ({ ...prev, imageUrl: res.url }));
       showToast('success', `Photo compressed (-${compressed.reductionPercentage}%) and attached!`);
     } catch (err: any) {
       showToast('error', err?.message || 'Failed to upload photo.');
@@ -814,9 +809,29 @@ export default function Menu() {
                           className="h-4 w-4 rounded border-[#384841] bg-[#151c19] text-[#e8783c] focus:ring-0"
                         />
 
-                        {/* Diet Icon / Image */}
-                        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#384841] bg-[#151c19]">
-                          <span className={`h-3 w-3 rounded-full ${item.diet_type === 'veg' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        {/* Food Image Thumbnail & Diet Indicator */}
+                        <div
+                          onClick={() => openItemDrawer(item)}
+                          className="group/thumb relative flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-[#384841] bg-[#151c19] hover:border-[#e8783c] transition-colors"
+                          title="Click to view or edit dish photo"
+                        >
+                          {item.image_url ? (
+                            <img
+                              src={item.image_url}
+                              alt={item.name}
+                              className="h-full w-full object-cover group-hover/thumb:scale-105 transition-transform duration-300"
+                              decoding="async"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <UtensilsCrossed className="h-5 w-5 text-[#87958e]/40" />
+                          )}
+                          <span
+                            className={`absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full border border-black/80 shadow-sm ${
+                              item.diet_type === 'veg' ? 'bg-emerald-500' : 'bg-rose-500'
+                            }`}
+                            title={item.diet_type === 'veg' ? 'Pure Veg' : 'Non-Veg'}
+                          />
                         </div>
 
                         <div>
