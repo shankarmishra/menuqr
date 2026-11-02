@@ -3,6 +3,23 @@ import { queryPortable } from './db.js';
 import { apiError } from './utils.js';
 import { resolveDishImage } from './culinaryImageService.js';
 
+// A search-results page (e.g. google.com/search?tbm=isch&q=...) is not an image file; stored as a
+// dish photo it never loads. Treat it as "no image" so the stock-photo fallback applies.
+const SEARCH_ENGINE_HOSTS = /(^|\.)(google|bing|duckduckgo|yahoo|yandex|baidu|ecosia|pinterest)\.[a-z.]+$/i;
+export function isUsableImageUrl(value) {
+  if (typeof value !== 'string') return false;
+  const url = value.trim();
+  if (!url) return false;
+  if (url.startsWith('data:image/') || url.startsWith('/')) return true;
+  let parsed;
+  try { parsed = new URL(url); } catch { return false; }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+  const path = parsed.pathname.toLowerCase();
+  const isSearchPage = /\/(search|images\/search|imgres|url)$/.test(path) || parsed.searchParams.has('tbm') ||
+    (parsed.searchParams.has('q') && /\/(search|images)/.test(path));
+  return !(SEARCH_ENGINE_HOSTS.test(parsed.hostname) && isSearchPage);
+}
+
 export const COLUMN_ALIASES = {
   category: ['category', 'section', 'group', 'menu category', 'category name', 'type', 'course', 'item category'],
   name: ['item name', 'dish', 'product', 'food name', 'item', 'name', 'dish name', 'title', 'menu item'],
@@ -271,7 +288,7 @@ export async function executeImportTransaction(client, tenantId, menuId, parsedC
       // path never did, so a spreadsheet with no "image" column produced a menu with zero
       // photos. Only fills a gap — an image column in the sheet always wins.
       const finalImageUrl =
-        item.imageUrl || item.image || item.image_url || resolveDishImage(item.name, cat.name, [], 0, tenantId);
+        [item.imageUrl, item.image, item.image_url].find(isUsableImageUrl) || resolveDishImage(item.name, cat.name, [], 0, tenantId);
       
       if (existingItem && mode === 'update') {
         itemId = existingItem.id;

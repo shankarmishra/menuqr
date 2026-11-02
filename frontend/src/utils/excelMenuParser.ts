@@ -104,6 +104,8 @@ function parseFlag(val: unknown): boolean {
   return ['yes', 'y', 'true', '1', 'x', '✓', '★', 'bestseller'].includes(str);
 }
 
+import { isUsableImageUrl } from './imageUrl.ts';
+
 function cleanString(val: unknown): string {
   if (val === null || val === undefined) return '';
   return String(val).trim();
@@ -111,6 +113,12 @@ function cleanString(val: unknown): string {
 
 /** Robustly extracts and normalizes an image URL from an Excel cell */
 export function parseImageUrl(val: unknown): string {
+  const parsed = parseImageUrlRaw(val);
+  // A search-results link is not an image; drop it so the import can fall back to a stock photo.
+  return parsed && isUsableImageUrl(parsed) ? parsed : '';
+}
+
+function parseImageUrlRaw(val: unknown): string {
   if (val === null || val === undefined) return '';
   let str = String(val).trim();
   if (!str) return '';

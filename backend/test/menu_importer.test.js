@@ -100,3 +100,13 @@ test('Smart Excel Importer Unit & Validation Test Suite', async (t) => {
     assert.equal(res.issues[0].field, 'price');
   });
 });
+
+test('isUsableImageUrl rejects search-result pages but keeps real image links', async () => {
+  const { isUsableImageUrl } = await import('../menuImporter.js');
+  assert.equal(isUsableImageUrl('https://www.google.com/search?tbm=isch&q=%22Matar+Mushroom%22'), false);
+  assert.equal(isUsableImageUrl('https://www.bing.com/images/search?q=paneer'), false);
+  assert.equal(isUsableImageUrl(''), false);
+  assert.equal(isUsableImageUrl('https://images.unsplash.com/photo-1.jpg'), true);
+  assert.equal(isUsableImageUrl('https://lh3.googleusercontent.com/abc=w600'), true);
+  assert.equal(isUsableImageUrl('/uploads/dishes/a.webp'), true);
+});

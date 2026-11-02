@@ -20,6 +20,7 @@ import { DietMark, DishFlags } from './DishMeta.tsx';
 import { SmartImage } from './SmartImage.tsx';
 import { useMenuCart } from '../../menu-builder/templates/shared/MenuCartContext';
 import { parseItemPricing } from '../../menu-builder/templates/shared/pricingUtils';
+import { isUsableImageUrl } from '../../../utils/imageUrl';
 import type { RenderMenuItem } from '../types.ts';
 import './UnifiedDishCard.css';
 
@@ -90,7 +91,10 @@ export const UnifiedDishCard: React.FC<UnifiedDishCardProps> = ({
     }
   };
 
-  const hasImage = Boolean(item.imageUrl);
+  // A photo that cannot load (dead link, or a search-page URL pasted from a spreadsheet) must not
+  // leave an empty grey box: drop the thumbnail and let the card use its no-image layout.
+  const [imageFailed, setImageFailed] = useState(false);
+  const hasImage = isUsableImageUrl(item.imageUrl) && !imageFailed;
 
   const renderAddAction = () => {
     if (!canOrder) return null;
@@ -234,6 +238,7 @@ export const UnifiedDishCard: React.FC<UnifiedDishCardProps> = ({
               role="thumb"
               focal={item.focal}
               aspectRatio="1"
+              onError={() => setImageFailed(true)}
               className="mq-unified-thumb-img"
             />
           </div>
