@@ -228,6 +228,9 @@ export default function Step4Template({
               categories={categories}
               items={items}
               compact={false}
+              isPremium={true}
+              onAddToCart={() => {}}
+              getItemQuantity={() => 0}
             />
           </div>
         </PhonePreviewFrame>

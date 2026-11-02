@@ -420,7 +420,7 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
           ========================================================================= */}
       <main className="mq-ed-punjab-plate">
         {/* 1. BHATTHI DA SWAAD • SIGNATURE TANDOOR SHOWCASE */}
-        {signatures.length > 0 && !compact && !hasQuery && (
+        {signatures.length > 0 && !compact && !hasQuery && tokens.layoutVersion !== 2 && (
           <section className="mq-ed-punjab-showcase" aria-label="Featured dishes">
             <header className="mq-ed-punjab-showcase-header">
               <h2 className="mq-ed-punjab-showcase-title">Featured dishes</h2>

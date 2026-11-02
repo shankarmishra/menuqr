@@ -66,8 +66,8 @@ export const LogoMark: React.FC<LogoMarkProps> = ({
   size: rawSize = 72,
   surfaceColor = '#ffffff',
   mode: explicitMode,
-  allowedModes = ['plain', 'plate', 'mono'],
-  shape = 'circle',
+  allowedModes = ['plain', 'mono'],
+  shape = 'rounded',
   monoLightUrl,
   monoDarkUrl,
   loading = 'lazy',
@@ -216,7 +216,8 @@ export const LogoMark: React.FC<LogoMarkProps> = ({
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: size,
+        width: 'auto',
+        maxWidth: '100%',
         height: size,
         boxSizing: 'border-box',
         ...style,
@@ -233,9 +234,9 @@ export const LogoMark: React.FC<LogoMarkProps> = ({
         decoding="async"
         className="mq-logo"
         style={{
-          width: '100%',
+          width: 'auto',
           height: '100%',
-          maxWidth: size,
+          maxWidth: '100%',
           maxHeight: size,
           objectFit: 'contain',
           filter: cssFilter,

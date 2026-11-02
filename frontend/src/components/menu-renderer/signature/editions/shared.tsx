@@ -231,11 +231,11 @@ export const BrandMark: React.FC<{
 }> = ({ restaurant, className, size = 72 }) => (
   <span
     className={['mq-ed-mark', className].filter(Boolean).join(' ')}
-    style={{ width: size, height: size }}
+    style={{ minWidth: size, height: size, maxWidth: '100%' }}
     data-testid="mq-cover-mark"
   >
     {restaurant.logoUrl ? (
-      <LogoMark logoUrl={restaurant.logoUrl} restaurantName={restaurant.name} size={size} />
+      <LogoMark logoUrl={restaurant.logoUrl} restaurantName={restaurant.name} size={size} shape="rounded" allowedModes={['plain', 'mono']} />
     ) : (
       <span className="mq-ed-mark-letters">{initials(restaurant.name)}</span>
     )}

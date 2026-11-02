@@ -450,7 +450,7 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
 
       <main className="mq-ed-herb-plate-main">
         {/* 1. RÉCOLTE DU JARDIN — CURATED HARVEST SHOWCASE */}
-        {signatures.length > 0 && !compact && !hasQuery && (
+        {signatures.length > 0 && !compact && !hasQuery && tokens.layoutVersion !== 2 && (
           <section className="mq-ed-herb-showcase" aria-label="Featured dishes">
             <div className="mq-ed-herb-showcase-header">
               <h2 className="mq-ed-herb-showcase-title">Featured dishes</h2>

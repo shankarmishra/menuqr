@@ -726,7 +726,7 @@ export const DakshinHeritageEdition: React.FC<EditionProps> = ({
           ========================================================================= */}
       <main className="mq-ed-dakshin-plate">
         {/* 1. SIGNATURE TIFFIN & ROAST SHOWCASE */}
-        {signatures.length > 0 && !compact && !hasQuery && (
+        {signatures.length > 0 && !compact && !hasQuery && tokens.layoutVersion !== 2 && (
           <section className="mq-ed-dakshin-showcase" aria-label="Featured dishes">
             <div className="mq-ed-dakshin-showcase-header">
               <VazhaiIlaiAstragal />

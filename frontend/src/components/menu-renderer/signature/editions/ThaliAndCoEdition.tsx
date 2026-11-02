@@ -528,7 +528,7 @@ export const ThaliAndCoEdition: React.FC<EditionProps> = ({
           ========================================================================= */}
       <main className="mq-ed-thali-plate">
         {/* 1. SIGNATURE THALIS SHOWCASE */}
-        {signatures.length > 0 && !compact && !hasQuery && (
+        {signatures.length > 0 && !compact && !hasQuery && tokens.layoutVersion !== 2 && (
           <section className="mq-ed-thali-showcase" aria-label="Featured dishes">
             <div className="mq-ed-thali-showcase-header">
               <ShadrasaWheelAstragal />

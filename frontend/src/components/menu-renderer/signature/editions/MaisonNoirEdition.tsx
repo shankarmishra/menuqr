@@ -519,7 +519,7 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
           ========================================================================= */}
       <main className="mq-ed-noir-plate">
         {/* 1. SÉLECTION DU CHEF : CURATED SIGNATURE SHOWCASE */}
-        {signatures.length > 0 && !compact && !hasQuery && (
+        {signatures.length > 0 && !compact && !hasQuery && tokens.layoutVersion !== 2 && (
           <section className="mq-ed-noir-signatures-section" aria-label="Featured dishes">
             <div className="mq-ed-noir-section-header">
               <h2 className="mq-ed-noir-section-title">Featured dishes</h2>

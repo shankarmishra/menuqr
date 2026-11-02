@@ -265,7 +265,7 @@ export const NorenEdition: React.FC<EditionProps> = ({
           ========================================================================= */}
       <main className="mq-ed-noren-body">
         {/* 1. SHUN TOKUSEN (旬の特選) — CURATED SIGNATURE SHOWCASE */}
-        {signatures.length > 0 && !compact && !hasQuery && (
+        {signatures.length > 0 && !compact && !hasQuery && tokens.layoutVersion !== 2 && (
           <section className="mq-ed-noren-showcase" aria-label="Featured dishes">
             <div className="mq-ed-noren-showcase-header">
               <h3 className="mq-ed-noren-showcase-title">FEATURED DISHES</h3>

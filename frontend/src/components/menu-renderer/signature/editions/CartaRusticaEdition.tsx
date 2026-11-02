@@ -344,7 +344,7 @@ export const CartaRusticaEdition: React.FC<EditionProps> = ({
           ========================================================================= */}
       <main className="mq-ed-carta-body">
         {/* Curated "Specialità della Casa" Showcase (House Signature Dishes) */}
-        {!compact && !hasQuery && houseSpecialties.length > 0 && (
+        {!compact && !hasQuery && houseSpecialties.length > 0 && tokens.layoutVersion !== 2 && (
           <section className="mq-ed-carta-showcase" aria-label="Featured dishes">
             <div className="mq-ed-carta-showcase-header">
               <h3 className="mq-ed-carta-showcase-title">Featured dishes</h3>

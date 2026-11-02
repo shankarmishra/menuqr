@@ -600,7 +600,7 @@ export const BombayChowkEdition: React.FC<EditionProps> = ({
           ========================================================================= */}
       <main className="mq-ed-chowk-plate">
         {/* 1. FEATURED DISHES SHOWCASE */}
-        {signatures.length > 0 && !compact && !hasQuery && (
+        {signatures.length > 0 && !compact && !hasQuery && tokens.layoutVersion !== 2 && (
           <section className="mq-ed-chowk-showcase" aria-label="Featured dishes">
             <div className="mq-ed-chowk-showcase-header">
               <CuttingChaiCaddy size={44} />

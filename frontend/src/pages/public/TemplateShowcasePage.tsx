@@ -145,6 +145,9 @@ export default function TemplateShowcasePage() {
         categories={DEMO_RESTAURANT.categories}
         items={DEMO_RESTAURANT.items}
         theme={layoutVersion === 2 ? { layoutVersion: 2 } : undefined}
+        isPremium={true}
+        onAddToCart={() => {}}
+        getItemQuantity={() => 0}
       />
     </div>
   );
