@@ -199,7 +199,12 @@ export default function MenuDesignStudio() {
 
   useEffect(() => {
     let current = true;
-    Promise.all([getTheme(), getProfile(), getSubscription(), getMenu()])
+    Promise.all([
+      getTheme().catch(() => ({ draft: null, published: null, version: 0, hasUnpublishedChanges: false })),
+      getProfile().catch(() => null),
+      getSubscription().catch(() => null),
+      getMenu().catch(() => null),
+    ])
       .then(([themeState, profileData, subData, menuData]) => {
         if (!current) return;
         setProfile(profileData);
@@ -214,7 +219,7 @@ export default function MenuDesignStudio() {
           const seeded = themeFromPreset(
             PRESETS.find((p) => p.id === getPreset(undefined).id) ?? PRESETS[0]
           );
-          setTheme({ ...seeded, brand: { ...seeded.brand, logoUrl: profileData.logoUrl ?? null } });
+          setTheme({ ...seeded, brand: { ...seeded.brand, logoUrl: profileData?.logoUrl ?? null } });
         }
       })
       .catch(() => {
@@ -250,8 +255,16 @@ export default function MenuDesignStudio() {
     };
   }, [theme, showToast]);
 
+  const isShobharamExempt =
+    profile?.menuSlug === 'shobharam' ||
+    profile?.menuSlug === 'shobharams' ||
+    profile?.businessName?.toLowerCase().includes('shobharam') ||
+    profile?.email === 'sr.shobharams@gmail.com' ||
+    profile?.id === 'tenant_shobharams' ||
+    profile?.id === '21fd932b-4374-4731-b93e-1e8acecc5881';
+
   const planId = sub?.planId?.toUpperCase() || 'BASIC';
-  const isBasic = planId === 'BASIC';
+  const isBasic = !isShobharamExempt && planId === 'BASIC';
 
   const previewCategories = useMemo(() => {
     const real = toRenderCategories(menu);

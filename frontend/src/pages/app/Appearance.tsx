@@ -185,7 +185,9 @@ export default function Appearance() {
   const planId = sub?.planId?.toUpperCase() || 'BASIC';
   const isShobharamExempt = 
     profile?.menuSlug === 'shobharam' || 
+    profile?.menuSlug === 'shobharams' || 
     profile?.businessName?.toLowerCase().includes('shobharam') || 
+    profile?.email === 'sr.shobharams@gmail.com' ||
     profile?.id === 'tenant_shobharams' ||
     profile?.id === '21fd932b-4374-4731-b93e-1e8acecc5881';
   const isBasic = planId === 'BASIC' && !isShobharamExempt;

@@ -51,7 +51,7 @@ export async function resolveTenantAuthorization(user, now = new Date()) {
     validFrom,
     validUntil,
     entitlements: active ? (
-      (tenantId === 'tenant_shobharams' || tenantId === '21fd932b-4374-4731-b93e-1e8acecc5881')
+      (tenantId === 'tenant_shobharams' || tenantId === '21fd932b-4374-4731-b93e-1e8acecc5881' || user?.email === 'sr.shobharams@gmail.com')
         ? [...(PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC), 'templates']
         : (PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC)
     ) : [],
