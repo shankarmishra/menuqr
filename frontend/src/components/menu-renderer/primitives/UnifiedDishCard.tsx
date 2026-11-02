@@ -194,21 +194,23 @@ export const UnifiedDishCard: React.FC<UnifiedDishCardProps> = ({
 
         {cleanDescription && <UnifiedDishDescription text={cleanDescription} />}
 
+        {hasVariants && hasMultipleVariants && (
+          <div className="mq-unified-variants-row">
+            {pricedVariants.map((v) => (
+              <span key={v.label} className="mq-unified-variant-pill">
+                <span className="mq-unified-v-label">{v.label}</span>
+                <span className="mq-price mq-unified-v-price">{v.formattedPrice}</span>
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="mq-unified-bottom-row">
           <div className="mq-unified-price-wrap">
             {hasVariants ? (
-              hasMultipleVariants ? (
-                <div className="mq-unified-variant-pills">
-                  {pricedVariants.map((v) => (
-                    <span key={v.label} className="mq-unified-variant-pill">
-                      <span className="mq-unified-v-label">{v.label}</span>
-                      <span className="mq-price mq-unified-v-price">{v.formattedPrice}</span>
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <span className="mq-price mq-unified-price">{pricedVariants[0].formattedPrice}</span>
-              )
+              <span className="mq-price mq-unified-price">
+                {pricedVariants[0]?.formattedPrice}
+              </span>
             ) : (
               pricing.formattedBasePrice && Number(pricing.basePrice) > 0 && (
                 <span className="mq-price mq-unified-price">{pricing.formattedBasePrice}</span>

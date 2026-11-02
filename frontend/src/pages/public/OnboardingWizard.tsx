@@ -1407,7 +1407,7 @@ export default function OnboardingWizard() {
                         </div>
 
                         {/* Editions Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1 mq-showcase-preview-frame">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1">
                           {filteredPresets.map((preset) => {
                             const active = restaurantData.templateId === preset.id;
                             const justConfirmed = active && justSelectedPresetId === preset.id;

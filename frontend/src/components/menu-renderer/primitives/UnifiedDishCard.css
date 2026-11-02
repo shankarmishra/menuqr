@@ -132,28 +132,14 @@
   opacity: 0.85;
 }
 
-/* Bottom Action Row: Price on left, ADD / Stepper on right */
-.mq-unified-bottom-row {
+/* Dedicated Variants Row: Shown above bottom row for clean baseline alignment */
+.mq-unified-variants-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: auto;
-  padding-top: 8px;
-}
-
-.mq-unified-price-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-}
-
-.mq-unified-price {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--mq-color-text, #111827);
-  letter-spacing: -0.01em;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  margin-bottom: 2px;
 }
 
 .mq-unified-variant-pills {
@@ -184,12 +170,40 @@
   color: var(--mq-color-text, #111827);
 }
 
+/* Bottom Action Row: Price on left, ADD / Stepper on right (Mathematically locked baseline) */
+.mq-unified-bottom-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+  min-height: 44px;
+}
+
+.mq-unified-price-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  min-height: 44px;
+  padding-bottom: 2px;
+}
+
+.mq-unified-price {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--mq-color-text, #111827);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
 .mq-unified-action-slot {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-end;
   margin-left: auto;
   flex-shrink: 0;
+  width: 76px;
   min-height: 44px;
 }
 
