@@ -2014,7 +2014,7 @@ export default function OnboardingWizard() {
                           </div>
                         </div>
 
-                        {/* Brand Logo & Shape */}
+                        {/* Brand Logo (always shown frameless; the renderer has no frame-shape option) */}
                         <div className="pt-3 border-t border-[#D4AF37]/15 space-y-4">
                           <ImageSelector
                             label="Restaurant Logo (Cover & Header)"
@@ -2026,29 +2026,6 @@ export default function OnboardingWizard() {
                             placeholder="https://example.com/logo.png"
                           />
 
-                          {/* Logo Shape */}
-                          <div>
-                            <label className="text-xs font-semibold text-stone-300 block mb-1.5">Logo Frame Shape</label>
-                            <div className="flex items-center gap-2">
-                              {(['circle', 'square', 'wordmark'] as const).map((shape) => (
-                                <button
-                                  key={shape}
-                                  type="button"
-                                  onClick={() => setStudioTheme((prev) => ({
-                                    ...prev,
-                                    brand: { ...prev.brand, logoShape: shape }
-                                  }))}
-                                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer ${
-                                    studioTheme.brand.logoShape === shape
-                                      ? 'bg-[#E8783C] text-white shadow-xs'
-                                      : 'bg-[#231E18] text-[#A3957E] border border-[#D4AF37]/15 hover:text-white'
-                                  }`}
-                                >
-                                  {shape}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
 
                           {/* Tagline */}
                           <div className="space-y-1.5">
