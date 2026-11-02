@@ -115,10 +115,10 @@ export default function GuestFeedbackCard({
 
   return (
     <section aria-label="Guest Feedback" className={`mx-auto my-10 max-w-md px-4 ${className}`}>
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.07] to-white/[0.02] p-6 backdrop-blur-xl shadow-2xl transition-all">
+      <div className="relative overflow-hidden rounded-3xl border border-stone-800 bg-stone-900/95 p-6 backdrop-blur-xl shadow-2xl transition-all">
         {/* Glow ambient background */}
         <div className="pointer-events-none absolute -top-16 -right-16 h-36 w-36 rounded-full bg-amber-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 -left-16 h-36 w-36 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 h-36 w-36 rounded-full bg-rose-500/10 blur-3xl" />
 
         <div className="flex items-center gap-2.5 mb-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-400/15 text-amber-400 border border-amber-400/20">
@@ -129,7 +129,7 @@ export default function GuestFeedbackCard({
               Rate Your Experience
               <Sparkles className="h-3 w-3 text-amber-400 opacity-80" />
             </h3>
-            <p className="text-[11px] text-white/50">Private feedback sent directly to owner</p>
+            <p className="text-[11px] text-stone-300">Private feedback sent directly to owner</p>
           </div>
         </div>
 

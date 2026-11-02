@@ -178,9 +178,9 @@ const BotanicalWreathSeal: React.FC<{
     >
       <defs>
         <radialGradient id="herbSealBg" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#faf8f2" />
-          <stop offset="85%" stopColor="#ede7d8" />
-          <stop offset="100%" stopColor="#ded6c3" />
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="85%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="#f7f4ee" />
         </radialGradient>
       </defs>
 
@@ -356,10 +356,10 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
           </div>
 
           {/* Symmetrical Botanical Wreath Seal with integrated BrandMark */}
-          <BotanicalWreathSeal size={compact ? 94 : 124}>
+          <BotanicalWreathSeal size={compact ? 116 : 152}>
             <BrandMark
               restaurant={restaurant}
-              size={compact ? 52 : 72}
+              size={compact ? 68 : 96}
               className="mq-ed-mark-herb"
             />
           </BotanicalWreathSeal>
@@ -367,6 +367,7 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
           {/* Grand Typography: Restaurant Name */}
           <div className="mq-ed-herb-identity">
             <h1 className="mq-ed-herb-title">{restaurant.name}</h1>
+            <p className="mq-ed-herb-subtitle">Sweets &amp; Restaurant</p>
             <BotanicalEngravedDivider className="mq-ed-herb-title-divider" />
             {restaurant.cuisine && <p className="mq-ed-herb-cuisine">{restaurant.cuisine}</p>}
           </div>
@@ -437,6 +438,30 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
             spiceFilter={spiceFilter}
             onSpiceFilterChange={setSpiceFilter}
           />
+          {(() => {
+            const sweetsCat = categories.find((c) => /sweets|mithai/i.test(c.name));
+            if (!sweetsCat) return null;
+            return (
+              <div className="mq-ed-herb-sweets-shortcut-wrap">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveCategoryId(sweetsCat.id);
+                    const el = document.getElementById(`mq-section-${sweetsCat.id}`);
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                  className="mq-ed-herb-sweets-shortcut-btn"
+                  aria-label={`Jump to ${sweetsCat.name}`}
+                >
+                  <span className="mq-ed-herb-sweets-emoji" aria-hidden="true">🍰</span>
+                  <span className="mq-ed-herb-sweets-text">Sweets &amp; Mithai</span>
+                  <span className="mq-ed-herb-sweets-badge">Explore &rarr;</span>
+                </button>
+              </div>
+            );
+          })()}
           <CapsulePillsNav
             restaurant={restaurant}
             categories={visible}
@@ -565,8 +590,35 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
           FOOTER : Field Ledger Seal & Botanical Colophon
           ========================================================================= */}
       <footer className="mq-ed-herb-foot">
-        <BotanicalSprig size={68} className="mq-ed-herb-foot-sprig" />
+        <div className="mq-ed-herb-foot-brand">
+          <BrandMark
+            restaurant={restaurant}
+            size={compact ? 64 : 84}
+            className="mq-ed-mark-herb mq-ed-herb-foot-logo"
+          />
+        </div>
+        <BotanicalSprig size={48} className="mq-ed-herb-foot-sprig" />
         <p className="mq-ed-herb-foot-name">{restaurant.name}</p>
+
+        <div className="mq-ed-herb-delivery-badges">
+          <span className="mq-ed-herb-delivery-chip">
+            <span className="mq-ed-herb-dot" />
+            <span>Available on <strong>Swiggy</strong> &amp; <strong>Zomato</strong></span>
+          </span>
+          <a
+            href="https://www.instagram.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mq-ed-herb-insta-link"
+            aria-label="Follow on Instagram"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+            <span>Instagram</span>
+          </a>
+        </div>
+
         <EditionContact restaurant={restaurant} className="mq-ed-herb-foot-contact" />
       </footer>
     </div>

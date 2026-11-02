@@ -153,22 +153,27 @@
 .mq-unified-variant-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  background-color: var(--mq-color-surface-alt, rgba(0, 0, 0, 0.04));
-  border: 1px solid var(--mq-color-border, rgba(0, 0, 0, 0.08));
+  gap: 6px;
+  padding: 3px 9px;
+  background-color: var(--mq-color-surface-alt, rgba(0, 0, 0, 0.05));
+  border: 1px solid var(--mq-color-border, rgba(0, 0, 0, 0.12));
   border-radius: var(--mq-radius-sm, 6px);
-  font-size: 0.8rem;
+  font-size: 0.84rem;
 }
 
 .mq-unified-v-label {
-  font-weight: 500;
-  color: var(--mq-color-text-muted, #6b7280);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  font-weight: 600;
+  color: var(--mq-color-text-muted, #475569);
+  text-transform: capitalize;
 }
 
 .mq-unified-v-price {
-  font-weight: 700;
-  color: var(--mq-color-text, #111827);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--mq-color-text, #0f172a);
+  letter-spacing: -0.01em;
 }
 
 /* Bottom Action Row: Price on left, ADD / Stepper on right (Mathematically locked baseline) */

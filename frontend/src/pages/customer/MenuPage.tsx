@@ -993,7 +993,9 @@ export default function MenuPage() {
             <MenusQRBrand size="sm" variant="light" className="scale-75 origin-left" />
           </Link>
           {client?.logoUrl && (
-            <LogoMark logoUrl={client.logoUrl} restaurantName={client.businessName} size="sm" />
+            <div className="flex items-center justify-center bg-white rounded-full p-1 shadow-sm border border-white/40 overflow-hidden">
+              <LogoMark logoUrl={client.logoUrl} restaurantName={client.businessName} size={46} className="max-h-10 w-auto object-contain" />
+            </div>
           )}
         </div>
         <div className="ml-auto flex items-center gap-2">

@@ -211,15 +211,13 @@ export const UnifiedDishCard: React.FC<UnifiedDishCardProps> = ({
 
         <div className="mq-unified-bottom-row">
           <div className="mq-unified-price-wrap">
-            {hasVariants ? (
+            {hasVariants && !hasMultipleVariants ? (
               <span className="mq-price mq-unified-price">
                 {pricedVariants[0]?.formattedPrice}
               </span>
-            ) : (
-              pricing.formattedBasePrice && Number(pricing.basePrice) > 0 && (
-                <span className="mq-price mq-unified-price">{pricing.formattedBasePrice}</span>
-              )
-            )}
+            ) : !hasVariants && pricing.formattedBasePrice && Number(pricing.basePrice) > 0 ? (
+              <span className="mq-price mq-unified-price">{pricing.formattedBasePrice}</span>
+            ) : null}
           </div>
 
           {canOrder && (
