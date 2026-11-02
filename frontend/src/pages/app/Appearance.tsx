@@ -715,7 +715,7 @@ export default function Appearance() {
                         restaurant={{ 
                           name: displayName.trim() || profile?.businessName || 'Your Restaurant', 
                           tagline: brandTagline.trim() || profile?.tagline, 
-                          cuisine: (profile as any)?.cuisine || (profile as any)?.category,
+                          cuisine: (profile as any)?.cuisine,
                           phone: profile?.phone, 
                           address: profile?.address, 
                           city: profile?.city,
@@ -778,7 +778,7 @@ export default function Appearance() {
                   restaurant={{ 
                     name: displayName.trim() || profile?.businessName || 'Your Restaurant', 
                     tagline: brandTagline.trim() || profile?.tagline, 
-                    cuisine: (profile as any)?.cuisine || (profile as any)?.category,
+                    cuisine: (profile as any)?.cuisine,
                     phone: profile?.phone, 
                     address: profile?.address, 
                     city: profile?.city,

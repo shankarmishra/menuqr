@@ -219,7 +219,7 @@ export default function Step4Template({
               restaurant={{
                 name: restaurant.name || 'Your Restaurant',
                 tagline: restaurant.tagline,
-                cuisine: restaurant.cuisine || 'North Indian • Mughlai • Tandoor',
+                cuisine: restaurant.cuisine,
                 phone: restaurant.phone,
                 address: restaurant.address,
                 city: restaurant.city,

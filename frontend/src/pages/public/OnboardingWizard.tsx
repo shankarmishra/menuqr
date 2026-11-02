@@ -2108,11 +2108,11 @@ export default function OnboardingWizard() {
                             theme={studioTheme}
                             restaurant={{
                               name: restaurantData.name || 'Your Restaurant',
-                              tagline: restaurantData.tagline || 'Exquisite Culinary Dining',
-                              cuisine: (restaurantData as any).cuisine || 'North Indian • Mughlai • Tandoor',
-                              phone: restaurantData.phone || '+91 98765 43210',
-                              address: restaurantData.address || 'Diplomatic Enclave, Chanakyapuri, New Delhi',
-                              city: restaurantData.city || 'New Delhi',
+                              tagline: restaurantData.tagline,
+                              cuisine: (restaurantData as any).cuisine,
+                              phone: restaurantData.phone,
+                              address: restaurantData.address,
+                              city: restaurantData.city,
                               logo: restaurantData.logoUrl,
                             }}
                             categories={previewCategories}
@@ -2307,7 +2307,7 @@ export default function OnboardingWizard() {
                             restaurant={{
                               name: restaurantData.name || 'Your Restaurant',
                               tagline: restaurantData.tagline,
-                              cuisine: (restaurantData as any).cuisine || 'North Indian • Mughlai • Tandoor',
+                              cuisine: (restaurantData as any).cuisine,
                               phone: restaurantData.phone,
                               address: restaurantData.address,
                               city: restaurantData.city,
