@@ -129,11 +129,11 @@
   ],
   "rewrites": [
     {
-      "source": "/:section(app|admin|menu|qr|audit-preview|purchase)/:path*",
+      "source": "/:section(app|admin|menu|qr|audit-preview|purchase|bill)/:path*",
       "destination": "/index"
     },
     {
-      "source": "/:page(app|admin|template-showcase|showcase|audit-preview)",
+      "source": "/:page(app|admin|template-showcase|showcase|audit-preview|bill)",
       "destination": "/index"
     }
   ],
