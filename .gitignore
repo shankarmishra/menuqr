@@ -103,3 +103,6 @@ deploy/cloudflared/*.json
 *.tsbuildinfo
 .claude/
 pw-profile/
+
+.agents/
+

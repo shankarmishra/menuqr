@@ -30,6 +30,7 @@ import appRoutes from './routes/app.js';
 import adminRoutes from './routes/admin.js';
 import publicRoutes from './routes/public.js';
 import purchaseRoutes from './routes/purchase.js';
+import tokenRoutes from './routes/tokens.js';
 
 import { randomUUID } from 'node:crypto';
 
@@ -319,6 +320,7 @@ const server = createServer(async (request, response) => {
 
     if (await authRoutes(request, response, url)) return;
     if (await adminRoutes(request, response, url)) return;
+    if (await tokenRoutes(request, response, url)) return;
     if (await appRoutes(request, response, url)) return;
     if (await publicRoutes(request, response, url)) return;
     if (await purchaseRoutes(request, response, url)) return;

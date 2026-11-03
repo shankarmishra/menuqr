@@ -355,7 +355,14 @@ export async function processOrderPaymentAndProvision({
 
     if (userCheck.rows.length > 0) {
       userId = userCheck.rows[0].id;
-      tenantId = userCheck.rows[0].tenant_id || null;
+      tenantId = userCheck.rows[0].tenant_id || order.metadata?.tenant_id || null;
+    } else if (order.metadata?.tenant_id) {
+      tenantId = order.metadata.tenant_id;
+      const ownerUser = await client.query(
+        'SELECT id FROM users WHERE tenant_id = $1 LIMIT 1',
+        [tenantId]
+      );
+      userId = ownerUser.rows[0]?.id || null;
     } else {
       userId = randomUUID();
       const orderMeta = order.metadata || {};
@@ -460,6 +467,13 @@ export async function processOrderPaymentAndProvision({
          order.plan_id.toUpperCase(), 'ACTIVE', new Date(), expiresAt]
       );
 
+      await client.query(
+        `INSERT INTO subscription_events
+           (tenant_id, event_type, to_plan, to_plan_id, to_expiry, order_id, actor_user_id, metadata)
+         VALUES ($1, 'NEW_SUBSCRIPTION', $2, $3, $4, $5, $6, $7)`,
+        [tenantId, order.plan_id.toUpperCase(), order.plan_id.toUpperCase(), expiresAt, orderId, userId || null, JSON.stringify({ billingCycle: isMonthly ? 'monthly' : 'yearly' })]
+      );
+
       // ── 4. Create menu skeleton ─────────────────────────────────────────
       const menuId = randomUUID();
       await client.query(
@@ -484,6 +498,123 @@ export async function processOrderPaymentAndProvision({
     }
 
     provisionedTenantId = tenantId;
+
+    // ── 6a. Handle Subscription Renewals and Upgrades for Existing Tenants ──
+    if (order.order_subtype === 'RENEWAL') {
+      const subRes = await client.query(
+        'SELECT id, plan_id, status, expires_at, renewal_count FROM subscriptions WHERE tenant_id = $1 FOR UPDATE',
+        [tenantId]
+      );
+      const currentSub = subRes.rows[0];
+      const now = new Date();
+      const currentExpiry = currentSub?.expires_at ? new Date(currentSub.expires_at) : now;
+      const baseDate = currentExpiry > now ? currentExpiry : now;
+      const newExpiry = new Date(baseDate);
+      newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+
+      if (currentSub) {
+        await client.query(
+          `UPDATE subscriptions
+           SET expires_at = $1,
+               status = 'ACTIVE',
+               renewal_count = COALESCE(renewal_count, 0) + 1,
+               last_renewed_at = NOW(),
+               updated_at = NOW()
+           WHERE tenant_id = $2`,
+          [newExpiry, tenantId]
+        );
+      } else {
+        const subId = randomUUID();
+        await client.query(
+          `INSERT INTO subscriptions
+             (id, tenant_id, plan_id, status, started_at, expires_at, renewal_count, last_renewed_at)
+           VALUES ($1, $2, $3, 'ACTIVE', NOW(), $4, 1, NOW())`,
+          [subId, tenantId, (order.plan_id || 'BASIC').toUpperCase(), newExpiry]
+        );
+      }
+
+      await client.query(
+        `INSERT INTO subscription_events
+           (tenant_id, event_type, from_plan, from_plan_id, to_plan, to_plan_id, from_expiry, to_expiry, order_id, actor_user_id, metadata)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [
+          tenantId,
+          'SUBSCRIPTION_RENEWED',
+          currentSub?.plan_id || order.plan_id.toUpperCase(),
+          currentSub?.plan_id || order.plan_id.toUpperCase(),
+          currentSub?.plan_id || order.plan_id.toUpperCase(),
+          currentSub?.plan_id || order.plan_id.toUpperCase(),
+          currentSub?.expires_at || null,
+          newExpiry,
+          orderId,
+          userId || null,
+          JSON.stringify({
+            orderSubtype: 'RENEWAL',
+            renewalCount: (currentSub?.renewal_count || 0) + 1,
+            amount: order.amount,
+            orderId,
+          }),
+        ]
+      );
+    } else if (order.order_subtype === 'UPGRADE') {
+      const subRes = await client.query(
+        'SELECT id, plan_id, status, expires_at FROM subscriptions WHERE tenant_id = $1 FOR UPDATE',
+        [tenantId]
+      );
+      const currentSub = subRes.rows[0];
+      const oldPlanId = currentSub?.plan_id || order.upgrade_from_plan || 'BASIC';
+      const newPlanId = (order.plan_id || '').toUpperCase();
+
+      const newExpiry = new Date();
+      newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+
+      if (currentSub) {
+        await client.query(
+          `UPDATE subscriptions
+           SET plan_id = $1,
+               previous_plan_id = $2,
+               upgraded_at = NOW(),
+               expires_at = $3,
+               status = 'ACTIVE',
+               updated_at = NOW()
+           WHERE tenant_id = $4`,
+          [newPlanId, oldPlanId, newExpiry, tenantId]
+        );
+      } else {
+        const subId = randomUUID();
+        await client.query(
+          `INSERT INTO subscriptions
+             (id, tenant_id, plan_id, previous_plan_id, status, started_at, expires_at, upgraded_at)
+           VALUES ($1, $2, $3, $4, 'ACTIVE', NOW(), $5, NOW())`,
+          [subId, tenantId, newPlanId, oldPlanId, newExpiry]
+        );
+      }
+
+      await client.query(
+        `INSERT INTO subscription_events
+           (tenant_id, event_type, from_plan, from_plan_id, to_plan, to_plan_id, from_expiry, to_expiry, order_id, actor_user_id, metadata)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [
+          tenantId,
+          'SUBSCRIPTION_UPGRADED',
+          oldPlanId,
+          oldPlanId,
+          newPlanId,
+          newPlanId,
+          currentSub?.expires_at || null,
+          newExpiry,
+          orderId,
+          userId || null,
+          JSON.stringify({
+            orderSubtype: 'UPGRADE',
+            prorationCreditPaise: order.proration_credit_paise || 0,
+            upgradeFromPlan: oldPlanId,
+            amount: order.amount,
+            orderId,
+          }),
+        ]
+      );
+    }
 
     // ── 6b. Provision Add-on Entitlements (e.g. Google Reviews) ─────────
     const rawSelectedAddons = order.selected_addons;
@@ -519,6 +650,25 @@ export async function processOrderPaymentAndProvision({
       }
     }
 
+    // ── 6c. Generate GST Invoice atomically ──────────────────────────────
+    try {
+      const { generateGstInvoice } = await import('../subscriptionService.js');
+      const invoice = await generateGstInvoice({ orderId, tenantId, client });
+
+      if (invoice?.id) {
+        await client.query(
+          'UPDATE orders SET gst_invoice_id = $1 WHERE id = $2',
+          [invoice.id, orderId]
+        );
+        await client.query(
+          'UPDATE subscription_events SET invoice_id = $1 WHERE order_id = $2',
+          [invoice.id, orderId]
+        );
+      }
+    } catch (gstErr) {
+      console.warn(`[subscriptionService] Warning: Failed to generate GST invoice for order ${orderId}:`, gstErr.message);
+    }
+
     // ── 7. Log provisioning ─────────────────────────────────────────────
     await client.query(
       `INSERT INTO activity_logs (tenant_id, user_id, action, description, metadata)
@@ -551,6 +701,29 @@ export async function processOrderPaymentAndProvision({
 
     await client.query('COMMIT');
     invalidatePublicMenuCache(tenantId);
+
+    // ── REAL-TIME SSE BROADCAST (Instant Zero-Reload Unlock) ────────────────
+    try {
+      const { broadcastPlanEvent } = await import('../orderStream.js');
+      const activeSubRes = await pool.query(
+        'SELECT plan_id, expires_at FROM subscriptions WHERE tenant_id = $1',
+        [tenantId]
+      );
+      const activePlan = activeSubRes.rows[0]?.plan_id || (order.plan_id || '').toUpperCase();
+      const activeExpiresAt = activeSubRes.rows[0]?.expires_at;
+
+      broadcastPlanEvent(tenantId, {
+        type: 'plan_updated',
+        plan: activePlan,
+        planId: activePlan,
+        expiresAt: activeExpiresAt,
+        orderId,
+        orderSubtype: order.order_subtype || 'NEW_SUBSCRIPTION',
+        timestamp: Date.now(),
+      });
+    } catch (sseErr) {
+      console.warn(`[orderStream] Failed to broadcast plan update SSE event for ${tenantId}:`, sseErr.message);
+    }
   } catch (e) {
     await client.query('ROLLBACK').catch(() => {});
     await pool.query(
@@ -598,6 +771,16 @@ export async function processOrderPaymentAndProvision({
       expiresAt,
     }),
   ]);
+
+  if (order.order_subtype === 'RENEWAL') {
+    sendRenewalEmail({
+      email: order.customer_email,
+      businessName: order.business_name,
+      plan: planMeta.label || order.plan_id.toUpperCase(),
+      amount: order.amount,
+      expiresAt,
+    }).catch(err => console.warn('[sendRenewalEmail] Error:', err.message));
+  }
 
   const activationEmailSent = emailResults[0].status === 'fulfilled';
   const paymentReceiptEmailSent = emailResults[1].status === 'fulfilled';

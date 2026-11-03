@@ -119,6 +119,8 @@ const AppSubscription = lazyWithRetry(() => import('./pages/app/Subscription'));
 const AppSettings = lazyWithRetry(() => import('./pages/app/Settings'));
 const AppRestaurant = lazyWithRetry(() => import('./pages/app/Restaurant'));
 const AppOrders = lazyWithRetry(() => import('./pages/app/Orders'));
+const AppCashier = lazyWithRetry(() => import('./pages/app/CashierPanel'));
+const BillPage = lazyWithRetry(() => import('./pages/customer/BillPage'));
 
 // Lazy Admin Routes
 const AdminLayout = lazyWithRetry(() => import('./layouts/AdminLayout'));
@@ -353,6 +355,7 @@ function PublicAppRoutes() {
         
         {/* Customer Menu Route */}
         <Route path="/qr/:qrId" element={<QrLandingPage />} />
+        <Route path="/bill/:tokenId" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><BillPage /></Suspense></ChunkErrorBoundary>} />
         <Route path="/menu/:slug" element={<ChunkErrorBoundary><Suspense fallback={null}><MenuPage key={menuSlug} /></Suspense></ChunkErrorBoundary>} />
         <Route path="/template-showcase" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><TemplateShowcasePage /></Suspense></ChunkErrorBoundary>} />
         <Route path="/showcase" element={<Navigate to="/template-showcase" replace />} />
@@ -376,6 +379,7 @@ function PublicAppRoutes() {
           <Route path="subscription" element={<AppSubscription />} />
           <Route path="settings" element={<AppSettings />} />
           <Route path="orders" element={<FeatureGate capability="reception_orders"><AppOrders /></FeatureGate>} />
+          <Route path="cashier" element={<FeatureGate capability="reception_orders"><AppCashier /></FeatureGate>} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

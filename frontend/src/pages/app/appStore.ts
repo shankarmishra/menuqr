@@ -1333,3 +1333,159 @@ export function saveSetupProgress(data: { currentStep?: string; steps?: Record<s
     body: JSON.stringify(data),
   });
 }
+
+// ── Subscription Billing Engine (Milestone 4) ──────────────────────────────
+export interface UpgradePreview {
+  currentPlanId: string;
+  targetPlanId: string;
+  targetPlanName?: string;
+  fullPricePaise: number;
+  remainingDays: number;
+  dailyRatePaise: number;
+  prorationCreditPaise: number;
+  subtotalPaise: number;
+  cgstPaise: number;
+  sgstPaise: number;
+  igstPaise: number;
+  taxPaise: number;
+  totalPaise: number;
+  isUpgradeAllowed: boolean;
+  reason?: string | null;
+}
+
+export interface UpgradePreviewResponse {
+  success: boolean;
+  preview: UpgradePreview;
+  targetPlan?: string;
+  remainingDays?: number;
+  dailyRatePaise?: number;
+  creditPaise?: number;
+  subtotalPaise?: number;
+  totalDuePaise?: number;
+  totalPaise?: number;
+}
+
+export interface RenewalInitiateResponse {
+  success: boolean;
+  orderId: string;
+  orderSubtype: 'RENEWAL';
+  order: {
+    id: string;
+    amount: number;
+    amountPaise: number;
+    orderSubtype: string;
+    newExpiresAt: string;
+  };
+  paymentSessionId: string;
+  amount: number;
+  amountPaise: number;
+  newExpiresAt: string;
+  checkoutMode: string;
+}
+
+export interface UpgradeInitiateResponse {
+  success: boolean;
+  orderId: string;
+  orderSubtype: 'UPGRADE';
+  targetPlan?: string;
+  targetPlanId?: string;
+  order: {
+    id: string;
+    amount: number;
+    amountPaise: number;
+    orderSubtype: string;
+    prorationCreditPaise: number;
+    upgradeFromPlan: string;
+    targetPlan?: string;
+  };
+  paymentSessionId: string;
+  amount: number;
+  amountPaise: number;
+  prorationCreditPaise: number;
+  checkoutMode: string;
+}
+
+export interface SubscriptionInvoice {
+  id: string;
+  invoiceNumber: string;
+  financialYear: string;
+  sequenceNo: number;
+  planId: string;
+  planName: string;
+  planLabel?: string;
+  subtotalPaise: number;
+  cgstPaise: number;
+  sgstPaise: number;
+  igstPaise: number;
+  totalPaise: number;
+  totalFormatted?: string;
+  type: string;
+  invoiceType?: string;
+  createdAt: string;
+  date?: string;
+  hasPdf: boolean;
+  downloadUrl: string;
+}
+
+export type AppInvoice = SubscriptionInvoice;
+
+export function getUpgradePreview(targetPlanId: string): Promise<UpgradePreviewResponse> {
+  return request<UpgradePreviewResponse>(`/subscription/upgrade-preview?targetPlanId=${encodeURIComponent(targetPlanId)}`);
+}
+
+export function initiateRenewal(): Promise<RenewalInitiateResponse> {
+  return request<RenewalInitiateResponse>('/subscription/renew/initiate', {
+    method: 'POST',
+    body: '{}',
+  });
+}
+
+export function initiateUpgrade(targetPlanId: string): Promise<UpgradeInitiateResponse> {
+  return request<UpgradeInitiateResponse>('/subscription/upgrade/initiate', {
+    method: 'POST',
+    body: JSON.stringify({ targetPlan: targetPlanId, targetPlanId }),
+  });
+}
+
+export function getSubscriptionInvoices(): Promise<{ success: boolean; invoices: SubscriptionInvoice[] }> {
+  return request<{ success: boolean; invoices: SubscriptionInvoice[] }>('/subscription/invoices');
+}
+
+export function getInvoices(): Promise<{ success: boolean; invoices: SubscriptionInvoice[] }> {
+  return getSubscriptionInvoices();
+}
+
+export async function downloadInvoicePdf(invoiceId: string, invoiceNumber: string): Promise<void> {
+  const authToken = getStoredAuthToken();
+  const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+
+  const res = await fetch(`${apiBaseUrl}/api/app/subscription/invoices/${encodeURIComponent(invoiceId)}/pdf`, {
+    method: 'GET',
+    credentials: 'include',
+    headers,
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      window.dispatchEvent(new Event('menusqr:app-unauthorized'));
+      throw new Error('Your session has expired. Please log in again.');
+    }
+    if (res.status === 403) {
+      throw new Error('Access denied. You do not have permission to download this invoice.');
+    }
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.error || `Failed to download invoice PDF (HTTP ${res.status})`);
+  }
+
+  const blob = await res.blob();
+  const objectUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = objectUrl;
+  const safeFilename = (invoiceNumber || `invoice_${invoiceId}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+  link.download = `${safeFilename}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(objectUrl);
+}
+

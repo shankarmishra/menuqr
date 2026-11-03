@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { getSubscription, type AppSubscriptionData } from './appStore';
-import { ShieldCheck, Calendar, CreditCard, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Calendar, CreditCard, Clock, AlertTriangle, CheckCircle2, Sparkles } from 'lucide-react';
+import CheckoutDrawer from '../../components/subscription/CheckoutDrawer';
+import InvoiceHistory from '../../components/subscription/InvoiceHistory';
+import { normalizePlan } from '../../lib/planCapabilities';
 
 export default function Subscription() {
-  const navigate = useNavigate();
   const [data, setData] = useState<AppSubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerAction, setDrawerAction] = useState<'renew' | 'upgrade'>('renew');
 
-  useEffect(() => {
-    loadData();
-  }, []);
-  
   const loadData = () => {
     setLoading(true);
     getSubscription()
@@ -20,17 +19,37 @@ export default function Subscription() {
       .finally(() => setLoading(false));
   };
 
+  useEffect(() => {
+    loadData();
+
+    const handlePlanUpdate = () => {
+      loadData();
+    };
+    window.addEventListener('menusqr:plan-updated', handlePlanUpdate);
+    return () => {
+      window.removeEventListener('menusqr:plan-updated', handlePlanUpdate);
+    };
+  }, []);
+
   const handleRenew = () => {
-    navigate(`/purchase/details?plan=${planId.toLowerCase()}`);
+    setDrawerAction('renew');
+    setDrawerOpen(true);
   };
 
-  if (loading) return (
+  const handleUpgrade = () => {
+    setDrawerAction('upgrade');
+    setDrawerOpen(true);
+  };
+
+  if (loading && !data) return (
     <div className="flex h-64 items-center justify-center">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#e8783c]"></div>
     </div>
   );
 
-  const planId = data?.planId?.toUpperCase() || 'BASIC';
+  const planId = (data?.planId || 'BASIC').toUpperCase();
+  const planKey = normalizePlan(planId);
+  const isPremium = planKey === 'premium';
   const isActive = data?.status === 'ACTIVE';
   const isExpired = data?.expiresAt ? new Date(data.expiresAt) < new Date() : false;
   
@@ -87,7 +106,7 @@ export default function Subscription() {
             </div>
           </div>
           
-          <div className="flex flex-col justify-center gap-4 min-w-[220px]">
+          <div className="flex flex-col justify-center gap-3 min-w-[220px]">
             <div className="bg-[#151c19]/50 rounded-xl p-5 border border-white/5 text-center">
               <p className="text-xs text-[#849a90] uppercase tracking-wider font-semibold mb-1">Days Remaining</p>
               <div className={`text-5xl font-black ${daysLeft <= 7 ? 'text-rose-400' : 'text-white'}`}>
@@ -95,12 +114,24 @@ export default function Subscription() {
               </div>
             </div>
             
-            <button 
-              onClick={handleRenew}
-              className="w-full flex items-center justify-center gap-2 bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-[#e8783c]/20 hover:shadow-[#e8783c]/40 cursor-pointer"
-            >
-              <CreditCard size={18} /> Renew or Upgrade Plan
-            </button>
+            <div className="flex flex-col gap-2.5">
+              <button 
+                onClick={handleRenew}
+                className="w-full flex items-center justify-center gap-2 bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-3 rounded-xl font-bold transition-all shadow-lg shadow-[#e8783c]/20 hover:shadow-[#e8783c]/40 cursor-pointer text-sm"
+              >
+                <CreditCard size={16} /> Renew Plan
+              </button>
+
+              {!isPremium && (
+                <button 
+                  onClick={handleUpgrade}
+                  className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/10 px-5 py-3 rounded-xl font-bold transition-all cursor-pointer text-sm"
+                >
+                  <Sparkles size={16} className="text-amber-400" /> Upgrade Plan
+                </button>
+              )}
+            </div>
+
             <p className="text-[11px] text-center text-[#62756d] leading-tight">
               Renewing keeps your permanent QR code and digital menu data intact.
             </p>
@@ -108,6 +139,25 @@ export default function Subscription() {
         </div>
       </div>
 
+      {/* Invoice History Section */}
+      <InvoiceHistory />
+
+      {/* In-App Slide-Over Checkout Drawer */}
+      <CheckoutDrawer
+        isOpen={drawerOpen}
+        onClose={() => {
+          setDrawerOpen(false);
+          loadData();
+        }}
+        initialAction={drawerAction}
+        currentPlanId={planId}
+        expiresAt={data?.expiresAt}
+        startedAt={data?.startedAt}
+        onPlanUpdated={() => {
+          loadData();
+        }}
+      />
     </div>
   );
 }
+

@@ -3,13 +3,28 @@
  * Manages active SSE connections for kitchen / reception dashboard per tenant.
  */
 
-// Map<tenantId, Set<{ res: ServerResponse, req: IncomingMessage, timer: NodeJS.Timeout }>>
+// Map<tenantId, Set<{ res: ServerResponse, req: IncomingMessage, timer: NodeJS.Timeout, canReceiveOrders: boolean }>>
 const clientsByTenant = new Map();
+
+const ORDER_SPECIFIC_EVENTS = new Set([
+  'new_order',
+  'order_status_updated',
+  'order_time_updated',
+  'service_request',
+  // System 2: Table Token Events (entitlement-gated)
+  'new_token',
+  'token_settled',
+  'token_closed',
+  'bill_requested',
+  'token_item_added',
+  'token_items_updated',
+  'token_voided',
+]);
 
 /**
  * Register a client for SSE order updates
  */
-export function registerOrderClient(tenantId, res, req) {
+export function registerOrderClient(tenantId, res, req, options = {}) {
   if (!tenantId || !res) return;
 
   // Set SSE HTTP response headers
@@ -37,7 +52,12 @@ export function registerOrderClient(tenantId, res, req) {
     clientsByTenant.set(tenantId, new Set());
   }
 
-  const clientRecord = { res, req, timer: pingInterval };
+  const clientRecord = {
+    res,
+    req,
+    timer: pingInterval,
+    canReceiveOrders: options.canReceiveOrders !== false,
+  };
   clientsByTenant.get(tenantId).add(clientRecord);
 
   // Handle connection cleanup on client disconnect or network abort
@@ -60,7 +80,7 @@ export function registerOrderClient(tenantId, res, req) {
 /**
  * Broadcast an order event to all active kitchen/reception tabs for a tenant
  * @param {string} tenantId 
- * @param {'new_order'|'order_status_updated'|'order_time_updated'} eventType 
+ * @param {'new_order'|'order_status_updated'|'order_time_updated'|string} eventType 
  * @param {object} orderData 
  */
 export function broadcastOrderEvent(tenantId, eventType, orderData) {
@@ -71,6 +91,9 @@ export function broadcastOrderEvent(tenantId, eventType, orderData) {
   const payload = `event: ${eventType}\ndata: ${JSON.stringify(orderData)}\n\n`;
 
   for (const client of tenantSet) {
+    if (ORDER_SPECIFIC_EVENTS.has(eventType) && client.canReceiveOrders === false) {
+      continue;
+    }
     try {
       client.res.write(payload);
     } catch (err) {
@@ -80,8 +103,58 @@ export function broadcastOrderEvent(tenantId, eventType, orderData) {
 }
 
 /**
+ * Broadcast subscription/plan update event to all active client tabs for a tenant
+ * @param {string} tenantId
+ * @param {object} planData
+ */
+export function broadcastPlanEvent(tenantId, planData) {
+  if (!tenantId || !planData) return;
+  broadcastOrderEvent(tenantId, 'plan_updated', planData);
+}
+
+/**
  * Get count of active SSE listeners for a tenant
  */
 export function getActiveListenerCount(tenantId) {
   return clientsByTenant.get(tenantId)?.size || 0;
+}
+
+/**
+ * Broadcast new token event to staff order stream
+ * @param {string} tenantId
+ * @param {object} token
+ */
+export function broadcastNewToken(tenantId, token) {
+  if (!tenantId || !token) return;
+  broadcastOrderEvent(tenantId, 'new_token', token);
+}
+
+/**
+ * Broadcast token settled event to staff order stream
+ * @param {string} tenantId
+ * @param {object} token
+ */
+export function broadcastTokenSettled(tenantId, token) {
+  if (!tenantId || !token) return;
+  broadcastOrderEvent(tenantId, 'token_settled', token);
+}
+
+/**
+ * Broadcast token closed event to staff order stream
+ * @param {string} tenantId
+ * @param {object} token
+ */
+export function broadcastTokenClosed(tenantId, token) {
+  if (!tenantId || !token) return;
+  broadcastOrderEvent(tenantId, 'token_closed', token);
+}
+
+/**
+ * Broadcast bill requested event to staff order stream
+ * @param {string} tenantId
+ * @param {object} token
+ */
+export function broadcastBillRequested(tenantId, token) {
+  if (!tenantId || !token) return;
+  broadcastOrderEvent(tenantId, 'bill_requested', token);
 }

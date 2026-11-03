@@ -19,6 +19,62 @@ import { optimizeAndSaveImage } from '../imageOptimizer.js';
 import { enqueueTask, getJobStatus, TASK_TYPES } from '../taskQueue.js';
 import { inputMenuFeatures } from '../menuFeatures.js';
 import { handleProfileRoutes } from './profile.js';
+import {
+  PLANS,
+  PLAN_HIERARCHY,
+  calculateProration,
+  calculateRenewalExpiry,
+  generateInvoicePdfBuffer,
+} from '../subscriptionService.js';
+
+async function initPaymentSession({ orderId, orderAmount, customerEmail, customerName, customerPhone }) {
+  const appId = process.env.CASHFREE_APP_ID;
+  const secretKey = process.env.CASHFREE_SECRET_KEY;
+  const cfEnv = (process.env.CASHFREE_ENV || 'SANDBOX').toUpperCase();
+  const baseUrl = cfEnv === 'PRODUCTION' ? 'https://api.cashfree.com/pg' : 'https://sandbox.cashfree.com/pg';
+
+  let paymentSessionId = `session_mock_${orderId}`;
+
+  if (appId && secretKey) {
+    try {
+      const cfRes = await fetch(`${baseUrl}/orders`, {
+        method: 'POST',
+        headers: {
+          'x-client-id': appId,
+          'x-client-secret': secretKey,
+          'x-api-version': '2023-08-01',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          order_id: orderId,
+          order_amount: orderAmount,
+          order_currency: 'INR',
+          customer_details: {
+            customer_id: `cust_${randomUUID().substring(0, 8)}`,
+            customer_email: (customerEmail || 'billing@menusqr.in').trim().toLowerCase(),
+            customer_phone: ((customerPhone || '').replace(/[^0-9]/g, '').length >= 10)
+              ? (customerPhone || '').replace(/[^0-9]/g, '').substring(0, 15)
+              : '9999999999',
+            customer_name: customerName || 'Valued Customer',
+          },
+          order_meta: {
+            return_url: `${process.env.FRONTEND_ORIGIN || 'https://menusqr.in'}/purchase/success?order_id={order_id}`,
+          },
+        }),
+      });
+      if (cfRes.ok) {
+        const cfData = await cfRes.json();
+        paymentSessionId = cfData.payment_session_id || paymentSessionId;
+      } else {
+        const errText = await cfRes.text();
+        console.warn('[cashfree] Session init warning:', errText);
+      }
+    } catch (err) {
+      console.warn('[cashfree] Network warning during session init:', err.message);
+    }
+  }
+  return paymentSessionId;
+}
 
 function inputText(value, maxLength = 255) {
   if (value === undefined || value === null) return '';
@@ -743,8 +799,367 @@ export default async function appRoutes(request, response, url) {
     return true;
   }
 
-  if (request.method === 'POST' && url.pathname === '/api/app/subscription/renew') {
-    throw apiError(400, 'Please use the checkout page to renew your subscription. Free renewals are not allowed.');
+  // ── Subscription Upgrade Preview ──────────────────────────────────────
+  if (request.method === 'GET' && url.pathname === '/api/app/subscription/upgrade-preview') {
+    const targetPlan = url.searchParams.get('targetPlan') || url.searchParams.get('targetPlanId');
+    if (!targetPlan || typeof targetPlan !== 'string' || !targetPlan.trim()) {
+      throw apiError(400, 'Target plan is required.');
+    }
+    const targetPlanKey = targetPlan.toLowerCase().trim();
+    if (!Object.hasOwn(PLANS, targetPlanKey)) {
+      throw apiError(400, `Invalid target plan: "${targetPlan}".`);
+    }
+
+    const subRes = await pool.query(
+      'SELECT plan_id, status, started_at, expires_at FROM subscriptions WHERE tenant_id = $1',
+      [user.tenantId]
+    );
+    const currentSub = subRes.rows[0];
+    const currentPlanKey = (currentSub?.plan_id || 'basic').toLowerCase().trim();
+    const currentRank = (Object.hasOwn(PLAN_HIERARCHY, currentPlanKey) ? PLAN_HIERARCHY[currentPlanKey] : 1);
+    const targetRank = (Object.hasOwn(PLAN_HIERARCHY, targetPlanKey) ? PLAN_HIERARCHY[targetPlanKey] : 1);
+
+    if (targetRank <= currentRank) {
+      throw apiError(400, 'Cannot upgrade to the same or lower plan tier.');
+    }
+
+    const isExpired = currentSub?.status === 'EXPIRED' || (currentSub?.expires_at && new Date(currentSub.expires_at) <= new Date());
+
+    const clientRes = await pool.query(
+      'SELECT business_name, state, city FROM clients WHERE id = $1',
+      [user.tenantId]
+    );
+    const clientRow = clientRes.rows[0];
+    const customerState = clientRow?.state || clientRow?.city || 'Maharashtra';
+
+    const preview = calculateProration({
+      currentPlanId: currentPlanKey,
+      currentExpiresAt: isExpired ? null : currentSub?.expires_at,
+      targetPlanId: targetPlanKey,
+      customerState,
+      now: new Date(),
+    });
+
+    if (!preview.isUpgradeAllowed) {
+      throw apiError(400, preview.reason || 'Upgrade is not allowed.');
+    }
+
+    sendJson(response, 200, {
+      success: true,
+      preview,
+      targetPlan: targetPlanKey,
+      targetPlanId: targetPlanKey,
+      remainingDays: preview.remainingDays,
+      dailyRatePaise: preview.dailyRatePaise,
+      creditPaise: preview.prorationCreditPaise,
+      prorationCreditPaise: preview.prorationCreditPaise,
+      creditAmountPaise: preview.prorationCreditPaise,
+      subtotalPaise: preview.subtotalPaise,
+      subtotal: preview.subtotalPaise,
+      totalDuePaise: preview.totalPaise,
+      totalPaise: preview.totalPaise,
+      totalDue: preview.totalPaise,
+    });
+    return true;
+  }
+
+  // ── Subscription Renewal Initiation ───────────────────────────────────
+  if (request.method === 'POST' && (url.pathname === '/api/app/subscription/renew/initiate' || url.pathname === '/api/app/subscription/renew')) {
+    const subRes = await pool.query(
+      'SELECT plan_id, status, expires_at, renewal_count FROM subscriptions WHERE tenant_id = $1',
+      [user.tenantId]
+    );
+    const sub = subRes.rows[0];
+    const planKey = (sub?.plan_id || 'BASIC').toLowerCase().trim();
+    const planConfig = PLANS[planKey] || PLANS.basic;
+
+    const clientRes = await pool.query('SELECT * FROM clients WHERE id = $1', [user.tenantId]);
+    const clientRow = clientRes.rows[0] || {};
+    const userRes = await pool.query('SELECT * FROM users WHERE id = $1', [user.id]);
+    const userRow = userRes.rows[0] || {};
+
+    const currentExpiry = sub?.expires_at ? new Date(sub.expires_at) : new Date();
+    const renewalExpiryObj = calculateRenewalExpiry(currentExpiry);
+    const newExpiry = renewalExpiryObj.newExpiry || renewalExpiryObj;
+
+    const amountRupees = planConfig.yearlyPrice || planConfig.price;
+    const amountPaise = amountRupees * 100;
+    const orderId = 'ord_ren_' + randomUUID().replace(/-/g, '').substring(0, 16);
+
+    const metadata = {
+      tenant_id: user.tenantId,
+      user_id: user.id,
+      order_type: 'RENEWAL',
+      order_subtype: 'RENEWAL',
+      billing_cycle: 'yearly',
+      new_expires_at: newExpiry.toISOString(),
+      customer_state: clientRow.state || clientRow.city || 'Maharashtra',
+    };
+
+    await pool.query(`
+      INSERT INTO orders (
+        id, customer_name, customer_email, phone, business_name, city, address, state,
+        plan_id, amount, original_amount, currency, status, provisioning_status,
+        order_subtype, proration_credit_paise, upgrade_from_plan, metadata
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8,
+        $9, $10, $11, 'INR', 'PENDING_PAYMENT', 'PENDING',
+        'RENEWAL', 0, NULL, $12
+      )
+    `, [
+      orderId,
+      userRow.name || clientRow.business_name || 'Valued Customer',
+      userRow.email || 'billing@menusqr.in',
+      clientRow.phone || userRow.phone || '',
+      clientRow.business_name || 'MenuQR Partner',
+      clientRow.city || 'Pune',
+      clientRow.address || '',
+      clientRow.state || 'Maharashtra',
+      (sub?.plan_id || 'BASIC').toUpperCase(),
+      amountRupees,
+      amountRupees,
+      JSON.stringify(metadata),
+    ]);
+
+    const paymentSessionId = await initPaymentSession({
+      orderId,
+      orderAmount: amountRupees,
+      customerEmail: userRow.email,
+      customerName: userRow.name || clientRow.business_name,
+      customerPhone: clientRow.phone || userRow.phone,
+    });
+
+    sendJson(response, 200, {
+      success: true,
+      orderId,
+      orderSubtype: 'RENEWAL',
+      order: {
+        id: orderId,
+        amount: amountRupees,
+        amountPaise,
+        orderSubtype: 'RENEWAL',
+        order_subtype: 'RENEWAL',
+        newExpiresAt: newExpiry.toISOString(),
+        newExpiry: newExpiry.toISOString(),
+      },
+      paymentSessionId,
+      session_id: paymentSessionId,
+      amount: amountRupees,
+      amountPaise,
+      newExpiresAt: newExpiry.toISOString(),
+      newExpiry: newExpiry.toISOString(),
+      checkoutMode: (process.env.CASHFREE_ENV || 'SANDBOX').toLowerCase(),
+    });
+    return true;
+  }
+
+  // ── Subscription Upgrade Initiation ───────────────────────────────────
+  if (request.method === 'POST' && url.pathname === '/api/app/subscription/upgrade/initiate') {
+    const body = await readJson(request) || {};
+    const targetPlan = body.targetPlan || body.targetPlanId;
+    if (!targetPlan || typeof targetPlan !== 'string' || !targetPlan.trim()) {
+      throw apiError(400, 'Target plan is required.');
+    }
+    const targetPlanKey = targetPlan.toLowerCase().trim();
+    if (!Object.hasOwn(PLANS, targetPlanKey)) {
+      throw apiError(400, `Invalid target plan: "${targetPlan}".`);
+    }
+
+    const subRes = await pool.query(
+      'SELECT plan_id, status, started_at, expires_at FROM subscriptions WHERE tenant_id = $1',
+      [user.tenantId]
+    );
+    const currentSub = subRes.rows[0];
+    const currentPlanKey = (currentSub?.plan_id || 'basic').toLowerCase().trim();
+    const currentRank = (Object.hasOwn(PLAN_HIERARCHY, currentPlanKey) ? PLAN_HIERARCHY[currentPlanKey] : 1);
+    const targetRank = (Object.hasOwn(PLAN_HIERARCHY, targetPlanKey) ? PLAN_HIERARCHY[targetPlanKey] : 1);
+
+    if (targetRank <= currentRank) {
+      throw apiError(400, 'Cannot upgrade to the same or lower plan tier.');
+    }
+
+    const isExpired = currentSub?.status === 'EXPIRED' || (currentSub?.expires_at && new Date(currentSub.expires_at) <= new Date());
+
+    const clientRes = await pool.query('SELECT * FROM clients WHERE id = $1', [user.tenantId]);
+    const clientRow = clientRes.rows[0] || {};
+    const userRes = await pool.query('SELECT * FROM users WHERE id = $1', [user.id]);
+    const userRow = userRes.rows[0] || {};
+    const customerState = clientRow.state || clientRow.city || 'Maharashtra';
+
+    const preview = calculateProration({
+      currentPlanId: currentPlanKey,
+      currentExpiresAt: isExpired ? null : currentSub?.expires_at,
+      targetPlanId: targetPlanKey,
+      customerState,
+      now: new Date(),
+    });
+
+    if (!preview.isUpgradeAllowed) {
+      throw apiError(400, preview.reason || 'Upgrade is not allowed.');
+    }
+
+    const orderId = 'ord_upg_' + randomUUID().replace(/-/g, '').substring(0, 16);
+    const totalDueRupees = Number((preview.totalPaise / 100).toFixed(2));
+    if (isNaN(totalDueRupees) || totalDueRupees <= 0) {
+      throw apiError(400, 'Invalid upgrade amount calculated.');
+    }
+    const originalAmountRupees = preview.fullPricePaise / 100;
+
+    const metadata = {
+      tenant_id: user.tenantId,
+      user_id: user.id,
+      order_type: 'UPGRADE',
+      order_subtype: 'UPGRADE',
+      target_plan: targetPlanKey,
+      upgrade_from_plan: currentSub?.plan_id || currentPlanKey.toUpperCase(),
+      proration_credit_paise: preview.prorationCreditPaise,
+      subtotal_paise: preview.subtotalPaise,
+      tax_paise: preview.taxPaise,
+      total_paise: preview.totalPaise,
+      remaining_days: preview.remainingDays,
+      customer_state: customerState,
+    };
+
+    await pool.query(`
+      INSERT INTO orders (
+        id, customer_name, customer_email, phone, business_name, city, address, state,
+        plan_id, amount, original_amount, currency, status, provisioning_status,
+        order_subtype, proration_credit_paise, upgrade_from_plan, metadata
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8,
+        $9, $10, $11, 'INR', 'PENDING_PAYMENT', 'PENDING',
+        'UPGRADE', $12, $13, $14
+      )
+    `, [
+      orderId,
+      userRow.name || clientRow.business_name || 'Valued Customer',
+      userRow.email || 'billing@menusqr.in',
+      clientRow.phone || userRow.phone || '',
+      clientRow.business_name || 'MenuQR Partner',
+      clientRow.city || 'Pune',
+      clientRow.address || '',
+      clientRow.state || 'Maharashtra',
+      targetPlanKey.toUpperCase(),
+      totalDueRupees,
+      originalAmountRupees,
+      preview.prorationCreditPaise,
+      currentSub?.plan_id || currentPlanKey.toUpperCase(),
+      JSON.stringify(metadata),
+    ]);
+
+    const paymentSessionId = await initPaymentSession({
+      orderId,
+      orderAmount: totalDueRupees,
+      customerEmail: userRow.email,
+      customerName: userRow.name || clientRow.business_name,
+      customerPhone: clientRow.phone || userRow.phone,
+    });
+
+    sendJson(response, 200, {
+      success: true,
+      orderId,
+      orderSubtype: 'UPGRADE',
+      targetPlan: targetPlanKey.toUpperCase(),
+      targetPlanId: targetPlanKey.toUpperCase(),
+      order: {
+        id: orderId,
+        amount: totalDueRupees,
+        amountPaise: preview.totalPaise,
+        orderSubtype: 'UPGRADE',
+        order_subtype: 'UPGRADE',
+        prorationCreditPaise: preview.prorationCreditPaise,
+        upgradeFromPlan: currentSub?.plan_id || currentPlanKey.toUpperCase(),
+        targetPlan: targetPlanKey.toUpperCase(),
+      },
+      paymentSessionId,
+      session_id: paymentSessionId,
+      amount: totalDueRupees,
+      amountPaise: preview.totalPaise,
+      prorationCreditPaise: preview.prorationCreditPaise,
+      checkoutMode: (process.env.CASHFREE_ENV || 'SANDBOX').toLowerCase(),
+    });
+    return true;
+  }
+
+  // ── Subscription Invoices Listing ─────────────────────────────────────
+  if (request.method === 'GET' && url.pathname === '/api/app/subscription/invoices') {
+    const invRes = await pool.query(`
+      SELECT *
+      FROM gst_invoices
+      WHERE tenant_id = $1
+      ORDER BY created_at DESC
+    `, [user.tenantId]);
+
+    const invoices = invRes.rows.map(inv => ({
+      id: inv.id,
+      invoiceNumber: inv.invoice_number,
+      invoice_number: inv.invoice_number,
+      financialYear: inv.financial_year,
+      financial_year: inv.financial_year,
+      sequenceNo: inv.sequence_no,
+      sequence_no: inv.sequence_no,
+      planId: inv.plan_id,
+      plan_id: inv.plan_id,
+      planName: inv.plan_name,
+      plan_name: inv.plan_name,
+      planLabel: inv.plan_label,
+      plan_label: inv.plan_label,
+      subtotalPaise: inv.subtotal_paise,
+      subtotal_paise: inv.subtotal_paise,
+      cgstPaise: inv.cgst_paise,
+      cgst_paise: inv.cgst_paise,
+      sgstPaise: inv.sgst_paise,
+      sgst_paise: inv.sgst_paise,
+      igstPaise: inv.igst_paise,
+      igst_paise: inv.igst_paise,
+      totalPaise: inv.total_paise,
+      total_paise: inv.total_paise,
+      totalFormatted: `₹${(inv.total_paise / 100).toLocaleString('en-IN')}`,
+      type: inv.invoice_type,
+      invoiceType: inv.invoice_type,
+      invoice_type: inv.invoice_type,
+      createdAt: inv.created_at,
+      created_at: inv.created_at,
+      date: inv.created_at ? new Date(inv.created_at).toISOString().slice(0, 10) : null,
+      hasPdf: true,
+      downloadUrl: `/api/app/subscription/invoices/${inv.id}/pdf`,
+    }));
+
+    sendJson(response, 200, { success: true, invoices });
+    return true;
+  }
+
+  // ── Subscription Invoice PDF Download ─────────────────────────────────
+  const invoicePdfMatch = url.pathname.match(/^\/api\/app\/subscription\/invoices\/([^/]+)\/pdf$/);
+  if (request.method === 'GET' && invoicePdfMatch) {
+    const invoiceId = invoicePdfMatch[1];
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(invoiceId);
+    if (!isUuid) {
+      throw apiError(404, 'Invoice not found.');
+    }
+
+    const invRes = await pool.query('SELECT * FROM gst_invoices WHERE id = $1', [invoiceId]);
+    const inv = invRes.rows[0];
+    if (!inv) {
+      throw apiError(404, 'Invoice not found.');
+    }
+
+    // IDOR Protection: Tenant can only view their own invoice
+    if (inv.tenant_id !== user.tenantId) {
+      throw apiError(403, 'Forbidden. You do not have access to this invoice.');
+    }
+
+    const pdfBuffer = generateInvoicePdfBuffer(inv);
+    const invoiceNum = (inv.invoice_number || 'invoice').replace(/[^a-zA-Z0-9_-]/g, '_');
+
+    response.writeHead(200, {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${invoiceNum}.pdf"`,
+      'Content-Length': pdfBuffer.length,
+      'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+    });
+    response.end(pdfBuffer);
+    return true;
   }
 
 
@@ -1979,10 +2394,10 @@ export default async function appRoutes(request, response, url) {
     }
   }
 
-  // Customer Orders Real-Time SSE Stream (Zero Polling)
+  // Real-Time SSE Stream (Customer Orders, Plan Updates & Background Jobs)
   if (request.method === 'GET' && url.pathname === '/api/app/orders/stream') {
-    requireEntitlement(authorization, 'reception_orders', 'Access to customer reception orders requires an active Premium plan.');
-    registerOrderClient(user.tenantId, response, request);
+    const canReceiveOrders = authorization?.entitlements?.includes('reception_orders') ?? false;
+    registerOrderClient(user.tenantId, response, request, { canReceiveOrders });
     return true;
   }
 
