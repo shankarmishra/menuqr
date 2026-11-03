@@ -677,6 +677,38 @@
   letter-spacing: 0.01em;
 }
 
+.mq-layout-v2 .mq-card-herbarium .mq-unified-price {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  letter-spacing: -0.01em;
+  color: #142918;
+}
+
+.mq-layout-v2 .mq-card-herbarium .mq-unified-v-price {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  font-size: 0.98rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  letter-spacing: -0.01em;
+  color: #142918;
+}
+
+.mq-layout-v2 .mq-card-herbarium .mq-unified-v-label {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #3b5042;
+}
+
+.mq-layout-v2 .mq-card-herbarium .mq-unified-variant-pill {
+  background: #edf3ee;
+  border: 1px solid rgba(43, 82, 50, 0.22);
+}
+
 .mq-layout-v2 .mq-card-herbarium .mq-unified-add-btn {
   background-color: #2d4a3e;
   color: #ffffff;
