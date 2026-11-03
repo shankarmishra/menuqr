@@ -9,6 +9,7 @@ import { getCachedMenu, setCachedMenu, invalidateMenuCache } from '../redisClien
 import { broadcastOrderEvent } from '../orderStream.js';
 import { resolveMenuFeatures } from '../menuFeatures.js';
 import { getTrendingItemIds } from '../analytics.js';
+import { syncOrderToTableToken, getActiveTableToken } from '../tokenBridge.js';
 import {
   assertOrderTypeAllowed,
   buildRestaurantBlock,
@@ -927,6 +928,21 @@ export default async function publicRoutes(request, response, url) {
     orderToReturn.previousRoundItems = previousRoundItems;
     orderToReturn.sessionTotal = Math.round(sessionTotal * 100) / 100;
 
+    // Bridge: Auto-sync Dine-In orders to active table token for cashier counter & customer thermal bill
+    if (orderToReturn.orderType === 'DINE_IN' && orderToReturn.tableNumber) {
+      try {
+        const tokenSync = await syncOrderToTableToken(client, orderToReturn);
+        if (tokenSync) {
+          orderToReturn.tokenId = tokenSync.tokenId;
+          orderToReturn.tokenNumber = tokenSync.tokenNumber;
+          orderToReturn.tokenCode = tokenSync.tokenCode;
+          orderToReturn.billUrl = tokenSync.billUrl;
+        }
+      } catch (tokenErr) {
+        console.warn('[public.js] Failed to auto-sync order to table_token:', tokenErr.message);
+      }
+    }
+
     if (statusCode === 201) {
       try {
         broadcastOrderEvent(client.id, 'new_order', orderToReturn);
@@ -986,6 +1002,17 @@ export default async function publicRoutes(request, response, url) {
     } catch {}
     order.restaurantPhone = resolvePublicPhone(phoneProfile, { phone: order.restaurantPhone, review_flags: order.clientReviewFlags });
     delete order.clientReviewFlags;
+    if (order.orderType === 'DINE_IN' && order.tableNumber) {
+      try {
+        const activeTok = await getActiveTableToken(order.tenantId, order.tableNumber);
+        if (activeTok) {
+          order.tokenId = activeTok.tokenId;
+          order.tokenNumber = activeTok.tokenNumber;
+          order.tokenCode = activeTok.tokenCode;
+          order.billUrl = activeTok.billUrl;
+        }
+      } catch {}
+    }
     delete order.tenantId;
 
     // Phase 2 Rule 8: Public tracking privacy protection
@@ -1113,5 +1140,19 @@ export default async function publicRoutes(request, response, url) {
     return true;
   }
   
+  // Active Table Token Lookup Endpoint (for customer menu dining state)
+  const activeTableTokenMatch = url.pathname.match(/^\/api\/public\/menu\/([^/]+)\/active-table-token$/);
+  if (request.method === 'GET' && activeTableTokenMatch) {
+    const slug = decodeURIComponent(activeTableTokenMatch[1]);
+    const clientRes = await pool.query('SELECT id FROM clients WHERE menu_slug = $1', [slug]);
+    const client = clientRes.rows[0];
+    if (!client) throw apiError(404, 'Restaurant not found.');
+
+    const tableParam = url.searchParams.get('table') || url.searchParams.get('t') || '';
+    const activeToken = await getActiveTableToken(client.id, tableParam);
+    sendJson(response, 200, { success: true, activeToken });
+    return true;
+  }
+
   return false;
 }

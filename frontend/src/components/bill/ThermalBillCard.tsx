@@ -9,7 +9,7 @@
  *  - paymentMethod: string | null  — "CASH" | "UPI" | "CARD"
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './ThermalBillCard.css';
 import type { PublicTokenData } from '../../pages/customer/BillPage';
 
@@ -18,6 +18,46 @@ interface Props {
   isPaid: boolean;
   paidAt: string | null;
   paymentMethod: string | null;
+}
+
+// ── Web Audio API Realistic Thermal Printer Sound Simulation ───────────────────
+function playThermalPrintSound() {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+    
+    // Rapid micro-bursts for ~2.1 seconds simulating stepper motor paper feed
+    const totalBursts = 16;
+    for (let i = 0; i < totalBursts; i++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = i % 2 === 0 ? 'square' : 'triangle';
+      osc.frequency.setValueAtTime(140 + (i % 4) * 45, now + (i * 0.12));
+      gain.gain.setValueAtTime(0.015, now + (i * 0.12));
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + (i * 0.12) + 0.05);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + (i * 0.12));
+      osc.stop(now + (i * 0.12) + 0.055);
+    }
+
+    // Mechanical cutter click sound at finish
+    const cutterTime = now + 2.05;
+    const cutterOsc = ctx.createOscillator();
+    const cutterGain = ctx.createGain();
+    cutterOsc.type = 'sawtooth';
+    cutterOsc.frequency.setValueAtTime(720, cutterTime);
+    cutterGain.gain.setValueAtTime(0.035, cutterTime);
+    cutterGain.gain.exponentialRampToValueAtTime(0.001, cutterTime + 0.1);
+    cutterOsc.connect(cutterGain);
+    cutterGain.connect(ctx.destination);
+    cutterOsc.start(cutterTime);
+    cutterOsc.stop(cutterTime + 0.1);
+  } catch {
+    // Autoplay or unsupported audio - silent fallback
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -116,6 +156,21 @@ function BarcodeSvg({ value }: { value: string }) {
 export default function ThermalBillCard({ token, isPaid, paidAt, paymentMethod }: Props) {
   const [billRequested, setBillRequested] = useState(false);
   const [requesting, setRequesting] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(true);
+
+  const startPrintingAnimation = useCallback(() => {
+    setIsPrinting(true);
+    playThermalPrintSound();
+    const timer = setTimeout(() => {
+      setIsPrinting(false);
+    }, 2400);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const cleanup = startPrintingAnimation();
+    return cleanup;
+  }, [startPrintingAnimation]);
 
   async function handleRequestBill() {
     if (requesting || billRequested) return;
@@ -141,7 +196,38 @@ export default function ThermalBillCard({ token, isPaid, paidAt, paymentMethod }
     : 'SETTLEMENT';
 
   return (
-    <div className="thermal-card" role="region" aria-label="Your Bill">
+    <div className="pos-printer-wrapper">
+      {/* ── Hardware Printer Head Chassis ── */}
+      <div className="pos-machine-head">
+        <div className="pos-machine-surface">
+          <div className="pos-brand-tag">
+            <span className="pos-brand-dot"></span>
+            <span className="pos-brand-name">POS-80 THERMAL</span>
+          </div>
+          <div className="pos-status-lights">
+            <div className={`pos-led ${isPrinting ? 'printing' : 'online'}`}>
+              <span className="led-bulb"></span>
+              <span className="led-label">{isPrinting ? 'PRINTING' : 'ONLINE'}</span>
+            </div>
+            <button
+              type="button"
+              onClick={startPrintingAnimation}
+              disabled={isPrinting}
+              className="pos-feed-btn"
+              title="Feed / Re-print Receipt"
+            >
+              🖨️ FEED
+            </button>
+          </div>
+        </div>
+        <div className="pos-paper-slit">
+          <div className="pos-slit-teeth"></div>
+        </div>
+      </div>
+
+      {/* ── Paper Viewport ── */}
+      <div className={`pos-paper-viewport ${isPrinting ? 'is-printing' : ''}`}>
+        <div className={`thermal-card ${isPrinting ? 'printing-feed' : ''}`} role="region" aria-label="Your Bill">
 
       {/* ── Top zigzag — rendered via ::before pseudo-element in CSS ── */}
 
@@ -329,6 +415,8 @@ export default function ThermalBillCard({ token, isPaid, paidAt, paymentMethod }
 
       {/* ── Bottom zigzag — rendered via ::after pseudo-element in CSS ── */}
 
+        </div>
+      </div>
     </div>
   );
 }

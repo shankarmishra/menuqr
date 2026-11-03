@@ -534,6 +534,10 @@ export interface CustomerOrder {
   parentOrderId?: string | null;
   previousRoundItems?: Array<{ id: string; name: string; quantity: number; price: number; variant?: string; roundNumber?: number }>;
   sessionTotal?: number;
+  tokenId?: string;
+  tokenNumber?: number;
+  tokenCode?: string;
+  billUrl?: string;
 }
 
 export type CreateCustomerOrderPayload = {
@@ -581,6 +585,15 @@ export async function submitCustomerOrderByQr(qrId: string, order: CreateCustome
 export async function getCustomerOrderStatus(orderId: string, token?: string): Promise<CustomerOrder> {
   const query = token ? `?token=${encodeURIComponent(token)}` : '';
   return request<CustomerOrder>(`/public/orders/${encodeURIComponent(orderId)}${query}`);
+}
+
+export async function getActiveTableToken(slug: string, table: string): Promise<{ tokenId: string; tokenNumber: number; tokenCode: string; billUrl: string; total: number } | null> {
+  try {
+    const res = await request<{ success: boolean; activeToken: any }>(`/public/menu/${encodeURIComponent(slug)}/active-table-token?table=${encodeURIComponent(table)}`);
+    return res.activeToken || null;
+  } catch {
+    return null;
+  }
 }
 
 export interface AdminStickerRequest {

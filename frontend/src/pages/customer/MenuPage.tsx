@@ -47,6 +47,7 @@ import {
   submitCustomerOrder, 
   submitCustomerOrderByQr, 
   getCustomerOrderStatus,
+  getActiveTableToken,
   type PublicMenuRecord,
   type CustomerOrder,
   type CreateCustomerOrderPayload
@@ -137,6 +138,7 @@ export default function MenuPage() {
   // Active Order Live Tracking
   const [activeOrder, setActiveOrder] = useState<CustomerOrder | null>(null);
   const [isTrackerOpen, setIsTrackerOpen] = useState(false);
+  const [tableToken, setTableToken] = useState<{ tokenId: string; tokenNumber: number; tokenCode: string; billUrl: string; total?: number; tableNumber?: number } | null>(null);
 
   // Multi-Round Table Dining Session (3.5 hours TTL)
   const [diningSession, setDiningSession] = useState<DiningSession | null>(null);
@@ -354,6 +356,24 @@ export default function MenuPage() {
       // Ignore storage errors
     }
   }, [slug]);
+
+  // Restore live dining table token if diner is on an active table
+  useEffect(() => {
+    const effTable = (tableNumber || tableParam || '').trim();
+    if (slug && effTable) {
+      void getActiveTableToken(slug, effTable).then((tok) => {
+        if (tok) {
+          setTableToken({
+            tokenId: tok.tokenId,
+            tokenNumber: tok.tokenNumber,
+            tokenCode: tok.tokenCode,
+            billUrl: tok.billUrl,
+            total: tok.total
+          });
+        }
+      });
+    }
+  }, [slug, tableNumber, tableParam]);
 
   // Poll active order status with tracking token
   useEffect(() => {
@@ -592,6 +612,15 @@ export default function MenuPage() {
         : await submitCustomerOrder(slug!, payload);
 
       setActiveOrder(placed);
+      if (placed.tokenId) {
+        setTableToken({
+          tokenId: placed.tokenId,
+          tokenNumber: placed.tokenNumber || 0,
+          tokenCode: placed.tokenCode || `#${placed.tokenNumber}`,
+          billUrl: placed.billUrl || `/bill/${placed.tokenId}`,
+          total: placed.sessionTotal || placed.total
+        });
+      }
       if (slug) {
         sessionStorage.setItem(`active_order_${slug}`, JSON.stringify(placed));
         localStorage.removeItem(`menuqr_cart_${slug}`);
@@ -666,6 +695,11 @@ export default function MenuPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not send service request');
       setLastServiceSentAt(now);
+      if (requestType === 'BILL' && tableToken?.tokenId) {
+        try {
+          await fetch(`/api/public/tokens/${encodeURIComponent(tableToken.tokenId)}/request-bill`, { method: 'POST' });
+        } catch {}
+      }
       const label = requestType === 'WATER' ? '💧 Drinking Water' : requestType === 'BILL' ? '🧾 Final Bill' : '🙋 Server Assistance';
       showToast('success', `🔔 ${label} requested for Table ${effectiveTable}! Staff has been notified.`);
       setIsServiceModalOpen(false);
@@ -1259,6 +1293,45 @@ export default function MenuPage() {
           <BellRing size={15} className="text-[#e8783c] animate-pulse shrink-0" />
           <span>Call Waiter / Water</span>
         </button>
+      )}
+
+      {/* Live Digital Table Token & Thermal Bill Floating Pill */}
+      {tableToken && (
+        <div
+          className={`fixed left-4 right-4 z-40 max-w-md mx-auto bg-[#181d1a]/95 text-white p-3 rounded-2xl shadow-2xl border border-[#e8783c]/40 backdrop-blur-md flex items-center justify-between transition-all ${cart.length > 0 && !isCartOpen ? 'bottom-20' : 'bottom-4'}`}
+          role="region"
+          aria-label="Active Table Dining Token"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#e8783c]/20 border border-[#e8783c]/50 flex items-center justify-center text-[#e8783c] font-black font-mono text-sm shadow-inner">
+              {tableToken.tokenCode}
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wider">
+                Table {tableNumber || tableParam || tableToken.tableNumber} • Dining Active
+              </span>
+              <span className="text-xs font-black text-white">
+                Total Bill: ₹{tableToken.total ?? activeOrder?.sessionTotal ?? activeOrder?.total ?? 0}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleSendServiceRequest('BILL')}
+              className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[11px] px-2.5 py-1.5 rounded-lg border border-amber-500/40 transition-all flex items-center gap-1 active:scale-95"
+              title="Ask waiter for bill at table"
+            >
+              🔔 Ask Bill
+            </button>
+            <a
+              href={tableToken.billUrl || `/bill/${tableToken.tokenId}`}
+              className="bg-[#e8783c] hover:bg-[#d56b30] text-white font-extrabold text-[11px] px-3 py-1.5 rounded-lg shadow-md transition-all flex items-center gap-1 active:scale-95"
+            >
+              <span>📄 Bill ↗</span>
+            </a>
+          </div>
+        </div>
       )}
 
 
@@ -1965,6 +2038,28 @@ export default function MenuPage() {
                   <h4 className="order-tracker-title">{getStatusText(activeOrder.status, activeOrder.orderType)}</h4>
                   <div className="order-tracker-id">Order ID: #{activeOrder.id}</div>
                 </div>
+
+                {/* Digital Dining Token & Live Thermal Receipt Card */}
+                {(tableToken || activeOrder.tokenId) && (
+                  <div className="my-3 p-3.5 bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-zinc-900 border border-amber-500/40 rounded-2xl flex items-center justify-between shadow-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 font-black font-mono text-base shadow-inner">
+                        {tableToken?.tokenCode || activeOrder.tokenCode || `#${tableToken?.tokenNumber || activeOrder.tokenNumber}`}
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-wider text-amber-400">Live Table Token</div>
+                        <div className="text-xs font-bold text-white">Table {tableNumber || tableParam || activeOrder.tableNumber} • Dining Active</div>
+                        <div className="text-xs font-black text-emerald-400">Bill: ₹{activeOrder.sessionTotal || tableToken?.total || activeOrder.total}</div>
+                      </div>
+                    </div>
+                    <a
+                      href={tableToken?.billUrl || activeOrder.billUrl || `/bill/${tableToken?.tokenId || activeOrder.tokenId}`}
+                      className="inline-flex items-center gap-1 bg-[#e8783c] hover:bg-[#d56b30] text-white font-extrabold text-xs px-3 py-2 rounded-xl shadow-md transition-all active:scale-95"
+                    >
+                      <span>📄 View Bill ↗</span>
+                    </a>
+                  </div>
+                )}
 
                 {/* Live Countdown & Preparation Timer Card */}
                 {activeOrder.status !== 'CANCELLED' && (
