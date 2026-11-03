@@ -1,0 +1,3 @@
+# Cloudflare Pages SPA Routing Fallback
+# Serves index.html with 200 OK for dynamic client-side routes (e.g. /bill/:id, /app/*, /menu/:slug)
+/*    /index.html   200

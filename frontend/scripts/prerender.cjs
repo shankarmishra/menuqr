@@ -524,6 +524,7 @@ const spaRoutes = [
   '/login',
   '/app',
   '/admin',
+  '/bill',
 ];
 
 const cleanSpaTemplate = template.replace(/<div id="root">[\s\S]*?<\/div>/, '<div id="root"></div>');
