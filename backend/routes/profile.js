@@ -218,6 +218,8 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
         deliveryFee: s.deliveryFee,
         deliveryAreaNote: s.deliveryAreaNote,
         payNotes: s.payNotes,
+        deliveryPausedUntil: s.deliveryPausedUntil,
+        deliveryTimeSlots: s.deliveryTimeSlots,
       });
       return true;
     }
@@ -238,15 +240,54 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
       const payNotes = Array.isArray(input.payNotes)
         ? input.payNotes.slice(0, 6).map((n) => sanitizeText(n, 60)).filter(Boolean)
         : null;
+
+      // Delivery pause timestamp validation (null = clear pause, string = future timestamp)
+      let deliveryPausedUntil = undefined;
+      if (input.deliveryPausedUntil !== undefined) {
+        if (input.deliveryPausedUntil === null || input.deliveryPausedUntil === '') {
+          deliveryPausedUntil = null;
+        } else {
+          const parsedDate = new Date(input.deliveryPausedUntil);
+          if (isNaN(parsedDate.getTime())) {
+            throw apiError(400, 'deliveryPausedUntil must be a valid ISO date timestamp or null.');
+          }
+          deliveryPausedUntil = parsedDate.toISOString();
+        }
+      }
+
+      // Delivery time slots validation ([{start: 'HH:MM', end: 'HH:MM'}])
+      let deliveryTimeSlots = undefined;
+      if (input.deliveryTimeSlots !== undefined) {
+        if (input.deliveryTimeSlots === null) {
+          deliveryTimeSlots = '[]';
+        } else if (Array.isArray(input.deliveryTimeSlots)) {
+          const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
+          const cleaned = input.deliveryTimeSlots.slice(0, 10).map((slot) => {
+            if (!slot || typeof slot !== 'object') throw apiError(400, 'Each time slot must be an object with start and end.');
+            const start = String(slot.start || '').trim();
+            const end = String(slot.end || '').trim();
+            if (!timeRegex.test(start) || !timeRegex.test(end)) {
+              throw apiError(400, 'Time slot start and end must be valid 24h times in HH:MM format (e.g. 19:30).');
+            }
+            return { start, end };
+          });
+          deliveryTimeSlots = JSON.stringify(cleaned);
+        } else {
+          throw apiError(400, 'deliveryTimeSlots must be an array of time slot objects.');
+        }
+      }
+
       // A first save writes a row. Fields the owner did not send start from the legacy state
       // (dine-in and delivery on), so saving one switch never silently turns the others off.
       await pool.query(
         `INSERT INTO ordering_settings (
           tenant_id, dine_in_enabled, takeaway_enabled, delivery_enabled, accepting_orders,
-          auto_by_hours, delivery_min_order, delivery_fee, delivery_area_note, pay_notes, version, updated_at
+          auto_by_hours, delivery_min_order, delivery_fee, delivery_area_note, pay_notes,
+          delivery_paused_until, delivery_time_slots, version, updated_at
         ) VALUES ($1, COALESCE($2::boolean, true), COALESCE($3::boolean, false), COALESCE($4::boolean, true),
                   COALESCE($5::boolean, true), COALESCE($6::boolean, false), COALESCE($7::numeric, 0),
-                  COALESCE($8::numeric, 0), $9::text, COALESCE($10::text[], ARRAY['Pay at counter']), 1, NOW())
+                  COALESCE($8::numeric, 0), $9::text, COALESCE($10::text[], ARRAY['Pay at counter']),
+                  $11::timestamptz, COALESCE($12::jsonb, '[]'::jsonb), 1, NOW())
         ON CONFLICT (tenant_id) DO UPDATE SET
           dine_in_enabled = COALESCE($2::boolean, ordering_settings.dine_in_enabled),
           takeaway_enabled = COALESCE($3::boolean, ordering_settings.takeaway_enabled),
@@ -257,6 +298,8 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
           delivery_fee = COALESCE($8::numeric, ordering_settings.delivery_fee),
           delivery_area_note = COALESCE($9::text, ordering_settings.delivery_area_note),
           pay_notes = COALESCE($10::text[], ordering_settings.pay_notes),
+          delivery_paused_until = CASE WHEN $13::boolean THEN $11::timestamptz ELSE ordering_settings.delivery_paused_until END,
+          delivery_time_slots = CASE WHEN $14::boolean THEN COALESCE($12::jsonb, '[]'::jsonb) ELSE ordering_settings.delivery_time_slots END,
           version = ordering_settings.version + 1,
           updated_at = NOW()`,
         [
@@ -270,6 +313,10 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
           amount(input.deliveryFee, 'deliveryFee'),
           input.deliveryAreaNote === undefined || input.deliveryAreaNote === null ? null : sanitizeText(String(input.deliveryAreaNote), 120),
           payNotes,
+          deliveryPausedUntil || null,
+          deliveryTimeSlots || null,
+          input.deliveryPausedUntil !== undefined,
+          input.deliveryTimeSlots !== undefined,
         ]
       );
       // The switches are part of the public payload, so the cached copy must go.

@@ -27,6 +27,8 @@ export function legacyOrderingSettings() {
     deliveryFee: 0,
     deliveryAreaNote: '',
     payNotes: ['Pay at counter'],
+    deliveryPausedUntil: null,
+    deliveryTimeSlots: [],
   };
 }
 
@@ -43,7 +45,37 @@ export function orderingSettingsFromRow(row) {
     deliveryFee: Number(row.delivery_fee || 0),
     deliveryAreaNote: row.delivery_area_note || '',
     payNotes: row.pay_notes || ['Pay at counter'],
+    deliveryPausedUntil: row.delivery_paused_until ? new Date(row.delivery_paused_until).toISOString() : null,
+    deliveryTimeSlots: Array.isArray(row.delivery_time_slots) ? row.delivery_time_slots : [],
   };
+}
+
+/**
+ * Evaluates whether current time in Asia/Kolkata matches any delivery time slot.
+ * Supports midnight crossing: e.g. start: "23:00", end: "03:00".
+ * @param {Array<{start: string, end: string}>} slots
+ * @param {Date} date
+ */
+export function isDeliverySlotActive(slots, date = new Date()) {
+  if (!Array.isArray(slots) || slots.length === 0) return true;
+  const istStr = date.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false, hour: '2-digit', minute: '2-digit' });
+  const [currH, currM] = istStr.split(':').map(Number);
+  const currentMinutes = currH * 60 + currM;
+
+  return slots.some((slot) => {
+    if (!slot || !slot.start || !slot.end) return false;
+    const [sH, sM] = String(slot.start).split(':').map(Number);
+    const [eH, eM] = String(slot.end).split(':').map(Number);
+    if (!Number.isFinite(sH) || !Number.isFinite(sM) || !Number.isFinite(eH) || !Number.isFinite(eM)) return false;
+    const startMinutes = sH * 60 + sM;
+    const endMinutes = eH * 60 + eM;
+
+    if (startMinutes <= endMinutes) {
+      return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+    } else {
+      return currentMinutes >= startMinutes || currentMinutes <= endMinutes;
+    }
+  });
 }
 
 /**
@@ -51,8 +83,9 @@ export function orderingSettingsFromRow(row) {
  * the menu does not offer (and never refuses one it does offer).
  * @param {object|null|undefined} settingsRow raw `ordering_settings` row, or none
  * @param {'DINE_IN'|'TAKEAWAY'|'DELIVERY'} orderType
+ * @param {Date} [checkTime=new Date()]
  */
-export function assertOrderTypeAllowed(settingsRow, orderType) {
+export function assertOrderTypeAllowed(settingsRow, orderType, checkTime = new Date()) {
   const settings = orderingSettingsFromRow(settingsRow);
   if (!settings.accepting) {
     throw apiError(400, 'This restaurant is currently not accepting online orders.');
@@ -63,8 +96,22 @@ export function assertOrderTypeAllowed(settingsRow, orderType) {
   if (orderType === 'TAKEAWAY' && !settings.takeaway) {
     throw apiError(400, 'Takeaway pickup ordering is currently disabled by the restaurant.');
   }
-  if (orderType === 'DELIVERY' && !settings.delivery) {
-    throw apiError(400, 'Delivery ordering is currently disabled by the restaurant.');
+  if (orderType === 'DELIVERY') {
+    if (!settings.delivery) {
+      throw apiError(400, 'Delivery ordering is currently disabled by the restaurant.');
+    }
+    if (settings.deliveryPausedUntil) {
+      const pausedUntil = new Date(settings.deliveryPausedUntil);
+      if (pausedUntil > checkTime) {
+        const remainingMinutes = Math.max(1, Math.ceil((pausedUntil.getTime() - checkTime.getTime()) / 60000));
+        throw apiError(400, `Delivery is temporarily paused due to kitchen rush. Resumes in ~${remainingMinutes} min.`);
+      }
+    }
+    if (Array.isArray(settings.deliveryTimeSlots) && settings.deliveryTimeSlots.length > 0) {
+      if (!isDeliverySlotActive(settings.deliveryTimeSlots, checkTime)) {
+        throw apiError(400, 'Delivery is currently closed outside of scheduled service hours.');
+      }
+    }
   }
 }
 

@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../components/feedback/ToastProvider';
+import OrderingSettingsPanel from '../../components/settings/OrderingSettingsPanel';
 
 function InstagramIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
   return (
@@ -647,6 +648,9 @@ export default function Settings() {
           </button>
         </div>
       </form>
+
+      {/* ── Ordering & Delivery Controls (Dine-in, Takeaway, Delivery, Rush-Hour Pause) ── */}
+      <OrderingSettingsPanel />
 
       {/* ── 2. AI Table Voice Greeting (Smart Host / Hostess) ──────────────── */}
       <div className="bg-[#1d2723] rounded-2xl p-6 md:p-8 border border-[#2a3832] space-y-6">

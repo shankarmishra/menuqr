@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { 
+  Receipt, 
   Clock, 
   Check, 
   ChefHat, 
@@ -832,6 +833,7 @@ export default function Orders() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [updatingId, setUpdatingId] = useState('');
   const [filterType, setFilterType] = useState<'ALL' | 'DINE_IN' | 'DELIVERY'>('ALL');
+  const [kdsWorkflowTab, setKdsWorkflowTab] = useState<'ACTIVE' | 'HISTORY'>('ACTIVE');
   const [mobileStage, setMobileStage] = useState<'ALL' | 'NEW' | 'COOKING' | 'READY' | 'DONE'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'NEWEST' | 'OLDEST_PENDING'>('NEWEST');
@@ -1325,13 +1327,18 @@ export default function Orders() {
     });
   }, [orders]);
 
+  const activeTableGroups = useMemo(() => {
+    return tableGroups.filter(g => !g.allDone);
+  }, [tableGroups]);
+
   const currentModalGroup = selectedTableModal ? tableGroups.find(g => g.tableNumber === selectedTableModal) : null;
 
   // ==========================================
   // Sub-Component: Table Matrix View (Floor View)
   // ==========================================
   const TableMatrixView = () => {
-    if (tableGroups.length === 0) {
+    const groupsToDisplay = kdsWorkflowTab === 'ACTIVE' ? activeTableGroups : tableGroups;
+    if (groupsToDisplay.length === 0) {
       return (
         <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-[#24332d] rounded-3xl p-12 text-center bg-[#151c19]/40 min-h-[420px]">
           <div className="w-16 h-16 rounded-2xl bg-[#1d2723] flex items-center justify-center text-[#849a90] mb-4 border border-[#2a3832]">
@@ -1347,7 +1354,7 @@ export default function Orders() {
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto custom-scrollbar pb-6 flex-1 min-h-0">
-        {tableGroups.map(group => {
+        {groupsToDisplay.map(group => {
           const seatedMins = Math.max(1, Math.round((Date.now() - new Date(group.seatedTime).getTime()) / 60000));
           const latestOrder = group.orders[group.orders.length - 1];
           const activeTableService = serviceRequests.find(
@@ -1991,6 +1998,79 @@ export default function Orders() {
   };
 
   // ==========================================
+  // Sub-Component: Completed History View
+  // ==========================================
+  const CompletedHistoryView = () => {
+    const totalCompletedRevenue = completedOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+    const dineInCompleted = completedOrders.filter(o => o.orderType === 'DINE_IN').length;
+    const deliveryCompleted = completedOrders.filter(o => o.orderType === 'DELIVERY').length;
+
+    return (
+      <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-y-auto custom-scrollbar pb-6">
+        {/* Metric Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-[#151c19] border border-[#24332d] rounded-2xl p-4">
+            <div className="flex items-center justify-between text-[#849a90] text-xs font-semibold">
+              <span>Orders Completed</span>
+              <CheckCircle2 size={16} className="text-emerald-400" />
+            </div>
+            <div className="text-xl md:text-2xl font-black text-white font-mono mt-2">
+              {completedOrders.length}
+            </div>
+          </div>
+
+          <div className="bg-[#151c19] border border-[#24332d] rounded-2xl p-4">
+            <div className="flex items-center justify-between text-[#849a90] text-xs font-semibold">
+              <span>Completed Sales</span>
+              <Receipt size={16} className="text-emerald-400" />
+            </div>
+            <div className="text-xl md:text-2xl font-black text-emerald-400 font-mono mt-2">
+              ₹{totalCompletedRevenue.toFixed(0)}
+            </div>
+          </div>
+
+          <div className="bg-[#151c19] border border-[#24332d] rounded-2xl p-4">
+            <div className="flex items-center justify-between text-[#849a90] text-xs font-semibold">
+              <span>Dine-In Served</span>
+              <UtensilsCrossed size={16} className="text-[#e8783c]" />
+            </div>
+            <div className="text-xl md:text-2xl font-black text-[#e8783c] font-mono mt-2">
+              {dineInCompleted}
+            </div>
+          </div>
+
+          <div className="bg-[#151c19] border border-[#24332d] rounded-2xl p-4">
+            <div className="flex items-center justify-between text-[#849a90] text-xs font-semibold">
+              <span>Delivery Completed</span>
+              <Bike size={16} className="text-sky-400" />
+            </div>
+            <div className="text-xl md:text-2xl font-black text-sky-400 font-mono mt-2">
+              {deliveryCompleted}
+            </div>
+          </div>
+        </div>
+
+        {/* Completed Order Cards */}
+        {completedOrders.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-12 bg-[#151c19]/50 rounded-2xl border border-dashed border-[#24332d] text-center min-h-[300px]">
+            <CheckCircle2 size={36} className="text-[#62756d] mb-2" />
+            <h3 className="text-sm font-bold text-white mb-1">No Completed Orders Yet</h3>
+            <p className="text-xs text-[#849a90] max-w-sm">
+              Orders marked as Served or Delivered in the kitchen will be automatically archived here.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+            {completedOrders.map((order) => (
+              <OrderCard key={order.id} order={order} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ==========================================
   // Sub-Component: Kanban Stage Column
   // ==========================================
   const Column = ({ 
@@ -2157,34 +2237,65 @@ export default function Orders() {
               <RefreshCw size={14} className={isRefreshing ? 'animate-spin text-[#e8783c]' : ''} />
             </button>
 
-            {/* View Mode Switcher */}
+            {/* Workflow Switcher: Active Kitchen vs Completed History */}
             <div className="flex items-center gap-1 p-1 rounded-xl bg-[#141b18] border border-[#2a3832]">
               <button
                 type="button"
-                onClick={() => setViewMode('KANBAN')}
+                onClick={() => setKdsWorkflowTab('ACTIVE')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
-                  viewMode === 'KANBAN'
+                  kdsWorkflowTab === 'ACTIVE'
                     ? 'bg-[#e8783c] text-white shadow-md shadow-[#e8783c]/30'
                     : 'text-[#849a90] hover:text-white'
                 }`}
               >
-                <Kanban size={13} />
-                <span>Kanban</span>
+                <Clock size={13} />
+                <span>Active ({newOrders.length + inProgressOrders.length + readyOrders.length})</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setViewMode('TABLE_MATRIX')}
+                onClick={() => setKdsWorkflowTab('HISTORY')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
-                  viewMode === 'TABLE_MATRIX'
+                  kdsWorkflowTab === 'HISTORY'
                     ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
                     : 'text-[#849a90] hover:text-white'
                 }`}
               >
-                <LayoutGrid size={13} />
-                <span>Table Floor ({tableGroups.length})</span>
+                <CheckCircle2 size={13} />
+                <span>History ({completedOrders.length})</span>
               </button>
             </div>
+
+            {/* View Mode Switcher (Active View only) */}
+            {kdsWorkflowTab === 'ACTIVE' && (
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-[#141b18] border border-[#2a3832]">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('KANBAN')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                    viewMode === 'KANBAN'
+                      ? 'bg-white text-black shadow-md'
+                      : 'text-[#849a90] hover:text-white'
+                  }`}
+                >
+                  <Kanban size={13} />
+                  <span>Kanban</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewMode('TABLE_MATRIX')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                    viewMode === 'TABLE_MATRIX'
+                      ? 'bg-white text-black shadow-md'
+                      : 'text-[#849a90] hover:text-white'
+                  }`}
+                >
+                  <LayoutGrid size={13} />
+                  <span>Table Floor ({activeTableGroups.length})</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -2425,8 +2536,10 @@ export default function Orders() {
         </button>
       </div>
 
-      {/* Main View Area (Kanban vs Table Floor Matrix) */}
-      {viewMode === 'TABLE_MATRIX' ? (
+      {/* Main View Area (Active Kanban vs Table Floor vs Completed History) */}
+      {kdsWorkflowTab === 'HISTORY' ? (
+        <CompletedHistoryView />
+      ) : viewMode === 'TABLE_MATRIX' ? (
         <TableMatrixView />
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-4 flex-1 min-h-0 custom-scrollbar">
@@ -2455,15 +2568,6 @@ export default function Orders() {
               icon={CheckCircle2} 
               colorClass="text-purple-400"
               accentBorder="border-purple-400" 
-            />
-          )}
-          {(mobileStage === 'ALL' || mobileStage === 'DONE') && (
-            <Column 
-              title="Completed / Delivered" 
-              columnOrders={completedOrders} 
-              icon={Check} 
-              colorClass="text-emerald-400"
-              accentBorder="border-emerald-400" 
             />
           )}
         </div>

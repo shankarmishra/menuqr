@@ -143,6 +143,7 @@ const PurchaseSuccessPage = lazyWithRetry(() => import('./pages/purchase/Purchas
 const TemplateShowcasePage = lazyWithRetry(() => import('./pages/public/TemplateShowcasePage'));
 const TemplateOnePreviewPage = lazyWithRetry(() => import('./pages/public/TemplateOnePreviewPage'));
 const MenuPage = lazyWithRetry(() => import('./pages/customer/MenuPage'));
+const DesignStudio = lazyWithRetry(() => import('./pages/internal/DesignStudio'));
 
 function ProtectedAdminLayout() {
   const location = useLocation();
@@ -381,6 +382,9 @@ function PublicAppRoutes() {
           <Route path="orders" element={<FeatureGate capability="reception_orders"><AppOrders /></FeatureGate>} />
           <Route path="cashier" element={<FeatureGate capability="reception_orders"><AppCashier /></FeatureGate>} />
         </Route>
+
+                {/* Internal Design Studio */}
+        <Route path="/internal/design-studio" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><DesignStudio /></Suspense></ChunkErrorBoundary>} />
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

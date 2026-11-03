@@ -1218,6 +1218,8 @@ export interface OrderingSettingsData {
   deliveryFee: number;
   deliveryAreaNote: string;
   payNotes: string[];
+  deliveryPausedUntil?: string | null;
+  deliveryTimeSlots?: Array<{ start: string; end: string }>;
 }
 
 export function getOrderingSettings(): Promise<OrderingSettingsData> {

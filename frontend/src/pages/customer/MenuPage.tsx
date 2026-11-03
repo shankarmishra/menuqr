@@ -61,7 +61,7 @@ import { SEO } from '../../seo/SEO';
 import GuestFeedbackCard from '../../components/customer/GuestFeedbackCard';
 import VoiceWelcomeBanner from '../../components/customer/VoiceWelcomeBanner';
 import DishCustomizationDrawer, { type CustomizationResult } from '../../components/customer/DishCustomizationDrawer';
-import { availableOrderModes } from './orderModes';
+import { availableOrderModes, getDeliveryStatus } from './orderModes';
 import { MenuComingSoon } from './MenuComingSoon';
 import './MenuPage.css';
 
@@ -192,9 +192,23 @@ export default function MenuPage() {
   const callWaiterTypes = menuFeatures?.callWaiter.types ?? ['WATER', 'WAITER', 'BILL'];
   const whatsappNumber = menuFeatures?.whatsappChat.enabled ? menuFeatures.whatsappChat.resolvedNumber : null;
   const accessibilityEnabled = menuFeatures ? menuFeatures.accessibilityControls.enabled : true;
+  // The server's clock, when it sends one, so a phone with a wrong clock cannot show the wrong open/closed status.
+  const serverClockOffset = useMemo(() => {
+    const serverTime = Date.parse(client?.serverNow ?? '');
+    return Number.isFinite(serverTime) ? serverTime - Date.now() : 0;
+  }, [client?.serverNow]);
+
   // Absent `orderingSettings` (a backend that predates the owner's mode switches) reads as the old
   // dine-in plus delivery pair, for the same reason as the menuFeatures defaults above.
-  const orderModes = useMemo(() => availableOrderModes(client?.orderingSettings), [client?.orderingSettings]);
+  const isTableLocked = Boolean(tableParam || (diningSession && diningSession.tableNumber));
+  const orderModes = useMemo(
+    () =>
+      availableOrderModes(client?.orderingSettings, {
+        isTableLocked,
+        currentTime: new Date(Date.now() + serverClockOffset),
+      }),
+    [client?.orderingSettings, isTableLocked, serverClockOffset]
+  );
   useEffect(() => {
     // A mode saved from an earlier visit may no longer be on offer (the owner switched it off).
     if (client && !orderModes.includes(orderType)) setOrderType(orderModes[0] ?? 'DINE_IN');
@@ -204,11 +218,6 @@ export default function MenuPage() {
   const navigate = useNavigate();
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [infoNow, setInfoNow] = useState(() => Date.now());
-  // The server's clock, when it sends one, so a phone with a wrong clock cannot show the wrong open/closed status.
-  const serverClockOffset = useMemo(() => {
-    const serverTime = Date.parse(client?.serverNow ?? '');
-    return Number.isFinite(serverTime) ? serverTime - Date.now() : 0;
-  }, [client?.serverNow]);
   const infoModel = useMemo(
     () => (client ? buildInfoModel(client, { whatsappNumber, now: new Date(infoNow + serverClockOffset) }) : null),
     [client, whatsappNumber, infoNow, serverClockOffset]
@@ -1429,6 +1438,22 @@ export default function MenuPage() {
               </div>
 
               <div className="menu-cart-content">
+                {/* Table QR Lock Banner */}
+                {isTableLocked && (
+                  <div className="mb-3 px-3 py-2 rounded-xl bg-[#1d2723] border border-[#2a3832] text-xs flex items-center justify-between">
+                    <span className="text-[#849a90]">Ordering for Table <strong className="text-white font-bold">{tableParam || diningSession?.tableNumber}</strong></span>
+                    <span className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Dine-In</span>
+                  </div>
+                )}
+
+                {/* Delivery Rush-Hour / Outside Service Hours Alert */}
+                {!isTableLocked && client?.orderingSettings?.delivery && !orderModes.includes('DELIVERY') && (
+                  <div className="mb-3 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center gap-2">
+                    <span className="text-base">🛵</span>
+                    <span className="leading-snug">{getDeliveryStatus(client.orderingSettings, new Date(Date.now() + serverClockOffset)).reason}</span>
+                  </div>
+                )}
+
                 {/* Order Type Selector Switch (Blueprint Decision ★4) */}
                 <div className="order-type-tabs">
                   {orderModes.includes('DINE_IN') && (

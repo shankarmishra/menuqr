@@ -12,7 +12,7 @@ export interface CashierToken {
   total: number;         // rupees
   itemCount: number;
   createdAt: string;
-  status: 'UNPAID' | 'PAID' | 'VOID';
+  status: 'UNPAID' | 'PAID' | 'VOID' | 'BILL_REQUESTED' | 'ORDERING' | 'DINING' | 'SETTLED' | 'ISSUED' | 'CLOSED';
 }
 
 interface Props {
