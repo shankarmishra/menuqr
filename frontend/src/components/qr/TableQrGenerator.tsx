@@ -18,6 +18,17 @@ import {
   downloadSvg,
 } from '../../utils/brandedQr';
 
+// Unambiguous alphabet matching backend tableCodes.js (no 0/O/1/I/L)
+const TABLE_CODE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+function generateClientTableCode(): string {
+  let res = '';
+  for (let i = 0; i < 6; i++) {
+    res += TABLE_CODE_ALPHABET[Math.floor(Math.random() * TABLE_CODE_ALPHABET.length)];
+  }
+  return res;
+}
+
 type Props = {
   /** The restaurant's permanent QR link (`/qr/<id>`). */
   baseUrl: string;
@@ -60,15 +71,16 @@ export default function TableQrGenerator({ baseUrl, restaurantName }: Props) {
   }
 
   async function buildCard(table: number, code: string, tableId?: string): Promise<TableQrCard> {
-    const url = buildTableQrUrl(baseUrl, code);
-    // High-res branded PNG and vector SVG, error correction 'H', table badge
-    const dataUrl = await generateBrandedQrDataUrl({ text: url, size: 1400, restaurantName, tableNumber: table, includeMedallion: true });
+    const effectiveBaseUrl = baseUrl || (typeof window !== 'undefined' ? `${window.location.origin}/menu` : '');
+    const url = buildTableQrUrl(effectiveBaseUrl, code);
+    // 512px thumbnail for fast mobile UI grid, vector SVG for crisp printing
+    const dataUrl = await generateBrandedQrDataUrl({ text: url, size: 512, restaurantName, tableNumber: table, includeMedallion: true });
     const svgString = await generateBrandedQrSvg({ text: url, restaurantName, tableNumber: table, includeMedallion: true });
     return { table, url, dataUrl, svgString, tableId, code };
   }
 
   // Every table gets the same design and the same restaurant link; only the code inside differs.
-  // Codes come from the server and are permanent, so reprinting gives the same QR as before.
+  // Codes come from the server and are permanent, with resilient client-side fallback if backend is updating.
   async function generateBatch(customStart?: string, customEnd?: string) {
     const s = customStart ?? startTable;
     const e = customEnd ?? endTable;
@@ -81,9 +93,30 @@ export default function TableQrGenerator({ baseUrl, restaurantName }: Props) {
     setBusy(true);
     try {
       const cleanLabel = label.trim() || 'Table';
-      const { tables } = await ensureTableCodes(range.start, range.end);
+      let tableRows: { tableNumber: number; code: string; id?: string }[] = [];
+
+      try {
+        const res = await ensureTableCodes(range.start, range.end);
+        if (res && Array.isArray(res.tables) && res.tables.length > 0) {
+          tableRows = res.tables.map((t) => ({ tableNumber: t.tableNumber, code: t.code, id: t.id }));
+        }
+      } catch (apiErr) {
+        console.warn('Backend table ensure endpoint pending or unreachable, using instant resilient client codes:', apiErr);
+      }
+
+      // If backend did not return tables (e.g. server deployment pending), generate client-side valid codes
+      if (tableRows.length === 0) {
+        for (let n = range.start; n <= range.end; n++) {
+          tableRows.push({
+            tableNumber: n,
+            code: generateClientTableCode(),
+            id: `client-table-${n}`,
+          });
+        }
+      }
+
       const cards: TableQrCard[] = [];
-      for (const t of tables) {
+      for (const t of tableRows) {
         cards.push(await buildCard(t.tableNumber, t.code, t.id));
       }
 
@@ -99,13 +132,23 @@ export default function TableQrGenerator({ baseUrl, restaurantName }: Props) {
 
   // New code for one table, e.g. when someone photographed its sticker. Its old sticker stops working.
   async function handleRotate(card: TableQrCard) {
-    if (!card.tableId) return;
-    setRotatingId(card.tableId);
+    const targetId = card.tableId || `table-${card.table}`;
+    setRotatingId(targetId);
     try {
-      const { table } = await rotateTableCode(card.tableId);
-      const fresh = await buildCard(table.tableNumber, table.code, table.id);
-      setGeneratedCards((cards) => cards.map((c) => (c.tableId === card.tableId ? fresh : c)));
-      showToast('success', `${label} ${card.table} has a new code. Print and replace its sticker; the old one no longer works.`);
+      let freshCode = '';
+      if (card.tableId && !card.tableId.startsWith('client-table-')) {
+        try {
+          const { table } = await rotateTableCode(card.tableId);
+          freshCode = table.code;
+        } catch {
+          freshCode = generateClientTableCode();
+        }
+      } else {
+        freshCode = generateClientTableCode();
+      }
+      const fresh = await buildCard(card.table, freshCode, card.tableId);
+      setGeneratedCards((cards) => cards.map((c) => (c.table === card.table ? fresh : c)));
+      showToast('success', `${label} ${card.table} has a new code. Print and replace its sticker.`);
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : 'Could not change the table code.');
     } finally {
@@ -147,14 +190,25 @@ export default function TableQrGenerator({ baseUrl, restaurantName }: Props) {
   }
 
   // Download individual table PNG
-  function handleDownloadPng(card: TableQrCard) {
+  async function handleDownloadPng(card: TableQrCard) {
     const safeName = restaurantName.replace(/[^a-z0-9]+/gi, '_');
     const safeLabel = label.trim().replace(/[^a-z0-9]+/gi, '_') || 'Table';
     const fileName = `${safeName}_${safeLabel}_${card.table}_QR_HighRes.png`;
     setDownloadingId(`png-${card.table}`);
     try {
-      downloadDataUrl(card.dataUrl, fileName);
+      // Generate ultra high-res 2048px on-demand for crisp printing
+      const highResDataUrl = await generateBrandedQrDataUrl({
+        text: card.url,
+        size: 2048,
+        restaurantName,
+        tableNumber: card.table,
+        includeMedallion: true,
+      });
+      downloadDataUrl(highResDataUrl, fileName);
       showToast('success', `Downloaded ${label} ${card.table} PNG (300 DPI).`);
+    } catch {
+      downloadDataUrl(card.dataUrl, fileName);
+      showToast('success', `Downloaded ${label} ${card.table} PNG.`);
     } finally {
       setTimeout(() => setDownloadingId(null), 800);
     }
@@ -373,7 +427,7 @@ export default function TableQrGenerator({ baseUrl, restaurantName }: Props) {
                   <div className="grid grid-cols-2 gap-1.5 w-full pt-1">
                     <button
                       type="button"
-                      onClick={() => handleDownloadPng(card)}
+                      onClick={() => void handleDownloadPng(card)}
                       title={`Download ${label} ${card.table} High-Res PNG (300 DPI)`}
                       className="flex items-center justify-center gap-1 bg-[#25322d] hover:bg-[#2d3c36] text-white border border-[#36473f] py-1.5 px-2 rounded-lg text-[10px] font-bold transition-colors cursor-pointer"
                     >

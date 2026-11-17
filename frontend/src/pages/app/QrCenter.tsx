@@ -64,7 +64,9 @@ export default function QrCenter() {
     return () => { current = false; };
   }, [showToast]);
 
-  const menuUrl = qr?.qrId ? `${window.location.origin}/qr/${encodeURIComponent(qr.qrId)}` : '';
+  const menuUrl = qr?.qrId
+    ? `${window.location.origin}/qr/${encodeURIComponent(qr.qrId)}`
+    : (profile?.menuSlug ? `${window.location.origin}/menu/${encodeURIComponent(profile.menuSlug)}` : `${window.location.origin}`);
 
   useEffect(() => {
     if (!menuUrl) return;
