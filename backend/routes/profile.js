@@ -103,6 +103,7 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
         cuisineTags: input.cuisineTags,
         dietDeclaration: input.dietDeclaration,
         i18n: input.i18n,
+        restaurantTypes: input.restaurantTypes,
       };
     } else if (section === 'location-hours') {
       updates = {
@@ -128,6 +129,12 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
         priceNote: input.priceNote,
         serviceChargeNote: input.serviceChargeNote,
         fssai: input.fssai,
+        // Tax and legal details printed on the restaurant's bills (never on the public menu).
+        gstMode: input.gstMode,
+        gstin: input.gstin,
+        gstRateBps: input.gstRateBps,
+        legalName: input.legalName,
+        restaurantTypes: input.restaurantTypes,
       };
     } else if (section === 'brand') {
       // Update brand_kits. A field that was not sent is passed as NULL so COALESCE keeps the stored

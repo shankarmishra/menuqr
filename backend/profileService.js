@@ -20,8 +20,15 @@ import {
   validateLinks,
   validatePincode,
   validateFSSAI,
+  validateGstSettings,
   normalizeMapsUrl,
 } from './validation.js';
+
+/** Business types an owner can pick. Stored in restaurant_profiles.restaurant_types. */
+export const RESTAURANT_TYPES = [
+  'restaurant', 'cafe', 'dhaba', 'bar', 'bakery', 'sweet_shop',
+  'cloud_kitchen', 'food_truck', 'hotel_restaurant', 'canteen', 'other',
+];
 
 /**
  * Computes profile completeness score (0-100) per §3.6.
@@ -102,6 +109,10 @@ export async function getRestaurantProfile(tenantId) {
       priceNote: row.price_note || '',
       serviceChargeNote: row.service_charge_note || '',
       fssai: row.fssai || '',
+      gstMode: row.gst_mode || 'UNSET',
+      gstin: row.gstin || '',
+      gstRateBps: row.gst_rate_bps ?? 500,
+      legalName: row.legal_name || '',
       address: row.address || {},
       maps: row.maps || {},
       hours: row.hours || {},
@@ -137,6 +148,10 @@ export async function getRestaurantProfile(tenantId) {
     priceNote: '',
     serviceChargeNote: '',
     fssai: '',
+    gstMode: 'UNSET',
+    gstin: '',
+    gstRateBps: 500,
+    legalName: '',
     address: {
       line: c.address || '',
       city: c.city || '',
@@ -229,7 +244,31 @@ export async function updateRestaurantProfile(tenantId, updates, updatedBy = 'ow
     if (updates.priceNote !== undefined) p.price_note = sanitizeText(updates.priceNote, 50);
     if (updates.serviceChargeNote !== undefined) p.service_charge_note = sanitizeText(updates.serviceChargeNote, 80);
     if (updates.fssai !== undefined) {
-      p.fssai = validateFSSAI(updates.fssai) ? String(updates.fssai).trim() : null;
+      // Empty clears the number; anything else must be a real 14-digit number (no silent NULL).
+      const rawFssai = String(updates.fssai ?? '').replace(/\s+/g, '');
+      if (!rawFssai) p.fssai = null;
+      else if (validateFSSAI(rawFssai)) p.fssai = rawFssai;
+      else throw apiError(400, 'An FSSAI number has exactly 14 digits. Check it against your FSSAI licence or registration.');
+    }
+    if (updates.legalName !== undefined) p.legal_name = sanitizeText(updates.legalName, 120) || null;
+    if (updates.restaurantTypes !== undefined && Array.isArray(updates.restaurantTypes)) {
+      p.restaurant_types = updates.restaurantTypes
+        .map((t) => String(t || '').trim().toLowerCase())
+        .filter((t) => RESTAURANT_TYPES.includes(t))
+        .slice(0, 2);
+    }
+    // GST status, GSTIN and rate depend on each other, so they are validated together using the
+    // stored values for any field this request did not send.
+    if (updates.gstMode !== undefined || updates.gstin !== undefined || updates.gstRateBps !== undefined) {
+      const gst = validateGstSettings({
+        gstMode: updates.gstMode ?? p.gst_mode,
+        gstin: updates.gstin ?? p.gstin,
+        gstRateBps: updates.gstRateBps ?? p.gst_rate_bps,
+      });
+      if (!gst.ok) throw apiError(400, gst.reason);
+      p.gst_mode = gst.value.gstMode;
+      p.gstin = gst.value.gstin;
+      p.gst_rate_bps = gst.value.gstRateBps;
     }
 
     if (updates.address !== undefined && typeof updates.address === 'object') {
@@ -303,7 +342,8 @@ export async function updateRestaurantProfile(tenantId, updates, updatedBy = 'ow
         cuisine_tags = $5, diet_declaration = $6, highlights = $7, payments = $8,
         price_note = $9, service_charge_note = $10, fssai = $11, address = $12,
         maps = $13, hours = $14, contacts = $15, links = $16, reservations = $17,
-        i18n = $18, review_flags = $19, version = $20, updated_at = NOW(), updated_by = $21
+        i18n = $18, review_flags = $19, version = $20, updated_at = NOW(), updated_by = $21,
+        restaurant_types = $23, gst_mode = $24, gstin = $25, gst_rate_bps = $26, legal_name = $27
        WHERE tenant_id = $22`,
       [
         p.display_name,
@@ -328,6 +368,11 @@ export async function updateRestaurantProfile(tenantId, updates, updatedBy = 'ow
         newVersion,
         updatedBy,
         tenantId,
+        p.restaurant_types || [],
+        p.gst_mode || 'UNSET',
+        p.gstin || null,
+        p.gst_rate_bps ?? 500,
+        p.legal_name || null,
       ]
     );
 

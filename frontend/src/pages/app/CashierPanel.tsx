@@ -16,6 +16,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import TokenSearchInput from '../../components/cashier/TokenSearchInput';
 import UnpaidTokenQueue, { type CashierToken } from '../../components/cashier/UnpaidTokenQueue';
 import PaymentActionPanel, { type TokenDetail } from '../../components/cashier/PaymentActionPanel';
+import { toTokenDetail } from '../../components/cashier/tokenDetail';
 import FloorGrid from '../../components/cashier/FloorGrid';
 import SettledHistoryView, { type SettledTokenItem } from '../../components/cashier/SettledHistoryView';
 import ThermalBillCard from '../../components/bill/ThermalBillCard';
@@ -154,8 +155,7 @@ export default function CashierPanel() {
         signal: ctrl.signal,
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = (await res.json()) as TokenDetail;
-      setTokenDetail(data);
+      setTokenDetail(toTokenDetail(await res.json()));
     } catch (err) {
       if ((err as Error).name !== 'AbortError') {
         setTokenDetail(null);
@@ -312,6 +312,13 @@ export default function CashierPanel() {
         restaurantName: detail?.restaurantName || 'Restaurant',
         restaurantGstin: detail?.restaurantGstin || null,
         restaurantFssai: detail?.restaurantFssai || null,
+        restaurantLegalName: detail?.restaurantLegalName || null,
+        restaurantGstMode: detail?.restaurantGstMode || null,
+        restaurantAddress: detail?.restaurantAddress || null,
+        restaurantCity: detail?.restaurantCity || null,
+        restaurantPhone: detail?.restaurantPhone || null,
+        taxMode: detail?.taxMode || null,
+        taxRateBps: detail?.taxRateBps ?? null,
         items: (detail?.items || []).map((it, idx) => ({
           id: String(idx),
           name: it.name,

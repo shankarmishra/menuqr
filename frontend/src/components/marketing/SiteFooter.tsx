@@ -10,8 +10,11 @@ const footerLinks = [
     title: "Product",
     links: [
       { label: "Digital QR Menu", href: "/digital-qr-menu" },
-      { label: "Restaurant QR Menu", href: "/restaurant-qr-menu" },
+      { label: "QR Menu for Restaurants", href: "/qr-menu-for-restaurants" },
       { label: "QR Ordering System", href: "/qr-ordering-for-restaurants" },
+      { label: "Kitchen Display System", href: "/kitchen-display-system" },
+      { label: "Restaurant Billing", href: "/restaurant-billing-software" },
+      { label: "Restaurant Software", href: "/restaurant-software" },
       { label: "Menu Templates", href: "/templates" },
       { label: "Plans & Pricing", href: "/plans" },
     ]
@@ -32,6 +35,8 @@ const footerLinks = [
     links: [
       { label: "About MenusQR", href: "/about" },
       { label: "How It Works", href: "/how-it-works" },
+      { label: "Guides", href: "/guides" },
+      { label: "QR Menu Price in India", href: "/qr-menu-price-india" },
       { label: "Contact Us", href: "/contact" },
       { label: "FAQ Center", href: "/faq" },
     ]

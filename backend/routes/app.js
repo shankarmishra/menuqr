@@ -831,7 +831,7 @@ export default async function appRoutes(request, response, url) {
       [user.tenantId]
     );
     const clientRow = clientRes.rows[0];
-    const customerState = clientRow?.state || clientRow?.city || 'Maharashtra';
+    const customerState = clientRow?.state || clientRow?.city || '';
 
     const preview = calculateProration({
       currentPlanId: currentPlanKey,
@@ -894,7 +894,7 @@ export default async function appRoutes(request, response, url) {
       order_subtype: 'RENEWAL',
       billing_cycle: 'yearly',
       new_expires_at: newExpiry.toISOString(),
-      customer_state: clientRow.state || clientRow.city || 'Maharashtra',
+      customer_state: clientRow.state || clientRow.city || '',
     };
 
     await pool.query(`
@@ -913,9 +913,9 @@ export default async function appRoutes(request, response, url) {
       userRow.email || 'billing@menusqr.in',
       clientRow.phone || userRow.phone || '',
       clientRow.business_name || 'MenuQR Partner',
-      clientRow.city || 'Pune',
+      clientRow.city || '',
       clientRow.address || '',
-      clientRow.state || 'Maharashtra',
+      clientRow.state || '',
       (sub?.plan_id || 'BASIC').toUpperCase(),
       amountRupees,
       amountRupees,
@@ -985,7 +985,7 @@ export default async function appRoutes(request, response, url) {
     const clientRow = clientRes.rows[0] || {};
     const userRes = await pool.query('SELECT * FROM users WHERE id = $1', [user.id]);
     const userRow = userRes.rows[0] || {};
-    const customerState = clientRow.state || clientRow.city || 'Maharashtra';
+    const customerState = clientRow.state || clientRow.city || '';
 
     const preview = calculateProration({
       currentPlanId: currentPlanKey,
@@ -1037,9 +1037,9 @@ export default async function appRoutes(request, response, url) {
       userRow.email || 'billing@menusqr.in',
       clientRow.phone || userRow.phone || '',
       clientRow.business_name || 'MenuQR Partner',
-      clientRow.city || 'Pune',
+      clientRow.city || '',
       clientRow.address || '',
-      clientRow.state || 'Maharashtra',
+      clientRow.state || '',
       targetPlanKey.toUpperCase(),
       totalDueRupees,
       originalAmountRupees,

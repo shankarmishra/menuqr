@@ -2,6 +2,8 @@ import React from 'react';
 import { ShieldCheck, FileCheck2, CreditCard, Sparkles } from 'lucide-react';
 import { AppearsOnChips, type SurfaceTarget } from './AppearsOnChips';
 import type { CanonicalProfileData } from '../appStore';
+import { TaxLegalSection } from './TaxLegalSection';
+import { fssaiError } from '../../../utils/gst';
 
 interface HighlightsLegalTabProps {
   profile: CanonicalProfileData;
@@ -51,6 +53,7 @@ export const HighlightsLegalTab: React.FC<HighlightsLegalTabProps> = ({
 }) => {
   const highlights = profile.highlights || [];
   const payments = profile.payments || [];
+  const fssaiProblem = fssaiError(profile.fssai || '');
 
   const handleToggleAmenity = (item: string) => {
     if (highlights.includes(item)) {
@@ -220,16 +223,26 @@ export const HighlightsLegalTab: React.FC<HighlightsLegalTabProps> = ({
         />
 
         <div className="max-w-xs pt-1">
+          <label htmlFor="fssai-number" className="sr-only">FSSAI number</label>
           <input
+            id="fssai-number"
             type="text"
+            inputMode="numeric"
             value={profile.fssai || ''}
-            onChange={(e) => onChange({ fssai: e.target.value })}
+            onChange={(e) => onChange({ fssai: e.target.value.replace(/\D/g, '').slice(0, 14) })}
             placeholder="14-digit FSSAI number"
             maxLength={14}
-            className="w-full bg-[#151c19] border border-[#2a3832] rounded-xl px-4 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-[#e8783c] transition-colors"
+            aria-invalid={Boolean(fssaiProblem)}
+            aria-describedby="fssai-help"
+            className={`w-full bg-[#151c19] border rounded-xl px-4 py-3 text-base font-mono text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-[#e8783c] transition-colors ${fssaiProblem ? 'border-red-400' : 'border-[#2a3832]'}`}
           />
+          <p id="fssai-help" className={`mt-1.5 text-sm ${fssaiProblem ? 'text-red-300' : 'text-slate-400'}`}>
+            {fssaiProblem || 'Shown on your menu and bills. Leave empty if you do not have it yet.'}
+          </p>
         </div>
       </div>
+
+      <TaxLegalSection profile={profile} onChange={onChange} />
     </div>
   );
 };

@@ -1150,6 +1150,11 @@ export interface CanonicalProfileData {
   priceNote?: string;
   serviceChargeNote?: string;
   fssai?: string;
+  /** GST status printed on bills; see backend/billTax.js. */
+  gstMode?: 'UNSET' | 'NOT_REGISTERED' | 'COMPOSITION' | 'REGULAR';
+  gstin?: string;
+  gstRateBps?: number;
+  legalName?: string;
   photos?: Array<{ id: string; url: string; caption?: string; tag?: "interior" | "exterior" | "food" | "team" | "event" }>;
   address?: {
     line?: string;

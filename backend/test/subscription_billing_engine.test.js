@@ -8,6 +8,10 @@ import { ownerHeaders } from './helpers/ownerFake.js';
 import appRoutes from '../routes/app.js';
 import { processOrderPaymentAndProvision, PLANS } from '../routes/purchase.js';
 import * as subscriptionService from '../subscriptionService.js';
+
+// The GST maths below describes a GST-registered seller in Maharashtra. Without SELLER_GSTIN
+// configured, MenusQR charges no GST (see subscription_receipt.test.js).
+const REGISTERED_SELLER = { registered: true, sellerState: 'Maharashtra' };
 import * as orderStream from '../orderStream.js';
 
 test('Milestone 2: Subscription, Renewal & Billing Engine Verification', async (suite) => {
@@ -78,7 +82,7 @@ test('Milestone 2: Subscription, Renewal & Billing Engine Verification', async (
       const targetPricePaise = 3199 * 100;
       const remainingDays = 200;
 
-      const res = subscriptionService.calculateProrationPaise(currentPricePaise, remainingDays, targetPricePaise);
+      const res = subscriptionService.calculateProrationPaise(currentPricePaise, remainingDays, targetPricePaise, 'Maharashtra', REGISTERED_SELLER);
       assert.equal(res.dailyRatePaise, 548, 'Daily rate: 199900/365 = 548 paise');
       assert.equal(res.creditPaise, 200 * 548, 'Credit: 200 * 548 = 109600 paise');
       assert.equal(res.subtotalPaise, 319900 - 109600, 'Subtotal: 319900 - 109600 = 210300 paise');
@@ -92,7 +96,7 @@ test('Milestone 2: Subscription, Renewal & Billing Engine Verification', async (
       const targetPricePaise = 6799 * 100;
       const remainingDays = 285;
 
-      const res = subscriptionService.calculateProrationPaise(currentPricePaise, remainingDays, targetPricePaise, 'Maharashtra');
+      const res = subscriptionService.calculateProrationPaise(currentPricePaise, remainingDays, targetPricePaise, 'Maharashtra', REGISTERED_SELLER);
       assert.equal(res.dailyRatePaise, 876, 'Daily rate: 319900/365 = 876 paise');
       assert.equal(res.creditPaise, 285 * 876, 'Credit: 285 * 876 = 249660 paise');
       assert.equal(res.subtotalPaise, 679900 - 249660, 'Subtotal: 679900 - 249660 = 430240 paise');
@@ -107,7 +111,7 @@ test('Milestone 2: Subscription, Renewal & Billing Engine Verification', async (
       const targetPricePaise = 6799 * 100;
       const remainingDays = 0; // or negative
 
-      const res = subscriptionService.calculateProrationPaise(currentPricePaise, remainingDays, targetPricePaise);
+      const res = subscriptionService.calculateProrationPaise(currentPricePaise, remainingDays, targetPricePaise, 'Maharashtra', REGISTERED_SELLER);
       assert.equal(res.creditPaise, 0, 'No credit for expired plan');
       assert.equal(res.subtotalPaise, 679900, 'Subtotal is full new plan price');
       assert.equal(res.gstPaise, Math.round(679900 * 0.09) * 2, '18% GST on full price');
@@ -119,7 +123,7 @@ test('Milestone 2: Subscription, Renewal & Billing Engine Verification', async (
       const targetPricePaise = 1999 * 100;
       const remainingDays = 360; // huge credit exceeding target
 
-      const res = subscriptionService.calculateProrationPaise(currentPricePaise, remainingDays, targetPricePaise);
+      const res = subscriptionService.calculateProrationPaise(currentPricePaise, remainingDays, targetPricePaise, 'Maharashtra', REGISTERED_SELLER);
       assert.equal(res.subtotalPaise, 100, 'Subtotal floored at 100 paise (₹1)');
       assert.equal(res.gstPaise, 18, '18 paise GST on ₹1');
       assert.equal(res.totalDuePaise, 118, '118 paise total floor');
@@ -198,7 +202,7 @@ test('Milestone 2: Subscription, Renewal & Billing Engine Verification', async (
   await suite.test('4. GST Tax Calculations (Intra-state vs Inter-state)', async (t) => {
     await t.test('4.1 Intra-state: Maharashtra customer gets CGST 9% + SGST 9%', () => {
       const subtotalPaise = 100000; // ₹1,000
-      const tax = subscriptionService.calculateGstTax({ subtotalPaise, customerState: 'Maharashtra' });
+      const tax = subscriptionService.calculateGstTax({ subtotalPaise, customerState: 'Maharashtra', ...REGISTERED_SELLER });
       assert.equal(tax.cgstRate, 9.00);
       assert.equal(tax.sgstRate, 9.00);
       assert.equal(tax.igstRate, 0.00);
@@ -210,7 +214,7 @@ test('Milestone 2: Subscription, Renewal & Billing Engine Verification', async (
 
     await t.test('4.2 Inter-state: Uttar Pradesh customer gets IGST 18%', () => {
       const subtotalPaise = 100000; // ₹1,000
-      const tax = subscriptionService.calculateGstTax({ subtotalPaise, customerState: 'Uttar Pradesh' });
+      const tax = subscriptionService.calculateGstTax({ subtotalPaise, customerState: 'Uttar Pradesh', ...REGISTERED_SELLER });
       assert.equal(tax.cgstRate, 0.00);
       assert.equal(tax.sgstRate, 0.00);
       assert.equal(tax.igstRate, 18.00);

@@ -15,7 +15,8 @@ const DESKTOP_NAV_LINKS = [
 const MOBILE_NAV_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'Digital QR Menu', href: '/digital-qr-menu' },
-  { label: 'Restaurant QR Menu', href: '/restaurant-qr-menu' },
+  { label: 'QR Menu Setup Guide', href: '/qr-menu-for-restaurants' },
+  { label: 'QR Ordering', href: '/qr-ordering-for-restaurants' },
   { label: 'How It Works', href: '/how-it-works' },
   { label: 'Templates', href: '/templates' },
   { label: 'Pricing Plans', href: '/plans' },

@@ -1,6 +1,7 @@
 import { pool } from './db.js';
 import { broadcastNewToken, broadcastOrderEvent } from './orderStream.js';
 import { broadcastTokenItems } from './tokenStream.js';
+import { computeBillTax, loadTenantTaxSettings, taxSettingsOfToken } from './billTax.js';
 
 /** Subtotal, count and the items_json snapshot of a token, read inside the caller's transaction. */
 async function summarizeTokenItems(clientConn, tokenId) {
@@ -58,8 +59,8 @@ export async function removeOrderFromToken(tenantId, orderId) {
     }
     await clientConn.query('DELETE FROM token_items WHERE token_id = $1 AND order_id = $2', [token.id, String(orderId)]);
     const { subtotalPaise, itemCount, itemsJson } = await summarizeTokenItems(clientConn, token.id);
-    // Keep the tax/discount/tip rule of the staff paths: the subtotal changes, discount and tip stay.
-    const taxPaise = Number(token.tax_paise || 0) > 0 ? Math.round(subtotalPaise * 0.05) : 0;
+    // Same rule as the staff paths: tax follows the bill's frozen GST setting; discount and tip stay.
+    const { taxPaise } = computeBillTax(subtotalPaise, taxSettingsOfToken(token));
     const totalPaise = Math.max(0, subtotalPaise + taxPaise - Number(token.discount_paise || 0) + Number(token.tip_paise || 0));
     const upd = await clientConn.query(
       `UPDATE table_tokens
@@ -112,6 +113,9 @@ export async function syncOrderToTableToken(client, orderData) {
     return null;
   }
 
+  // GST rule for a bill this order may open (read outside the transaction; see billTax.js).
+  const tenantTaxSettings = await loadTenantTaxSettings(client.id);
+
   const clientConn = await pool.connect();
   try {
     await clientConn.query('BEGIN');
@@ -145,9 +149,10 @@ export async function syncOrderToTableToken(client, orderData) {
       const insTokenRes = await clientConn.query(
         `INSERT INTO table_tokens (
            tenant_id, token_number, token_code, table_number, status, covers,
-           customer_name, customer_phone, subtotal_paise, tax_paise, total_paise, items_json
+           customer_name, customer_phone, subtotal_paise, tax_paise, total_paise, items_json,
+           tax_mode, tax_rate_bps
          )
-         VALUES ($1, $2, $3, $4, 'DINING', 1, $5, $6, 0, 0, 0, '[]'::jsonb)
+         VALUES ($1, $2, $3, $4, 'DINING', 1, $5, $6, 0, 0, 0, '[]'::jsonb, $7, $8)
          RETURNING *`,
         [
           client.id,
@@ -156,6 +161,8 @@ export async function syncOrderToTableToken(client, orderData) {
           parsedTableNum,
           orderData.customerName || null,
           orderData.customerPhone || null,
+          tenantTaxSettings.mode,
+          tenantTaxSettings.rateBps,
         ]
       );
       tokenRecord = insTokenRes.rows[0];
@@ -186,11 +193,15 @@ export async function syncOrderToTableToken(client, orderData) {
     // 3. Recalculate total from all token_items
     const { subtotalPaise, itemCount, itemsJson } = await summarizeTokenItems(clientConn, tokenId);
 
-    // Update table_tokens
+    // Update table_tokens. QR orders follow the same GST rule as orders the staff enter, so the
+    // bill is the same whichever way the dishes were ordered (previously QR orders had no tax).
+    const { taxPaise } = computeBillTax(subtotalPaise, taxSettingsOfToken(isNewToken ? { ...tokenRecord, tax_mode: tenantTaxSettings.mode, tax_rate_bps: tenantTaxSettings.rateBps } : tokenRecord));
+    const totalPaise = Math.max(0, subtotalPaise + taxPaise - Number(tokenRecord.discount_paise || 0) + Number(tokenRecord.tip_paise || 0));
     const updRes = await clientConn.query(
       `UPDATE table_tokens
        SET subtotal_paise = $1,
-           total_paise = $1,
+           tax_paise = $6,
+           total_paise = $7,
            status = 'DINING',
            items_json = $2,
            customer_name = COALESCE(customer_name, $3),
@@ -203,7 +214,9 @@ export async function syncOrderToTableToken(client, orderData) {
         JSON.stringify(itemsJson),
         orderData.customerName || null,
         orderData.customerPhone || null,
-        tokenId
+        tokenId,
+        taxPaise,
+        totalPaise,
       ]
     );
 

@@ -1,16 +1,53 @@
 # MenusQR
 
-> MenusQR lets restaurants, cafes and dhabas in India create a digital QR menu. Dishes, prices and availability can be updated instantly, and the printed table QR code never changes.
+> MenusQR is a digital QR menu and table-ordering platform for restaurants, cafes, dhabas, bars, hotels, bakeries and food trucks in India. A restaurant prints one QR code per table once; dishes, prices and availability can be changed at any time without reprinting.
+
+## What it does
+- Digital menu that opens in the phone browser when a guest scans the table QR. No app download.
+- The printed QR code is permanent. Menu edits, price changes and sold-out marks go live instantly.
+- Ready-made menu designs (templates), several themed for particular Indian cuisines (Punjabi, South Indian, Mumbai street food, thali, royal/heritage) plus café, bar and international styles, with veg and non-veg marks, portions (half/full), add-ons and dish photos.
+- MenusQR is spelled as one word and runs only at menusqr.in. It is not connected to products named MenuQR.
+- Premium plan: guests order from the table, orders reach a kitchen screen, and a cashier screen keeps one running bill per table with a thermal-style receipt.
+- Each table's QR carries its own hidden table code, so an order always lands on the right table.
+- Owner dashboard works on a phone. Support in English and Hindi.
+
+## Plans and prices (INR, per restaurant)
+- Basic: ₹559 per month or ₹1,999 per year. Digital menu, QR code, initial menu setup, one included menu edit.
+- Intermediate: ₹959 per month or ₹3,199 per year. Everything in Basic plus unlimited menu edits and premium menu designs.
+- Premium: ₹1,119 per month or ₹6,799 per year. Everything in Intermediate plus table ordering, kitchen display and cashier billing.
+- Current prices and offers: https://menusqr.in/plans
 
 ## Key pages
-- [Digital QR menu](https://menusqr.in/digital-qr-menu): how a digital QR menu works
+- [Digital QR menu](https://menusqr.in/digital-qr-menu): what a digital QR menu is and why restaurants use one
+- [QR menu for restaurants](https://menusqr.in/qr-menu-for-restaurants): how to set one up
+- [QR ordering for restaurants](https://menusqr.in/qr-ordering-for-restaurants): table ordering, kitchen and cashier
+- [Restaurant software overview](https://menusqr.in/restaurant-software): everything MenusQR does, and what it does not do
+- [Kitchen display system](https://menusqr.in/kitchen-display-system): orders on a kitchen screen in place of paper slips
+- [Restaurant billing](https://menusqr.in/restaurant-billing-software): running bill per table, thermal-style receipt with CGST and SGST
 - [How it works](https://menusqr.in/how-it-works): setup steps
 - [Menu templates](https://menusqr.in/templates): ready-made menu designs
-- [Plans and pricing](https://menusqr.in/plans): subscription plans
-- [FAQ](https://menusqr.in/faq): common questions
-- [Contact](https://menusqr.in/contact)
+- [Plans and pricing](https://menusqr.in/plans)
+- [QR menu price in India](https://menusqr.in/qr-menu-price-india): kinds of options, monthly vs yearly maths, printing and hidden costs
+- [FAQ](https://menusqr.in/faq)
 
-## Legal
+## Guides for restaurant owners
+- [All guides](https://menusqr.in/guides)
+- [Restaurant menu design tips](https://menusqr.in/guides/restaurant-menu-design-tips)
+- [Menu food photos with a phone](https://menusqr.in/guides/food-photos-for-menu)
+- [What a KOT (kitchen order ticket) is](https://menusqr.in/guides/kot-kitchen-order-ticket)
+- [How to reduce order mistakes](https://menusqr.in/guides/reduce-order-mistakes)
+
+## By business type
+- [Cafes](https://menusqr.in/qr-menu-for-cafes)
+- [Dhabas](https://menusqr.in/qr-menu-for-dhabas)
+- [Bars and pubs](https://menusqr.in/qr-menu-for-bars-and-pubs)
+- [Hotels](https://menusqr.in/qr-menu-for-hotels)
+- [Bakeries](https://menusqr.in/qr-menu-for-bakeries)
+- [Food trucks](https://menusqr.in/qr-menu-for-food-trucks)
+
+## Company
+- [About](https://menusqr.in/about)
+- [Contact](https://menusqr.in/contact): phone and WhatsApp +91 87965 30323, email support@menusqr.in
 - [Privacy](https://menusqr.in/privacy)
 - [Terms](https://menusqr.in/terms)
 - [Refund and cancellation](https://menusqr.in/refund-cancellation)

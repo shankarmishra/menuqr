@@ -15,6 +15,9 @@ import {
   closeTokenClients,
   publicTokenView,
 } from '../tokenStream.js';
+import { computeBillTax, loadTenantTaxSettings, taxSettingsOfToken } from '../billTax.js';
+import { resolvePublicPhone } from '../publicMenuPayload.js';
+import { validateFSSAI } from '../validation.js';
 import {
   broadcastNewToken,
   broadcastTokenSettled,
@@ -67,6 +70,9 @@ function formatToken(row, items = null, restaurant = null) {
   const subtotal = Math.round(subtotalPaise / 100);
   const tax = Math.round(taxPaise / 100);
   const total = Math.round(totalPaise / 100);
+  const taxRule = taxSettingsOfToken(row);
+  const cgstPaise = Math.ceil(taxPaise / 2);
+  const sgstPaise = taxPaise - cgstPaise;
 
   let parsedItems = [];
   if (Array.isArray(items)) {
@@ -101,6 +107,13 @@ function formatToken(row, items = null, restaurant = null) {
     tax_paise: taxPaise,
     tax,
     gst: tax,
+    // GST rule this bill was created under, and the CGST/SGST halves of taxPaise.
+    taxMode: taxRule.mode,
+    taxRateBps: taxRule.rateBps,
+    cgstPaise,
+    sgstPaise,
+    cgst: cgstPaise / 100,
+    sgst: sgstPaise / 100,
     discountPaise,
     discount_paise: discountPaise,
     tipPaise,
@@ -132,6 +145,15 @@ function formatToken(row, items = null, restaurant = null) {
   if (restaurant) {
     result.restaurantName = restaurant.business_name || restaurant.name || null;
     result.googleReviewUrl = restaurant.google_review_url || restaurant.googleReviewUrl || null;
+    // Legal details printed on the bill. Only what the restaurant actually configured; empty
+    // values are null so the bill prints nothing rather than a placeholder.
+    result.restaurantLegalName = restaurant.legal_name || null;
+    result.restaurantGstin = restaurant.bill_gstin || null;
+    result.restaurantFssai = restaurant.bill_fssai || null;
+    result.restaurantGstMode = restaurant.gst_mode || 'UNSET';
+    result.restaurantAddress = restaurant.address || null;
+    result.restaurantCity = restaurant.city || null;
+    result.restaurantPhone = restaurant.public_phone || null;
   }
 
   return result;
@@ -178,9 +200,32 @@ async function getRestaurantDetails(tenantId) {
     } catch {}
   }
 
+  // Profile: legal details and the owner's phone choice. A missing table or column (old database)
+  // just means no legal details are printed.
+  let profileRow = null;
+  try {
+    const profileRes = await pool.query(
+      `SELECT fssai, gst_mode, gstin, legal_name, contacts, review_flags
+       FROM restaurant_profiles WHERE tenant_id = $1`,
+      [tenantId]
+    );
+    profileRow = profileRes.rows[0] || null;
+  } catch {}
+
+  const gstMode = profileRow?.gst_mode || 'UNSET';
+  const showsGstin = gstMode === 'REGULAR' || gstMode === 'COMPOSITION';
+  const fssai = String(profileRow?.fssai || '').trim();
+
   return {
     ...clientRow,
+    // The raw clients.phone is replaced by the number the owner chose to show (or none).
+    phone: undefined,
+    public_phone: resolvePublicPhone(profileRow, clientRow),
     google_review_url: reviewUrl,
+    gst_mode: gstMode,
+    legal_name: profileRow?.legal_name || null,
+    bill_gstin: showsGstin && profileRow?.gstin ? profileRow.gstin : null,
+    bill_fssai: validateFSSAI(fssai) ? fssai : null,
   };
 }
 
@@ -256,12 +301,17 @@ export default async function tokenRoutes(request, response, url) {
       restaurant: {
         name: restaurant.business_name,
         businessName: restaurant.business_name,
+        legalName: restaurant.legal_name,
         tagline: restaurant.tagline,
-        phone: restaurant.phone,
+        phone: restaurant.public_phone,
         address: restaurant.address,
         city: restaurant.city,
         state: restaurant.state,
         googleReviewUrl: restaurant.google_review_url,
+        // A tax invoice must show the GSTIN; it is on the bill only, never on the public menu.
+        gstin: restaurant.bill_gstin,
+        fssai: restaurant.bill_fssai,
+        gstMode: restaurant.gst_mode,
       },
       restaurantName: restaurant.business_name,
       googleReviewUrl: restaurant.google_review_url,
@@ -347,6 +397,8 @@ export default async function tokenRoutes(request, response, url) {
     const notes = body.notes ? String(body.notes).trim() : null;
 
     const rawItems = Array.isArray(body.items) ? body.items : [];
+    // The restaurant's GST rule at the moment the bill opens; the bill keeps it from now on.
+    const taxSettings = await loadTenantTaxSettings(user.tenantId);
 
     const client = await pool.connect();
     try {
@@ -415,7 +467,7 @@ export default async function tokenRoutes(request, response, url) {
         });
       }
 
-      const taxPaise = Math.round(subtotalPaise * 0.05); // 5% GST
+      const { taxPaise } = computeBillTax(subtotalPaise, taxSettings);
       const totalPaise = subtotalPaise + taxPaise;
 
       // Insert table_tokens row
@@ -424,12 +476,12 @@ export default async function tokenRoutes(request, response, url) {
           tenant_id, token_number, token_code, table_id, table_number,
           status, covers, waiter_id, customer_name, customer_phone,
           subtotal_paise, tax_paise, discount_paise, tip_paise, total_paise,
-          notes, items_json
+          notes, items_json, tax_mode, tax_rate_bps
         ) VALUES (
           $1, $2, $3, $4, $5,
           'ISSUED', $6, $7, $8, $9,
           $10, $11, 0, 0, $12,
-          $13, $14
+          $13, $14, $15, $16
         ) RETURNING *`,
         [
           user.tenantId,
@@ -446,6 +498,8 @@ export default async function tokenRoutes(request, response, url) {
           totalPaise,
           notes,
           JSON.stringify(preparedItems),
+          taxSettings.mode,
+          taxSettings.rateBps,
         ]
       );
       const tokenRow = insertTokenRes.rows[0];
@@ -565,7 +619,9 @@ export default async function tokenRoutes(request, response, url) {
       [tokenId]
     );
 
-    const formattedToken = formatToken(tokenRes.rows[0], itemsRes.rows);
+    // The cashier prints this bill, so it carries the same restaurant details as the diner's copy.
+    const restaurant = await getRestaurantDetails(user.tenantId);
+    const formattedToken = formatToken(tokenRes.rows[0], itemsRes.rows, restaurant);
     sendJson(response, 200, { success: true, token: formattedToken });
     return true;
   }
@@ -643,7 +699,7 @@ export default async function tokenRoutes(request, response, url) {
       const allItems = allItemsRes.rows;
 
       const newSubtotalPaise = allItems.reduce((acc, it) => acc + Number(it.total_price_paise || 0), 0);
-      const newTaxPaise = Math.round(newSubtotalPaise * 0.05); // 5% GST
+      const { taxPaise: newTaxPaise } = computeBillTax(newSubtotalPaise, taxSettingsOfToken(tokenRow));
       const newTotalPaise = newSubtotalPaise + newTaxPaise - Number(tokenRow.discount_paise || 0) + Number(tokenRow.tip_paise || 0);
 
       // Transition status to ORDERING / DINING if still ISSUED

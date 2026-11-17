@@ -8,10 +8,10 @@ interface BreadcrumbNavProps {
 
 export default function BreadcrumbNav({ items }: BreadcrumbNavProps) {
   return (
-    <nav aria-label="Breadcrumb" className="mb-6 flex items-center text-xs text-[#53615a]">
+    <nav aria-label="Breadcrumb" className="mb-4 flex items-center text-sm text-[#53615a]">
       <ol className="flex items-center flex-wrap gap-1.5 list-none p-0 m-0">
         <li className="flex items-center">
-          <Link to="/" className="flex items-center gap-1 hover:text-[#e8783c] transition-colors font-medium">
+          <Link to="/" className="flex min-h-10 items-center gap-1 hover:text-[#e8783c] transition-colors font-medium">
             <Home size={14} />
             <span>Home</span>
           </Link>
@@ -24,7 +24,7 @@ export default function BreadcrumbNav({ items }: BreadcrumbNavProps) {
                 {item.name}
               </span>
             ) : (
-              <Link to={item.path} className="hover:text-[#e8783c] transition-colors font-medium">
+              <Link to={item.path} className="inline-flex min-h-10 items-center hover:text-[#e8783c] transition-colors font-medium">
                 {item.name}
               </Link>
             )}

@@ -40,7 +40,7 @@ export const DEFAULT_GEO_FAQS: GeoFaqItem[] = [
   },
   {
     question: "How many menu changes are included?",
-    answer: "Unlimited menu changes are included in all MenusQR plans. You can update your menu as many times as you like without incurring additional fees or reprinting QR codes."
+    answer: "The Intermediate and Premium plans include unlimited menu changes that you make yourself. The Basic plan includes the first menu setup and one edit. No change ever needs the QR code to be reprinted."
   },
   {
     question: "Does the restaurant need to reprint the QR?",

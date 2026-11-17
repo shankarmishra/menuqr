@@ -18,6 +18,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import './ThermalBillCard.css';
 import type { PublicTokenData } from '../../pages/customer/BillPage';
 import ReceiptPrint, { ReceiptStamp, prefersReducedMotion } from './ReceiptPrint';
+import { billTaxLines, COMPOSITION_DECLARATION } from '../../utils/gst';
 
 interface Props {
   token: PublicTokenData;
@@ -210,10 +211,17 @@ export default function ThermalBillCard({
   const discount = typeof token.discount === 'number' ? token.discount : (token.discount || 0);
   const taxableAmount = Math.max(0, Number((subtotal - discount).toFixed(2)));
 
-  // 2.5% CGST + 2.5% SGST standard Indian restaurant tax
+  // GST follows the rule the bill was created under (backend/billTax.js). Older responses without
+  // CGST/SGST fall back to the historical 2.5% + 2.5%.
   const cgst = token.cgst ?? Number((taxableAmount * 0.025).toFixed(2));
   const sgst = token.sgst ?? Number((taxableAmount * 0.025).toFixed(2));
   const totalTaxes = cgst + sgst;
+  const taxLines = billTaxLines(token.taxMode, token.taxRateBps, Math.round(cgst * 100), Math.round(sgst * 100));
+  const isComposition = (token.restaurantGstMode || token.taxMode) === 'COMPOSITION';
+  const legalName =
+    token.restaurantLegalName && token.restaurantLegalName.trim().toLowerCase() !== (token.restaurantName || '').trim().toLowerCase()
+      ? token.restaurantLegalName
+      : null;
 
   const calculatedTotal = taxableAmount + totalTaxes;
   const grandTotal = typeof token.total === 'number' ? Math.round(token.total) : Math.round(calculatedTotal);
@@ -245,11 +253,15 @@ export default function ThermalBillCard({
                   </p>
                 )}
 
-                {/* Statutory Badges (GSTIN / FSSAI) */}
-                <div className="thermal-statutory-badges">
-                  {token.restaurantGstin && <span>GSTIN: {token.restaurantGstin}</span>}
-                  {token.restaurantFssai && <span>FSSAI: {token.restaurantFssai}</span>}
-                </div>
+                {legalName && <p className="thermal-address">{legalName}</p>}
+
+                {/* Statutory details: printed only when the restaurant configured them. */}
+                {(token.restaurantGstin || token.restaurantFssai) && (
+                  <div className="thermal-statutory-badges">
+                    {token.restaurantGstin && <span>GSTIN: {token.restaurantGstin}</span>}
+                    {token.restaurantFssai && <span>FSSAI: {token.restaurantFssai}</span>}
+                  </div>
+                )}
               </div>
 
               <hr className="thermal-divider-double" />
@@ -330,14 +342,15 @@ export default function ThermalBillCard({
                     <span>-₹{discount.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="thermal-totals-row">
-                  <span>CGST (2.5%)</span>
-                  <span>₹{cgst.toFixed(2)}</span>
-                </div>
-                <div className="thermal-totals-row">
-                  <span>SGST (2.5%)</span>
-                  <span>₹{sgst.toFixed(2)}</span>
-                </div>
+                {taxLines.map((line) => (
+                  <div className="thermal-totals-row" key={line.label}>
+                    <span>{line.label}</span>
+                    <span>₹{(line.paise / 100).toFixed(2)}</span>
+                  </div>
+                ))}
+                {isComposition && (
+                  <p className="thermal-address" style={{ textAlign: 'left', marginTop: 4 }}>{COMPOSITION_DECLARATION}</p>
+                )}
                 {Math.abs(roundOff) > 0 && (
                   <div className="thermal-totals-row roundoff">
                     <span>Round Off</span>

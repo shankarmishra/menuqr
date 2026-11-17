@@ -2,6 +2,17 @@
   "cleanUrls": true,
   "redirects": [
     {
+      "source": "/:path*",
+      "destination": "https://menusqr.in/:path*",
+      "permanent": true,
+      "has": [
+        {
+          "type": "host",
+          "value": "www.menusqr.in"
+        }
+      ]
+    },
+    {
       "source": "/admin/login",
       "destination": "https://admin.menusqr.in/login",
       "permanent": true,
@@ -95,6 +106,21 @@
       "permanent": true
     },
     {
+      "source": "/restaurant-qr-menu",
+      "destination": "/qr-menu-for-restaurants",
+      "permanent": true
+    },
+    {
+      "source": "/digital-menu-for-restaurants",
+      "destination": "/digital-qr-menu",
+      "permanent": true
+    },
+    {
+      "source": "/restaurant-digital-menu",
+      "destination": "/digital-qr-menu",
+      "permanent": true
+    },
+    {
       "source": "/privacy-policy",
       "destination": "/privacy",
       "permanent": true
@@ -116,7 +142,7 @@
       ]
     },
     {
-      "source": "/:page(plans|digital-qr-menu|restaurant-qr-menu|digital-menu-for-restaurants|qr-menu-for-restaurants|restaurant-digital-menu|qr-ordering-for-restaurants|how-it-works|templates|about|contact|faq|privacy|terms|refund-cancellation)",
+      "source": "/:page(plans|digital-qr-menu|qr-menu-for-restaurants|qr-ordering-for-restaurants|how-it-works|templates|about|contact|faq|privacy|terms|refund-cancellation)",
       "destination": "https://menusqr.in/:page",
       "permanent": true,
       "has": [
@@ -159,7 +185,7 @@
         },
         {
           "key": "Content-Security-Policy-Report-Only",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://checkout.razorpay.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.firebaseapp.com https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://sdk.cashfree.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https://sdk.cashfree.com https://*.cashfree.com https://*.firebaseapp.com https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self'"
         }
       ]
     },

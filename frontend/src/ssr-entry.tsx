@@ -4,14 +4,11 @@ import { HelmetProvider } from 'react-helmet-async';
 import type { ReactElement } from 'react';
 import HomePage from './pages/HomePage';
 import PricingPage from './pages/purchase/PricingPage';
-import DigitalQrMenu from './pages/public/seo/DigitalQrMenu';
-import RestaurantQrMenu from './pages/public/seo/RestaurantQrMenu';
+import PillarPage from './pages/public/seo/PillarPage';
+import GuidesIndexPage from './pages/public/seo/GuidesIndexPage';
+import { PILLAR_PAGES, GUIDES, GUIDES_PATH, STANDALONE_PAGES } from './content';
 import NichePage from './pages/public/seo/NichePage';
 import { NICHE_PAGES, nichePath } from './pages/public/seo/nichePages';
-import DigitalMenuForRestaurants from './pages/public/seo/DigitalMenuForRestaurants';
-import QrMenuForRestaurants from './pages/public/seo/QrMenuForRestaurants';
-import RestaurantDigitalMenu from './pages/public/seo/RestaurantDigitalMenu';
-import QrOrderingForRestaurants from './pages/public/seo/QrOrderingForRestaurants';
 import HowItWorksPage from './pages/public/HowItWorksPage';
 import TemplatesPage from './pages/public/TemplatesPage';
 import AboutPage from './pages/public/AboutPage';
@@ -24,12 +21,6 @@ import RefundPolicyPage from './pages/public/RefundPolicyPage';
 const pages: Record<string, () => ReactElement> = {
   '/': () => <HomePage />,
   '/plans': () => <PricingPage />,
-  '/digital-qr-menu': () => <DigitalQrMenu />,
-  '/restaurant-qr-menu': () => <RestaurantQrMenu />,
-  '/digital-menu-for-restaurants': () => <DigitalMenuForRestaurants />,
-  '/qr-menu-for-restaurants': () => <QrMenuForRestaurants />,
-  '/restaurant-digital-menu': () => <RestaurantDigitalMenu />,
-  '/qr-ordering-for-restaurants': () => <QrOrderingForRestaurants />,
   '/how-it-works': () => <HowItWorksPage />,
   '/templates': () => <TemplatesPage />,
   '/about': () => <AboutPage />,
@@ -40,6 +31,9 @@ const pages: Record<string, () => ReactElement> = {
   '/refund-cancellation': () => <RefundPolicyPage />,
 };
 
+for (const page of [...PILLAR_PAGES, ...STANDALONE_PAGES]) pages[page.path] = () => <PillarPage page={page} />;
+pages[GUIDES_PATH] = () => <GuidesIndexPage />;
+for (const page of GUIDES) pages[page.path] = () => <PillarPage page={page} parents={[{ name: 'Guides', path: GUIDES_PATH }]} />;
 for (const page of NICHE_PAGES) pages[nichePath(page.slug)] = () => <NichePage page={page} />;
 
 export const ssrPaths = Object.keys(pages);

@@ -29,6 +29,13 @@ export interface TokenDetail extends CashierToken {
   restaurantName?: string;
   restaurantGstin?: string | null;
   restaurantFssai?: string | null;
+  restaurantLegalName?: string | null;
+  restaurantGstMode?: string | null;
+  restaurantAddress?: string | null;
+  restaurantCity?: string | null;
+  restaurantPhone?: string | null;
+  taxMode?: string | null;
+  taxRateBps?: number | null;
 }
 
 interface Props {

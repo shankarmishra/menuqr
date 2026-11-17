@@ -49,6 +49,12 @@ export interface PublicTokenData {
   restaurantTagline?: string | null;
   restaurantGstin?: string | null;
   restaurantFssai?: string | null;
+  /** Registered business name, printed when it differs from the restaurant name. */
+  restaurantLegalName?: string | null;
+  restaurantGstMode?: string | null;
+  /** GST rule this bill was created under. */
+  taxMode?: string | null;
+  taxRateBps?: number | null;
   cashierName?: string | null;
   items: PublicTokenItem[];
   subtotal: number;
@@ -140,6 +146,10 @@ export default function BillPage() {
         restaurantTagline: restaurant.tagline || rawToken.restaurantTagline || null,
         restaurantGstin: restaurant.gstin || rawToken.restaurantGstin || null,
         restaurantFssai: restaurant.fssai || rawToken.restaurantFssai || null,
+        restaurantLegalName: restaurant.legalName || rawToken.restaurantLegalName || null,
+        restaurantGstMode: restaurant.gstMode || rawToken.restaurantGstMode || null,
+        taxMode: rawToken.taxMode || null,
+        taxRateBps: rawToken.taxRateBps !== undefined ? Number(rawToken.taxRateBps) : null,
         cashierName: rawToken.cashierName || null,
         items: (rawToken.items || json.items || []).map((it: any) => ({
           id: it.id,
@@ -156,15 +166,8 @@ export default function BillPage() {
           isVeg: it.isVeg !== false,
           notes: it.notes || null,
         })),
-        subtotal: Number(
-          rawToken.subtotal ??
-            (rawToken.subtotalPaise !== undefined ? rawToken.subtotalPaise / 100 : 0)
-        ),
-        gst: Number(
-          rawToken.tax ??
-            rawToken.gst ??
-            (rawToken.taxPaise !== undefined ? rawToken.taxPaise / 100 : 0)
-        ),
+        subtotal: rawToken.subtotalPaise !== undefined ? Number(rawToken.subtotalPaise) / 100 : Number(rawToken.subtotal ?? 0),
+        gst: rawToken.taxPaise !== undefined ? Number(rawToken.taxPaise) / 100 : Number(rawToken.tax ?? rawToken.gst ?? 0),
         cgst:
           rawToken.cgst !== undefined
             ? Number(rawToken.cgst)
@@ -177,14 +180,8 @@ export default function BillPage() {
             : rawToken.sgstPaise !== undefined
             ? Number(rawToken.sgstPaise / 100)
             : undefined,
-        discount: Number(
-          rawToken.discount ??
-            (rawToken.discountPaise !== undefined ? rawToken.discountPaise / 100 : 0)
-        ),
-        total: Number(
-          rawToken.total ??
-            (rawToken.totalPaise !== undefined ? rawToken.totalPaise / 100 : 0)
-        ),
+        discount: rawToken.discountPaise !== undefined ? Number(rawToken.discountPaise) / 100 : Number(rawToken.discount ?? 0),
+        total: rawToken.totalPaise !== undefined ? Number(rawToken.totalPaise) / 100 : Number(rawToken.total ?? 0),
         status: (rawToken.status || 'UNPAID').toUpperCase() as PublicTokenData['status'],
         paymentMethod: rawToken.paymentMethod || null,
         paidAt: rawToken.paidAt || rawToken.settledAt || null,

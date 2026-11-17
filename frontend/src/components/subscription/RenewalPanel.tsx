@@ -66,7 +66,7 @@ export default function RenewalPanel({
         <div>
           <span className="text-xs uppercase font-semibold text-[#849a90]">Active Subscription</span>
           <h3 className="text-lg font-bold text-white mt-0.5">{planName} Plan</h3>
-          <p className="text-xs text-[#849a90]">{priceDisplay} + 18% GST</p>
+          <p className="text-xs text-[#849a90]">{priceDisplay}</p>
         </div>
         <span className="px-3 py-1 text-xs font-bold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
           ACTIVE
@@ -112,7 +112,7 @@ export default function RenewalPanel({
           </li>
           <li className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-[#e8783c]"></span>
-            <span>Instant official GST tax invoice with SAC 997331</span>
+            <span>Payment receipt available to download right after payment</span>
           </li>
         </ul>
       </div>

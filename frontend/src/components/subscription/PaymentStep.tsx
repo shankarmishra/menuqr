@@ -269,7 +269,7 @@ export default function PaymentStep({
             <h3 className="text-xl font-bold text-white">
               {targetPlan ? `${targetPlan.toUpperCase()} Plan` : 'Subscription Renewal'}
             </h3>
-            <p className="text-xs text-[#849a90] mt-0.5">Includes 18% GST • 365 Days Validity</p>
+            <p className="text-xs text-[#849a90] mt-0.5">365 Days Validity</p>
           </div>
           <div className="text-right">
             <span className="text-xs text-[#849a90] block">Total Payable</span>

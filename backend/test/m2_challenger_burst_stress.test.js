@@ -4,6 +4,10 @@ import assert from 'node:assert/strict';
 import { connectDB } from '../db.js';
 import * as subscriptionService from '../subscriptionService.js';
 
+// The GST maths below describes a GST-registered seller in Maharashtra. Without SELLER_GSTIN
+// configured, MenusQR charges no GST (see subscription_receipt.test.js).
+const REGISTERED_SELLER = { registered: true, sellerState: 'Maharashtra' };
+
 test('Milestone 2 Challenger: Extreme Concurrency Bursts & Core Invariants Verification', async (suite) => {
   const db = await connectDB(process.env.DATABASE_URL, { runMigrations: false });
   assert.ok(db, 'PostgreSQL connected successfully');
@@ -178,7 +182,7 @@ test('Milestone 2 Challenger: Extreme Concurrency Bursts & Core Invariants Verif
   await suite.test('2. Proration Floor & Boundary Invariants', async (t) => {
     await t.test('2.1 Floor enforcement at exactly 100 paise (Rs. 1.00) subtotal', () => {
       // When credit exceeds target price by huge margin
-      const resLargeCredit = subscriptionService.calculateProrationPaise(1000000, 365, 50000, 'Maharashtra');
+      const resLargeCredit = subscriptionService.calculateProrationPaise(1000000, 365, 50000, 'Maharashtra', REGISTERED_SELLER);
       assert.equal(resLargeCredit.subtotalPaise, 100, 'Subtotal must be clamped to minimum floor of 100 paise');
       assert.equal(resLargeCredit.cgstPaise, 9, 'CGST 9% of 100 is 9 paise');
       assert.equal(resLargeCredit.sgstPaise, 9, 'SGST 9% of 100 is 9 paise');
@@ -187,25 +191,25 @@ test('Milestone 2 Challenger: Extreme Concurrency Bursts & Core Invariants Verif
       // Exact boundary tests
       // Target = 1000 paise
       // credit = 899 -> subtotal = 101 paise (> 100, untouched)
-      const r101 = subscriptionService.calculateProrationPaise(365 * 899, 1, 1000, 'Maharashtra');
+      const r101 = subscriptionService.calculateProrationPaise(365 * 899, 1, 1000, 'Maharashtra', REGISTERED_SELLER);
       assert.equal(r101.subtotalPaise, 101);
 
       // credit = 900 -> subtotal = 100 paise (exact floor)
-      const r100 = subscriptionService.calculateProrationPaise(365 * 900, 1, 1000, 'Maharashtra');
+      const r100 = subscriptionService.calculateProrationPaise(365 * 900, 1, 1000, 'Maharashtra', REGISTERED_SELLER);
       assert.equal(r100.subtotalPaise, 100);
 
       // credit = 901 -> subtotal = 100 paise (clamped from 99)
-      const r99 = subscriptionService.calculateProrationPaise(365 * 901, 1, 1000, 'Maharashtra');
+      const r99 = subscriptionService.calculateProrationPaise(365 * 901, 1, 1000, 'Maharashtra', REGISTERED_SELLER);
       assert.equal(r99.subtotalPaise, 100);
 
       // credit = 1000 -> subtotal = 100 paise (clamped from 0)
-      const r0 = subscriptionService.calculateProrationPaise(365 * 1000, 1, 1000, 'Maharashtra');
+      const r0 = subscriptionService.calculateProrationPaise(365 * 1000, 1, 1000, 'Maharashtra', REGISTERED_SELLER);
       assert.equal(r0.subtotalPaise, 100);
     });
 
     await t.test('2.2 Inter-state vs Intra-state tax calculations on floor and regular amounts', () => {
       // Intra-state (Maharashtra): 9% CGST + 9% SGST
-      const intra = subscriptionService.calculateGstTax({ subtotalPaise: 10000, customerState: 'Maharashtra' });
+      const intra = subscriptionService.calculateGstTax({ subtotalPaise: 10000, customerState: 'Maharashtra', ...REGISTERED_SELLER });
       assert.equal(intra.cgstPaise, 900);
       assert.equal(intra.sgstPaise, 900);
       assert.equal(intra.igstPaise, 0);
@@ -213,7 +217,7 @@ test('Milestone 2 Challenger: Extreme Concurrency Bursts & Core Invariants Verif
       assert.equal(intra.totalPaise, 11800);
 
       // Inter-state (Karnataka): 18% IGST
-      const inter = subscriptionService.calculateGstTax({ subtotalPaise: 10000, customerState: 'Karnataka' });
+      const inter = subscriptionService.calculateGstTax({ subtotalPaise: 10000, customerState: 'Karnataka', ...REGISTERED_SELLER });
       assert.equal(inter.cgstPaise, 0);
       assert.equal(inter.sgstPaise, 0);
       assert.equal(inter.igstPaise, 1800);

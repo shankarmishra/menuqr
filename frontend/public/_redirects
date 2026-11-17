@@ -1,3 +1,7 @@
 # Cloudflare Pages SPA Routing Fallback
 # Serves index.html with 200 OK for dynamic client-side routes (e.g. /bill/:id, /app/*, /menu/:slug)
+# Merged service pages (same rules as vercel.json). Must stay above the fallback.
+/restaurant-qr-menu              /qr-menu-for-restaurants   301
+/digital-menu-for-restaurants    /digital-qr-menu           301
+/restaurant-digital-menu         /digital-qr-menu           301
 /*    /index.html   200

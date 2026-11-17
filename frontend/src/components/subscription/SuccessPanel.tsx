@@ -63,7 +63,7 @@ export default function SuccessPanel({
           await downloadInvoicePdf(inv.id, inv.invoiceNumber);
           setDownloaded(true);
         } else {
-          throw new Error('Your GST tax invoice is being generated. It will be available in Invoice History shortly.');
+          throw new Error('Your payment receipt is being generated. It will be available in Invoice History shortly.');
         }
       }
     } catch (err: unknown) {
@@ -127,7 +127,7 @@ export default function SuccessPanel({
         <ReceiptStamp kind="approved" title="APPROVED" sub="PAYMENT VERIFIED" date={paidAtText} />
         <hr className="thermal-divider" />
         <div className="thermal-footer">
-          <p>GST tax invoice: download below</p>
+          <p>Payment receipt: download below</p>
           <p>menusqr.in</p>
         </div>
       </ReceiptPrint>

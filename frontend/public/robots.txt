@@ -4,8 +4,9 @@ Disallow: /app/
 Disallow: /admin/
 Disallow: /checkout/
 Disallow: /purchase/
+Disallow: /bill/
+Disallow: /internal/
 Disallow: /login
 Disallow: /onboarding
-Disallow: /test-supabase
 
 Sitemap: https://menusqr.in/sitemap.xml

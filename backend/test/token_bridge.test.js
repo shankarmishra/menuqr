@@ -45,7 +45,11 @@ test('Token Bridge Suite: Customer Dine-In Auto-Token Issuance & Appending', asy
     assert.ok(res.tokenId, 'Returns tokenId');
     assert.equal(res.tokenCode, '#101', 'First token is #101');
     assert.equal(res.billUrl, `/bill/${res.tokenId}`, 'Returns clean /bill/:tokenId link');
-    assert.equal(res.total, 650, 'Total is 650');
+    // QR orders follow the restaurant's GST rule. This tenant has not chosen one (UNSET), so the
+    // historical 5% applies: 650.00 + 32.50 GST.
+    const totals1 = (await pool.query('SELECT subtotal_paise, tax_paise, total_paise FROM table_tokens WHERE id = $1', [res.tokenId])).rows[0];
+    assert.deepEqual([Number(totals1.subtotal_paise), Number(totals1.tax_paise), Number(totals1.total_paise)], [65000, 3250, 68250]);
+    assert.equal(res.total, 683, 'Total in rupees is 682.50, rounded');
 
     // Verify database row
     const dbRes = await pool.query(`SELECT * FROM table_tokens WHERE id = $1`, [res.tokenId]);
@@ -67,7 +71,8 @@ test('Token Bridge Suite: Customer Dine-In Auto-Token Issuance & Appending', asy
     const res2 = await syncOrderToTableToken({ id: TEST_TENANT_ID }, round2Data);
     assert.ok(res2, 'Token sync round 2 should succeed');
     assert.equal(res2.tokenCode, '#101', 'Reuses the active token #101');
-    assert.equal(res2.total, 950, 'Combined total is 650 + 300 = 950');
+    const totals2 = (await pool.query('SELECT subtotal_paise, tax_paise, total_paise FROM table_tokens WHERE id = $1', [res2.tokenId])).rows[0];
+    assert.deepEqual([Number(totals2.subtotal_paise), Number(totals2.tax_paise), Number(totals2.total_paise)], [95000, 4750, 99750], 'Combined 950 + 5% GST');
 
     // Verify token_items count
     const itemsRes = await pool.query(`SELECT * FROM token_items WHERE token_id = $1`, [res2.tokenId]);
@@ -78,7 +83,7 @@ test('Token Bridge Suite: Customer Dine-In Auto-Token Issuance & Appending', asy
     const active = await getActiveTableToken(TEST_TENANT_ID, TABLE_NUM);
     assert.ok(active, 'Active token found');
     assert.equal(active.tokenCode, '#101');
-    assert.equal(active.total, 950);
+    assert.equal(active.total, 998, '997.50 rounded');
     assert.equal(active.status, 'DINING');
   });
 

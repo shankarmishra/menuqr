@@ -10,14 +10,10 @@ import HomePage from './pages/HomePage';
 import PricingPage from './pages/purchase/PricingPage';
 
 // SEO Landing Pages (Statically bundled for instant prerender hydration)
-import DigitalQrMenu from './pages/public/seo/DigitalQrMenu';
-import RestaurantQrMenu from './pages/public/seo/RestaurantQrMenu';
+import ContentPageRoute from './pages/public/seo/contentPageLoader';
+import { CONTENT_PATHS, MERGED_PAGE_REDIRECTS } from './content/manifest';
 import NichePage from './pages/public/seo/NichePage';
 import { NICHE_PAGES, nichePath } from './pages/public/seo/nichePages';
-import DigitalMenuForRestaurants from './pages/public/seo/DigitalMenuForRestaurants';
-import QrMenuForRestaurants from './pages/public/seo/QrMenuForRestaurants';
-import RestaurantDigitalMenu from './pages/public/seo/RestaurantDigitalMenu';
-import QrOrderingForRestaurants from './pages/public/seo/QrOrderingForRestaurants';
 
 // Public Marketing Pages (Statically bundled to prevent fallback flash on prerendered HTML)
 import HowItWorksPage from './pages/public/HowItWorksPage';
@@ -320,12 +316,16 @@ function PublicAppRoutes() {
       <Routes>
         {/* Core Public Brand & Commercial SEO Pages */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/digital-qr-menu" element={<DigitalQrMenu />} />
-        <Route path="/restaurant-qr-menu" element={<RestaurantQrMenu />} />
-        <Route path="/digital-menu-for-restaurants" element={<DigitalMenuForRestaurants />} />
-        <Route path="/qr-menu-for-restaurants" element={<QrMenuForRestaurants />} />
-        <Route path="/restaurant-digital-menu" element={<RestaurantDigitalMenu />} />
-        <Route path="/qr-ordering-for-restaurants" element={<QrOrderingForRestaurants />} />
+        {CONTENT_PATHS.map((path) => (
+          <Route
+            key={path}
+            path={path}
+            element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><ContentPageRoute /></Suspense></ChunkErrorBoundary>}
+          />
+        ))}
+        {Object.entries(MERGED_PAGE_REDIRECTS).map(([from, to]) => (
+          <Route key={from} path={from} element={<Navigate to={to} replace />} />
+        ))}
         {NICHE_PAGES.map((page) => (
           <Route key={page.slug} path={nichePath(page.slug)} element={<NichePage page={page} />} />
         ))}

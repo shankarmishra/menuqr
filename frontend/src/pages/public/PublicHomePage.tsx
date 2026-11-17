@@ -24,11 +24,11 @@ export default function PublicHomePage() {
   return (
     <div className="bg-[#FAFAF7] min-h-screen text-gray-900 font-sans overflow-x-clip relative selection:bg-[#e8783c] selection:text-white">
       <SEO 
-        title="MenusQR | Digital QR Menu for Restaurants"
-        description="Create a professional digital QR menu for your restaurant. Update dishes, prices and availability without reprinting your QR code."
+        title="MenusQR (Menus QR): QR Menu & Ordering for Restaurants"
+        description="MenusQR is an Indian QR menu platform: menu designs made for Indian food, table ordering, kitchen screen and billing. From ₹1,999 a year, no commission."
         canonicalUrl="/"
         type="website"
-        schema={[getOrganizationSchema(), getWebSiteSchema(), getFaqSchema(faqs), getWebPageSchema('/', 'MenusQR | Digital QR Menu for Restaurants', ['h1', '#faq h3'])]}
+        schema={[getOrganizationSchema(), getWebSiteSchema(), getFaqSchema(faqs), getWebPageSchema('/', 'MenusQR (Menus QR): QR Menu & Ordering for Restaurants', ['h1', '#faq h3'])]}
       />
       <Helmet>
         <link rel="preload" as="image" href="/marketing/hero/hero-restaurant-poster.webp" type="image/webp" fetchPriority="high" />

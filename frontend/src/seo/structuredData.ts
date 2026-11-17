@@ -18,8 +18,14 @@ export const getOrganizationSchema = () => {
       "areaServed": "IN",
       "availableLanguage": ["English", "Hindi"]
     }],
+    // Add every official profile here as it is created (Google Business Profile, LinkedIn,
+    // YouTube, Capterra...). Consistent profiles teach Google that "MenusQR" is its own brand,
+    // not a misspelling of "MenuQR".
     "sameAs": ["https://www.instagram.com/menusqr.in/"],
-    "alternateName": ["Menus QR", "MenusQR.in"]
+    "alternateName": ["Menus QR", "MenusQR.in", "menusqr.in", "MenusQR India"],
+    "slogan": "Menu designs made for Indian food, with table ordering and billing.",
+    "areaServed": { "@type": "Country", "name": "India" },
+    "knowsAbout": ["QR code menus", "Digital restaurant menus", "Restaurant table ordering", "Kitchen display systems", "Restaurant billing"]
   };
 };
 
@@ -118,4 +124,36 @@ export const getWebPageSchema = (path: string, name: string, speakableSelectors:
   "inLanguage": "en-IN",
   "isPartOf": { "@type": "WebSite", "name": "MenusQR", "url": DOMAIN },
   "speakable": { "@type": "SpeakableSpecification", "cssSelector": speakableSelectors }
+});
+
+// Article for long-form pages written by the MenusQR team.
+export const getArticleSchema = (article: { path: string; headline: string; description: string; dateModified: string; datePublished?: string }) => ({
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": article.headline,
+  "description": article.description,
+  "inLanguage": "en-IN",
+  "mainEntityOfPage": `${DOMAIN}${article.path}`,
+  "datePublished": article.datePublished ?? article.dateModified,
+  "dateModified": article.dateModified,
+  "image": `${DOMAIN}/og-image.webp`,
+  "author": { "@type": "Organization", "name": "MenusQR", "url": DOMAIN },
+  "publisher": {
+    "@type": "Organization",
+    "name": "MenusQR",
+    "logo": { "@type": "ImageObject", "url": `${DOMAIN}/assets/brand/menusqr-logo-white-bg.png` }
+  }
+});
+
+// Ordered list of pages, for index pages such as /guides.
+export const getItemListSchema = (name: string, items: { name: string; path: string }[]) => ({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": name,
+  "itemListElement": items.map((item, index) => ({
+    "@type": "ListItem",
+    "position": index + 1,
+    "name": item.name,
+    "url": `${DOMAIN}${item.path}`
+  }))
 });

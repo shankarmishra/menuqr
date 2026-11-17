@@ -29,11 +29,27 @@ export const PLAN_HIERARCHY = {
 };
 
 export const SAC_CODE = '997331'; // Software licensing / SaaS services in India
-export const SELLER_STATE = 'Maharashtra';
-export const SELLER_STATE_CODE = '27';
-export const SELLER_NAME = 'MenuSQR Technologies';
-export const SELLER_GSTIN = '27AABCU9603R1ZM';
-export const SELLER_ADDRESS = 'Level 4, Cyber City, Pune, Maharashtra - 411028';
+
+// MenusQR's own seller details come from the environment, never from code. Until a real GSTIN
+// is configured (SELLER_GSTIN), MenusQR is treated as not GST-registered: no GST is charged
+// and subscription documents are payment receipts, not tax invoices.
+const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
+export function getSellerConfig(env = process.env) {
+  const gstin = String(env.SELLER_GSTIN || '').trim().toUpperCase();
+  const registered = GSTIN_PATTERN.test(gstin);
+  const clean = (value) => {
+    const text = String(value || '').trim();
+    return text || null;
+  };
+  return {
+    name: clean(env.SELLER_NAME) || 'MenusQR',
+    address: clean(env.SELLER_ADDRESS),
+    state: clean(env.SELLER_STATE),
+    gstin: registered ? gstin : null,
+    registered,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // 1. Indian Financial Year Helpers
@@ -133,7 +149,7 @@ export function formatInvoiceNumber(fy, seq) {
  * @param {string} sellerState
  * @returns {boolean} True if intra-state
  */
-export function isSameState(customerState, sellerState = SELLER_STATE) {
+export function isSameState(customerState, sellerState = getSellerConfig().state) {
   if (!customerState || !sellerState) return false;
   const normCustomer = String(customerState).trim().toLowerCase();
   const normSeller = String(sellerState).trim().toLowerCase();
@@ -145,16 +161,22 @@ export function isSameState(customerState, sellerState = SELLER_STATE) {
 }
 
 /**
- * Calculates 18% GST tax breakdown (Intra-state CGST 9% + SGST 9% vs Inter-state IGST 18%).
+ * Calculates the 18% GST breakdown (intra-state CGST 9% + SGST 9%, inter-state IGST 18%).
+ * When the seller is not GST-registered (no valid SELLER_GSTIN), no GST is charged at all:
+ * every tax field is 0 and the total equals the subtotal.
  *
  * @param {object} options
  * @param {number} options.subtotalPaise Taxable value in paise
  * @param {string} options.customerState Customer state string
- * @param {string} options.sellerState Seller state string (defaults to Maharashtra)
+ * @param {string} options.sellerState Seller state string (defaults to SELLER_STATE)
+ * @param {boolean} options.registered Whether the seller is GST-registered (defaults to SELLER_GSTIN)
  * @returns {object} Tax breakdown
  */
-export function calculateGstTax({ subtotalPaise, customerState = 'Maharashtra', sellerState = SELLER_STATE }) {
-  const intraState = isSameState(customerState, sellerState);
+export function calculateGstTax({ subtotalPaise, customerState = '', sellerState, registered } = {}) {
+  const seller = getSellerConfig();
+  const isRegistered = registered ?? seller.registered;
+  const effectiveSellerState = sellerState ?? seller.state;
+  const intraState = isRegistered && isSameState(customerState, effectiveSellerState);
   let cgstRate = 0.00;
   let sgstRate = 0.00;
   let igstRate = 0.00;
@@ -162,7 +184,9 @@ export function calculateGstTax({ subtotalPaise, customerState = 'Maharashtra', 
   let sgstPaise = 0;
   let igstPaise = 0;
 
-  if (intraState) {
+  if (!isRegistered) {
+    // Not registered: no tax lines.
+  } else if (intraState) {
     cgstRate = 9.00;
     sgstRate = 9.00;
     cgstPaise = Math.round(subtotalPaise * 0.09);
@@ -199,9 +223,10 @@ export function calculateGstTax({ subtotalPaise, customerState = 'Maharashtra', 
  * @param {number} remainingDays
  * @param {number} targetPricePaise
  * @param {string} customerState
+ * @param {object} [taxOptions] Passed to calculateGstTax ({ registered, sellerState }); defaults to env
  * @returns {object}
  */
-export function calculateProrationPaise(currentPricePaise, remainingDays, targetPricePaise, customerState = 'Maharashtra') {
+export function calculateProrationPaise(currentPricePaise, remainingDays, targetPricePaise, customerState = '', taxOptions = {}) {
   const dailyRatePaise = Math.round(currentPricePaise / 365);
   const validRemainingDays = Math.max(0, remainingDays || 0);
   const creditPaise = validRemainingDays * dailyRatePaise;
@@ -209,7 +234,7 @@ export function calculateProrationPaise(currentPricePaise, remainingDays, target
   // Minimum floor of Rs. 1 (100 paise)
   const subtotalPaise = Math.max(100, targetPricePaise - creditPaise);
 
-  const tax = calculateGstTax({ subtotalPaise, customerState });
+  const tax = calculateGstTax({ subtotalPaise, customerState, ...taxOptions });
 
   return {
     dailyRatePaise,
@@ -236,8 +261,9 @@ export function calculateProrationPaise(currentPricePaise, remainingDays, target
  * @param {string} params.currentPlanId
  * @param {Date|string} params.currentExpiresAt
  * @param {string} params.targetPlanId
- * @param {string} [params.customerState='Maharashtra']
- * @param {string} [params.sellerState='Maharashtra']
+ * @param {string} [params.customerState='']
+ * @param {string} [params.sellerState] Defaults to SELLER_STATE from the environment
+ * @param {boolean} [params.registered] Defaults to whether SELLER_GSTIN is configured
  * @param {Date|number} [params.now=new Date()]
  * @returns {object} Full proration preview breakdown
  */
@@ -245,8 +271,9 @@ export function calculateProration({
   currentPlanId,
   currentExpiresAt,
   targetPlanId,
-  customerState = 'Maharashtra',
-  sellerState = SELLER_STATE,
+  customerState = '',
+  sellerState,
+  registered,
   now = new Date(),
 }) {
   const currentKey = (currentPlanId || 'basic').toLowerCase().trim();
@@ -290,7 +317,8 @@ export function calculateProration({
     currentYearlyPricePaise,
     remainingDays,
     targetPlanPricePaise,
-    customerState
+    customerState,
+    { sellerState, registered }
   );
 
   return {
@@ -479,12 +507,23 @@ export function generateInvoicePdfBuffer(invoice) {
   setFillRGB(0.06, 0.18, 0.13); // dark emerald green
   rect(margin, height - margin - 75, contentWidth, 75, true, false);
 
-  text(margin + 16, height - margin - 32, 'MenuQR', 'F2', 20, [1, 1, 1]);
-  text(margin + 16, height - margin - 48, 'Digital QR Menu & Smart Restaurant OS | menusqr.in', 'F1', 9, [0.85, 0.90, 0.88]);
+  // A document is a tax invoice only when it was issued with a real seller GSTIN.
+  const isTaxInvoice = invoice.document_type
+    ? invoice.document_type === 'TAX_INVOICE' && Boolean(invoice.seller_gstin) && invoice.seller_gstin !== 'PENDING_GSTIN'
+    : Boolean(invoice.seller_gstin) && invoice.seller_gstin !== 'PENDING_GSTIN';
 
-  text(width - margin - 150, height - margin - 30, 'TAX INVOICE', 'F2', 16, [1, 1, 1]);
-  text(width - margin - 150, height - margin - 46, 'GST / B2B INVOICE', 'F2', 9, [0.85, 0.70, 0.30]);
-  text(width - margin - 150, height - margin - 60, 'Original for Recipient', 'F1', 8, [0.80, 0.85, 0.82]);
+  text(margin + 16, height - margin - 32, 'MenusQR', 'F2', 20, [1, 1, 1]);
+  text(margin + 16, height - margin - 48, 'Digital QR Menu, Ordering & Billing for Restaurants | menusqr.in', 'F1', 9, [0.85, 0.90, 0.88]);
+
+  if (isTaxInvoice) {
+    text(width - margin - 150, height - margin - 30, 'TAX INVOICE', 'F2', 16, [1, 1, 1]);
+    text(width - margin - 150, height - margin - 46, 'GST INVOICE', 'F2', 9, [0.85, 0.70, 0.30]);
+    text(width - margin - 150, height - margin - 60, 'Original for Recipient', 'F1', 8, [0.80, 0.85, 0.82]);
+  } else {
+    text(width - margin - 170, height - margin - 30, 'PAYMENT RECEIPT', 'F2', 16, [1, 1, 1]);
+    text(width - margin - 170, height - margin - 46, 'Not a tax invoice', 'F2', 9, [0.85, 0.70, 0.30]);
+    text(width - margin - 170, height - margin - 60, 'No GST charged', 'F1', 8, [0.80, 0.85, 0.82]);
+  }
 
   // Metadata Strip
   const metaY = height - margin - 110;
@@ -493,18 +532,18 @@ export function generateInvoicePdfBuffer(invoice) {
   rect(margin + 10, metaY, contentWidth - 20, 25, true, true);
 
   const colW = (contentWidth - 20) / 4;
-  text(margin + 15, metaY + 14, 'Invoice Number:', 'F2', 7.5, [0.4, 0.45, 0.5]);
+  text(margin + 15, metaY + 14, isTaxInvoice ? 'Invoice Number:' : 'Receipt Number:', 'F2', 7.5, [0.4, 0.45, 0.5]);
   text(margin + 15, metaY + 4, invoice.invoice_number || 'MQR/2026-27/00001', 'F2', 9, [0.06, 0.09, 0.16]);
 
-  text(margin + 15 + colW, metaY + 14, 'Invoice Date:', 'F2', 7.5, [0.4, 0.45, 0.5]);
+  text(margin + 15 + colW, metaY + 14, isTaxInvoice ? 'Invoice Date:' : 'Receipt Date:', 'F2', 7.5, [0.4, 0.45, 0.5]);
   const dateStr = invoice.created_at ? new Date(invoice.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '03 Nov 2026';
   text(margin + 15 + colW, metaY + 4, dateStr, 'F1', 8.5, [0.06, 0.09, 0.16]);
 
   text(margin + 15 + (colW * 2), metaY + 14, 'Financial Year:', 'F2', 7.5, [0.4, 0.45, 0.5]);
   text(margin + 15 + (colW * 2), metaY + 4, invoice.financial_year || '2026-27', 'F1', 8.5, [0.06, 0.09, 0.16]);
 
-  text(margin + 15 + (colW * 3), metaY + 14, 'Place of Supply:', 'F2', 7.5, [0.4, 0.45, 0.5]);
-  text(margin + 15 + (colW * 3), metaY + 4, invoice.customer_state || invoice.buyer_state || 'Maharashtra', 'F1', 8.5, [0.06, 0.09, 0.16]);
+  text(margin + 15 + (colW * 3), metaY + 14, isTaxInvoice ? 'Place of Supply:' : 'Customer State:', 'F2', 7.5, [0.4, 0.45, 0.5]);
+  text(margin + 15 + (colW * 3), metaY + 4, invoice.customer_state || invoice.buyer_state || '-', 'F1', 8.5, [0.06, 0.09, 0.16]);
 
   // Party Details Box
   const partyY = metaY - 110;
@@ -517,13 +556,18 @@ export function generateInvoicePdfBuffer(invoice) {
 
   setFillRGB(0.12, 0.25, 0.20);
   rect(margin + 10, partyY + 82, partyBoxW, 18, true, false);
-  text(margin + 16, partyY + 87, 'SUPPLIER / ISSUER DETAILS', 'F2', 8, [1, 1, 1]);
+  text(margin + 16, partyY + 87, isTaxInvoice ? 'SUPPLIER DETAILS' : 'RECEIVED BY', 'F2', 8, [1, 1, 1]);
 
-  text(margin + 16, partyY + 68, invoice.seller_name || SELLER_NAME, 'F2', 8.5, [0.1, 0.15, 0.2]);
-  text(margin + 16, partyY + 54, invoice.seller_address || SELLER_ADDRESS, 'F1', 8, [0.3, 0.35, 0.4]);
-  text(margin + 16, partyY + 40, `GSTIN: ${invoice.seller_gstin || SELLER_GSTIN}`, 'F2', 8, [0.1, 0.15, 0.2]);
-  text(margin + 16, partyY + 26, 'State: Maharashtra (State Code: 27)', 'F1', 8, [0.3, 0.35, 0.4]);
-  text(margin + 16, partyY + 12, 'Email: billing@menusqr.in | Web: menusqr.in', 'F1', 8, [0.3, 0.35, 0.4]);
+  // Only details that were actually configured are printed; nothing is filled in by default.
+  const sellerLines = [
+    [invoice.seller_name || 'MenusQR', 'F2', 8.5],
+    invoice.seller_address && invoice.seller_address !== 'India' ? [invoice.seller_address.substring(0, 52), 'F1', 8] : null,
+    isTaxInvoice ? [`GSTIN: ${invoice.seller_gstin}`, 'F2', 8] : null,
+    ['Email: support@menusqr.in | Web: menusqr.in', 'F1', 8],
+  ].filter(Boolean);
+  sellerLines.forEach(([value, font, size], index) => {
+    text(margin + 16, partyY + 68 - index * 14, value, font, size, index === 0 ? [0.1, 0.15, 0.2] : [0.3, 0.35, 0.4]);
+  });
 
   // Buyer Box
   const buyerX = margin + 20 + partyBoxW;
@@ -536,11 +580,13 @@ export function generateInvoicePdfBuffer(invoice) {
 
   const buyerName = invoice.buyer_business_name || invoice.customer_name || invoice.buyer_name || 'Valued Restaurant Partner';
   text(buyerX + 6, partyY + 68, buyerName, 'F2', 8.5, [0.1, 0.15, 0.2]);
-  const buyerAddr = invoice.buyer_address || invoice.customer_state || 'Registered Address';
+  const buyerAddr = invoice.buyer_address || invoice.customer_state || '-';
   text(buyerX + 6, partyY + 54, buyerAddr.substring(0, 48), 'F1', 8, [0.3, 0.35, 0.4]);
-  const buyerState = invoice.customer_state || invoice.buyer_state || 'Maharashtra';
+  const buyerState = invoice.customer_state || invoice.buyer_state || '-';
   text(buyerX + 6, partyY + 40, `State: ${buyerState}`, 'F1', 8, [0.3, 0.35, 0.4]);
-  text(buyerX + 6, partyY + 26, `GSTIN: ${invoice.customer_gstin || invoice.buyer_gstin || 'Unregistered / Consumer'}`, 'F2', 8, [0.1, 0.15, 0.2]);
+  if (isTaxInvoice || invoice.customer_gstin || invoice.buyer_gstin) {
+    text(buyerX + 6, partyY + 26, `GSTIN: ${invoice.customer_gstin || invoice.buyer_gstin || 'Unregistered / Consumer'}`, 'F2', 8, [0.1, 0.15, 0.2]);
+  }
   text(buyerX + 6, partyY + 12, `Tenant ID: ${invoice.tenant_id || 'N/A'}`, 'F1', 7.5, [0.4, 0.45, 0.5]);
 
   // Services Table
@@ -564,13 +610,13 @@ export function generateInvoicePdfBuffer(invoice) {
   text(c3, tableY - 12, 'Period', 'F2', 8, [0.1, 0.2, 0.15]);
   text(c4, tableY - 12, 'Plan Price', 'F2', 8, [0.1, 0.2, 0.15]);
   text(c5, tableY - 12, 'Credit', 'F2', 8, [0.1, 0.2, 0.15]);
-  rightText(c6, tableY - 12, 'Taxable Value', 'F2', 8, [0.1, 0.2, 0.15]);
+  rightText(c6, tableY - 12, isTaxInvoice ? 'Taxable Value' : 'Amount', 'F2', 8, [0.1, 0.2, 0.15]);
 
   const row1Y = tableY - 38;
   text(c0, row1Y, '1', 'F1', 8.5);
   const planLabel = invoice.plan_label || invoice.plan_name || invoice.plan_id || 'Subscription Plan';
-  text(c1, row1Y, `MenuQR ${planLabel} (Annual Cloud License)`, 'F2', 8.5);
-  text(c1, row1Y - 12, 'Includes Digital QR Menu, Real-Time Ordering & Dashboard', 'F1', 7.5, [0.45, 0.5, 0.55]);
+  text(c1, row1Y, `MenusQR ${planLabel} plan subscription`, 'F2', 8.5);
+  text(c1, row1Y - 12, `Period: ${invoice.billing_period || '-'}`, 'F1', 7.5, [0.45, 0.5, 0.55]);
   text(c2, row1Y, SAC_CODE, 'F1', 8.5);
   text(c3, row1Y, invoice.billing_period || '1 Year', 'F1', 8.5);
 
@@ -593,7 +639,7 @@ export function generateInvoicePdfBuffer(invoice) {
   rect(totalsX, totalsY - 105, totalsBoxW, 105, true, true);
 
   let curY = totalsY - 16;
-  text(totalsX + 10, curY, 'Taxable Subtotal:', 'F1', 8.5, [0.2, 0.25, 0.3]);
+  text(totalsX + 10, curY, isTaxInvoice ? 'Taxable Subtotal:' : 'Subtotal:', 'F1', 8.5, [0.2, 0.25, 0.3]);
   rightText(totalsX + totalsBoxW - 10, curY, formatInrPaise(invoice.subtotal_paise), 'F2', 8.5);
 
   const cgst = invoice.cgst_paise || 0;
@@ -617,7 +663,7 @@ export function generateInvoicePdfBuffer(invoice) {
   curY -= 22;
   setFillRGB(0.06, 0.18, 0.13);
   rect(totalsX, curY - 5, totalsBoxW, 24, true, false);
-  text(totalsX + 10, curY + 4, 'TOTAL AMOUNT PAYABLE:', 'F2', 9, [1, 1, 1]);
+  text(totalsX + 10, curY + 4, 'TOTAL PAID:', 'F2', 9, [1, 1, 1]);
   rightText(totalsX + totalsBoxW - 10, curY + 4, formatInrPaise(invoice.total_paise), 'F2', 10, [0.95, 0.85, 0.4]);
 
   // Words Box
@@ -645,9 +691,13 @@ export function generateInvoicePdfBuffer(invoice) {
   setStrokeRGB(0.85, 0.88, 0.92);
   line(margin + 10, footerY + 30, width - margin - 10, footerY + 30);
 
-  text(margin + 10, footerY + 18, 'Declaration: We declare that this invoice shows the actual price of the services described and that all particulars are true and correct.', 'F1', 7, [0.4, 0.45, 0.5]);
-  text(margin + 10, footerY + 8, 'Terms: Software subscription services are non-refundable once activated. Governed by the laws of Maharashtra, India.', 'F1', 7, [0.4, 0.45, 0.5]);
-  text(margin + 10, footerY - 4, 'This is a computer-generated tax invoice issued in terms of Rule 48 of the CGST Rules, 2017 and does not require a physical signature.', 'F2', 7.5, [0.2, 0.25, 0.3]);
+  text(margin + 10, footerY + 18, 'Fees are non-refundable once the service is activated; report a wrong or duplicate charge within 7 days. See menusqr.in/refund-cancellation.', 'F1', 7, [0.4, 0.45, 0.5]);
+  if (isTaxInvoice) {
+    text(margin + 10, footerY + 8, 'Declaration: this invoice shows the actual price of the services described and all particulars are true and correct.', 'F1', 7, [0.4, 0.45, 0.5]);
+    text(margin + 10, footerY - 4, 'Computer-generated tax invoice issued under Rule 48 of the CGST Rules, 2017; no signature required.', 'F2', 7.5, [0.2, 0.25, 0.3]);
+  } else {
+    text(margin + 10, footerY + 8, 'This is a computer-generated payment receipt. It is not a tax invoice and no GST has been charged.', 'F2', 7.5, [0.2, 0.25, 0.3]);
+  }
 
   // Object Assembler
   const streamBuf = Buffer.from(streamLines.join('\n'), 'utf-8');
@@ -702,6 +752,57 @@ export const generateInvoicePdf = generateInvoicePdfBuffer;
  * @param {object} options.client Active database transaction client
  * @returns {Promise<object>} Inserted or existing invoice row
  */
+/**
+ * Works out the figures for a subscription document from what the customer actually paid.
+ * The document total always equals the amount charged (order.amount). When the seller is
+ * GST-registered the paid amount is treated as GST-inclusive and split into taxable value and
+ * GST; when not registered there is no GST and the document is a receipt.
+ *
+ * @returns {{ planId, planMeta, planAmountPaise, discountPaise, subtotalPaise, tax, totalPaise, billingPeriod }}
+ */
+export function computeSubscriptionDocumentAmounts({ order, orderMeta = {}, seller = getSellerConfig(), buyerState = '' }) {
+  const planKey = (order?.plan_id || 'basic').toLowerCase().trim();
+  const cycle = String(orderMeta.billing_cycle || orderMeta.billingCycle || '').toLowerCase();
+  const isMonthly = cycle === 'monthly';
+  const subtype = String(order?.order_subtype || orderMeta.order_subtype || '').toUpperCase();
+
+  const fallbackRupees = Number(order?.amount || 0);
+  const planMeta = Object.hasOwn(PLANS, planKey)
+    ? PLANS[planKey]
+    : { price: fallbackRupees, monthlyPrice: fallbackRupees, yearlyPrice: fallbackRupees, label: order?.plan_id || 'Basic' };
+  const listPricePaise = Math.round((isMonthly ? planMeta.monthlyPrice : planMeta.yearlyPrice || planMeta.price) * 100);
+
+  const paidRupees = Number(order?.amount);
+  const paidPaise = Number.isFinite(paidRupees) && paidRupees > 0 ? Math.round(paidRupees * 100) : listPricePaise;
+  const originalRupees = Number(order?.original_amount);
+  const planAmountPaise = Number.isFinite(originalRupees) && originalRupees > 0 ? Math.round(originalRupees * 100) : listPricePaise;
+  const discountPaise = Math.max(0, planAmountPaise - paidPaise);
+
+  let subtotalPaise = paidPaise;
+  let tax = calculateGstTax({ subtotalPaise: paidPaise, customerState: buyerState, registered: false });
+  if (seller.registered) {
+    const taxableEstimate = Math.round((paidPaise * 100) / 118);
+    tax = calculateGstTax({ subtotalPaise: taxableEstimate, customerState: buyerState, sellerState: seller.state, registered: true });
+    // Keep the total exactly equal to what was charged; any rounding paisa sits in the taxable value.
+    subtotalPaise = paidPaise - tax.taxPaise;
+    tax = { ...tax, totalPaise: paidPaise };
+  }
+
+  let billingPeriod = isMonthly ? '1 Month' : '1 Year';
+  if (subtype === 'UPGRADE') billingPeriod = 'Upgrade (prorated)';
+
+  return {
+    planId: (order?.plan_id || planKey).toUpperCase(),
+    planMeta,
+    planAmountPaise,
+    discountPaise,
+    subtotalPaise,
+    tax,
+    totalPaise: paidPaise,
+    billingPeriod,
+  };
+}
+
 export async function generateGstInvoice({ orderId, tenantId, client }) {
   if (!client) throw new Error('Database client is required');
 
@@ -735,24 +836,18 @@ export async function generateGstInvoice({ orderId, tenantId, client }) {
   const buyerName = order?.customer_name || clientRow?.business_name || 'Valued Customer';
   const buyerBusinessName = order?.business_name || clientRow?.business_name || null;
   const buyerAddress = order?.address || clientRow?.address || null;
-  const buyerState = orderMeta.customer_state || order?.state || clientRow?.state || order?.city || clientRow?.city || 'Maharashtra';
+  const buyerState = orderMeta.customer_state || order?.state || clientRow?.state || order?.city || clientRow?.city || '';
   const buyerGstin = orderMeta.customer_gstin || null;
 
   const fy = getCurrentFinancialYear();
   const sequenceNo = await getNextInvoiceSequence(client, fy);
   const invoiceNumber = formatInvoiceNumber(fy, sequenceNo);
 
-  const planKey = (order?.plan_id || 'basic').toLowerCase().trim();
-  const planMeta = (Object.hasOwn(PLANS, planKey) ? PLANS[planKey] : { price: Number(order?.amount || 0), yearlyPrice: Number(order?.amount || 0), label: order?.plan_id || 'Basic' });
-  const planAmountPaise = Math.round((planMeta.yearlyPrice || planMeta.price) * 100);
-
-  const prorationCreditPaise = order?.proration_credit_paise || orderMeta.proration_credit_paise || 0;
-  const discountPaise = prorationCreditPaise > 0 ? prorationCreditPaise : (order?.discount ? Math.round(Number(order.discount) * 100) : 0);
-  const subtotalPaise = Math.max(100, planAmountPaise - discountPaise);
-
-  const tax = calculateGstTax({ subtotalPaise, customerState: buyerState, sellerState: SELLER_STATE });
-  const totalPaise = tax.totalPaise;
+  const seller = getSellerConfig();
+  const amounts = computeSubscriptionDocumentAmounts({ order, orderMeta, seller, buyerState });
+  const { planMeta, planAmountPaise, discountPaise, subtotalPaise, tax, totalPaise, billingPeriod } = amounts;
   const invoiceType = order?.order_subtype || 'SUBSCRIPTION';
+  const documentType = seller.registered ? 'TAX_INVOICE' : 'RECEIPT';
 
   const insertRes = await client.query(`
     INSERT INTO gst_invoices (
@@ -790,6 +885,7 @@ export async function generateGstInvoice({ orderId, tenantId, client }) {
       invoice_type,
       payment_gateway,
       gateway_txn_id,
+      document_type,
       created_at,
       pdf_generated_at
     ) VALUES (
@@ -801,7 +897,7 @@ export async function generateGstInvoice({ orderId, tenantId, client }) {
       $22, $23, $24,
       $25, $26, $27,
       $28, $29, $30, $31,
-      $32, $33, $34,
+      $32, $33, $34, $35,
       NOW(), NOW()
     ) RETURNING *;
   `, [
@@ -811,9 +907,9 @@ export async function generateGstInvoice({ orderId, tenantId, client }) {
     fy,
     sequenceNo,
     sequenceNo,
-    SELLER_NAME,
-    SELLER_GSTIN,
-    SELLER_ADDRESS,
+    seller.name,
+    seller.gstin,
+    seller.address || 'India',
     buyerName,
     buyerBusinessName,
     buyerAddress,
@@ -822,10 +918,10 @@ export async function generateGstInvoice({ orderId, tenantId, client }) {
     buyerName,
     buyerGstin,
     buyerState,
-    (order?.plan_id || planKey).toUpperCase(),
+    amounts.planId,
     planMeta.label,
     planMeta.label,
-    'Annual',
+    billingPeriod,
     planAmountPaise,
     discountPaise,
     subtotalPaise,
@@ -839,6 +935,7 @@ export async function generateGstInvoice({ orderId, tenantId, client }) {
     invoiceType,
     order?.payment_gateway || 'Cashfree',
     order?.gateway_payment_id || orderMeta.gateway_payment_id || null,
+    documentType,
   ]);
 
   const createdInvoice = insertRes.rows[0];

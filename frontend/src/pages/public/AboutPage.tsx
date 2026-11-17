@@ -33,6 +33,13 @@ export default function AboutPage() {
 
         <div className="bg-white p-8 md:p-10 rounded-3xl border border-gray-100 shadow-sm mb-12 space-y-8 text-[#151C19]/80 text-lg leading-relaxed">
           <section>
+            <h2 className="text-2xl font-bold text-[#151C19] mb-4">Who we are</h2>
+            <p>
+              MenusQR (written as one word, also searched as "Menus QR") is an Indian company that runs menusqr.in. We are not connected to other products with similar names such as MenuQR. Our only website is menusqr.in, and our support team is on +91 87965 30323 and support@menusqr.in.
+            </p>
+          </section>
+
+          <section>
             <h2 className="text-2xl font-bold text-[#151C19] mb-4">Our Mission</h2>
             <p>
               We believe restaurant operations should be frictionless. Physical printed menus create constant maintenance overhead: prices change, ingredients fluctuate, and paper menus degrade. MenusQR replaces this friction with permanent table QR technology—print your table QR stands once, and update your menu live whenever needed.

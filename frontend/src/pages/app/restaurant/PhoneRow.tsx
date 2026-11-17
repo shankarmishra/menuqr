@@ -1,6 +1,7 @@
 import React from 'react';
 import { Phone, MessageCircle, Star, Trash2 } from 'lucide-react';
 import type { CanonicalContact } from '../appStore';
+import { COUNTRY_CODES, joinPhone, phoneError, splitPhone, whatsAppLink } from '../../../utils/phone';
 
 interface PhoneRowProps {
   contact: CanonicalContact;
@@ -17,6 +18,9 @@ export const PhoneRow: React.FC<PhoneRowProps> = ({
   onDelete,
   onSetPrimary,
 }) => {
+  const kind = contact.kind || 'mobile';
+  const { code, local } = splitPhone(contact.number);
+  const problem = phoneError(code, local, kind);
   return (
     <div className="bg-[#151c19] border border-[#2a3832] rounded-xl p-4 transition-all hover:border-[#2a3832]/90 shadow-sm space-y-3">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -36,21 +40,37 @@ export const PhoneRow: React.FC<PhoneRowProps> = ({
             />
           </div>
           <div>
-            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">
-              Phone Number (10 digits)
+            <label htmlFor={`phone-${contact.id}`} className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
+              Phone number
             </label>
-            <div className="relative">
-              <span className="absolute left-3 top-2.5 text-xs font-mono text-slate-500 font-semibold">
-                +91
-              </span>
+            <div className="flex gap-2">
+              <label htmlFor={`cc-${contact.id}`} className="sr-only">Country code</label>
+              <select
+                id={`cc-${contact.id}`}
+                value={code}
+                onChange={(e) => onChange({ ...contact, number: joinPhone(e.target.value, local, kind) })}
+                className="min-h-11 shrink-0 bg-[#0e1311] border border-[#2a3832] rounded-lg px-2 text-sm font-mono text-slate-100 focus:outline-none focus:border-[#e8783c]"
+              >
+                {COUNTRY_CODES.map((c) => (
+                  <option key={c.code} value={c.code} title={c.label}>+{c.code}</option>
+                ))}
+              </select>
               <input
+                id={`phone-${contact.id}`}
                 type="tel"
-                value={contact.number.replace(/^\+91/, '')}
-                onChange={(e) => onChange({ ...contact, number: e.target.value })}
-                placeholder="9876543210"
-                className="w-full bg-[#0e1311] border border-[#2a3832] rounded-lg pl-11 pr-3 py-2 text-sm font-mono text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-[#e8783c] transition-colors"
+                inputMode="tel"
+                autoComplete="tel-national"
+                value={local}
+                onChange={(e) => onChange({ ...contact, number: joinPhone(code, e.target.value, kind) || e.target.value })}
+                placeholder={code === '91' ? '98765 43210' : 'Mobile number'}
+                aria-invalid={Boolean(problem)}
+                aria-describedby={`phone-help-${contact.id}`}
+                className={`min-h-11 w-full bg-[#0e1311] border rounded-lg px-3 py-2 text-base font-mono text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-[#e8783c] transition-colors ${problem ? 'border-red-400' : 'border-[#2a3832]'}`}
               />
             </div>
+            <p id={`phone-help-${contact.id}`} className={`mt-1 text-xs ${problem ? 'text-red-300' : 'text-slate-500'}`}>
+              {problem || (contact.whatsapp && !problem && local ? (whatsAppLink(contact.number) ? 'Guests can tap to WhatsApp this number.' : 'This number cannot receive WhatsApp messages.') : ' ')}
+            </p>
           </div>
         </div>
 

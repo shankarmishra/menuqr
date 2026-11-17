@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { initAnalytics, trackEvent, trackPageView } from './analytics';
+import { startWebVitals } from './webVitals';
 
 const CTA_PATHS = ['/plans', '/templates', '/signup', '/login', '/purchase/details', '/onboarding'];
 
@@ -9,6 +10,9 @@ export default function RouteTracker() {
 
   useEffect(() => {
     initAnalytics();
+    startWebVitals(({ name, value, rating }) => {
+      trackEvent('web_vitals', { metric_name: name, metric_value: value, metric_rating: rating, page_path: window.location.pathname });
+    });
   }, []);
 
   // One delegated listener covers every contact link and call-to-action, including ones added later.

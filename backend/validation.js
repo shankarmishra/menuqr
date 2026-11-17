@@ -361,6 +361,78 @@ export function validateFSSAI(fssai) {
   return true;
 }
 
+// ── GSTIN ──────────────────────────────────────────────────────────────────
+// 15 characters: 2-digit state code, 10-character PAN, entity number, 'Z', check character.
+const GSTIN_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const GSTIN_SHAPE = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
+function gstinCheckCharacter(first14) {
+  let factor = 2;
+  let sum = 0;
+  for (let i = first14.length - 1; i >= 0; i--) {
+    const product = factor * GSTIN_CHARS.indexOf(first14[i]);
+    factor = factor === 2 ? 1 : 2;
+    sum += Math.floor(product / 36) + (product % 36);
+  }
+  return GSTIN_CHARS[(36 - (sum % 36)) % 36];
+}
+
+/**
+ * Validates a GSTIN. Returns { ok: true, value } with the upper-cased GSTIN, or
+ * { ok: false, reason } with a message an owner can act on.
+ */
+export function validateGSTIN(input) {
+  const value = String(input || '').replace(/\s+/g, '').toUpperCase();
+  if (!value) return { ok: false, reason: 'Enter your 15-character GSTIN.' };
+  if (value.length !== 15) return { ok: false, reason: 'A GSTIN has exactly 15 characters.' };
+  if (!GSTIN_SHAPE.test(value)) return { ok: false, reason: 'This does not look like a GSTIN. Check it against your GST certificate.' };
+  const state = Number(value.slice(0, 2));
+  if (!((state >= 1 && state <= 38) || state === 97 || state === 99)) {
+    return { ok: false, reason: 'The first two digits of a GSTIN must be a valid state code.' };
+  }
+  if (gstinCheckCharacter(value.slice(0, 14)) !== value[14]) {
+    return { ok: false, reason: 'The last character of this GSTIN does not match. Check for a typing mistake.' };
+  }
+  return { ok: true, value };
+}
+
+export const GST_MODES = ['UNSET', 'NOT_REGISTERED', 'COMPOSITION', 'REGULAR'];
+export const GST_RATES_BPS = [0, 500, 1200, 1800];
+
+/**
+ * Validates the restaurant's GST settings as one unit, because the fields depend on each other.
+ * Returns { ok: true, value: { gstMode, gstin, gstRateBps } } or { ok: false, field, reason }.
+ */
+export function validateGstSettings({ gstMode, gstin, gstRateBps } = {}) {
+  const mode = String(gstMode || 'UNSET').toUpperCase();
+  if (!GST_MODES.includes(mode)) return { ok: false, field: 'gstMode', reason: 'Choose your GST status.' };
+
+  const rate = gstRateBps === undefined || gstRateBps === null || gstRateBps === '' ? 500 : Number(gstRateBps);
+  if (!GST_RATES_BPS.includes(rate)) return { ok: false, field: 'gstRateBps', reason: 'Choose a GST rate of 0%, 5%, 12% or 18%.' };
+
+  if (mode === 'REGULAR' || mode === 'COMPOSITION') {
+    const check = validateGSTIN(gstin);
+    if (!check.ok) return { ok: false, field: 'gstin', reason: check.reason };
+    return { ok: true, value: { gstMode: mode, gstin: check.value, gstRateBps: mode === 'REGULAR' ? rate : 0 } };
+  }
+  // UNSET keeps the historical 5%; NOT_REGISTERED charges nothing. Neither stores a GSTIN.
+  return { ok: true, value: { gstMode: mode, gstin: null, gstRateBps: mode === 'UNSET' ? 500 : 0 } };
+}
+
+/**
+ * Normalises a mobile number written with an explicit non-Indian country code
+ * (for example +971 50 123 4567) to E.164. Indian numbers go through normalizePhoneNumber.
+ */
+export function normalizeInternationalMobile(input) {
+  if (!input || typeof input !== 'string') return null;
+  const raw = input.trim();
+  if (!raw.startsWith('+') || raw.startsWith('+91')) return null;
+  if (/[a-zA-Z]/.test(raw)) return null;
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length < 8 || digits.length > 15 || digits.startsWith('0')) return null;
+  return `+${digits}`;
+}
+
 /**
  * Validates and normalises weekly opening hours.
  */
@@ -428,13 +500,15 @@ export function validateContacts(contacts) {
 
   for (const c of contacts.slice(0, 4)) {
     const rawNumber = String(c.number || '').trim();
-    const normalized = normalizePhoneNumber(rawNumber);
+    const kind = ['mobile', 'landline', 'toll_free'].includes(c.kind) ? c.kind : 'mobile';
+    // Indian numbers first; a mobile written with another country code (+971…) is also accepted.
+    const normalized = normalizePhoneNumber(rawNumber) || (kind === 'mobile' ? normalizeInternationalMobile(rawNumber) : null);
     if (!normalized) continue;
 
     cleaned.push({
       id: c.id || `c_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       label: sanitizeText(c.label || '', 24),
-      kind: ['mobile', 'landline', 'toll_free'].includes(c.kind) ? c.kind : 'mobile',
+      kind,
       number: normalized,
       public: Boolean(c.public),
       whatsapp: Boolean(c.whatsapp),
