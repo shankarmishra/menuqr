@@ -19,11 +19,14 @@ import { optimizeAndSaveImage } from '../imageOptimizer.js';
 import { enqueueTask, getJobStatus, TASK_TYPES } from '../taskQueue.js';
 import { inputMenuFeatures } from '../menuFeatures.js';
 import { handleProfileRoutes } from './profile.js';
+import { getOrderUsage, parsePackCount, packsAmount } from '../orderLimits.js';
+import { ORDER_LIMIT } from '../planCatalog.js';
 import {
   PLANS,
   PLAN_HIERARCHY,
   calculateProration,
   calculateRenewalExpiry,
+  isFreshPlanPurchase,
   generateInvoicePdfBuffer,
 } from '../subscriptionService.js';
 
@@ -795,7 +798,14 @@ export default async function appRoutes(request, response, url) {
     `, [user.tenantId]);
     const subscription = subRes.rows[0];
     const usage = await getContentUsage(user.tenantId, subscription?.periodStart, authorization.planId);
-    sendJson(response, 200, subscription ? { ...subscription, contentChangesUsed: usage.used, contentChangesRemaining: usage.remaining, contentChangesLimit: usage.limit } : { status: 'none', contentChangesUsed: usage.used, contentChangesRemaining: usage.remaining, contentChangesLimit: usage.limit });
+    const accessInfo = {
+      source: authorization.source,
+      isTrial: authorization.isTrial,
+      active: authorization.active,
+      entitlements: authorization.entitlements,
+      supportPhone: process.env.SUPPORT_PHONE || '+918796530323',
+    };
+    sendJson(response, 200, subscription ? { ...subscription, ...accessInfo, contentChangesUsed: usage.used, contentChangesRemaining: usage.remaining, contentChangesLimit: usage.limit } : { status: 'none', ...accessInfo, contentChangesUsed: usage.used, contentChangesRemaining: usage.remaining, contentChangesLimit: usage.limit });
     return true;
   }
 
@@ -815,15 +825,16 @@ export default async function appRoutes(request, response, url) {
       [user.tenantId]
     );
     const currentSub = subRes.rows[0];
-    const currentPlanKey = (currentSub?.plan_id || 'basic').toLowerCase().trim();
-    const currentRank = (Object.hasOwn(PLAN_HIERARCHY, currentPlanKey) ? PLAN_HIERARCHY[currentPlanKey] : 1);
+    const isExpired = currentSub?.status === 'EXPIRED' || (currentSub?.expires_at && new Date(currentSub.expires_at) <= new Date());
+    // A free trial (or a lapsed plan) buys any plan at full price with no proration credit.
+    const isFreshPurchase = isFreshPlanPurchase(currentSub, isExpired);
+    const currentPlanKey = isFreshPurchase ? 'none' : (currentSub?.plan_id || 'basic').toLowerCase().trim();
+    const currentRank = (Object.hasOwn(PLAN_HIERARCHY, currentPlanKey) ? PLAN_HIERARCHY[currentPlanKey] : (isFreshPurchase ? 0 : 1));
     const targetRank = (Object.hasOwn(PLAN_HIERARCHY, targetPlanKey) ? PLAN_HIERARCHY[targetPlanKey] : 1);
 
     if (targetRank <= currentRank) {
       throw apiError(400, 'Cannot upgrade to the same or lower plan tier.');
     }
-
-    const isExpired = currentSub?.status === 'EXPIRED' || (currentSub?.expires_at && new Date(currentSub.expires_at) <= new Date());
 
     const clientRes = await pool.query(
       'SELECT business_name, state, city FROM clients WHERE id = $1',
@@ -834,7 +845,7 @@ export default async function appRoutes(request, response, url) {
 
     const preview = calculateProration({
       currentPlanId: currentPlanKey,
-      currentExpiresAt: isExpired ? null : currentSub?.expires_at,
+      currentExpiresAt: (isExpired || isFreshPurchase) ? null : currentSub?.expires_at,
       targetPlanId: targetPlanKey,
       customerState,
       now: new Date(),
@@ -970,15 +981,15 @@ export default async function appRoutes(request, response, url) {
       [user.tenantId]
     );
     const currentSub = subRes.rows[0];
-    const currentPlanKey = (currentSub?.plan_id || 'basic').toLowerCase().trim();
-    const currentRank = (Object.hasOwn(PLAN_HIERARCHY, currentPlanKey) ? PLAN_HIERARCHY[currentPlanKey] : 1);
+    const isExpired = currentSub?.status === 'EXPIRED' || (currentSub?.expires_at && new Date(currentSub.expires_at) <= new Date());
+    const isFreshPurchase = isFreshPlanPurchase(currentSub, isExpired);
+    const currentPlanKey = isFreshPurchase ? 'none' : (currentSub?.plan_id || 'basic').toLowerCase().trim();
+    const currentRank = (Object.hasOwn(PLAN_HIERARCHY, currentPlanKey) ? PLAN_HIERARCHY[currentPlanKey] : (isFreshPurchase ? 0 : 1));
     const targetRank = (Object.hasOwn(PLAN_HIERARCHY, targetPlanKey) ? PLAN_HIERARCHY[targetPlanKey] : 1);
 
     if (targetRank <= currentRank) {
       throw apiError(400, 'Cannot upgrade to the same or lower plan tier.');
     }
-
-    const isExpired = currentSub?.status === 'EXPIRED' || (currentSub?.expires_at && new Date(currentSub.expires_at) <= new Date());
 
     const clientRes = await pool.query('SELECT * FROM clients WHERE id = $1', [user.tenantId]);
     const clientRow = clientRes.rows[0] || {};
@@ -988,7 +999,7 @@ export default async function appRoutes(request, response, url) {
 
     const preview = calculateProration({
       currentPlanId: currentPlanKey,
-      currentExpiresAt: isExpired ? null : currentSub?.expires_at,
+      currentExpiresAt: (isExpired || isFreshPurchase) ? null : currentSub?.expires_at,
       targetPlanId: targetPlanKey,
       customerState,
       now: new Date(),
@@ -1076,6 +1087,84 @@ export default async function appRoutes(request, response, url) {
       amount: totalDueRupees,
       amountPaise: preview.totalPaise,
       prorationCreditPaise: preview.prorationCreditPaise,
+      checkoutMode: (process.env.CASHFREE_ENV || 'SANDBOX').toLowerCase(),
+    });
+    return true;
+  }
+
+  // ── Online order usage (monthly limit + extra packs) ──────────────────
+  if (request.method === 'GET' && url.pathname === '/api/app/order-usage') {
+    sendJson(response, 200, { success: true, ...(await getOrderUsage(pool, user.tenantId)) });
+    return true;
+  }
+
+  // ── Buy extra order packs (₹99 per 50 orders) — starts an online payment ──
+  if (request.method === 'POST' && url.pathname === '/api/app/order-packs/initiate') {
+    requireEntitlement(authorization, 'customer_ordering', 'Extra order packs are only available on plans with online ordering.');
+    const body = (await readJson(request)) || {};
+    const packs = parsePackCount(body.packs, apiError);
+    const amountRupees = packsAmount(packs);
+    const ordersAdded = packs * ORDER_LIMIT.packSize;
+
+    const subRes = await pool.query('SELECT plan_id FROM subscriptions WHERE tenant_id = $1', [user.tenantId]);
+    const clientRes = await pool.query('SELECT * FROM clients WHERE id = $1', [user.tenantId]);
+    const clientRow = clientRes.rows[0] || {};
+    const userRes = await pool.query('SELECT * FROM users WHERE id = $1', [user.id]);
+    const userRow = userRes.rows[0] || {};
+
+    const orderId = 'ord_pack_' + randomUUID().replace(/-/g, '').substring(0, 16);
+    const metadata = {
+      tenant_id: user.tenantId,
+      user_id: user.id,
+      order_type: 'ORDER_PACK',
+      order_subtype: 'ORDER_PACK',
+      packs,
+      ordersAdded,
+    };
+
+    await pool.query(`
+      INSERT INTO orders (
+        id, customer_name, customer_email, phone, business_name, city, address, state,
+        plan_id, amount, original_amount, currency, status, provisioning_status,
+        order_subtype, proration_credit_paise, upgrade_from_plan, metadata
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8,
+        $9, $10, $11, 'INR', 'PENDING_PAYMENT', 'PENDING',
+        'ORDER_PACK', 0, NULL, $12
+      )
+    `, [
+      orderId,
+      userRow.name || clientRow.business_name || 'Valued Customer',
+      userRow.email || 'billing@menusqr.in',
+      clientRow.phone || userRow.phone || '',
+      clientRow.business_name || 'MenuQR Partner',
+      clientRow.city || 'Pune',
+      clientRow.address || '',
+      clientRow.state || 'Maharashtra',
+      (subRes.rows[0]?.plan_id || 'PREMIUM').toUpperCase(),
+      amountRupees,
+      amountRupees,
+      JSON.stringify(metadata),
+    ]);
+
+    const paymentSessionId = await initPaymentSession({
+      orderId,
+      orderAmount: amountRupees,
+      customerEmail: userRow.email,
+      customerName: userRow.name || clientRow.business_name,
+      customerPhone: clientRow.phone || userRow.phone,
+    });
+
+    sendJson(response, 200, {
+      success: true,
+      orderId,
+      orderSubtype: 'ORDER_PACK',
+      packs,
+      ordersAdded,
+      paymentSessionId,
+      session_id: paymentSessionId,
+      amount: amountRupees,
+      amountPaise: amountRupees * 100,
       checkoutMode: (process.env.CASHFREE_ENV || 'SANDBOX').toLowerCase(),
     });
     return true;

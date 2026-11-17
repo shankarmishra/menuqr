@@ -3,7 +3,9 @@ import { CheckCircle2, FileText, Download, Loader2, ArrowRight, Sparkles, Shield
 import { getSubscriptionInvoices, downloadInvoicePdf, type SubscriptionInvoice } from '../../pages/app/appStore';
 
 export interface SuccessPanelProps {
-  orderSubtype: 'RENEWAL' | 'UPGRADE';
+  orderSubtype: 'RENEWAL' | 'UPGRADE' | 'ORDER_PACK';
+  /** For ORDER_PACK: how many extra orders were added. */
+  ordersAdded?: number;
   planId: string;
   newExpiry?: string;
   orderId: string;
@@ -12,6 +14,7 @@ export interface SuccessPanelProps {
 
 export default function SuccessPanel({
   orderSubtype,
+  ordersAdded,
   planId,
   newExpiry,
   orderId,
@@ -23,6 +26,7 @@ export default function SuccessPanel({
   const [invoiceError, setInvoiceError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (orderSubtype === 'ORDER_PACK') return; // packs have no plan invoice
     // Attempt to load invoice for instant download
     getSubscriptionInvoices()
       .then((res) => {
@@ -33,7 +37,7 @@ export default function SuccessPanel({
       .catch((err) => {
         console.warn('[SuccessPanel] Could not fetch invoices:', err);
       });
-  }, [orderId]);
+  }, [orderId, orderSubtype]);
 
   const latestInvoice = invoices[0];
 
@@ -79,6 +83,33 @@ export default function SuccessPanel({
   };
 
   const isUpgrade = orderSubtype === 'UPGRADE';
+
+  if (orderSubtype === 'ORDER_PACK') {
+    return (
+      <div className="space-y-6 text-center py-4">
+        <div className="relative inline-flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping"></div>
+          <div className="relative p-4 rounded-full bg-emerald-500/15 border-2 border-emerald-500/40 text-emerald-400">
+            <CheckCircle2 size={48} />
+          </div>
+        </div>
+        <div>
+          <h3 className="text-2xl font-black text-white">Extra orders added!</h3>
+          <p className="text-xs text-[#849a90] mt-1.5 max-w-sm mx-auto">
+            {ordersAdded ? `${ordersAdded.toLocaleString('en-IN')} more online orders are available for this month.` : 'Your extra online orders are available for this month.'}
+          </p>
+        </div>
+        <p className="font-mono text-[11px] text-[#62756d]">Order reference: {orderId}</p>
+        <button
+          onClick={onClose}
+          className="w-full flex items-center justify-center gap-2 bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-[#e8783c]/20 cursor-pointer"
+        >
+          <span>Done</span>
+          <ArrowRight size={18} />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 text-center py-4">

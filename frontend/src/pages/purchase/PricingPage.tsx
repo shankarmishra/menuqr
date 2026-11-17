@@ -10,16 +10,16 @@ import GeoFaqSection from '../../components/seo/GeoFaqSection';
 import { getBreadcrumbSchema, getOrganizationSchema, getSoftwareApplicationSchema } from '../../seo/structuredData';
 
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState<'yearly' | 'monthly'>('yearly');
+  const [billingCycle, setBillingCycle] = useState<'yearly' | 'monthly'>('monthly');
   const breadcrumbs = [{ name: 'Plans & Pricing', path: '/plans' }];
 
   const plans = [
     {
       id: 'basic',
       name: 'BASIC',
-      monthlyPrice: '₹559',
+      monthlyPrice: '₹199',
       yearlyPrice: '₹1,999',
-      savings: 'Save 70%',
+      savings: 'Save 16%',
       effectiveMonthly: '₹166/mo when billed yearly',
       description: 'Perfect for small cafes and food stalls starting their digital journey.',
       features: [
@@ -36,9 +36,9 @@ export default function PricingPage() {
     {
       id: 'intermediate',
       name: 'INTERMEDIATE',
-      monthlyPrice: '₹959',
+      monthlyPrice: '₹299',
       yearlyPrice: '₹3,199',
-      savings: 'Save 72%',
+      savings: 'Save 11%',
       effectiveMonthly: '₹266/mo when billed yearly',
       description: 'Ideal for growing restaurants needing more flexibility and style.',
       features: [
@@ -56,9 +56,9 @@ export default function PricingPage() {
     {
       id: 'premium',
       name: 'PREMIUM',
-      monthlyPrice: '₹1,119',
+      monthlyPrice: '₹899',
       yearlyPrice: '₹6,799',
-      savings: 'Save 49%',
+      savings: 'Save 37%',
       effectiveMonthly: '₹566/mo when billed yearly',
       description: 'Everything you need to run a world-class digital menu for your restaurant.',
       features: [
@@ -66,6 +66,8 @@ export default function PricingPage() {
         'Unlimited Menu Edits & Categories',
         'All 15 Premium Design Templates',
         'Direct Table QR Ordering System',
+        '150 online orders / month included',
+        'Need more orders? +50 orders for ₹99',
         'Half/Full & Portion Variant Pricing',
         'Universal Menu Search',
         'Dietary Tags & Image Support',
@@ -80,7 +82,7 @@ export default function PricingPage() {
       <div className="texture-indian-heritage fixed inset-0 pointer-events-none z-0" />
       <SEO 
         title="MenusQR Pricing | Digital Menu Plans for Restaurants"
-        description="View MenusQR pricing plans. Basic from ₹559/mo (₹1,999/yr), Intermediate from ₹959/mo (₹3,199/yr), and Premium from ₹1,119/mo (₹6,799/yr). Create your digital restaurant QR menu today."
+        description="View MenusQR pricing plans. Basic from ₹199/mo (₹1,999/yr), Intermediate from ₹299/mo (₹3,199/yr), and Premium from ₹899/mo (₹6,799/yr, with 150 online orders a month included). Create your digital restaurant QR menu today."
         canonicalUrl="/plans"
         schema={[
           getOrganizationSchema(),
@@ -132,9 +134,31 @@ export default function PricingPage() {
             >
               <span>Yearly Billing</span>
               <span className="bg-white/20 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
-                <Sparkles size={11} /> Save Up to 72%
+                <Sparkles size={11} /> Save up to 37%
               </span>
             </button>
+          </div>
+        </div>
+
+        {/* 14-day free trial — no payment at signup */}
+        <div className="max-w-6xl mx-auto mb-12">
+          <div className="bg-[#151C19] rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#E8783C]/20 text-[#ffb489] mb-3">
+                <Sparkles size={12} /> Free for 14 days
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Not sure yet? Try everything free.</h2>
+              <p className="text-white/70 text-sm sm:text-base mt-1">
+                Every Premium feature for 14 days. No card, no payment. Pick a plan when you're ready.
+              </p>
+            </div>
+            <Link
+              to="/purchase/details?plan=trial"
+              onClick={() => trackSelectPlan({ planId: 'trial', billing: billingCycle })}
+              className="shrink-0 inline-flex items-center justify-center px-7 py-4 rounded-2xl font-bold text-base bg-[#E8783C] hover:bg-[#d66a30] text-white transition-colors w-full md:w-auto"
+            >
+              Start free trial
+            </Link>
           </div>
         </div>
 

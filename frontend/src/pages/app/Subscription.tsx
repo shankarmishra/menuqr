@@ -3,13 +3,18 @@ import { getSubscription, type AppSubscriptionData } from './appStore';
 import { ShieldCheck, Calendar, CreditCard, Clock, AlertTriangle, CheckCircle2, Sparkles } from 'lucide-react';
 import CheckoutDrawer from '../../components/subscription/CheckoutDrawer';
 import InvoiceHistory from '../../components/subscription/InvoiceHistory';
+import ContactSupportCard from '../../components/subscription/ContactSupportCard';
+import OrderUsageCard from '../../components/subscription/OrderUsageCard';
+import { useOrderUsage } from '../../lib/useOrderUsage';
 import { normalizePlan } from '../../lib/planCapabilities';
 
 export default function Subscription() {
   const [data, setData] = useState<AppSubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerAction, setDrawerAction] = useState<'renew' | 'upgrade'>('renew');
+  const [drawerAction, setDrawerAction] = useState<'renew' | 'upgrade' | 'orders'>('renew');
+  const canOrder = Boolean(data?.active !== false && data?.entitlements?.includes('customer_ordering'));
+  const { usage: orderUsage, refresh: refreshOrderUsage } = useOrderUsage(canOrder);
 
   const loadData = () => {
     setLoading(true);
@@ -36,6 +41,11 @@ export default function Subscription() {
     setDrawerOpen(true);
   };
 
+  const handleBuyOrders = () => {
+    setDrawerAction('orders');
+    setDrawerOpen(true);
+  };
+
   const handleUpgrade = () => {
     setDrawerAction('upgrade');
     setDrawerOpen(true);
@@ -50,7 +60,9 @@ export default function Subscription() {
   const planId = (data?.planId || 'BASIC').toUpperCase();
   const planKey = normalizePlan(planId);
   const isPremium = planKey === 'premium';
-  const isActive = data?.status === 'ACTIVE';
+  const isTrial = data?.status?.toUpperCase() === 'TRIAL';
+  const isManual = data?.source?.toUpperCase() === 'MANUAL';
+  const isActive = data?.status === 'ACTIVE' || isTrial;
   const isExpired = data?.expiresAt ? new Date(data.expiresAt) < new Date() : false;
   
   const formatDate = (d?: string) => d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A';
@@ -80,11 +92,14 @@ export default function Subscription() {
               <div>
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-[#849a90]">Current Plan</h2>
                 <div className="flex items-center gap-3">
-                  <p className="text-3xl font-bold text-white">{planId}</p>
+                  <p className="text-3xl font-bold text-white">{isTrial ? 'FREE TRIAL' : planId}</p>
                   <span className={`px-2.5 py-0.5 rounded text-xs font-bold ${isActive && !isExpired ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
-                    {isExpired ? 'EXPIRED' : (data?.status || 'UNKNOWN')}
+                    {isExpired ? 'EXPIRED' : isTrial ? `${planId} FEATURES` : (data?.status || 'UNKNOWN')}
                   </span>
                 </div>
+                {isManual && !isExpired && (
+                  <p className="mt-1 text-xs text-[#849a90]">Activated by the MenusQR team</p>
+                )}
               </div>
             </div>
             
@@ -115,7 +130,15 @@ export default function Subscription() {
             </div>
             
             <div className="flex flex-col gap-2.5">
-              <button 
+              {isTrial ? (
+                <button
+                  onClick={handleUpgrade}
+                  className="w-full flex items-center justify-center gap-2 bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-3 rounded-xl font-bold transition-all shadow-lg shadow-[#e8783c]/20 hover:shadow-[#e8783c]/40 cursor-pointer text-sm"
+                >
+                  <CreditCard size={16} /> Choose a Plan
+                </button>
+              ) : (<>
+              <button
                 onClick={handleRenew}
                 className="w-full flex items-center justify-center gap-2 bg-[#e8783c] hover:bg-[#d66a30] text-white px-5 py-3 rounded-xl font-bold transition-all shadow-lg shadow-[#e8783c]/20 hover:shadow-[#e8783c]/40 cursor-pointer text-sm"
               >
@@ -130,6 +153,7 @@ export default function Subscription() {
                   <Sparkles size={16} className="text-amber-400" /> Upgrade Plan
                 </button>
               )}
+              </>)}
             </div>
 
             <p className="text-[11px] text-center text-[#62756d] leading-tight">
@@ -138,6 +162,13 @@ export default function Subscription() {
           </div>
         </div>
       </div>
+
+      {canOrder && orderUsage && <OrderUsageCard usage={orderUsage} onBuyMore={handleBuyOrders} />}
+
+      <ContactSupportCard
+        supportPhone={data?.supportPhone}
+        reason={isTrial ? 'I am on the free trial and want to take a plan' : 'I want to renew or change my plan'}
+      />
 
       {/* Invoice History Section */}
       <InvoiceHistory />
@@ -153,8 +184,10 @@ export default function Subscription() {
         currentPlanId={planId}
         expiresAt={data?.expiresAt}
         startedAt={data?.startedAt}
+        freshPurchase={isTrial || isExpired}
         onPlanUpdated={() => {
           loadData();
+          refreshOrderUsage();
         }}
       />
     </div>

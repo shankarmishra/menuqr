@@ -65,6 +65,7 @@ import {
 } from '../../utils/excelMenuParser';
 import {
   createPermanentQr,
+  completeOnboarding,
   getQr,
   getSubscription,
   getProfile,
@@ -892,7 +893,16 @@ export default function OnboardingWizard() {
       eyebrow={stepCopy[currentStep]?.eyebrow}
       title={stepCopy[currentStep]?.title || ''}
       description={stepCopy[currentStep]?.description}
-      onSkip={() => navigate('/app/dashboard')}
+      onSkip={async () => {
+        // The dashboard sends PENDING owners back here, so record the skip before leaving.
+        try {
+          await completeOnboarding();
+        } catch {
+          showToast('error', 'Could not skip setup right now. Please try again.');
+          return;
+        }
+        navigate('/app/dashboard', { replace: true });
+      }}
       onBack={currentStepIdx > 0 ? prevStep : undefined}
       onNext={isFinalStep ? handleComplete : nextStep}
       nextDisabled={isSubmitting}

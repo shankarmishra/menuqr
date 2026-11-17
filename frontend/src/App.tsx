@@ -128,6 +128,7 @@ const AdminLogin = lazyWithRetry(() => import('./pages/admin/AdminLogin'));
 const Dashboard = lazyWithRetry(() => import('./pages/admin/Dashboard'));
 const ClientList = lazyWithRetry(() => import('./pages/admin/ClientList'));
 const ClientForm = lazyWithRetry(() => import('./pages/admin/ClientForm'));
+const ClientSubscription = lazyWithRetry(() => import('./pages/admin/ClientSubscription'));
 const QrGenerator = lazyWithRetry(() => import('./pages/admin/QrGenerator'));
 const Settings = lazyWithRetry(() => import('./pages/admin/Settings'));
 const Orders = lazyWithRetry(() => import('./pages/admin/Orders'));
@@ -239,6 +240,7 @@ function AdminPortalRoutes() {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="clients/new/:step?" element={<ClientForm />} />
+            <Route path="clients/:clientId/subscription" element={<ClientSubscription />} />
             <Route path="clients/:clientId/:step?" element={<ClientForm />} />
             <Route path="clients" element={<ClientList />} />
             <Route path="restaurants" element={<ClientList />} />
@@ -348,7 +350,7 @@ function PublicAppRoutes() {
         <Route path="/refund-policy" element={<Navigate to="/refund-cancellation" replace />} />
 
         {/* Customer Onboarding & Checkout Flow */}
-        <Route path="/signup" element={<Navigate to="/purchase/details" replace />} />
+        <Route path="/signup" element={<Navigate to="/purchase/details?plan=trial" replace />} />
         <Route path="/onboarding" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><OnboardingWizard /></Suspense></ChunkErrorBoundary>} />
         <Route path="/purchase/details" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><PurchaseDetailsPage /></Suspense></ChunkErrorBoundary>} />
         <Route path="/purchase/review" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><PurchaseReviewPage /></Suspense></ChunkErrorBoundary>} />

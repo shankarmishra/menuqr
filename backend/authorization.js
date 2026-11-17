@@ -22,13 +22,50 @@ export const PLAN_CAPABILITIES = {
   ],
 };
 
-const paidStatuses = new Set(['ACTIVE', 'WARNING', 'EXPIRING', 'RENEWAL_PENDING']);
+/** Every capability any plan can grant — the super admin picks from this list for offline plans. */
+export const ALL_CAPABILITIES = [...new Set(Object.values(PLAN_CAPABILITIES).flat())];
+
+/** Free-trial length in days for self-registered restaurants. */
+export const TRIAL_DAYS = 14;
+/** Plan whose capabilities a free trial unlocks. */
+export const TRIAL_PLAN_ID = 'PREMIUM';
+
+// TRIAL counts as an access-granting status while it is inside its period.
+const paidStatuses = new Set(['ACTIVE', 'WARNING', 'EXPIRING', 'RENEWAL_PENDING', 'TRIAL']);
+
+/** Statuses that grant access while the subscription is inside its validity window. */
+export function statusAllowsAccess(status) {
+  const s = String(status || '').toUpperCase();
+  return paidStatuses.has(s) || s === 'CANCELLED';
+}
+
+/**
+ * Keep only known capability keys (deduplicated). Returns null when the input is not a usable
+ * list, meaning "fall back to the plan's default capabilities".
+ */
+export function normalizeFeatureList(features) {
+  let list = features;
+  if (typeof list === 'string') {
+    try { list = JSON.parse(list); } catch { return null; }
+  }
+  if (!Array.isArray(list)) return null;
+  const known = new Set(ALL_CAPABILITIES);
+  return [...new Set(list.map((f) => String(f).trim()).filter((f) => known.has(f)))];
+}
+
+/** Capabilities for a subscription row: custom_features override when set, else the plan default. */
+export function capabilitiesForSubscription(subscription) {
+  const planId = String(subscription?.plan_id || 'BASIC').toUpperCase();
+  const custom = normalizeFeatureList(subscription?.custom_features);
+  if (custom) return custom;
+  return PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC;
+}
 
 export async function resolveTenantAuthorization(user, now = new Date()) {
   const tenantId = user.tenantId;
   const result = await queryPortable(
     pool,
-    'SELECT id, plan_id, status, started_at, expires_at FROM subscriptions WHERE tenant_id = $1',
+    'SELECT * FROM subscriptions WHERE tenant_id = $1',
     [tenantId]
   );
   const subscription = result.rows[0];
@@ -36,9 +73,9 @@ export async function resolveTenantAuthorization(user, now = new Date()) {
   const status = String(subscription?.status || 'INACTIVE').toUpperCase();
   const validFrom = subscription?.started_at ? new Date(subscription.started_at) : null;
   const validUntil = subscription?.expires_at ? new Date(subscription.expires_at) : null;
-  const statusAllowsAccess = paidStatuses.has(status) || status === 'CANCELLED';
   const withinPaidPeriod = validUntil && validUntil > now && (!validFrom || validFrom <= now);
-  const active = Boolean(statusAllowsAccess && withinPaidPeriod);
+  const active = Boolean(statusAllowsAccess(status) && withinPaidPeriod);
+  const baseCapabilities = capabilitiesForSubscription(subscription);
 
   return {
     userId: user.id,
@@ -48,12 +85,14 @@ export async function resolveTenantAuthorization(user, now = new Date()) {
     subscriptionId: subscription?.id || null,
     planId: PLAN_CAPABILITIES[planId] ? planId : 'BASIC',
     effectiveStatus: status,
+    source: String(subscription?.source || 'GATEWAY').toUpperCase(),
+    isTrial: status === 'TRIAL',
     validFrom,
     validUntil,
     entitlements: active ? (
       (tenantId === 'tenant_shobharams' || tenantId === '21fd932b-4374-4731-b93e-1e8acecc5881' || user?.email === 'sr.shobharams@gmail.com')
-        ? [...(PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC), 'templates', 'add_item', 'edit_item', 'delete_item', 'menu_management']
-        : (PLAN_CAPABILITIES[planId] || PLAN_CAPABILITIES.BASIC)
+        ? [...new Set([...baseCapabilities, 'templates', 'add_item', 'edit_item', 'delete_item', 'menu_management'])]
+        : baseCapabilities
     ) : [],
     renewalPending: status === 'RENEWAL_PENDING',
     active,

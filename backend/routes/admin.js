@@ -89,13 +89,85 @@ export function normalizeClientCategory(cat, businessType, businessName) {
 export default async function adminRoutes(request, response, url) {
   if (!url.pathname.startsWith('/api/admin/')) return false;
   
-  await enforceSuperAdmin(request);
+  const admin = await enforceSuperAdmin(request);
+  const adminEmail = admin?.email || 'super-admin';
+
+  // ── Offline plans & trial management ─────────────────────────────────────
+  if (request.method === 'GET' && url.pathname === '/api/admin/plans') {
+    const { getPlanCatalog } = await import('../manualPlans.js');
+    sendJson(response, 200, getPlanCatalog());
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/admin/manual-payments') {
+    const { listManualPayments } = await import('../manualPlans.js');
+    sendJson(response, 200, await listManualPayments({ limit: url.searchParams.get('limit') }));
+    return true;
+  }
+
+  const clientSubMatch = url.pathname.match(/^\/api\/admin\/clients\/([^/]+)\/subscription$/);
+  if (request.method === 'GET' && clientSubMatch) {
+    const { getTenantSubscriptionDetail } = await import('../manualPlans.js');
+    sendJson(response, 200, await getTenantSubscriptionDetail(decodeURIComponent(clientSubMatch[1])));
+    return true;
+  }
+
+  const manualPlanMatch = url.pathname.match(/^\/api\/admin\/clients\/([^/]+)\/manual-plan$/);
+  if (request.method === 'POST' && manualPlanMatch) {
+    const { grantManualPlan } = await import('../manualPlans.js');
+    const result = await grantManualPlan({
+      tenantId: decodeURIComponent(manualPlanMatch[1]),
+      input: await readJson(request),
+      adminEmail,
+    });
+    sendJson(response, 201, result);
+    return true;
+  }
+
+  const manualPlanGrantMatch = url.pathname.match(/^\/api\/admin\/clients\/([^/]+)\/manual-plan\/([^/]+)(\/revoke)?$/);
+  if (manualPlanGrantMatch && (request.method === 'PATCH' || request.method === 'POST')) {
+    const tenantId = decodeURIComponent(manualPlanGrantMatch[1]);
+    const grantId = decodeURIComponent(manualPlanGrantMatch[2]);
+    if (!/^[0-9a-f-]{36}$/i.test(grantId)) throw apiError(404, 'Offline plan not found.');
+    const body = await readJson(request);
+    const { updateManualGrant, revokeManualGrant } = await import('../manualPlans.js');
+    if (request.method === 'POST' && manualPlanGrantMatch[3]) {
+      sendJson(response, 200, await revokeManualGrant({ tenantId, grantId, reason: body?.reason, adminEmail }));
+      return true;
+    }
+    if (request.method === 'PATCH' && !manualPlanGrantMatch[3]) {
+      sendJson(response, 200, await updateManualGrant({ tenantId, grantId, input: body, adminEmail }));
+      return true;
+    }
+  }
+
+  const orderPacksMatch = url.pathname.match(/^\/api\/admin\/clients\/([^/]+)\/order-packs$/);
+  if (request.method === 'POST' && orderPacksMatch) {
+    const { grantOrderPacks } = await import('../manualPlans.js');
+    sendJson(response, 201, await grantOrderPacks({
+      tenantId: decodeURIComponent(orderPacksMatch[1]),
+      input: await readJson(request),
+      adminEmail,
+    }));
+    return true;
+  }
+
+  const extendTrialMatch = url.pathname.match(/^\/api\/admin\/clients\/([^/]+)\/extend-trial$/);
+  if (request.method === 'POST' && extendTrialMatch) {
+    const { extendTrial } = await import('../manualPlans.js');
+    const body = await readJson(request);
+    sendJson(response, 200, await extendTrial({ tenantId: decodeURIComponent(extendTrialMatch[1]), days: body?.days, adminEmail }));
+    return true;
+  }
 
   if (request.method === 'GET' && url.pathname === '/api/admin/clients') {
     const res = await pool.query(`
-      SELECT c.*, 
+      SELECT c.*,
              u.email as "ownerEmail",
-             COALESCE(s.plan_id, 'essential') as "activePlan",
+             COALESCE(s.plan_id, 'none') as "activePlan",
+             s.status as "subscriptionStatus",
+             s.expires_at as "subscriptionExpiresAt",
+             s.source as "subscriptionSource",
              COALESCE(
                json_agg(
                  json_build_object(
@@ -110,7 +182,7 @@ export default async function adminRoutes(request, response, url) {
              ) as "menuItems"
       FROM clients c
       LEFT JOIN users u ON u.tenant_id = c.id
-      LEFT JOIN subscriptions s ON s.tenant_id = c.id AND s.status = 'active'
+      LEFT JOIN subscriptions s ON s.tenant_id = c.id
       LEFT JOIN menu_items m ON m.tenant_id = c.id
       LEFT JOIN menu_categories mc ON m.category_id = mc.id
       GROUP BY c.id, u.id, s.id
@@ -127,7 +199,13 @@ export default async function adminRoutes(request, response, url) {
       businessType: row.business_type || row.category || 'restaurant',
       categoryOther: row.category_other,
       ownerEmail: row.ownerEmail || null,
-      plan: row.activePlan || row.plan || 'essential',
+      plan: row.activePlan || row.plan || 'none',
+      subscription: row.subscriptionStatus ? {
+        status: String(row.subscriptionStatus).toUpperCase(),
+        source: String(row.subscriptionSource || 'GATEWAY').toUpperCase(),
+        expiresAt: row.subscriptionExpiresAt,
+        isExpired: !row.subscriptionExpiresAt || new Date(row.subscriptionExpiresAt) <= new Date(),
+      } : null,
       state: row.state,
       outletCount: row.outlet_count || 1,
       emailVerified: Boolean(row.email_verified),

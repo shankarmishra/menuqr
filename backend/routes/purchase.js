@@ -5,15 +5,12 @@ import { apiError, sendJson, readJson, readJsonWithRaw } from '../utils.js';
 import { hashPassword } from '../auth.js';
 import { sendActivationEmail, sendPaymentSuccessEmail, sendRenewalEmail } from '../email.js';
 import { invalidatePublicMenuCache } from './public.js';
+import { PLANS, ORDER_LIMIT } from '../planCatalog.js';
 
 // ---------------------------------------------------------------------------
 // PLAN CONFIG — prices NEVER come from the frontend
 // ---------------------------------------------------------------------------
-export const PLANS = {
-  basic:        { price: 1999, monthlyPrice: 559,  yearlyPrice: 1999, label: 'Basic',        features: ['1 QR Code', 'Unlimited menu views', 'Up to 50 items', 'Basic templates', 'Email support'] },
-  intermediate: { price: 3199, monthlyPrice: 959,  yearlyPrice: 3199, label: 'Intermediate', features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', 'Priority support', 'Analytics dashboard'] },
-  premium:      { price: 6799, monthlyPrice: 1119, yearlyPrice: 6799, label: 'Premium',      features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', '24/7 support', 'Analytics dashboard', 'Table ordering', 'Live orders panel', 'Reception workflow'] },
-};
+export { PLANS };
 
 // ---------------------------------------------------------------------------
 // ADD-ON CATALOGUE — server-authoritative annual services
@@ -67,6 +64,273 @@ export function verifyCashfreeWebhookSignature({ rawText, timestamp, signature, 
   const expectedHex = createHmac('sha256', secretKey).update(payloadToSign).digest('hex');
 
   return safeCompareSignatures(signature, expectedBase64) || safeCompareSignatures(signature, expectedHex);
+}
+
+// ---------------------------------------------------------------------------
+// Shared tenant provisioning (used by paid checkout and by free-trial signup)
+// ---------------------------------------------------------------------------
+
+/**
+ * Create the restaurant (clients row), link the owner user to it and create its permanent QR.
+ * `details` uses the orders-table column names (business_name, business_type, city, ...).
+ * Must run inside the caller's transaction. Returns the new tenant id.
+ */
+export async function createRestaurantRecords(client, { userId, details }) {
+  const tenantId = randomUUID();
+  const publicId = randomUUID().split('-')[0];
+  let menuSlug = slugify(details.business_name, { lower: true, strict: true }) || 'menu';
+  const slugCheck = await client.query(
+    'SELECT id FROM clients WHERE menu_slug=$1', [menuSlug]
+  );
+  if (slugCheck.rows.length > 0) menuSlug = `${menuSlug}-${publicId}`;
+
+  // Generate unique 5-digit numeric reference code with collision retries
+  let refCode;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const candidate = String(Math.floor(10000 + Math.random() * 90000));
+    const check = await client.query('SELECT id FROM clients WHERE reference_code = $1', [candidate]);
+    if (check.rows.length === 0) {
+      refCode = candidate;
+      break;
+    }
+  }
+  if (!refCode) refCode = String(Math.floor(10000 + Math.random() * 90000));
+
+  // [P5-FIX] The owner's signup phone must never be auto-published as the
+  // restaurant's public contact number. clients.phone is left NULL for new
+  // tenants. The owner explicitly opts a number in via Restaurant > Contact & Social.
+  // review_flags.phone_privacy_pending signals the Home dashboard to show the
+  // one-time "Keep / Edit / Hide" prompt (pre-filled from users.phone).
+  await client.query(
+    `INSERT INTO clients
+       (id, public_id, business_name, menu_slug, category, business_type, category_other,
+        state, outlet_count, phone, city, address, reference_code, email_verified, phone_verified, status,
+        instagram, facebook, website, review_flags)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)`,
+    [tenantId, publicId, details.business_name, menuSlug,
+     details.cuisine || details.business_type || 'restaurant', details.business_type || 'restaurant',
+     details.category_other || null, details.state || null, details.outlet_count || 1,
+     null,               // phone: intentionally NULL - owner chooses what to publish
+     details.city || null, details.address || null,
+     refCode, Boolean(details.email_verified), Boolean(details.phone_verified), 'active',
+     details.instagram || null, details.facebook || null, details.website || null,
+     JSON.stringify({ phone_privacy_pending: true })]
+  );
+
+  await client.query(
+    'UPDATE users SET tenant_id=$1, phone=$2, email_verified=$3, phone_verified=$4, updated_at=NOW() WHERE id=$5',
+    [tenantId, details.phone || null, Boolean(details.email_verified), Boolean(details.phone_verified), userId]
+  );
+
+  // Ensure permanent QR Code & Tenant QR Identity exist
+  const qrCodeId = randomUUID();
+  const qrId = `qr_${randomBytes(6).toString('hex')}`;
+  await client.query(
+    `INSERT INTO qr_codes (id, tenant_id, public_id, qr_id, destination_type, is_active)
+     VALUES ($1, $2, $3, $4, 'menu', true) ON CONFLICT DO NOTHING`,
+    [qrCodeId, tenantId, publicId, qrId]
+  );
+  await client.query(
+    `INSERT INTO tenant_qr_identity (tenant_id, qr_code_id)
+     VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+    [tenantId, qrCodeId]
+  );
+
+  return tenantId;
+}
+
+/**
+ * Signup checks shared by paid checkout and free-trial signup: the email must be OTP-verified
+ * (when the email service is active) and neither the email nor the phone may already own a
+ * restaurant. Returns the normalized email/phone.
+ */
+export async function verifySignupIdentity({ customerEmail, phone, emailVerificationToken }) {
+  const normalizedEmail = customerEmail.trim().toLowerCase();
+  const { consumeEmailVerificationGrant } = await import('../clientAuth.js');
+  let isServerEmailVerified = false;
+
+  if (emailVerificationToken && typeof emailVerificationToken === 'string') {
+    await consumeEmailVerificationGrant({
+      token: emailVerificationToken,
+      email: normalizedEmail,
+      purpose: 'checkout',
+    });
+    isServerEmailVerified = true;
+  }
+
+  const { isEmailServiceActive } = await import('../email.js');
+  const emailActive = isEmailServiceActive();
+  if (emailActive && !isServerEmailVerified) {
+    throw apiError(400, 'Email address must be verified via OTP before completing checkout.');
+  }
+  if (!emailActive) {
+    isServerEmailVerified = true;
+  }
+
+  // Account Uniqueness Guard
+  const userCheck = await pool.query(
+    'SELECT id, tenant_id FROM users WHERE LOWER(email) = $1',
+    [normalizedEmail]
+  );
+  if (userCheck.rows.length > 0 && userCheck.rows[0].tenant_id) {
+    throw apiError(409, 'An account already exists with this email address. Please sign in.');
+  }
+
+  let normPhone = null;
+  if (phone) {
+    const { normalizePhone } = await import('../sms.js');
+    normPhone = normalizePhone(phone) || null;
+    if (normPhone) {
+      const phoneUserCheck = await pool.query('SELECT id FROM users WHERE phone = $1 AND tenant_id IS NOT NULL', [normPhone]);
+      if (phoneUserCheck.rows.length > 0) {
+        throw apiError(409, 'An account already exists with this phone number. Please sign in.');
+      }
+    }
+  }
+
+  return { normalizedEmail, normPhone, isServerEmailVerified, existingUserId: userCheck.rows[0]?.id || null };
+}
+
+/**
+ * Free-trial signup: creates the owner account and restaurant with a TRIAL subscription
+ * (TRIAL_PLAN_ID capabilities for TRIAL_DAYS days). No payment involved. One trial per
+ * email/phone, enforced by the unique indexes on trial_registrations.
+ */
+export async function startFreeTrial(input) {
+  const {
+    customerName, customerEmail, phone, password,
+    businessName, city, address, state, cuisine, businessType, categoryOther, outletCount,
+    website, instagram, facebook, emailVerificationToken,
+  } = input || {};
+
+  if (!customerName || !customerEmail || !businessName) {
+    throw apiError(400, 'Missing required fields.');
+  }
+  if (typeof password !== 'string' || password.length < 6) {
+    throw apiError(400, 'Password must be at least 6 characters.');
+  }
+
+  const { normalizedEmail, normPhone, isServerEmailVerified, existingUserId } =
+    await verifySignupIdentity({ customerEmail, phone, emailVerificationToken });
+
+  const priorTrial = await pool.query(
+    'SELECT id FROM trial_registrations WHERE LOWER(email) = $1 OR ($2::text IS NOT NULL AND phone = $2)',
+    [normalizedEmail, normPhone]
+  );
+  if (priorTrial.rows.length > 0) {
+    throw apiError(409, 'A free trial has already been used with this email or phone number. Please choose a plan or contact support.');
+  }
+
+  const { TRIAL_DAYS, TRIAL_PLAN_ID } = await import('../authorization.js');
+  const passwordHash = await hashPassword(password);
+  const now = new Date();
+  const trialEndsAt = new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+
+  const client = await pool.connect();
+  let tenantId;
+  try {
+    await client.query('BEGIN');
+
+    let userId = existingUserId;
+    if (userId && !emailVerificationToken) {
+      // Never reset the password of an existing login without proof of email ownership.
+      throw apiError(409, 'An account already exists with this email address. Please sign in.');
+    }
+    if (userId) {
+      await client.query('UPDATE users SET password_hash=$1, updated_at=NOW() WHERE id=$2', [passwordHash, userId]);
+    } else {
+      userId = randomUUID();
+      await client.query(
+        `INSERT INTO users (id, email, password_hash, role, onboarding_state)
+         VALUES ($1,$2,$3,'RESTAURANT_OWNER','PENDING')`,
+        [userId, normalizedEmail, passwordHash]
+      );
+    }
+
+    tenantId = await createRestaurantRecords(client, {
+      userId,
+      details: {
+        business_name: businessName,
+        business_type: businessType || 'restaurant',
+        cuisine: cuisine || businessType || null,
+        category_other: categoryOther || null,
+        state: state || null,
+        outlet_count: Number(outletCount) || 1,
+        city: city || null,
+        address: address || null,
+        phone: normPhone,
+        email_verified: isServerEmailVerified,
+        phone_verified: false,
+        instagram: instagram || null,
+        facebook: facebook || null,
+        website: website || null,
+      },
+    });
+
+    await client.query(
+      `INSERT INTO subscriptions
+         (id, tenant_id, plan_id, status, started_at, expires_at, source, trial_ends_at)
+       VALUES ($1,$2,$3,'TRIAL',$4,$5,'TRIAL',$6)`,
+      // expires_at is TIMESTAMP and trial_ends_at TIMESTAMPTZ: one shared $n would be a type conflict.
+      [randomUUID(), tenantId, TRIAL_PLAN_ID, now, trialEndsAt, trialEndsAt]
+    );
+
+    await client.query(
+      `INSERT INTO subscription_events
+         (tenant_id, event_type, to_plan, to_plan_id, to_expiry, actor_user_id, metadata)
+       VALUES ($1, 'TRIAL_STARTED', $2, $2, $3, $4, $5)`,
+      [tenantId, TRIAL_PLAN_ID, trialEndsAt, userId, JSON.stringify({ trialDays: TRIAL_DAYS })]
+    );
+
+    await createRestaurantDefaults(client, { tenantId, userId, businessName });
+
+    await client.query(
+      'INSERT INTO trial_registrations (email, phone, tenant_id) VALUES ($1, $2, $3)',
+      [normalizedEmail, normPhone, tenantId]
+    );
+
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
+    if (error?.code === '23505') {
+      throw apiError(409, 'An account or free trial already exists with these details. Please sign in.');
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+
+  sendActivationEmail({
+    email: normalizedEmail,
+    ownerName: customerName,
+    businessName,
+    plan: `${TRIAL_DAYS}-day free trial`,
+    activationToken: null,
+  }).catch((err) => console.error('[trial] Could not queue welcome email:', err.message));
+
+  return { success: true, tenantId, status: 'TRIAL', trialDays: TRIAL_DAYS, trialEndsAt: trialEndsAt.toISOString() };
+}
+
+/** Menu skeleton, appearance defaults and PENDING onboarding for a freshly created restaurant. */
+export async function createRestaurantDefaults(client, { tenantId, userId, businessName }) {
+  const menuId = randomUUID();
+  await client.query(
+    'INSERT INTO menus (id, tenant_id, name) VALUES ($1,$2,$3)',
+    [menuId, tenantId, 'Main Menu']
+  );
+
+  const appSettingId = randomUUID();
+  await client.query(
+    `INSERT INTO appearance_settings
+       (id, tenant_id, template_id, restaurant_display_name)
+     VALUES ($1,$2,$3,$4)`,
+    [appSettingId, tenantId, 'royal-maharaja', businessName]
+  );
+
+  await client.query(
+    "UPDATE users SET onboarding_state='PENDING', updated_at=NOW() WHERE id=$1",
+    [userId]
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -383,65 +647,7 @@ export async function processOrderPaymentAndProvision({
 
     // ── 2. Create restaurant (client) if not already linked ──────────────
     if (!tenantId) {
-      tenantId = randomUUID();
-      const publicId = randomUUID().split('-')[0];
-      let menuSlug = slugify(order.business_name, { lower: true, strict: true }) || 'menu';
-      const slugCheck = await client.query(
-        'SELECT id FROM clients WHERE menu_slug=$1', [menuSlug]
-      );
-      if (slugCheck.rows.length > 0) menuSlug = `${menuSlug}-${publicId}`;
-
-      // Generate unique 5-digit numeric reference code with collision retries
-      let refCode;
-      for (let attempt = 0; attempt < 10; attempt++) {
-        const candidate = String(Math.floor(10000 + Math.random() * 90000));
-        const check = await client.query('SELECT id FROM clients WHERE reference_code = $1', [candidate]);
-        if (check.rows.length === 0) {
-          refCode = candidate;
-          break;
-        }
-      }
-      if (!refCode) refCode = String(Math.floor(10000 + Math.random() * 90000));
-
-      // [P5-FIX] The owner's signup phone must never be auto-published as the
-      // restaurant's public contact number. clients.phone is left NULL for new
-      // tenants. The owner explicitly opts a number in via Restaurant > Contact & Social.
-      // review_flags.phone_privacy_pending signals the Home dashboard to show the
-      // one-time "Keep / Edit / Hide" prompt (pre-filled from users.phone).
-      await client.query(
-        `INSERT INTO clients
-           (id, public_id, business_name, menu_slug, category, business_type, category_other,
-            state, outlet_count, phone, city, address, reference_code, email_verified, phone_verified, status,
-            instagram, facebook, website, review_flags)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)`,
-        [tenantId, publicId, order.business_name, menuSlug,
-         order.cuisine || order.business_type || 'restaurant', order.business_type || 'restaurant',
-         order.category_other || null, order.state || null, order.outlet_count || 1,
-         null,               // phone: intentionally NULL - owner chooses what to publish
-         order.city || null, order.address || null,
-         refCode, Boolean(order.email_verified), Boolean(order.phone_verified), 'active',
-         order.instagram || null, order.facebook || null, order.website || null,
-         JSON.stringify({ phone_privacy_pending: true })]
-      );
-
-      await client.query(
-        'UPDATE users SET tenant_id=$1, phone=$2, email_verified=$3, phone_verified=$4, updated_at=NOW() WHERE id=$5',
-        [tenantId, order.phone || null, Boolean(order.email_verified), Boolean(order.phone_verified), userId]
-      );
-
-      // Ensure permanent QR Code & Tenant QR Identity exist
-      const qrCodeId = randomUUID();
-      const qrId = `qr_${randomBytes(6).toString('hex')}`;
-      await client.query(
-        `INSERT INTO qr_codes (id, tenant_id, public_id, qr_id, destination_type, is_active)
-         VALUES ($1, $2, $3, $4, 'menu', true) ON CONFLICT DO NOTHING`,
-        [qrCodeId, tenantId, publicId, qrId]
-      );
-      await client.query(
-        `INSERT INTO tenant_qr_identity (tenant_id, qr_code_id)
-         VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-        [tenantId, qrCodeId]
-      );
+      tenantId = await createRestaurantRecords(client, { userId, details: order });
 
       // Redeem coupon if attached
       if (order.coupon_code) {
@@ -474,27 +680,8 @@ export async function processOrderPaymentAndProvision({
         [tenantId, order.plan_id.toUpperCase(), order.plan_id.toUpperCase(), expiresAt, orderId, userId || null, JSON.stringify({ billingCycle: isMonthly ? 'monthly' : 'yearly' })]
       );
 
-      // ── 4. Create menu skeleton ─────────────────────────────────────────
-      const menuId = randomUUID();
-      await client.query(
-        'INSERT INTO menus (id, tenant_id, name) VALUES ($1,$2,$3)',
-        [menuId, tenantId, 'Main Menu']
-      );
-
-      // ── 5. Create appearance defaults ───────────────────────────────────
-      const appSettingId = randomUUID();
-      await client.query(
-        `INSERT INTO appearance_settings
-           (id, tenant_id, template_id, restaurant_display_name)
-         VALUES ($1,$2,$3,$4)`,
-        [appSettingId, tenantId, 'royal-maharaja', order.business_name]
-      );
-
-      // ── 6. Set onboarding state ─────────────────────────────────────────
-      await client.query(
-        "UPDATE users SET onboarding_state='PENDING', updated_at=NOW() WHERE id=$1",
-        [userId]
-      );
+      // ── 4–6. Menu skeleton, appearance defaults, onboarding state ──────
+      await createRestaurantDefaults(client, { tenantId, userId, businessName: order.business_name });
     }
 
     provisionedTenantId = tenantId;
@@ -519,6 +706,9 @@ export async function processOrderPaymentAndProvision({
                status = 'ACTIVE',
                renewal_count = COALESCE(renewal_count, 0) + 1,
                last_renewed_at = NOW(),
+               source = 'GATEWAY',
+               custom_features = NULL,
+               manual_grant_id = NULL,
                updated_at = NOW()
            WHERE tenant_id = $2`,
           [newExpiry, tenantId]
@@ -576,6 +766,9 @@ export async function processOrderPaymentAndProvision({
                upgraded_at = NOW(),
                expires_at = $3,
                status = 'ACTIVE',
+               source = 'GATEWAY',
+               custom_features = NULL,
+               manual_grant_id = NULL,
                updated_at = NOW()
            WHERE tenant_id = $4`,
           [newPlanId, oldPlanId, newExpiry, tenantId]
@@ -614,6 +807,28 @@ export async function processOrderPaymentAndProvision({
           }),
         ]
       );
+    } else if (order.order_subtype === 'ORDER_PACK') {
+      // Extra online orders for the current IST month. The UNIQUE(order_id) makes a repeated
+      // verification harmless: the packs are granted once.
+      const packs = Number(order.metadata?.packs);
+      if (!Number.isInteger(packs) || packs < 1) {
+        throw new Error(`Order ${orderId} has an invalid pack count.`);
+      }
+      const ordersAdded = Number(order.metadata?.ordersAdded) || packs * ORDER_LIMIT.packSize;
+      const granted = await client.query(
+        `INSERT INTO order_pack_purchases (tenant_id, period, packs, orders_added, amount, source, order_id)
+         VALUES ($1, to_char(now() AT TIME ZONE 'Asia/Kolkata', 'YYYY-MM'), $2, $3, $4, 'ONLINE', $5)
+         ON CONFLICT (order_id) DO NOTHING
+         RETURNING period`,
+        [tenantId, packs, ordersAdded, order.amount, orderId]
+      );
+      if (granted.rows.length > 0) {
+        await client.query(
+          `INSERT INTO subscription_events (tenant_id, event_type, order_id, actor_user_id, metadata)
+           VALUES ($1, 'ORDER_PACK_PURCHASED', $2, $3, $4)`,
+          [tenantId, orderId, userId || null, JSON.stringify({ packs, ordersAdded, amount: order.amount, period: granted.rows[0].period })]
+        );
+      }
     }
 
     // ── 6b. Provision Add-on Entitlements (e.g. Google Reviews) ─────────
@@ -651,7 +866,9 @@ export async function processOrderPaymentAndProvision({
     }
 
     // ── 6c. Generate GST Invoice atomically ──────────────────────────────
-    try {
+    // (Not for order packs: the invoice generator prices from the plan table, so it would bill
+    //  the pack at the full plan price. Packs are tracked in order_pack_purchases instead.)
+    if (order.order_subtype !== 'ORDER_PACK') try {
       const { generateGstInvoice } = await import('../subscriptionService.js');
       const invoice = await generateGstInvoice({ orderId, tenantId, client });
 
@@ -706,7 +923,7 @@ export async function processOrderPaymentAndProvision({
     try {
       const { broadcastPlanEvent } = await import('../orderStream.js');
       const activeSubRes = await pool.query(
-        'SELECT plan_id, expires_at FROM subscriptions WHERE tenant_id = $1',
+        'SELECT plan_id, status, expires_at FROM subscriptions WHERE tenant_id = $1',
         [tenantId]
       );
       const activePlan = activeSubRes.rows[0]?.plan_id || (order.plan_id || '').toUpperCase();
@@ -716,6 +933,8 @@ export async function processOrderPaymentAndProvision({
         type: 'plan_updated',
         plan: activePlan,
         planId: activePlan,
+        // A pack purchase must not turn a trial into ACTIVE in the owner's open tab.
+        status: activeSubRes.rows[0]?.status,
         expiresAt: activeExpiresAt,
         orderId,
         orderSubtype: order.order_subtype || 'NEW_SUBSCRIPTION',
@@ -746,6 +965,17 @@ export async function processOrderPaymentAndProvision({
     client.release();
   }
 
+
+  // Order packs add no account or plan: no activation / plan receipt emails.
+  if (order.order_subtype === 'ORDER_PACK') {
+    return {
+      success: true,
+      orderId,
+      status: 'PAID',
+      provisioning_status: 'COMPLETE',
+      orderSubtype: 'ORDER_PACK',
+    };
+  }
 
   // ── 9. Send account and payment emails ───────────────────────────────
   const planMeta = PLANS[makePlanKey(order.plan_id)] || {};
@@ -978,10 +1208,22 @@ export default async function purchaseRoutes(request, response, url) {
   // GET /api/purchase/catalogue & /api/purchase/addons — Authoritative catalogue
   // ─────────────────────────────────────────────────────────────────────────
   if (request.method === 'GET' && (url.pathname === '/api/purchase/catalogue' || url.pathname === '/api/purchase/addons')) {
+    const { TRIAL_DAYS, TRIAL_PLAN_ID } = await import('../authorization.js');
     sendJson(response, 200, {
       plans: PLANS,
       addons: Object.values(ADDONS),
+      trial: { days: TRIAL_DAYS, planId: TRIAL_PLAN_ID.toLowerCase() },
     });
+    return true;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // POST /api/purchase/trial — 14-day free trial signup (no payment)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (request.method === 'POST' && url.pathname === '/api/purchase/trial') {
+    const input = await readJson(request);
+    const result = await startFreeTrial(input);
+    sendJson(response, 201, result);
     return true;
   }
 
@@ -1031,47 +1273,7 @@ export default async function purchaseRoutes(request, response, url) {
       }
     }
 
-    const normalizedEmail = customerEmail.trim().toLowerCase();
-    const { consumeEmailVerificationGrant } = await import('../clientAuth.js');
-    let isServerEmailVerified = false;
-
-    if (emailVerificationToken && typeof emailVerificationToken === 'string') {
-      await consumeEmailVerificationGrant({
-        token: emailVerificationToken,
-        email: normalizedEmail,
-        purpose: 'checkout',
-      });
-      isServerEmailVerified = true;
-    }
-
-    const { isEmailServiceActive } = await import('../email.js');
-    const emailActive = isEmailServiceActive();
-    if (emailActive && !isServerEmailVerified) {
-      throw apiError(400, 'Email address must be verified via OTP before completing checkout.');
-    }
-    if (!emailActive) {
-      isServerEmailVerified = true;
-    }
-
-    // Account Uniqueness Guard
-    const userCheck = await pool.query(
-      'SELECT id, tenant_id FROM users WHERE LOWER(email) = $1',
-      [customerEmail.trim().toLowerCase()]
-    );
-    if (userCheck.rows.length > 0 && userCheck.rows[0].tenant_id) {
-      throw apiError(409, 'An account already exists with this email address. Please sign in.');
-    }
-
-    if (phone) {
-      const { normalizePhone } = await import('../sms.js');
-      const normPhone = normalizePhone(phone);
-      if (normPhone) {
-        const phoneUserCheck = await pool.query('SELECT id FROM users WHERE phone = $1 AND tenant_id IS NOT NULL', [normPhone]);
-        if (phoneUserCheck.rows.length > 0) {
-          throw apiError(409, 'An account already exists with this phone number. Please sign in.');
-        }
-      }
-    }
+    const { isServerEmailVerified } = await verifySignupIdentity({ customerEmail, phone, emailVerificationToken });
 
     const existingOrderCheck = await pool.query(
       'SELECT id FROM orders WHERE LOWER(customer_email) = $1 AND LOWER(business_name) = $2 AND status = $3 LIMIT 1',

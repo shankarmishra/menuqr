@@ -69,8 +69,9 @@ export default function Dashboard() {
   );
 
   const planId = sub?.planId?.toUpperCase() || 'BASIC';
-  const isActive = sub?.status === 'ACTIVE';
-  
+  const isTrial = sub?.status?.toUpperCase() === 'TRIAL';
+  const isActive = sub?.status === 'ACTIVE' || isTrial;
+
   const daysLeft = sub?.expiresAt ? Math.ceil((new Date(sub.expiresAt).getTime() - now) / (1000 * 60 * 60 * 24)) : 0;
   const formattedExpiry = sub?.expiresAt ? new Date(sub.expiresAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
 
@@ -206,7 +207,7 @@ export default function Dashboard() {
            <div className="flex items-end gap-2 mb-1">
              <span className="text-3xl font-black text-white">{planId}</span>
              <span className={`text-xs px-2 py-1 rounded font-bold mb-1 ${isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-500'}`}>
-               {isActive ? 'ACTIVE' : 'EXPIRED'}
+               {isTrial ? 'FREE TRIAL' : isActive ? 'ACTIVE' : 'EXPIRED'}
              </span>
            </div>
            

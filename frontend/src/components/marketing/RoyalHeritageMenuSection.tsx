@@ -89,7 +89,7 @@ export default function RoyalHeritageMenuSection() {
             <ArrowRight size={15} />
           </Link>
           <p className="text-[11px] text-[#7A6D60] mt-2">
-            Plans starting at ₹559/mo • 20% launch discount applied • 3-minute setup
+            Plans starting at ₹199/mo • 20% launch discount applied • 3-minute setup
           </p>
         </div>
 

@@ -1,4 +1,5 @@
 import { pool } from '../db.js';
+import { getOrderUsage } from '../orderLimits.js';
 import { istDateString } from '../istTime.js';
 import { allowHit, isBotAgent, pruneHits, recordMenuHit } from '../menuStats.js';
 import { saveFeedback, validateFeedback } from '../feedback.js';
@@ -805,6 +806,24 @@ export default async function publicRoutes(request, response, url) {
         }
       } catch (minErr) {
         if (minErr.status) throw minErr;
+      }
+    }
+
+    // Monthly order limit (150 included + any extra packs the restaurant bought). A retry of an
+    // order that was already accepted (same idempotency key) is never blocked or counted twice.
+    // Two truly simultaneous orders at the very limit can both pass; that overshoot is at most a few.
+    const orderUsage = await getOrderUsage(pool, client.id);
+    if (orderUsage.exceeded) {
+      let isReplay = false;
+      if (idempotencyKey) {
+        const dup = await pool.query(
+          'SELECT 1 FROM customer_orders WHERE tenant_id = $1 AND idempotency_key = $2',
+          [client.id, idempotencyKey]
+        );
+        isReplay = dup.rows.length > 0;
+      }
+      if (!isReplay) {
+        throw apiError(403, 'This restaurant is not accepting more online orders right now. Please place your order at the counter.');
       }
     }
 

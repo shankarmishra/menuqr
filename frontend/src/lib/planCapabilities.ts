@@ -5,9 +5,9 @@
  * referenced as documentation for the backend middleware.
  *
  * PLANS:
- *   BASIC        ₹559/mo | ₹1,999/yr
- *   INTERMEDIATE ₹959/mo | ₹3,199/yr
- *   PREMIUM      ₹1,119/mo | ₹6,799/yr
+ *   BASIC        ₹199/mo | ₹1,999/yr
+ *   INTERMEDIATE ₹299/mo | ₹3,199/yr
+ *   PREMIUM      ₹899/mo | ₹6,799/yr
  */
 
 const BASIC_CAPABILITIES = [
@@ -59,9 +59,9 @@ export const PLAN_NAMES: Record<PlanId, string> = {
 
 /** Plan prices for UI copy */
 export const PLAN_PRICES_MONTHLY: Record<PlanId, string> = {
-  basic: '₹559/mo',
-  intermediate: '₹959/mo',
-  premium: '₹1,119/mo',
+  basic: '₹199/mo',
+  intermediate: '₹299/mo',
+  premium: '₹899/mo',
 };
 
 export const PLAN_PRICES: Record<PlanId, string> = {

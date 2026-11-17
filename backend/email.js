@@ -961,6 +961,68 @@ export async function sendSubscriptionWarningEmail({ email, businessName, daysRe
   });
 }
 
+function escapeEmailText(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+function supportPhoneLine() {
+  const phone = process.env.SUPPORT_PHONE || '+918796530323';
+  return `Need help or want to pay offline? Call or WhatsApp our team at <strong>${escapeEmailText(phone)}</strong>.`;
+}
+
+// FREE TRIAL ENDING SOON (QUEUED IN OUTBOX)
+export async function sendTrialEndingEmail({ email, businessName, daysRemaining, expiresAt }) {
+  if (!email) return { ok: false, error: 'Recipient email is required.' };
+  const name = escapeEmailText(businessName);
+  const formattedDate = new Date(expiresAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+  const baseUrl = process.env.APP_URL || 'https://menusqr.in';
+
+  const bodyHtml = `
+    <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #b45309;">Your free trial ends in ${daysRemaining} day${daysRemaining === 1 ? '' : 's'}</h1>
+    <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+      The MENUSQR free trial for <strong>${name}</strong> ends on <strong>${formattedDate}</strong>.
+      Choose a plan before then to keep your digital menu and dashboard running.
+    </p>
+    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #374151;">${supportPhoneLine()}</p>
+    <a href="${baseUrl}/app/subscription" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 13px; font-weight: 600; padding: 10px 24px; border-radius: 6px; text-decoration: none;">Choose a plan &rarr;</a>
+  `;
+
+  return queueEmailOutbox({
+    notificationType: `TRIAL_WARNING_${daysRemaining}D`,
+    recipient: email,
+    subject: `Your free trial ends in ${daysRemaining} day${daysRemaining === 1 ? '' : 's'} - ${businessName}`,
+    html: buildCorporateEmailHtml({ title: 'Free Trial Ending', bodyHtml }),
+    text: `Your MENUSQR free trial for ${businessName} ends on ${formattedDate}. Choose a plan at ${baseUrl}/app/subscription.`,
+    idempotencyKey: `trial_warn_${email}_${daysRemaining}d_${new Date().toISOString().split('T')[0]}`,
+  });
+}
+
+// FREE TRIAL ENDED (QUEUED IN OUTBOX)
+export async function sendTrialExpiredEmail({ email, businessName }) {
+  if (!email) return { ok: false, error: 'Recipient email is required.' };
+  const name = escapeEmailText(businessName);
+  const baseUrl = process.env.APP_URL || 'https://menusqr.in';
+
+  const bodyHtml = `
+    <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #991b1b;">Your free trial has ended</h1>
+    <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+      The free trial for <strong>${name}</strong> has ended, so your dashboard and digital menu are paused.
+      Pick a plan to switch everything back on instantly — your menu and settings are saved.
+    </p>
+    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #374151;">${supportPhoneLine()}</p>
+    <a href="${baseUrl}/app/subscription" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 13px; font-weight: 600; padding: 10px 24px; border-radius: 6px; text-decoration: none;">Choose a plan &rarr;</a>
+  `;
+
+  return queueEmailOutbox({
+    notificationType: 'TRIAL_EXPIRED',
+    recipient: email,
+    subject: `Your free trial has ended - ${businessName}`,
+    html: buildCorporateEmailHtml({ title: 'Free Trial Ended', bodyHtml }),
+    text: `Your MENUSQR free trial for ${businessName} has ended. Choose a plan at ${baseUrl}/app/subscription.`,
+    idempotencyKey: `trial_expired_${email}`,
+  });
+}
+
 // 8. SUBSCRIPTION EXPIRED EMAIL (QUEUED IN OUTBOX)
 export async function sendSubscriptionExpiredEmail({ email, businessName }) {
   if (!email) return { ok: false, error: 'Recipient email is required.' };

@@ -12,21 +12,27 @@
  */
 
 import { randomUUID } from 'node:crypto';
+import { PLANS } from './planCatalog.js';
 
 // ---------------------------------------------------------------------------
-// Constants & Plan Configurations
+// Constants & Plan Configurations (prices live in planCatalog.js)
 // ---------------------------------------------------------------------------
-export const PLANS = {
-  basic:        { price: 1999, monthlyPrice: 559,  yearlyPrice: 1999, label: 'Basic' },
-  intermediate: { price: 3199, monthlyPrice: 959,  yearlyPrice: 3199, label: 'Intermediate' },
-  premium:      { price: 6799, monthlyPrice: 1119, yearlyPrice: 6799, label: 'Premium' },
-};
+export { PLANS };
 
 export const PLAN_HIERARCHY = {
   basic: 1,
   intermediate: 2,
   premium: 3,
 };
+
+/**
+ * True when buying a plan should be priced as a fresh purchase (full price, no proration
+ * credit, any tier allowed): the restaurant is on a free trial, or its plan has lapsed.
+ */
+export function isFreshPlanPurchase(subscription, isExpired = false) {
+  if (!subscription) return true;
+  return String(subscription.status || '').toUpperCase() === 'TRIAL' || Boolean(isExpired);
+}
 
 export const SAC_CODE = '997331'; // Software licensing / SaaS services in India
 export const SELLER_STATE = 'Maharashtra';

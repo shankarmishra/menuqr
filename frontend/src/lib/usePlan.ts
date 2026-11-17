@@ -39,11 +39,18 @@ export interface UsePlanResult {
 
 const WARNING_DAYS = 14;
 
+/** Capability keys the backend grants (backend/authorization.js PLAN_CAPABILITIES). */
+const SERVER_CAPABILITIES = new Set([
+  'digital_menu', 'restaurant_setup', 'qr_code', 'login', 'initial_menu_setup', 'one_time_edit',
+  'templates', 'add_item', 'edit_item', 'delete_item', 'menu_management', 'analytics',
+  'customer_ordering', 'reception_orders', 'order_acceptance', 'order_management',
+]);
+
 export function computeSubState(sub: AppSubscriptionData | null): SubscriptionState {
   if (!sub || sub.status === 'none') return 'none';
   const status = (sub.status ?? '').toUpperCase();
   if (['EXPIRED', 'TERMINATED', 'SUSPENDED'].includes(status)) return 'expired';
-  if (!['ACTIVE', 'WARNING', 'EXPIRING', 'RENEWAL_PENDING', 'CANCELLED'].includes(status)) return 'inactive';
+  if (!['ACTIVE', 'WARNING', 'EXPIRING', 'RENEWAL_PENDING', 'CANCELLED', 'TRIAL'].includes(status)) return 'inactive';
 
   if (!sub.expiresAt || new Date(sub.expiresAt).getTime() <= Date.now()) return 'expired';
   const daysLeft = (new Date(sub.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
@@ -112,6 +119,8 @@ function handlePlanUpdatedEvent(e: MessageEvent) {
     const data = JSON.parse(e.data);
     const updatedPlanId = (data.planId || data.plan || '').toUpperCase();
     const updatedExpiresAt = data.expiresAt || cachedSub?.expiresAt;
+    // Admin actions (e.g. revoking an offline plan) send the real status; payments imply ACTIVE.
+    const updatedStatus = String(data.status || 'ACTIVE').toUpperCase();
 
     // 1. Instant Synchronous State Update (Zero Reload, Zero In-Flight Spinner)
     cachedSub = cachedSub
@@ -119,11 +128,11 @@ function handlePlanUpdatedEvent(e: MessageEvent) {
           ...cachedSub,
           planId: updatedPlanId,
           expiresAt: updatedExpiresAt,
-          status: 'ACTIVE',
+          status: updatedStatus,
         }
       : {
           planId: updatedPlanId,
-          status: 'ACTIVE',
+          status: updatedStatus,
           expiresAt: updatedExpiresAt,
           contentChangesRemaining: 30,
         };
@@ -138,7 +147,7 @@ function handlePlanUpdatedEvent(e: MessageEvent) {
           detail: {
             planId: updatedPlanId,
             expiresAt: updatedExpiresAt,
-            status: 'ACTIVE',
+            status: updatedStatus,
             orderId: data.orderId,
             orderSubtype: data.orderSubtype,
           },
@@ -311,11 +320,17 @@ export function usePlan(): UsePlanResult {
   const isEditLimitReached = contentChangesLimit !== null && contentChangesRemaining === 0;
   const basicEditUsed = isEditLimitReached;
 
+  const entitlements = sub?.entitlements;
   const can = useCallback((capability: string) => {
     if (loading || !['active', 'warning'].includes(subState)) return false;
     if (capability === 'one_time_edit') return !isEditLimitReached;
+    // The server list wins for capabilities it knows about: it includes features the
+    // MenusQR team switched on/off for this restaurant's offline plan.
+    if (Array.isArray(entitlements) && entitlements.length > 0 && SERVER_CAPABILITIES.has(capability)) {
+      return entitlements.includes(capability);
+    }
     return hasCapability(plan, capability);
-  }, [loading, plan, subState, isEditLimitReached]);
+  }, [loading, plan, subState, isEditLimitReached, entitlements]);
 
   return {
     plan,

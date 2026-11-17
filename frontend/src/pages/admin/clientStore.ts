@@ -92,6 +92,13 @@ export interface ClientRecord {
   password?: string;
   temporaryPassword?: string;
   createdAt: string;
+  /** Subscription summary from GET /admin/clients (absent when the restaurant has none). */
+  subscription?: {
+    status: string;
+    source: 'GATEWAY' | 'MANUAL' | 'TRIAL' | string;
+    expiresAt: string | null;
+    isExpired: boolean;
+  } | null;
 }
 
 export interface PublicMenuRecord extends PublicProfileFields {
@@ -684,6 +691,163 @@ export function bulkGenerateAdminCoupons(
     method: 'POST',
     body: JSON.stringify(payload),
   });
+}
+
+// ── Offline (manual) plans & free trials ──────────────────────────────────────
+
+export interface AdminPlanCatalog {
+  plans: Array<{ id: string; key: string; label: string; monthlyPrice: number; yearlyPrice: number; features: string[] }>;
+  capabilities: Array<{ key: string; label: string }>;
+  paymentModes: string[];
+  durationUnits: Array<'DAYS' | 'MONTHS' | 'YEARS'>;
+  trial: { days: number; planId: string };
+}
+
+export interface AdminManualGrant {
+  id: string;
+  tenantId: string;
+  businessName?: string;
+  planId: string;
+  listPrice: number | null;
+  agreedAmount: number;
+  currency: string;
+  paymentMode: string;
+  paymentReference: string | null;
+  paidOn: string | null;
+  durationValue: number;
+  durationUnit: 'DAYS' | 'MONTHS' | 'YEARS';
+  startsAt: string;
+  expiresAt: string;
+  enabledFeatures: string[];
+  notes: string | null;
+  status: 'ACTIVE' | 'SUPERSEDED' | 'REVOKED';
+  grantedBy: string;
+  revokedAt: string | null;
+  revokedBy: string | null;
+  revokeReason: string | null;
+  createdAt: string;
+}
+
+export interface AdminTenantSubscription {
+  tenantId: string;
+  businessName: string;
+  subscription: {
+    planId: string;
+    status: string;
+    source: string;
+    startedAt: string | null;
+    expiresAt: string | null;
+    trialEndsAt: string | null;
+    daysLeft: number | null;
+    isExpired: boolean;
+    customFeatures: string[] | null;
+    effectiveFeatures: string[];
+    manualGrantId: string | null;
+  } | null;
+  grants: AdminManualGrant[];
+  orderUsage: {
+    period: string;
+    used: number;
+    included: number;
+    packsBought: number;
+    extraOrders: number;
+    limit: number;
+    remaining: number;
+    exceeded: boolean;
+    packSize: number;
+    packPrice: number;
+    maxPacksPerPurchase: number;
+  };
+  orderPacks: Array<{
+    id: string;
+    period: string;
+    packs: number;
+    ordersAdded: number;
+    amount: number;
+    source: 'ONLINE' | 'MANUAL';
+    paymentMode: string | null;
+    paymentReference: string | null;
+    notes: string | null;
+    grantedBy: string | null;
+    createdAt: string;
+  }>;
+  events: Array<{
+    id: string;
+    eventType: string;
+    fromPlanId: string | null;
+    toPlanId: string | null;
+    fromExpiry: string | null;
+    toExpiry: string | null;
+    metadata: Record<string, unknown>;
+    createdAt: string;
+  }>;
+}
+
+export interface ManualPlanInput {
+  planId: string;
+  agreedAmount: number;
+  paymentMode: string;
+  paymentReference?: string;
+  paidOn?: string;
+  durationValue: number;
+  durationUnit: 'DAYS' | 'MONTHS' | 'YEARS';
+  enabledFeatures: string[];
+  carryOverRemainingDays?: boolean;
+  notes?: string;
+}
+
+export function getAdminPlanCatalog(): Promise<AdminPlanCatalog> {
+  return request<AdminPlanCatalog>('/admin/plans');
+}
+
+export function getAdminTenantSubscription(tenantId: string): Promise<AdminTenantSubscription> {
+  return request<AdminTenantSubscription>(`/admin/clients/${encodeURIComponent(tenantId)}/subscription`);
+}
+
+export function activateManualPlan(tenantId: string, input: ManualPlanInput): Promise<AdminTenantSubscription & { grant: AdminManualGrant }> {
+  return request(`/admin/clients/${encodeURIComponent(tenantId)}/manual-plan`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateManualPlan(
+  tenantId: string,
+  grantId: string,
+  input: { enabledFeatures?: string[]; extendBy?: { value: number; unit: 'DAYS' | 'MONTHS' | 'YEARS' }; notes?: string },
+): Promise<AdminTenantSubscription> {
+  return request(`/admin/clients/${encodeURIComponent(tenantId)}/manual-plan/${encodeURIComponent(grantId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function revokeManualPlan(tenantId: string, grantId: string, reason?: string): Promise<AdminTenantSubscription> {
+  return request(`/admin/clients/${encodeURIComponent(tenantId)}/manual-plan/${encodeURIComponent(grantId)}/revoke`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export function grantOrderPacks(
+  tenantId: string,
+  input: { packs: number; amount?: number; paymentMode: string; paymentReference?: string; notes?: string },
+): Promise<AdminTenantSubscription> {
+  return request(`/admin/clients/${encodeURIComponent(tenantId)}/order-packs`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function extendTenantTrial(tenantId: string, days: number): Promise<AdminTenantSubscription> {
+  return request(`/admin/clients/${encodeURIComponent(tenantId)}/extend-trial`, {
+    method: 'POST',
+    body: JSON.stringify({ days }),
+  });
+}
+
+export function getManualPayments(): Promise<{ grants: AdminManualGrant[]; totalCollected: number }> {
+  return request('/admin/manual-payments');
 }
 
 export function disableAdminCoupon(id: string): Promise<DisableCouponResponse> {

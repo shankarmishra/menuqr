@@ -5,20 +5,25 @@ import RenewalPanel from './RenewalPanel';
 import UpgradePanel from './UpgradePanel';
 import PaymentStep from './PaymentStep';
 import SuccessPanel from './SuccessPanel';
+import OrderPackPanel from './OrderPackPanel';
 import {
   type RenewalInitiateResponse,
   type UpgradeInitiateResponse,
+  type OrderPackInitiateResponse,
 } from '../../pages/app/appStore';
 import { normalizePlan } from '../../lib/planCapabilities';
 
 export interface CheckoutDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  initialAction?: 'renew' | 'upgrade';
+  /** 'orders' opens the extra-orders pack purchase (no plan tabs). */
+  initialAction?: 'renew' | 'upgrade' | 'orders';
   currentPlanId?: string;
   expiresAt?: string;
   startedAt?: string;
   onPlanUpdated?: () => void;
+  /** Free trial or lapsed plan: skip renew/upgrade tabs and offer every plan at full price. */
+  freshPurchase?: boolean;
 }
 
 type DrawerStep = 'panel' | 'payment' | 'success';
@@ -28,7 +33,8 @@ interface ActiveOrderState {
   paymentSessionId: string;
   amount: number;
   amountPaise: number;
-  orderSubtype: 'RENEWAL' | 'UPGRADE';
+  orderSubtype: 'RENEWAL' | 'UPGRADE' | 'ORDER_PACK';
+  ordersAdded?: number;
   targetPlan?: string;
   newExpiry?: string;
   checkoutMode?: string;
@@ -42,9 +48,10 @@ export default function CheckoutDrawer({
   expiresAt,
   startedAt: _startedAt,
   onPlanUpdated,
+  freshPurchase = false,
 }: CheckoutDrawerProps) {
   const [step, setStep] = useState<DrawerStep>('panel');
-  const [action, setAction] = useState<'renew' | 'upgrade'>(initialAction);
+  const [action, setAction] = useState<'renew' | 'upgrade' | 'orders'>(initialAction);
   const [activeOrder, setActiveOrder] = useState<ActiveOrderState | null>(null);
 
   const planKey = normalizePlan(currentPlanId);
@@ -54,10 +61,10 @@ export default function CheckoutDrawer({
   useEffect(() => {
     if (isOpen) {
       setStep('panel');
-      setAction(isPremium ? 'renew' : initialAction);
+      setAction(initialAction === 'orders' ? 'orders' : freshPurchase ? 'upgrade' : isPremium ? 'renew' : initialAction);
       setActiveOrder(null);
     }
-  }, [isOpen, initialAction, isPremium]);
+  }, [isOpen, initialAction, isPremium, freshPurchase]);
 
   // Body scroll lock
   useEffect(() => {
@@ -116,6 +123,20 @@ export default function CheckoutDrawer({
     setStep('payment');
   };
 
+  // Handle transition from OrderPackPanel to PaymentStep
+  const handleProceedFromOrderPack = (orderData: OrderPackInitiateResponse) => {
+    setActiveOrder({
+      orderId: orderData.orderId,
+      paymentSessionId: orderData.paymentSessionId,
+      amount: orderData.amount,
+      amountPaise: orderData.amountPaise,
+      orderSubtype: 'ORDER_PACK',
+      ordersAdded: orderData.ordersAdded,
+      checkoutMode: orderData.checkoutMode,
+    });
+    setStep('payment');
+  };
+
   // Handle Payment completion
   const handlePaymentSuccess = (details: { orderId: string; newExpiry?: string; planId?: string }) => {
     if (activeOrder) {
@@ -167,6 +188,10 @@ export default function CheckoutDrawer({
                     ? 'Payment Confirmed'
                     : step === 'payment'
                     ? 'Complete Payment'
+                    : action === 'orders'
+                    ? 'Buy Extra Orders'
+                    : freshPurchase
+                    ? 'Choose a Plan'
                     : action === 'renew'
                     ? 'Renew Subscription'
                     : 'Upgrade Subscription Plan'}
@@ -176,6 +201,10 @@ export default function CheckoutDrawer({
                     ? 'All features are now active in real time.'
                     : step === 'payment'
                     ? 'Secure gateway encrypted checkout.'
+                    : action === 'orders'
+                    ? 'Your extra orders are added right after payment.'
+                    : freshPurchase
+                    ? 'Pay online and your account unlocks instantly.'
                     : `Current Plan: ${currentPlanId.toUpperCase()}`}
                 </p>
               </div>
@@ -191,7 +220,7 @@ export default function CheckoutDrawer({
             </div>
 
             {/* Action Tabs (only visible during 'panel' step and if not already Premium) */}
-            {step === 'panel' && !isPremium && (
+            {step === 'panel' && !isPremium && (!freshPurchase && action !== 'orders') && (
               <div className="px-6 pt-4 shrink-0">
                 <div className="flex rounded-xl bg-[#1d2723] p-1 border border-[#2a3832]">
                   <button
@@ -234,8 +263,13 @@ export default function CheckoutDrawer({
                 <UpgradePanel
                   currentPlanId={currentPlanId}
                   expiresAt={expiresAt}
+                  freshPurchase={freshPurchase}
                   onProceedToPayment={handleProceedFromUpgrade}
                 />
+              )}
+
+              {step === 'panel' && action === 'orders' && (
+                <OrderPackPanel onProceedToPayment={handleProceedFromOrderPack} />
               )}
 
               {step === 'payment' && activeOrder && (
@@ -257,6 +291,7 @@ export default function CheckoutDrawer({
               {step === 'success' && (
                 <SuccessPanel
                   orderSubtype={activeOrder?.orderSubtype || 'UPGRADE'}
+                  ordersAdded={activeOrder?.ordersAdded}
                   planId={activeOrder?.targetPlan || currentPlanId}
                   newExpiry={activeOrder?.newExpiry || expiresAt}
                   orderId={activeOrder?.orderId || 'MQR_ORDER'}
