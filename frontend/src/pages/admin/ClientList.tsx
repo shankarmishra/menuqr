@@ -13,7 +13,8 @@ import {
   Store,
   Coffee,
   UtensilsCrossed,
-  Phone
+  Phone,
+  CreditCard
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { deleteClient, getClients, type ClientRecord } from './clientStore';
@@ -265,8 +266,23 @@ export default function ClientList() {
                         {badge.label}
                       </span>
                       <span className="text-[10px] font-bold text-amber-300/90 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-md uppercase">
-                        {client.plan || 'Essential'} Plan
+                        {!client.plan || client.plan === 'none' ? 'No' : client.plan} Plan
                       </span>
+                      {client.subscription && (
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase border ${
+                          client.subscription.isExpired
+                            ? 'text-rose-300 bg-rose-500/10 border-rose-500/20'
+                            : client.subscription.status === 'TRIAL'
+                            ? 'text-sky-300 bg-sky-500/10 border-sky-500/20'
+                            : 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20'
+                        }`}>
+                          {client.subscription.isExpired
+                            ? (client.subscription.source === 'TRIAL' ? 'Trial ended' : 'Expired')
+                            : client.subscription.status === 'TRIAL'
+                            ? 'Free trial'
+                            : client.subscription.source === 'MANUAL' ? 'Offline paid' : 'Active'}
+                        </span>
+                      )}
                     </div>
                     <h3 className="text-lg font-black text-white truncate" title={client.businessName}>
                       {client.businessName}
@@ -323,6 +339,14 @@ export default function ClientList() {
                   >
                     <Edit3 size={13} />
                     <span>Edit Profile</span>
+                  </Link>
+
+                  <Link
+                    to={`/admin/clients/${encodeURIComponent(client.id)}/subscription`}
+                    className="flex-1 py-2 rounded-xl bg-white/[0.06] hover:bg-emerald-600 hover:text-white text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <CreditCard size={13} />
+                    <span>Manage Plan</span>
                   </Link>
 
                   <Link

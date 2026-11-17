@@ -7,7 +7,7 @@ export interface PaymentStepProps {
   paymentSessionId: string;
   amount: number;
   amountPaise: number;
-  orderSubtype: 'RENEWAL' | 'UPGRADE';
+  orderSubtype: 'RENEWAL' | 'UPGRADE' | 'ORDER_PACK';
   targetPlan?: string;
   newExpiry?: string;
   checkoutMode?: string;
@@ -259,7 +259,7 @@ export default function PaymentStep({
       <div className="p-4 rounded-xl bg-[#151c19] border border-[#2a3832] space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs uppercase font-semibold text-[#849a90]">
-            {orderSubtype === 'UPGRADE' ? 'Plan Upgrade Order' : 'Plan Renewal Order'}
+            {orderSubtype === 'ORDER_PACK' ? 'Extra Orders Order' : orderSubtype === 'UPGRADE' ? 'Plan Upgrade Order' : 'Plan Renewal Order'}
           </span>
           <span className="text-xs font-mono text-[#62756d]">{orderId}</span>
         </div>
@@ -267,7 +267,7 @@ export default function PaymentStep({
         <div className="flex items-baseline justify-between pt-1">
           <div>
             <h3 className="text-xl font-bold text-white">
-              {targetPlan ? `${targetPlan.toUpperCase()} Plan` : 'Subscription Renewal'}
+              {orderSubtype === 'ORDER_PACK' ? 'Extra Online Orders' : targetPlan ? `${targetPlan.toUpperCase()} Plan` : 'Subscription Renewal'}
             </h3>
             <p className="text-xs text-[#849a90] mt-0.5">365 Days Validity</p>
           </div>

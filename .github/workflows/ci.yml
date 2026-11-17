@@ -73,6 +73,8 @@ jobs:
           test/owner_api_idor.test.js
           test/track_click_rate_limit.test.js
           test/backfill.test.js
+          test/manual_plans_trial_unit.test.js
+          test/order_limits_unit.test.js
 
       - name: Build frontend
         working-directory: frontend

@@ -38,7 +38,7 @@ export default function TermsPage() {
 
           <h2 className="text-xl font-bold text-[#151C19]">3. Subscriptions & Renewal</h2>
           <p>
-            MenusQR services are billed on a yearly subscription basis (Basic ₹559/mo or ₹1,999/yr, Intermediate ₹959/mo or ₹3,199/yr, Premium ₹1,119/mo or ₹6,799/yr). Subscriptions must be renewed prior to expiration to maintain uninterrupted access.
+            MenusQR services are billed on a yearly subscription basis (Basic ₹199/mo or ₹1,999/yr, Intermediate ₹299/mo or ₹3,199/yr, Premium ₹899/mo or ₹6,799/yr; Premium includes 150 online orders per month, with extra packs of 50 orders at ₹99). Subscriptions must be renewed prior to expiration to maintain uninterrupted access.
           </p>
 
           <h2 className="text-xl font-bold text-[#151C19]">4. Limitation of Liability</h2>

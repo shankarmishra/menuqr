@@ -6,12 +6,16 @@ import { Menu, LayoutDashboard, UtensilsCrossed, Palette, QrCode, CreditCard, Se
 import { getProfile } from '../pages/app/appStore';
 import { MenusQRBrand } from '../components/brand/MenusQRBrand';
 import clsx from 'clsx';
+import BillingLockedPage from '../components/subscription/BillingLockedPage';
+import CheckoutDrawer from '../components/subscription/CheckoutDrawer';
+import { useOrderUsage } from '../lib/useOrderUsage';
 
 export default function AppLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [restaurantName, setRestaurantName] = useState('Loading...');
+  const [packDrawerOpen, setPackDrawerOpen] = useState(false);
   const { logout } = useAuth();
-  const { sub, can, contentChangesRemaining } = usePlan();
+  const { sub, can, contentChangesRemaining, subState, loading } = usePlan();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -25,9 +29,23 @@ export default function AppLayout() {
   };
 
   const planId = sub?.planId?.toUpperCase() || 'BASIC';
-  const isActive = sub?.status === 'ACTIVE';
+  const isTrial = sub?.status?.toUpperCase() === 'TRIAL';
+  // Trial over or plan lapsed: every /app page shows the billing page instead.
+  const isLocked = !loading && subState === 'expired';
+  const isActive = !isLocked && (sub?.status === 'ACTIVE' || isTrial);
+  // Online-order limit: only restaurants that take online orders see usage and the buy-more prompt.
+  const { usage: orderUsage, refresh: refreshOrderUsage } = useOrderUsage(!loading && !isLocked && can('customer_ordering'));
+  const showOrderBanner = Boolean(orderUsage && orderUsage.used >= Math.ceil(orderUsage.limit * 0.8));
+  const trialDaysLeft = isTrial && sub?.expiresAt
+    ? Math.max(0, Math.ceil((new Date(sub.expiresAt).getTime() - Date.now()) / 86_400_000))
+    : null;
 
-  const navGroups = [
+  const navGroups = isLocked ? [
+    {
+      title: 'ACCOUNT',
+      items: [{ to: '/app/subscription', icon: CreditCard, label: 'Billing' }],
+    },
+  ] : [
     {
       title: 'CONSOLE',
       items: [
@@ -130,7 +148,9 @@ export default function AppLayout() {
               <ChevronRight size={14} className="text-white/20 mx-1 hidden sm:block" />
               <div className="flex items-center gap-1.5">
                 <span className="hidden sm:inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-white/5 text-[#aab7b2] border border-white/10">{planId}</span>
-                {isActive ? (
+                {isTrial && isActive ? (
+                  <span className="hidden sm:inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-300 border border-amber-500/20">FREE TRIAL</span>
+                ) : isActive ? (
                   <span className="hidden sm:inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ACTIVE</span>
                 ) : (
                   <span className="hidden sm:inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">EXPIRED</span>
@@ -154,10 +174,52 @@ export default function AppLayout() {
           </div>
         </header>
 
+        {isTrial && isActive && trialDaysLeft !== null && (
+          <div className="shrink-0 flex flex-col gap-2 border-b border-amber-500/20 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-100 sm:flex-row sm:items-center sm:justify-between md:px-8 print:hidden">
+            <span>
+              <strong>Free trial:</strong> {trialDaysLeft === 0 ? 'ends today' : `${trialDaysLeft} day${trialDaysLeft === 1 ? '' : 's'} left`}. Choose a plan to keep your menu running.
+            </span>
+            <NavLink to="/app/subscription" className="self-start rounded-lg bg-amber-400 px-3 py-1 text-xs font-bold text-[#1a1408] hover:bg-amber-300 sm:self-auto">
+              Choose a plan
+            </NavLink>
+          </div>
+        )}
+
+        {showOrderBanner && orderUsage && (
+          <div
+            role={orderUsage.exceeded ? 'alert' : 'status'}
+            className={`shrink-0 flex flex-col gap-2 border-b px-4 py-2.5 text-sm sm:flex-row sm:items-center sm:justify-between md:px-8 print:hidden ${
+              orderUsage.exceeded
+                ? 'border-rose-500/30 bg-rose-500/15 text-rose-100'
+                : 'border-amber-500/20 bg-amber-500/10 text-amber-100'
+            }`}
+          >
+            <span>
+              {orderUsage.exceeded
+                ? <><strong>Order limit reached:</strong> customers can't place new online orders ({orderUsage.used} of {orderUsage.limit} used this month).</>
+                : <><strong>{orderUsage.used} of {orderUsage.limit}</strong> online orders used this month.</>}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPackDrawerOpen(true)}
+              className={`self-start rounded-lg px-3 py-1 text-xs font-bold sm:self-auto ${
+                orderUsage.exceeded ? 'bg-rose-400 text-[#2a0a0a] hover:bg-rose-300' : 'bg-amber-400 text-[#1a1408] hover:bg-amber-300'
+              }`}
+            >
+              Buy {orderUsage.packSize} more · ₹{orderUsage.packPrice}
+            </button>
+          </div>
+        )}
+
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto bg-[#0a100d] print:bg-white print:overflow-visible print:p-0">
           <div className="w-full h-full">
-            <Suspense fallback={
+            {/* Wait for the plan status before mounting a page, so a locked account never fires page requests. */}
+            {loading && !sub ? (
+              <div className="flex h-64 items-center justify-center" role="status" aria-live="polite">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#aab7b2]/20 border-t-[#e8783c]" />
+              </div>
+            ) : isLocked ? <BillingLockedPage restaurantName={restaurantName} /> : <Suspense fallback={
               <div className="flex h-64 items-center justify-center text-sm text-[#aab7b2]" role="status" aria-live="polite">
                 <div className="flex items-center gap-2.5">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#aab7b2]/20 border-t-[#e8783c]" />
@@ -166,10 +228,22 @@ export default function AppLayout() {
               </div>
             }>
               <Outlet />
-            </Suspense>
+            </Suspense>}
           </div>
         </main>
       </div>
+      <CheckoutDrawer
+        isOpen={packDrawerOpen}
+        onClose={() => {
+          setPackDrawerOpen(false);
+          refreshOrderUsage();
+        }}
+        initialAction="orders"
+        currentPlanId={sub?.planId || 'PREMIUM'}
+        expiresAt={sub?.expiresAt}
+        startedAt={sub?.startedAt}
+        onPlanUpdated={refreshOrderUsage}
+      />
     </div>
   );
 }

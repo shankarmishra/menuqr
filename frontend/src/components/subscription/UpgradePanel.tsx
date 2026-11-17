@@ -12,16 +12,32 @@ import { normalizePlan } from '../../lib/planCapabilities';
 export interface UpgradePanelProps {
   currentPlanId: string;
   expiresAt?: string;
+  /** Free trial or lapsed plan: every tier is offered at full price (no proration credit). */
+  freshPurchase?: boolean;
   onProceedToPayment: (orderData: UpgradeInitiateResponse, targetTier?: string) => void;
 }
 
+type TierId = 'basic' | 'intermediate' | 'premium';
+
 interface TierOption {
-  id: 'intermediate' | 'premium';
+  id: TierId;
   name: string;
   price: string;
   description: string;
   highlights: string[];
 }
+
+const BASIC_TIER: TierOption = {
+  id: 'basic',
+  name: 'Basic',
+  price: '₹1,999/yr',
+  description: 'Digital QR menu with a fixed number of menu changes',
+  highlights: [
+    'Permanent QR code & digital menu',
+    'Up to 20 menu changes per period',
+    'Email support',
+  ],
+};
 
 const UPGRADE_TIERS: TierOption[] = [
   {
@@ -52,18 +68,21 @@ const UPGRADE_TIERS: TierOption[] = [
 export default function UpgradePanel({
   currentPlanId,
   expiresAt: _expiresAt,
+  freshPurchase = false,
   onProceedToPayment,
 }: UpgradePanelProps) {
   const currentKey = normalizePlan(currentPlanId);
 
-  // Filter available tiers higher than current plan
-  const availableTiers = UPGRADE_TIERS.filter((tier) => {
-    if (currentKey === 'basic') return true;
-    if (currentKey === 'intermediate') return tier.id === 'premium';
-    return false;
-  });
+  // Filter available tiers higher than current plan (all tiers for a fresh purchase)
+  const availableTiers = freshPurchase
+    ? [BASIC_TIER, ...UPGRADE_TIERS]
+    : UPGRADE_TIERS.filter((tier) => {
+        if (currentKey === 'basic') return true;
+        if (currentKey === 'intermediate') return tier.id === 'premium';
+        return false;
+      });
 
-  const [selectedTier, setSelectedTier] = useState<'intermediate' | 'premium'>(
+  const [selectedTier, setSelectedTier] = useState<TierId>(
     availableTiers[availableTiers.length - 1]?.id || 'premium'
   );
   const [preview, setPreview] = useState<UpgradePreview | null>(null);
@@ -271,7 +290,7 @@ export default function UpgradePanel({
         ) : (
           <>
             <span>
-              Upgrade to {selectedTier.toUpperCase()}
+              {freshPurchase ? 'Buy' : 'Upgrade to'} {selectedTier.toUpperCase()}
               {preview?.totalPaise ? ` (${formatPaise(preview.totalPaise)})` : ''}
             </span>
             <ArrowRight size={18} />

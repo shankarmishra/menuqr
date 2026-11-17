@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getPayments } from './clientStore';
 import { CreditCard, Search, AlertTriangle } from 'lucide-react';
+import ManualPaymentsLedger from './ManualPaymentsLedger';
 
 export default function Payments() {
   const [payments, setPayments] = useState<any[]>([]);
@@ -40,6 +41,8 @@ export default function Payments() {
           <p className="text-[#aab7b2]">Track transaction history and statuses.</p>
         </div>
       </header>
+
+      <ManualPaymentsLedger />
 
       {loadError && (
         <div role="alert" className="mb-6 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-rose-300 flex items-center justify-between">

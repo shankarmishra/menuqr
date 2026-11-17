@@ -2,26 +2,37 @@ import { useToast } from '../../components/feedback/ToastProvider';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import SiteHeader from '../../components/marketing/SiteHeader';
+import { refreshCsrfToken } from '../../utils/csrf';
+
+/**
+ * The API rejects state-changing requests from a browser that still carries a login cookie
+ * (e.g. someone signed in to another restaurant) unless they include a CSRF token bound to that
+ * session. Anonymous visitors get no token and the header is simply omitted.
+ */
+async function signupHeaders(): Promise<Record<string, string>> {
+  const token = await refreshCsrfToken().catch(() => null);
+  return { 'Content-Type': 'application/json', ...(token ? { 'X-CSRF-Token': token } : {}) };
+}
 import { AlertCircle, CheckCircle2, ChevronRight, ShieldCheck, MapPin, Star, ExternalLink } from 'lucide-react';
 
 const PLANS: Record<string, { monthlyPrice: number; yearlyPrice: number; label: string; features: string[] }> = {
   basic: {
-    monthlyPrice: 559,
+    monthlyPrice: 199,
     yearlyPrice: 1999,
     label: 'Basic',
     features: ['1 QR Code', 'Unlimited menu views', 'Up to 50 items', 'Basic templates', 'Email support']
   },
   intermediate: {
-    monthlyPrice: 959,
+    monthlyPrice: 299,
     yearlyPrice: 3199,
     label: 'Intermediate',
     features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', 'Priority support', 'Analytics dashboard']
   },
   premium: {
-    monthlyPrice: 1119,
+    monthlyPrice: 899,
     yearlyPrice: 6799,
     label: 'Premium',
-    features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', '24/7 support', 'Analytics dashboard', 'Table ordering']
+    features: ['1 QR Code', 'Unlimited menu views', 'Unlimited items', 'All templates', '24/7 support', 'Analytics dashboard', 'Table ordering', '150 online orders / month included']
   }
 };
 
@@ -65,7 +76,10 @@ export default function PurchaseDetailsPage() {
   const [gettingLocation, setGettingLocation] = useState(false);
   const [error, setError] = useState('');
   const [planId] = useState(initialPlan);
-  const initialBilling = (searchParams.get('billing') || 'yearly').toLowerCase() === 'monthly' ? 'monthly' : 'yearly';
+  // ?plan=trial → 14-day free trial signup (no payment step)
+  const isTrial = planId === 'trial';
+  const [trialStarted, setTrialStarted] = useState<{ trialEndsAt?: string } | null>(null);
+  const initialBilling = (searchParams.get('billing') || 'monthly').toLowerCase() === 'yearly' ? 'yearly' : 'monthly';
   const [billingCycle, setBillingCycle] = useState<'yearly' | 'monthly'>(initialBilling);
 
   const [formData, setFormData] = useState({
@@ -142,7 +156,7 @@ export default function PurchaseDetailsPage() {
   }, []);
 
   useEffect(() => {
-    if (!['basic', 'intermediate', 'premium'].includes(planId)) {
+    if (!['basic', 'intermediate', 'premium', 'trial'].includes(planId)) {
       navigate('/plans');
     }
   }, [planId, navigate]);
@@ -268,7 +282,8 @@ export default function PurchaseDetailsPage() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/purchase/coupons/validate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: await signupHeaders(),
         body: JSON.stringify({
           code: formData.couponCode.trim(),
           planId: planId.toUpperCase(),
@@ -331,10 +346,49 @@ export default function PurchaseDetailsPage() {
 
     setLoading(true);
 
+    if (isTrial) {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/purchase/trial`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: await signupHeaders(),
+          body: JSON.stringify({
+            customerName: formData.customerName,
+            customerEmail: formData.customerEmail,
+            phone: formData.phone,
+            password: formData.password,
+            businessName: formData.businessName,
+            businessType: formData.businessType,
+            categoryOther: formData.categoryOther,
+            city: formData.city,
+            state: formData.state,
+            address: formData.address,
+            outletCount: formData.outletCount,
+            instagram: formData.instagram,
+            facebook: formData.facebook,
+            website: formData.website,
+            emailVerificationToken: emailVerificationToken || null,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || data.message || 'Could not start your free trial. Please try again.');
+        }
+        setTrialStarted({ trialEndsAt: data.trialEndsAt });
+        window.scrollTo?.(0, 0);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/purchase/orders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: await signupHeaders(),
         body: JSON.stringify({
           ...formData,
           planId: planId.toUpperCase(),
@@ -383,7 +437,32 @@ export default function PurchaseDetailsPage() {
     }
   };
 
-  const plan = PLANS[planId] || PLANS['premium'];
+  const plan = PLANS[isTrial ? 'premium' : planId] || PLANS['premium'];
+
+  if (trialStarted) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF7] flex flex-col">
+        <SiteHeader />
+        <main id="main-content" className="flex-1 pt-32 pb-24 px-6 max-w-xl mx-auto w-full">
+          <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-gray-100 text-center">
+            <CheckCircle2 className="mx-auto text-emerald-500" size={48} />
+            <h1 className="mt-4 text-3xl font-extrabold text-[#151C19]">Your free trial has started</h1>
+            <p className="mt-3 text-[#151C19]/60">
+              {formData.businessName} is ready. You have 14 days of Premium features, free
+              {trialStarted.trialEndsAt ? ` until ${new Date(trialStarted.trialEndsAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}.
+              Log in with your email and password to set up your menu.
+            </p>
+            <Link
+              to="/login"
+              className="mt-8 inline-flex w-full items-center justify-center gap-2 bg-[#E8783C] hover:bg-[#d66a30] text-white py-4 rounded-2xl font-bold text-lg transition-all"
+            >
+              Log in to my dashboard <ChevronRight size={20} />
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
   const addonPrice = isGoogleReviewsSelected ? addonInfo.price : 0;
   const basePlanPrice = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
   const planDiscountedPrice = couponApplied ? couponApplied.finalAmount : basePlanPrice;
@@ -398,9 +477,13 @@ export default function PurchaseDetailsPage() {
           <Link to="/plans" className="text-[#E8783C] hover:underline text-sm font-medium mb-4 flex items-center gap-1 w-fit">
             &larr; Back to Plans
           </Link>
-          <h1 className="text-4xl font-extrabold text-[#151C19] mb-3 tracking-tight">Complete your account setup</h1>
+          <h1 className="text-4xl font-extrabold text-[#151C19] mb-3 tracking-tight">
+            {isTrial ? 'Start your 14-day free trial' : 'Complete your account setup'}
+          </h1>
           <p className="text-[#151C19]/60 text-lg">
-            Tell us about your restaurant to get started with the {plan.label} plan.
+            {isTrial
+              ? 'Tell us about your restaurant. No payment needed — try every Premium feature free for 14 days.'
+              : `Tell us about your restaurant to get started with the ${plan.label} plan.`}
           </p>
         </div>
 
@@ -765,6 +848,7 @@ export default function PurchaseDetailsPage() {
                 </div>
               </div>
 
+              {!isTrial && (<>
               {/* Optional Add-on Service: Google Reviews Integration */}
               <div className="mt-8 pt-6 border-t border-gray-100">
                 <div className="flex items-center justify-between mb-3">
@@ -878,6 +962,7 @@ export default function PurchaseDetailsPage() {
                   </div>
                 )}
               </div>
+              </>)}
 
               <div className="mt-10">
                 <button
@@ -895,7 +980,7 @@ export default function PurchaseDetailsPage() {
                     </>
                   ) : (
                     <>
-                      Continue to Review
+                      {isTrial ? 'Start my 14-day free trial' : 'Continue to Review'}
                       <ChevronRight size={20} />
                     </>
                   )}
@@ -911,8 +996,21 @@ export default function PurchaseDetailsPage() {
           {/* Summary Section */}
           <div className="lg:col-span-5 xl:col-span-4 order-1 lg:order-2">
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm sticky top-32">
-              <h3 className="text-lg font-bold text-[#151C19] mb-6 border-b border-gray-100 pb-4">Order Summary</h3>
-              
+              <h3 className="text-lg font-bold text-[#151C19] mb-6 border-b border-gray-100 pb-4">{isTrial ? 'Free Trial' : 'Order Summary'}</h3>
+              {isTrial ? (
+                <div className="mb-6 space-y-3">
+                  <h4 className="text-2xl font-black text-[#151C19]">14 days free</h4>
+                  <p className="text-sm text-[#151C19]/70">
+                    All Premium features. No card or payment needed. After 14 days, choose a plan online
+                    or call our team to keep your menu running.
+                  </p>
+                  <div className="flex justify-between border-t border-gray-100 pt-3">
+                    <span className="font-bold text-[#151C19]">Due today</span>
+                    <span className="text-3xl font-black text-[#E8783C]">₹0</span>
+                  </div>
+                </div>
+              ) : (<>
+
               <div className="flex items-end justify-between mb-4">
                 <div>
                   <p className="text-[#151C19]/60 font-medium mb-1 uppercase tracking-wide text-xs">Selected Plan</p>
@@ -989,6 +1087,7 @@ export default function PurchaseDetailsPage() {
                   </div>
                 </div>
               </div>
+              </>)}
 
               <div className="space-y-4 mb-8 bg-gray-50/50 p-6 rounded-2xl">
                 {plan.features.map((feature, i) => (
@@ -1001,7 +1100,7 @@ export default function PurchaseDetailsPage() {
 
               <div className="flex items-center gap-4 text-sm text-[#151C19]/60 font-medium bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">
                 <ShieldCheck className="text-emerald-500 flex-shrink-0" size={24} />
-                <p>30-day money-back guarantee. No questions asked.</p>
+                <p>{isTrial ? 'No payment details collected during the trial.' : '30-day money-back guarantee. No questions asked.'}</p>
               </div>
             </div>
           </div>

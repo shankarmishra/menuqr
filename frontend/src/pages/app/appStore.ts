@@ -147,6 +147,20 @@ export interface AppSubscriptionData {
 
   contentChangesLimit?: number;
 
+  /** GATEWAY (online checkout) | MANUAL (activated by MenusQR team) | TRIAL */
+  source?: string;
+
+  isTrial?: boolean;
+
+  /** Server-side access decision (status + validity window). */
+  active?: boolean;
+
+  /** Capabilities the server actually grants (includes per-restaurant custom features). */
+  entitlements?: string[];
+
+  /** MenusQR support number shown on the billing page. */
+  supportPhone?: string;
+
 }
 
 
@@ -444,6 +458,11 @@ export function getDashboard(): Promise<AppDashboardData> {
 }
 
 
+
+/** Mark the owner's onboarding as done (used when they choose "Skip setup"). */
+export function completeOnboarding(): Promise<unknown> {
+  return request('/onboarding/complete', { method: 'POST', body: '{}' });
+}
 
 export function getSubscription(): Promise<AppSubscriptionData> {
 
@@ -1484,6 +1503,44 @@ export function initiateUpgrade(targetPlanId: string): Promise<UpgradeInitiateRe
   return request<UpgradeInitiateResponse>('/subscription/upgrade/initiate', {
     method: 'POST',
     body: JSON.stringify({ targetPlan: targetPlanId, targetPlanId }),
+  });
+}
+
+/** Online orders received this month vs. the limit (150 included + extra packs). */
+export interface OrderUsage {
+  period: string;
+  used: number;
+  included: number;
+  packsBought: number;
+  extraOrders: number;
+  limit: number;
+  remaining: number;
+  exceeded: boolean;
+  packSize: number;
+  packPrice: number;
+  maxPacksPerPurchase: number;
+}
+
+export interface OrderPackInitiateResponse {
+  success: boolean;
+  orderId: string;
+  orderSubtype: 'ORDER_PACK';
+  packs: number;
+  ordersAdded: number;
+  paymentSessionId: string;
+  amount: number;
+  amountPaise: number;
+  checkoutMode: string;
+}
+
+export function getOrderUsage(): Promise<OrderUsage> {
+  return request<OrderUsage>('/order-usage');
+}
+
+export function initiateOrderPack(packs: number): Promise<OrderPackInitiateResponse> {
+  return request<OrderPackInitiateResponse>('/order-packs/initiate', {
+    method: 'POST',
+    body: JSON.stringify({ packs }),
   });
 }
 
