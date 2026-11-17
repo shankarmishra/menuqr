@@ -63,7 +63,7 @@ const PAGES: SpreadPage[] = [
   }
 ];
 
-// Optimized to 10 strips for silky-smooth 60fps GPU performance
+// Optimized to 10 strips for GPU-composited transform performance within a 16.6ms frame budget
 const N_STRIPS = 10;
 const SPAN = 0.46;
 const BETA = 0.58; // Peak curl in radians

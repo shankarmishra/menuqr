@@ -36,7 +36,7 @@ export default function PricingSection() {
             </div>
             <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-[#e8783c] transition-colors">Premium</h3>
             <div className="text-lg font-semibold text-gray-400 mb-6">₹899/MO <span className="text-sm font-normal text-gray-300">(₹6,799/YR)</span></div>
-            <p className="text-sm text-gray-300 font-medium">Full interactive menu with table ordering.</p>
+            <p className="text-sm text-gray-300 font-medium">Full interactive menu with table ordering &bull; 150 monthly orders included.</p>
           </Link>
         </div>
       </div>

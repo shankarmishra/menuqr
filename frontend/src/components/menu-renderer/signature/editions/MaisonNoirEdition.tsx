@@ -450,7 +450,7 @@ export const MaisonNoirEdition: React.FC<EditionProps> = ({
 
           {/* STRICT DEDICATED LOCATION: Architectural Central Logo Cartouche directly above title */}
           {/* Frameless Restaurant Logo */}
-          <div className="mq-ed-cover-logo-frameless">
+          <div className="mq-ed-noir-logo-container">
             <BrandMark
               restaurant={restaurant}
               size={compact ? 80 : 120}

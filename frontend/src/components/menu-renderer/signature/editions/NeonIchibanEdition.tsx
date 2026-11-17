@@ -166,9 +166,9 @@ export const NeonIchibanEdition: React.FC<EditionProps> = ({
                       <div className="mq-ed-neon-tile-body">
                         <div className="mq-ed-neon-tile-title">
                           <DietMark type={item.dietType} />
-                          <h4 className="mq-ed-leader-name">{item.name}</h4>
+                          <h4 className="mq-ed-leader-name mq-dish-name">{item.name}</h4>
                         </div>
-                        {description && <p className="mq-ed-leader-desc mq-clamp-2">{description}</p>}
+                        {description && <p className="mq-ed-leader-desc mq-dish-desc mq-clamp-2">{description}</p>}
                         <div className="mq-ed-neon-tile-foot">
                           <span className="mq-ed-neon-tag">
                             <DishPrice item={item} readOnly={readOnly} />

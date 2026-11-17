@@ -152,13 +152,13 @@ export type RadiusToken = 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
  * A preset picks one radius personality and every surface derives from it, so cards, chips,
  * images and buttons agree. Mixed radii are the most common tell of an amateur layout.
  */
-export const RADIUS_SETS: Record<RadiusToken, { sm: string; md: string; lg: string; pill: string }> = {
-  none: { sm: '0px', md: '0px', lg: '0px', pill: '0px' },
-  sm: { sm: '2px', md: '4px', lg: '6px', pill: '999px' },
-  md: { sm: '4px', md: '8px', lg: '12px', pill: '999px' },
-  lg: { sm: '6px', md: '12px', lg: '18px', pill: '999px' },
-  xl: { sm: '8px', md: '16px', lg: '26px', pill: '999px' },
-  full: { sm: '12px', md: '24px', lg: '36px', pill: '999px' },
+export const RADIUS_SETS: Record<RadiusToken, { sm: string; md: string; lg: string; xl: string; pill: string }> = {
+  none: { sm: '0px', md: '0px', lg: '0px', xl: '0px', pill: '0px' },
+  sm: { sm: '2px', md: '4px', lg: '6px', xl: '8px', pill: '999px' },
+  md: { sm: '4px', md: '8px', lg: '12px', xl: '16px', pill: '999px' },
+  lg: { sm: '6px', md: '12px', lg: '18px', xl: '24px', pill: '999px' },
+  xl: { sm: '8px', md: '16px', lg: '26px', xl: '36px', pill: '999px' },
+  full: { sm: '12px', md: '24px', lg: '36px', xl: '48px', pill: '999px' },
 };
 
 // -------------------------------------- shadows --------------------------------------

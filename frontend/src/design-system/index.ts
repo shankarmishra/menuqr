@@ -8,9 +8,12 @@
 export {
   adjust,
   alpha,
+  compositeOver,
   contrastRatio,
+  contrastRatioWithAlpha,
   ensureContrast,
   ensureContrastAll,
+  ensureTranslucentContrast,
   hexToOklch,
   isDark,
   isValidHex,
@@ -118,3 +121,13 @@ export {
   validateTheme,
   type ThemeValidationResult,
 } from './validateTheme.ts';
+
+export {
+  ThemeBrandSchema,
+  ThemeCoverSchema,
+  ThemeConfigurationSchema,
+  ThemeFocalPointSchema,
+  ThemeSlotsSchema,
+  validateThemeSchema,
+  type ValidatedThemeConfiguration,
+} from './validateThemeSchema.ts';

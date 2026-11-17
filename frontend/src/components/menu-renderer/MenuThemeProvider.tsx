@@ -5,9 +5,20 @@
  * resolved theme to slots through context.
  *
  * Because a theme change only rewrites custom properties on one element, the Design Studio
- * preview repaints without remounting the React tree — no image reloads, no lost scroll
+ * preview updates without remounting the React tree — no image reloads, no lost scroll
  * position, no flash. That is also why slots must read `var(--mq-*)` and never take colours as
  * props: props would force a re-render of every card on every colour tweak.
+ *
+ * Performance Architecture Reality:
+ * Updating CSS custom properties on a single scoped container (.mq-root) achieves O(1) React
+ * reconciliation: React skips virtual DOM diffing and component remounts across 200+ dish cards,
+ * preserving scroll position, cached images, and DOM state.
+ *
+ * Browser Rendering Reality (eliminating unverified "0ms paint" claims):
+ * While React overhead is bypassed, the browser's native engine still performs Style Recalculation
+ * (~3-12ms on mobile) and layout reflow/repaint as required when typography or spacing tokens
+ * change. Animations and transitions target GPU-composited properties (transform, opacity) within
+ * the standard 16.6ms frame budget (at 60Hz) or 8.3ms (at 120Hz).
  */
 
 import React, { createContext, useContext, useEffect, useMemo } from 'react';

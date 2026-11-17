@@ -338,7 +338,7 @@
   box-shadow: 0 4px 12px rgba(255, 159, 28, 0.2);
 }
 
-.menu-dishes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; padding-top: 16px; }
+.menu-dishes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 20px; padding-top: 16px; }
 
 .menu-dish {
   position: relative;
@@ -418,7 +418,8 @@
   border: 1px solid var(--dish-line, var(--menu-line));
   background: var(--menu-bg);
   color: var(--dish-accent, var(--menu-accent));
-  padding: 6px 12px;
+  padding: 8px 14px;
+  min-height: 44px;
   border-radius: 20px;
   font-size: 14px;
   font-weight: 800;
@@ -436,7 +437,7 @@
 }
 
 .variant-label {
-  font-size: 10px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #888;

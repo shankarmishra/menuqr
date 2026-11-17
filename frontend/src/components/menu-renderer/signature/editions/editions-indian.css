@@ -169,6 +169,84 @@
 }
 
 /* --- Cartouche & BrandMark --- */
+.mq-ed-maharaja-logo-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto clamp(0.75rem, 2cqw, 1.25rem);
+  padding: clamp(8px, 1.5cqw, 14px) clamp(14px, 2.5cqw, 24px);
+  background: radial-gradient(circle at 50% 45%, rgba(14, 42, 29, 0.88) 0%, rgba(4, 16, 11, 0.96) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.75), inset 0 0 16px rgba(212, 175, 55, 0.15);
+  max-width: min(92%, 260px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.mq-ed-maharaja-logo-container .mq-ed-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.mq-ed-maharaja-logo-container img {
+  max-width: 100%;
+  height: auto;
+  max-height: clamp(60px, 12cqw, 90px);
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+}
+
+.mq-ed-maharaja-logo-container .mq-ed-mark-letters {
+  font-family: var(--mq-font-display, serif);
+  font-size: clamp(1.4rem, 3.5cqw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #fcf6ba;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8), 0 0 12px rgba(212, 175, 55, 0.4);
+}
+
+.mq-ed-punjab-logo-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto clamp(0.75rem, 2cqw, 1.25rem);
+  padding: clamp(8px, 1.5cqw, 14px) clamp(14px, 2.5cqw, 24px);
+  background: radial-gradient(circle at 50% 50%, rgba(44, 20, 14, 0.88) 0%, rgba(16, 6, 4, 0.96) 100%);
+  border: 1.5px solid rgba(245, 158, 11, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.8), inset 0 0 14px rgba(245, 158, 11, 0.18);
+  max-width: min(92%, 260px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.mq-ed-punjab-logo-container .mq-ed-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.mq-ed-punjab-logo-container img {
+  max-width: 100%;
+  height: auto;
+  max-height: clamp(60px, 12cqw, 90px);
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.7));
+}
+
+.mq-ed-punjab-logo-container .mq-ed-mark-letters {
+  font-family: var(--mq-font-display, serif);
+  font-size: clamp(1.4rem, 3.5cqw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #ffd875;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9), 0 0 10px rgba(245, 158, 11, 0.4);
+}
+
 .mq-ed-maharaja-cartouche {
   position: relative;
   display: inline-grid;
@@ -402,6 +480,7 @@
 
 .mq-ed-maharaja-card-name {
   margin: 0;
+  min-width: 0;
   font-family: var(--mq-font-display);
   font-size: var(--mq-text-base);
   font-weight: 600;
@@ -640,10 +719,12 @@
   align-items: last baseline;
   gap: clamp(0.4rem, 1.2cqw, 0.75rem);
   width: 100%;
+  min-width: 0;
 }
 
 .mq-ed-maharaja-dish-name {
   margin: 0;
+  min-width: 0;
   font-family: var(--mq-font-display);
   font-size: var(--mq-text-base);
   font-weight: 600;
@@ -1221,16 +1302,20 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--mq-space-2);
+  min-width: 0;
 }
 
 .mq-ed-punjab-showcase-name-wrap {
   display: flex;
   align-items: center;
   gap: var(--mq-space-2);
+  min-width: 0;
+  flex: 1;
 }
 
 .mq-ed-punjab-showcase-dish-name {
   margin: 0;
+  min-width: 0;
   font-family: var(--mq-font-display);
   font-size: var(--mq-text-base);
   font-weight: 800;
@@ -1481,10 +1566,12 @@
   align-items: last baseline;
   gap: clamp(0.4rem, 1.2cqw, 0.75rem);
   width: 100%;
+  min-width: 0;
 }
 
 .mq-ed-punjab-dish-name {
   margin: 0;
+  min-width: 0;
   font-family: var(--mq-font-display);
   font-size: var(--mq-text-base);
   font-weight: 800;
@@ -1515,7 +1602,8 @@
   opacity: 0.85;
 }
 
-.mq-ed-punjab-dish-price {
+.mq-ed-punjab-dish-price,
+.mq-ed-punjab-dish-price-slot {
   font-family: var(--mq-font-display);
   font-size: clamp(0.95rem, 2.4cqw, 1.18rem);
   font-weight: 900;

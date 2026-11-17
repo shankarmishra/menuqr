@@ -192,9 +192,9 @@ export const ChalkHouseEdition: React.FC<EditionProps> = ({
                       <div className="mq-ed-chalk-row-main">
                         <div className="mq-ed-chalk-row-title">
                           <DietMark type={item.dietType} />
-                          <h4 className="mq-ed-leader-name">{item.name}</h4>
+                          <h4 className="mq-ed-leader-name mq-dish-name">{item.name}</h4>
                         </div>
-                        {description && <p className="mq-ed-leader-desc">{description}</p>}
+                        {description && <p className="mq-ed-leader-desc mq-dish-desc">{description}</p>}
                         <div className="mq-ed-leader-flags">
                           <DishFlags item={item} />
                         </div>

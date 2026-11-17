@@ -79,7 +79,7 @@ export function clearAllPublicMenuCaches() {
 }
 
 export async function getFullPublicMenuData(tenantId) {
-  // Tier 1: In-process memory cache (0ms)
+  // Tier 1: In-process memory cache (<1ms local memory lookup)
   const cached = publicMenuCache.get(tenantId);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.data;

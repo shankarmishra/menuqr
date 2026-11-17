@@ -91,7 +91,16 @@ export function resolveTheme(theme: MenuTheme): ThemeTokens {
   cssVariables[`${TOKEN_PREFIX}-radius-sm`] = radii.sm;
   cssVariables[`${TOKEN_PREFIX}-radius-md`] = radii.md;
   cssVariables[`${TOKEN_PREFIX}-radius-lg`] = radii.lg;
+  cssVariables[`${TOKEN_PREFIX}-radius-xl`] = radii.xl;
   cssVariables[`${TOKEN_PREFIX}-radius-pill`] = radii.pill;
+
+  // Component Tokens: interactive surfaces, badges, and dish buttons
+  cssVariables[`${TOKEN_PREFIX}-color-surface-hover`] =
+    theme.mode === 'dark' ? alpha('#ffffff', 0.05) : alpha('#000000', 0.04);
+  cssVariables[`${TOKEN_PREFIX}-badge-tint-bg`] = palette.badgeTintBg;
+  cssVariables[`${TOKEN_PREFIX}-badge-tint-text`] = palette.badgeTintText;
+  cssVariables[`${TOKEN_PREFIX}-card-btn-bg`] = palette.accent;
+  cssVariables[`${TOKEN_PREFIX}-card-btn-text`] = palette.accentContrast;
 
   cssVariables[`${TOKEN_PREFIX}-shadow-sm`] = shadows.sm;
   cssVariables[`${TOKEN_PREFIX}-shadow-md`] = shadows.md;

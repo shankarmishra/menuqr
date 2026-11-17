@@ -624,7 +624,7 @@
   gap: var(--mq-space-1);
   padding: 2px 7px;
   border-radius: var(--mq-radius-sm);
-  font-size: max(11px, 0.72rem);
+  font-size: max(12px, 0.75rem);
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -709,7 +709,7 @@
 }
 
 .mq-bev-label {
-  font-size: max(11px, 0.72rem);
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -729,12 +729,15 @@
   border-radius: 999px;
   background: var(--mq-color-surface, #ffffff);
   color: var(--mq-color-text, #292524);
-  font-size: max(11px, 0.75rem);
+  font-size: max(12px, 0.78rem);
   font-weight: 600;
-  padding: 3px 10px;
+  padding: 6px 14px;
   cursor: pointer;
   transition: all 0.15s ease;
-  min-height: 28px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mq-bev-pill:hover {
@@ -758,13 +761,13 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 36px;
-  padding: 6px 14px;
+  min-height: 44px;
+  padding: 8px 16px;
   border: none;
   border-radius: 999px;
   background: #eab308; /* Electric mustard */
   color: #0f172a; /* Deep obsidian */
-  font-size: max(12px, 0.82rem);
+  font-size: max(13px, 0.84rem);
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -794,20 +797,37 @@
   border-radius: 999px;
   background: rgba(234, 179, 8, 0.15);
   border: 1.5px solid #eab308;
+  min-height: 44px;
 }
 
 .mq-speed-stepper-btn {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
   border: none;
   border-radius: 50%;
   background: #eab308;
   color: #0f172a;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 800;
   cursor: pointer;
+  position: relative;
+}
+
+/* 44px minimum touch target floor per WCAG 2.5.5 */
+.mq-speed-stepper-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: 100%;
+  height: 100%;
 }
 
 .mq-speed-qty {

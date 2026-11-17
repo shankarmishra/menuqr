@@ -326,3 +326,62 @@ export function alpha(hex: string, opacity: number): string {
   const a = Math.round(clamp01(opacity) * 1000) / 1000;
   return `rgba(${Math.round(rgb.r)}, ${Math.round(rgb.g)}, ${Math.round(rgb.b)}, ${a})`;
 }
+
+/**
+ * Porter-Duff source-over alpha composite of a translucent foreground over an opaque background.
+ * Calculated in linear light space so physical photon blending is physically accurate.
+ */
+export function compositeOver(foregroundHex: string, backgroundHex: string, opacity: number): string {
+  const fg = parseHex(foregroundHex);
+  const bg = parseHex(backgroundHex);
+  if (!fg || !bg) return foregroundHex;
+
+  const a = clamp01(opacity);
+  const fgR = linearize(clamp01(fg.r / 255));
+  const fgG = linearize(clamp01(fg.g / 255));
+  const fgB = linearize(clamp01(fg.b / 255));
+
+  const bgR = linearize(clamp01(bg.r / 255));
+  const bgG = linearize(clamp01(bg.g / 255));
+  const bgB = linearize(clamp01(bg.b / 255));
+
+  const compR = a * fgR + (1 - a) * bgR;
+  const compG = a * fgG + (1 - a) * bgG;
+  const compB = a * fgB + (1 - a) * bgB;
+
+  return toHex({
+    r: delinearize(compR) * 255,
+    g: delinearize(compG) * 255,
+    b: delinearize(compB) * 255,
+  });
+}
+
+/**
+ * WCAG contrast ratio between text and a translucent background overlaid on a solid surface.
+ */
+export function contrastRatioWithAlpha(
+  textHex: string,
+  translucentBgHex: string,
+  bgOpacity: number,
+  underlyingHex: string
+): number {
+  const effectiveBg = compositeOver(translucentBgHex, underlyingHex, bgOpacity);
+  return contrastRatio(textHex, effectiveBg);
+}
+
+/**
+ * Ensures text has sufficient contrast against a translucent badge/chip overlaid on a surface.
+ * Pushes the text lighter or darker until it satisfies minRatio against all composited backgrounds.
+ */
+export function ensureTranslucentContrast(
+  textHex: string,
+  badgeHex: string,
+  badgeOpacity: number,
+  underlyingSurfaces: string[],
+  minRatio = 4.5
+): string {
+  const compositedBackgrounds = underlyingSurfaces.map((surface) =>
+    compositeOver(badgeHex, surface, badgeOpacity)
+  );
+  return ensureContrastAll(textHex, compositedBackgrounds, minRatio);
+}

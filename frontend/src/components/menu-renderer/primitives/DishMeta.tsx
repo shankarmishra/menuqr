@@ -298,7 +298,7 @@ export const DishPrice: React.FC<DishPriceProps> = ({ item, readOnly = false }) 
         <div className="mq-row" style={{ alignItems: 'center', gap: 'var(--mq-space-2)' }}>
           <span className="mq-price">{pricedVariants[0]?.formattedPrice}</span>
           {pricedVariants.length > 1 && (
-            <span className="mq-price-label" style={{ fontSize: '11px', opacity: 0.85 }}>
+            <span className="mq-price-label" style={{ fontSize: '12px', opacity: 0.85 }}>
               ({pricedVariants.length} options)
             </span>
           )}
@@ -306,7 +306,7 @@ export const DishPrice: React.FC<DishPriceProps> = ({ item, readOnly = false }) 
             <button
               type="button"
               className="mq-button"
-              style={{ paddingInline: '12px', minHeight: '34px', height: '34px', fontSize: '12px' }}
+              style={{ paddingInline: '14px', minHeight: '44px', height: '44px', fontSize: '13px' }}
               onClick={(e) => {
                 e.stopPropagation();
                 cart.onCustomizeDish?.(item);

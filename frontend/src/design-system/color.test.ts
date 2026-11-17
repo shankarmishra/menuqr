@@ -3,8 +3,11 @@ import assert from 'node:assert/strict';
 import {
   adjust,
   alpha,
+  compositeOver,
   contrastRatio,
+  contrastRatioWithAlpha,
   ensureContrast,
+  ensureTranslucentContrast,
   hexToOklch,
   isDark,
   isValidHex,
@@ -227,5 +230,24 @@ test('colour: mix and alpha', async (t) => {
     assert.equal(alpha('#000000', 2), 'rgba(0, 0, 0, 1)');
     assert.equal(alpha('#000000', -1), 'rgba(0, 0, 0, 0)');
     assert.equal(alpha('zzz', 0.5), 'zzz');
+  });
+
+  await t.test('compositeOver performs physically accurate Porter-Duff alpha blending in linear space', () => {
+    // 0% opacity yields background directly
+    assert.equal(compositeOver('#000000', '#ffffff', 0), '#ffffff');
+    // 100% opacity yields foreground directly
+    assert.equal(compositeOver('#000000', '#ffffff', 1), '#000000');
+    // 50% opacity in linear space: linear 0.5 delinearized is ~0.735 -> ~#bcbcbc
+    const comp = compositeOver('#000000', '#ffffff', 0.5);
+    const lum = relativeLuminance(parseHex(comp)!);
+    assert.ok(Math.abs(lum - 0.5) < 0.05, `composite luminance ${lum} should be ~0.5`);
+  });
+
+  await t.test('contrastRatioWithAlpha and ensureTranslucentContrast ensure readable text on translucent badges', () => {
+    // Semi-transparent black over white page
+    const text = ensureTranslucentContrast('#d4af37', '#000000', 0.15, ['#ffffff', '#f5f5f5'], 4.5);
+    assert.ok(isValidHex(text));
+    const ratio = contrastRatioWithAlpha(text, '#000000', 0.15, '#ffffff');
+    assert.ok(ratio >= 4.5 - 1e-4, `translucent ratio ${ratio.toFixed(2)} must be >= 4.5`);
   });
 });

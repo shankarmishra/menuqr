@@ -18,6 +18,7 @@ import {
   contrastRatio,
   ensureContrast,
   ensureContrastAll,
+  ensureTranslucentContrast,
   hexToOklch,
   oklchToHex,
   readableOn,
@@ -58,6 +59,9 @@ export type Palette = {
   /** Badge fill and its ink: "BESTSELLER", price pills. */
   badgeBg: string;
   badgeText: string;
+  /** Translucent badge tint and contrast-guaranteed ink over underlying surfaces. */
+  badgeTintBg: string;
+  badgeTintText: string;
 
   /** Diet marks. Fixed by regulation and convention — never derived from the brand colour. */
   veg: string;
@@ -193,6 +197,14 @@ export function derivePalette(seedHex: string, mode: PaletteMode = 'dark'): Pale
 
     badgeBg: accent,
     badgeText: accentContrast,
+    badgeTintBg: alpha(accent, mode === 'dark' ? 0.22 : 0.12),
+    badgeTintText: ensureTranslucentContrast(
+      accentText,
+      accent,
+      mode === 'dark' ? 0.22 : 0.12,
+      inkSurfaces,
+      4.5
+    ),
 
     veg: DIET_VEG,
     vegContrast: ensureContrast(readableOn(DIET_VEG), DIET_VEG, 4.5),

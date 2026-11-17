@@ -155,6 +155,7 @@ test('scales: radii, shadows and dimensions', async (t) => {
       const px = (value: string) => Number(value.replace('px', ''));
       assert.ok(px(set.sm) <= px(set.md), `${token}: sm must not exceed md`);
       assert.ok(px(set.md) <= px(set.lg), `${token}: md must not exceed lg`);
+      assert.ok(px(set.lg) <= px(set.xl), `${token}: lg must not exceed xl`);
     }
     assert.equal(RADIUS_SETS.none.lg, '0px', 'the none set must be genuinely square');
   });

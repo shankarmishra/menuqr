@@ -352,7 +352,7 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
           />
 
           {/* Frameless Restaurant Logo */}
-          <div className="mq-ed-cover-logo-frameless">
+          <div className="mq-ed-punjab-logo-container">
             <BrandMark restaurant={restaurant} size={compact ? 80 : 120} className="mq-ed-mark-bare" />
           </div>
 
@@ -444,13 +444,13 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
                   </div>
 
                   <div className="mq-ed-punjab-showcase-content">
-                    <div className="mq-ed-punjab-showcase-row">
-                      <div className="mq-ed-punjab-showcase-name-wrap">
+                    <div className="mq-ed-punjab-showcase-row" style={{ minWidth: 0 }}>
+                      <div className="mq-ed-punjab-showcase-name-wrap" style={{ minWidth: 0 }}>
                         <ClayDietMark
                           type={item.dietType}
                           isSpicy={!!item.spicyLevel}
                         />
-                        <h3 className="mq-dish-name mq-ed-punjab-showcase-dish-name">{item.name}</h3>
+                        <h3 className="mq-dish-name mq-ed-punjab-showcase-dish-name" style={{ minWidth: 0 }}>{item.name}</h3>
                       </div>
                       <div className="mq-ed-punjab-showcase-price-box">
                         <DishPrice item={item} readOnly={readOnly} />
@@ -522,17 +522,17 @@ export const RangEPunjabEdition: React.FC<EditionProps> = ({
 
                   return (
                     <article key={item.id} className="mq-ed-punjab-dish-row">
-                      <div className="mq-ed-punjab-dish-head">
+                      <div className="mq-ed-punjab-dish-head" style={{ minWidth: 0 }}>
                         <ClayDietMark type={diet} isSpicy={!!item.spicyLevel} />
 
                         {/* Dish Name with mandatory .mq-dish-name for Quality Gate */}
-                        <h3 className="mq-dish-name mq-ed-punjab-dish-name">{item.name}</h3>
+                        <h3 className="mq-dish-name mq-ed-punjab-dish-name" style={{ minWidth: 0 }}>{item.name}</h3>
 
                         {/* Saffron dotted leader line anchored to last baseline */}
                         <span className="mq-ed-punjab-dish-rule" aria-hidden="true" />
 
                         {/* Dish Price with mandatory .mq-price */}
-                        <div className="mq-ed-punjab-dish-price-slot">
+                        <div className="mq-ed-punjab-dish-price">
                           <DishPrice item={item} readOnly={readOnly} />
                         </div>
                       </div>

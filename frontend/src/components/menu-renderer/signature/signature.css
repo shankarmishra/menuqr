@@ -61,6 +61,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--mq-space-1);
+  min-height: 44px;
   padding-block: var(--mq-space-2);
   padding-inline: var(--mq-space-3);
   border-radius: var(--mq-radius-pill);

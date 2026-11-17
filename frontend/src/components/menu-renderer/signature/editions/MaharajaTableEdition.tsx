@@ -448,7 +448,7 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
           )}
 
           {/* Frameless Restaurant Logo */}
-          <div className="mq-ed-cover-logo-frameless">
+          <div className="mq-ed-maharaja-logo-container">
             <BrandMark restaurant={restaurant} size={compact ? 80 : 120} className="mq-ed-mark-bare" />
           </div>
 
@@ -544,10 +544,10 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
                   )}
 
                   <div className="mq-ed-maharaja-card-body">
-                    <div className="mq-ed-maharaja-card-head">
-                      <div className="mq-ed-maharaja-card-title-group">
+                    <div className="mq-ed-maharaja-card-head" style={{ minWidth: 0 }}>
+                      <div className="mq-ed-maharaja-card-title-group" style={{ minWidth: 0 }}>
                         <RoyalDietMark type={item.dietType} />
-                        <h3 className="mq-ed-maharaja-card-name mq-dish-name">{item.name}</h3>
+                        <h3 className="mq-ed-maharaja-card-name mq-dish-name" style={{ minWidth: 0 }}>{item.name}</h3>
                       </div>
                       <div className="mq-ed-maharaja-card-price-slot">
                         <DishPrice item={item} readOnly={readOnly} />
@@ -612,9 +612,9 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
 
                   return (
                     <article key={item.id} className="mq-ed-maharaja-dish-row">
-                      <div className="mq-ed-maharaja-dish-head">
+                      <div className="mq-ed-maharaja-dish-head" style={{ minWidth: 0 }}>
                         <RoyalDietMark type={item.dietType} />
-                        <h3 className="mq-ed-maharaja-dish-name mq-dish-name">{item.name}</h3>
+                        <h3 className="mq-ed-maharaja-dish-name mq-dish-name" style={{ minWidth: 0 }}>{item.name}</h3>
                         <span className="mq-ed-maharaja-dish-rule" aria-hidden="true" />
                         <div className="mq-ed-maharaja-dish-price">
                           <DishPrice item={item} readOnly={readOnly} />

@@ -330,7 +330,6 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
   const signatures = useFeatured(categories, 3);
   const sections = liveCategories(visible);
 
-  const isShobharam = restaurant.name === "Shobharam's";
   const heroImage = tokens.cover.imageUrl || '/assets/themes/herbarium-hero.webp';
 
   return (
@@ -368,7 +367,6 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
           {/* Grand Typography: Restaurant Name */}
           <div className="mq-ed-herb-identity">
             <h1 className="mq-ed-herb-title">{restaurant.name}</h1>
-            {isShobharam && <p className="mq-ed-herb-subtitle">Sweets &amp; Restaurant</p>}
             <BotanicalEngravedDivider className="mq-ed-herb-title-divider" />
             {restaurant.cuisine && <p className="mq-ed-herb-cuisine">{restaurant.cuisine}</p>}
           </div>
@@ -600,18 +598,6 @@ export const HerbariumEdition: React.FC<EditionProps> = ({
         </div>
         <BotanicalSprig size={48} className="mq-ed-herb-foot-sprig" />
         <p className="mq-ed-herb-foot-name">{restaurant.name}</p>
-
-        {isShobharam && (
-          <div className="mq-ed-herb-delivery-badges">
-            <span className="mq-ed-herb-delivery-chip">
-              <span className="mq-ed-herb-dot" />
-              <span>Available on <strong>Swiggy</strong> &amp; <strong>Zomato</strong></span>
-            </span>
-            <span className="mq-ed-herb-delivery-chip">
-              <span>Instagram: <strong>@shobharams</strong></span>
-            </span>
-          </div>
-        )}
 
         <EditionContact restaurant={restaurant} className="mq-ed-herb-foot-contact" />
       </footer>
