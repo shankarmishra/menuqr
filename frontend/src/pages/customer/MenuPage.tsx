@@ -48,6 +48,8 @@ import {
   submitCustomerOrderByQr, 
   getCustomerOrderStatus,
   getActiveTableToken,
+  getTableByCode,
+  getTableEntryMode,
   type PublicMenuRecord,
   type CustomerOrder,
   type CreateCustomerOrderPayload
@@ -88,12 +90,18 @@ export interface DiningSession {
   sessionId: string;
   slug: string;
   tableNumber: string;
+  /** Code from the table sticker; later rounds send it again so the server can re-check the table. */
+  tableCode?: string | null;
   customerName: string;
   customerPhone: string;
   createdAt: number;
   expiresAt: number;
   orders: DiningSessionOrder[];
 }
+
+/** The table this phone is at, as read from the sticker link. Never typed by the diner. */
+// 'typed': no code in the link and the restaurant still allows old stickers, so the diner gave the number.
+type VerifiedTable = { code: string | null; number: string; source: 'code' | 'legacy' | 'typed' };
 
 const DINING_SESSION_TTL_MS = 3.5 * 60 * 60 * 1000; // 3.5 hours auto-refresh window
 
@@ -104,6 +112,9 @@ export default function MenuPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const qrId = searchParams.get('qr');
+  // Table stickers carry ?tc=<code>. Old stickers carry ?table=N, which the server accepts only
+  // while the restaurant still allows them. Neither is ever typed by the diner.
+  const tableCodeParam = (searchParams.get('tc') || '').trim().toUpperCase().slice(0, 16);
   const tableParam = searchParams.get('table') || searchParams.get('t') || searchParams.get('tableNumber') || '';
   const showToast = useToast();
 
@@ -121,7 +132,7 @@ export default function MenuPage() {
   
   // Order Type & Customer Details
   const [orderType, setOrderType] = useState<'DINE_IN' | 'TAKEAWAY' | 'DELIVERY'>(tableParam ? 'DINE_IN' : 'DINE_IN');
-  const [tableNumber, setTableNumber] = useState(tableParam);
+  const [tableNumber, setTableNumber] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
@@ -143,6 +154,67 @@ export default function MenuPage() {
   // Multi-Round Table Dining Session (3.5 hours TTL)
   const [diningSession, setDiningSession] = useState<DiningSession | null>(null);
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
+
+  // Which table is this phone at? Worked out from the sticker code, never from what the diner types.
+  const [verifiedTable, setVerifiedTable] = useState<VerifiedTable | null>(null);
+  const [tableCheck, setTableCheck] = useState<'none' | 'checking' | 'ok' | 'invalid'>('none');
+  useEffect(() => {
+    if (!slug) return;
+    let current = true;
+    const code = tableCodeParam || diningSession?.tableCode || '';
+    if (code) {
+      setTableCheck('checking');
+      void getTableByCode(slug, code).then((table) => {
+        if (!current) return;
+        if (table) {
+          setVerifiedTable({ code, number: String(table.number), source: 'code' });
+          setTableNumber(String(table.number));
+          setTableCheck('ok');
+        } else {
+          setVerifiedTable(null);
+          setTableNumber('');
+          setTableCheck('invalid');
+        }
+      });
+    } else {
+      // Old sticker (?table=N) or a session saved before table codes existed. The server decides
+      // whether the restaurant still accepts these.
+      const legacy = (tableParam || diningSession?.tableNumber || '').replace(/\D/g, '');
+      if (legacy) {
+        setVerifiedTable({ code: null, number: legacy, source: 'legacy' });
+        setTableNumber(legacy);
+        setTableCheck('ok');
+      } else {
+        setVerifiedTable(null);
+        setTableCheck('none');
+      }
+    }
+    return () => { current = false; };
+  }, [slug, tableCodeParam, tableParam, diningSession?.tableCode, diningSession?.tableNumber]);
+
+  // A general restaurant QR (no table code): while the owner's "old stickers" switch is on, the diner may
+  // give their table number. Such orders reach the staff marked "Old sticker · check table".
+  const [legacyEntryAllowed, setLegacyEntryAllowed] = useState(false);
+  const [typedTable, setTypedTable] = useState('');
+  useEffect(() => {
+    if (!slug || tableCheck !== 'none') return;
+    let current = true;
+    void getTableEntryMode(slug).then((allowed) => { if (current) setLegacyEntryAllowed(allowed); });
+    return () => { current = false; };
+  }, [slug, tableCheck]);
+  const onTypedTableChange = (raw: string) => {
+    const digits = raw.replace(/\D/g, '').slice(0, 4);
+    setTypedTable(digits);
+    const n = Number(digits);
+    if (digits && n >= 1) {
+      setVerifiedTable({ code: null, number: String(n), source: 'typed' });
+      setTableNumber(String(n));
+    } else {
+      setVerifiedTable(null);
+      setTableNumber('');
+    }
+  };
+  const showTypedTableInput = legacyEntryAllowed && tableCheck === 'none' && (!verifiedTable || verifiedTable.source === 'typed');
 
   // Live Second-by-Second Countdown Timer for Customer Order
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
@@ -200,7 +272,8 @@ export default function MenuPage() {
 
   // Absent `orderingSettings` (a backend that predates the owner's mode switches) reads as the old
   // dine-in plus delivery pair, for the same reason as the menuFeatures defaults above.
-  const isTableLocked = Boolean(tableParam || (diningSession && diningSession.tableNumber));
+  // Only a table that came from the sticker locks the menu to dine-in; a typed number does not.
+  const isTableLocked = Boolean(verifiedTable && verifiedTable.source !== 'typed');
   const orderModes = useMemo(
     () =>
       availableOrderModes(client?.orderingSettings, {
@@ -262,7 +335,7 @@ export default function MenuPage() {
         if (parsed.deliveryAddress && !deliveryAddress) setDeliveryAddress(parsed.deliveryAddress);
         if (parsed.deliveryLandmark && !deliveryLandmark) setDeliveryLandmark(parsed.deliveryLandmark);
         if (parsed.deliveryCity && !deliveryCity) setDeliveryCity(parsed.deliveryCity);
-        if (parsed.orderType && !tableParam) setOrderType(parsed.orderType);
+        if (parsed.orderType && !tableParam && !tableCodeParam) setOrderType(parsed.orderType);
       }
 
       // Check 3.5h Dining Session
@@ -277,8 +350,8 @@ export default function MenuPage() {
             setDiningSession(null);
           } else {
             setDiningSession(parsedSession);
-            if (!tableParam && parsedSession.tableNumber) {
-              setTableNumber(parsedSession.tableNumber);
+            // The table itself is re-checked from the session's sticker code (see verifiedTable).
+            if (!tableParam && !tableCodeParam && parsedSession.tableNumber) {
               setOrderType('DINE_IN');
             }
             if (parsedSession.customerName && !customerName) setCustomerName(parsedSession.customerName);
@@ -289,7 +362,7 @@ export default function MenuPage() {
     } catch {
       // Ignore storage errors
     }
-  }, [slug, tableParam]);
+  }, [slug, tableParam, tableCodeParam]);
 
   // Background check for 3.5 hour session expiration
   useEffect(() => {
@@ -368,9 +441,11 @@ export default function MenuPage() {
 
   // Restore live dining table token if diner is on an active table
   useEffect(() => {
-    const effTable = (tableNumber || tableParam || '').trim();
-    if (slug && effTable) {
-      void getActiveTableToken(slug, effTable).then((tok) => {
+    if (slug && verifiedTable) {
+      void getActiveTableToken(slug, {
+        tableCode: verifiedTable.code,
+        legacyTable: verifiedTable.code ? null : verifiedTable.number,
+      }).then((tok) => {
         if (tok) {
           setTableToken({
             tokenId: tok.tokenId,
@@ -382,7 +457,7 @@ export default function MenuPage() {
         }
       });
     }
-  }, [slug, tableNumber, tableParam]);
+  }, [slug, verifiedTable]);
 
   // Poll active order status with tracking token
   useEffect(() => {
@@ -562,8 +637,12 @@ export default function MenuPage() {
     }
 
     if (orderType === 'DINE_IN') {
-      if (!tableNumber.trim()) {
-        showToast('error', 'Please enter your table number.');
+      if (!verifiedTable) {
+        showToast('error', tableCheck === 'invalid'
+          ? 'This table QR is not valid. Please ask the staff for help.'
+          : showTypedTableInput
+            ? 'Please enter your table number.'
+            : 'Please scan the QR code on your table to order for dine-in.');
         return;
       }
     } else if (orderType === 'DELIVERY') {
@@ -585,10 +664,10 @@ export default function MenuPage() {
       let parentOrderIdToUse: string | null = null;
 
       if (orderType === 'DINE_IN') {
-        const isSameTable = diningSession && diningSession.tableNumber.trim().toLowerCase() === tableNumber.trim().toLowerCase();
+        const isSameTable = Boolean(diningSession && verifiedTable && diningSession.tableNumber.trim() === verifiedTable.number);
         const isSessionValid = diningSession && Date.now() < diningSession.expiresAt && diningSession.orders.length > 0;
 
-        if (isSameTable && isSessionValid) {
+        if (isSameTable && isSessionValid && diningSession) {
           sessionIdToUse = diningSession.sessionId;
           roundNumberToUse = diningSession.orders.length + 1;
           parentOrderIdToUse = diningSession.orders[0].id;
@@ -603,7 +682,9 @@ export default function MenuPage() {
         orderType,
         customerName: trimmedName,
         customerPhone: cleanPhone.slice(-10),
-        tableNumber: orderType === 'DINE_IN' ? tableNumber.trim() : null,
+        // The server reads the table from the code; a bare number is only for old ?table=N stickers.
+        tableCode: orderType === 'DINE_IN' ? (verifiedTable?.code ?? null) : null,
+        tableNumber: orderType === 'DINE_IN' && verifiedTable && !verifiedTable.code ? verifiedTable.number : null,
         deliveryAddress: orderType === 'DELIVERY' ? deliveryAddress.trim() : null,
         deliveryLandmark: orderType === 'DELIVERY' ? (deliveryLandmark.trim() || null) : null,
         deliveryCity: orderType === 'DELIVERY' ? (deliveryCity.trim() || null) : null,
@@ -652,7 +733,8 @@ export default function MenuPage() {
           const newSession: DiningSession = {
             sessionId: sessionIdToUse,
             slug,
-            tableNumber: tableNumber.trim(),
+            tableNumber: String(placed.tableNumber || verifiedTable?.number || ''),
+            tableCode: verifiedTable?.code ?? null,
             customerName: trimmedName,
             customerPhone: cleanPhone.slice(-10),
             createdAt: diningSession?.createdAt || Date.now(),
@@ -669,7 +751,7 @@ export default function MenuPage() {
       setIsTrackerOpen(true);
       idempotencyKeyRef.current = `idem-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
       showToast('success', roundNumberToUse > 1 
-        ? `Round ${roundNumberToUse} added to Table ${tableNumber.trim()}! Kitchen has been notified.`
+        ? `Round ${roundNumberToUse} added to Table ${placed.tableNumber || verifiedTable?.number || ''}! Kitchen has been notified.`
         : 'Order placed successfully! The restaurant has been notified.');
     } catch (e: any) {
       showToast('error', e?.message || 'Your order did not go through. Please try again.');
@@ -679,12 +761,11 @@ export default function MenuPage() {
   };
 
   const handleSendServiceRequest = async (requestType: 'WATER' | 'WAITER' | 'BILL') => {
-    const effectiveTable = (diningSession?.tableNumber || tableNumber || tableParam || '').trim();
-    if (!effectiveTable) {
-      showToast('error', 'Please enter your table number to request service.');
-      setIsServiceModalOpen(true);
+    if (!verifiedTable) {
+      showToast('error', 'Please scan the QR code on your table to call the staff.');
       return;
     }
+    const effectiveTable = verifiedTable.number;
     const now = Date.now();
     if (now - lastServiceSentAt < 15000) {
       showToast('info', 'Your request was already received. Staff is on the way!');
@@ -696,7 +777,8 @@ export default function MenuPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tableNumber: effectiveTable,
+          tableCode: verifiedTable.code,
+          tableNumber: verifiedTable.code ? null : verifiedTable.number,
           requestType,
           customerName: customerName || diningSession?.customerName || 'Guest'
         })
@@ -1187,7 +1269,7 @@ export default function MenuPage() {
         <GuestFeedbackCard
           slug={slug}
           restaurantName={client.businessName || 'the restaurant'}
-          initialTableNumber={tableParam || diningSession?.tableNumber || ''}
+          initialTableNumber={verifiedTable?.number || ''}
         />
       )}
 
@@ -1317,7 +1399,7 @@ export default function MenuPage() {
             </div>
             <div className="flex flex-col text-left">
               <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wider">
-                Table {tableNumber || tableParam || tableToken.tableNumber} • Dining Active
+                Table {verifiedTable?.number || tableToken.tableNumber} • Dining Active
               </span>
               <span className="text-xs font-black text-white">
                 Total Bill: ₹{tableToken.total ?? activeOrder?.sessionTotal ?? activeOrder?.total ?? 0}
@@ -1441,7 +1523,7 @@ export default function MenuPage() {
                 {/* Table QR Lock Banner */}
                 {isTableLocked && (
                   <div className="mb-3 px-3 py-2 rounded-xl bg-[#1d2723] border border-[#2a3832] text-xs flex items-center justify-between">
-                    <span className="text-[#849a90]">Ordering for Table <strong className="text-white font-bold">{tableParam || diningSession?.tableNumber}</strong></span>
+                    <span className="text-[#849a90]">Ordering for Table <strong className="text-white font-bold">{verifiedTable?.number}</strong></span>
                     <span className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Dine-In</span>
                   </div>
                 )}
@@ -1548,17 +1630,38 @@ export default function MenuPage() {
                     </span>
                   </div>
 
-                  {/* Dine-In specific: Table Number */}
+                  {/* Dine-In: the table comes from the sticker the diner scanned. There is nothing to type. */}
                   {orderType === 'DINE_IN' && (
-                    <div className="order-input-group">
-                      <label className="order-input-label">Table Number *</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Table 4, Corner Booth" 
-                        value={tableNumber}
-                        onChange={(e) => setTableNumber(e.target.value)}
-                        className="order-input"
-                      />
+                    <div className="order-input-group" role="status" aria-live="polite">
+                      <span className="order-input-label">Your table</span>
+                      {showTypedTableInput ? (
+                        <>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            aria-label="Table number"
+                            placeholder="Table number, e.g. 4"
+                            value={typedTable}
+                            onChange={(e) => onTypedTableChange(e.target.value)}
+                            className="order-input"
+                          />
+                          <span className="text-[11px] text-[#849a90]">Staff will confirm your table. Tip: the QR on your table fills this in for you.</span>
+                        </>
+                      ) : verifiedTable ? (
+                        <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5 text-sm">
+                          <span aria-hidden="true" className="text-emerald-400 font-black">✓</span>
+                          <span className="font-bold text-white">Table {verifiedTable.number}</span>
+                          <span className="text-[11px] text-[#849a90]">{verifiedTable.source === 'code' ? 'from the QR on your table' : 'from your table link'}</span>
+                        </div>
+                      ) : tableCheck === 'checking' ? (
+                        <div className="rounded-xl border border-[#2a3832] px-3 py-2.5 text-sm text-[#849a90]">Checking your table…</div>
+                      ) : (
+                        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-200">
+                          {tableCheck === 'invalid'
+                            ? 'This table QR is not valid. Please ask the staff for help.'
+                            : 'To order at your table, scan the QR code on your table. Need it to go? Choose Takeaway.'}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1928,18 +2031,22 @@ export default function MenuPage() {
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Your Table</span>
-                    {(diningSession?.tableNumber || tableParam) ? (
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
-                        Table {diningSession?.tableNumber || tableParam}
-                      </span>
-                    ) : (
+                    {showTypedTableInput ? (
                       <input
                         type="text"
-                        placeholder="Table No. (e.g. 4)"
-                        value={tableNumber}
-                        onChange={(e) => setTableNumber(e.target.value)}
-                        className="w-28 px-2.5 py-1 text-xs font-bold rounded-lg border border-slate-300 text-slate-800 focus:outline-none focus:border-[#e8783c]"
+                        inputMode="numeric"
+                        aria-label="Table number"
+                        placeholder="Table no."
+                        value={typedTable}
+                        onChange={(e) => onTypedTableChange(e.target.value)}
+                        className="w-24 rounded-lg border border-slate-300 px-2 py-1 text-xs font-bold text-slate-800"
                       />
+                    ) : verifiedTable ? (
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
+                        Table {verifiedTable.number}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold text-amber-700">Scan the QR on your table first</span>
                     )}
                   </div>
                 </div>
@@ -2073,7 +2180,7 @@ export default function MenuPage() {
                       </div>
                       <div>
                         <div className="text-[10px] font-black uppercase tracking-wider text-amber-400">Live Table Token</div>
-                        <div className="text-xs font-bold text-white">Table {tableNumber || tableParam || activeOrder.tableNumber} • Dining Active</div>
+                        <div className="text-xs font-bold text-white">Table {activeOrder.tableNumber || verifiedTable?.number} • Dining Active</div>
                         <div className="text-xs font-black text-emerald-400">Bill: ₹{activeOrder.sessionTotal || tableToken?.total || activeOrder.total}</div>
                       </div>
                     </div>

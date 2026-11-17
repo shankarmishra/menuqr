@@ -15,6 +15,7 @@ import { extractMenuFromPdf, refinePdfDesign } from '../pdfMenuService.js';
 import { validateDesignSpecification } from '../designSpecValidator.js';
 import { coerceTheme, validateTheme } from '../themeValidator.js';
 import { registerOrderClient, broadcastOrderEvent } from '../orderStream.js';
+import { removeOrderFromToken } from '../tokenBridge.js';
 import { optimizeAndSaveImage } from '../imageOptimizer.js';
 import { enqueueTask, getJobStatus, TASK_TYPES } from '../taskQueue.js';
 import { inputMenuFeatures } from '../menuFeatures.js';
@@ -2421,6 +2422,7 @@ export default async function appRoutes(request, response, url) {
         session_id as "sessionId",
         COALESCE(round_number, 1) as "roundNumber",
         parent_order_id as "parentOrderId",
+        table_source as "tableSource",
         rejection_reason as "rejectionReason",
         estimated_time_minutes as "estimatedTimeMinutes",
         estimated_delivery_time as "estimatedDeliveryTime",
@@ -2558,6 +2560,15 @@ export default async function appRoutes(request, response, url) {
     
     const updated = res.rows[0];
     updated.total = parseFloat(updated.total);
+    // A cancelled or declined dine-in order comes off the table bill, so nobody pays for dishes they never got.
+    if (targetStatus === 'CANCELLED' && currentStatus !== 'CANCELLED') {
+      try {
+        const removed = await removeOrderFromToken(user.tenantId, orderId);
+        if (removed) updated.billAfterCancel = removed;
+      } catch (billErr) {
+        console.warn('[tokenBridge] Failed to remove cancelled order from table bill:', billErr.message);
+      }
+    }
     try {
       broadcastOrderEvent(user.tenantId, 'order_status_updated', updated);
     } catch (broadcastErr) {

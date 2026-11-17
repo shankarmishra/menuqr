@@ -43,17 +43,20 @@ test('Milestone 1: Challenger Adversarial Stress Suite', async (t) => {
     // ==========================================
     // AREA 1: MIGRATION RUNNER IDEMPOTENCY
     // ==========================================
-    await t.test('1. Migration Runner Idempotency: 3 consecutive apply runs report 25 applied / 0 pending', async () => {
+    // Count the shipped migrations instead of hard-coding a number that every new migration breaks.
+    const MIGRATION_COUNT = fs.readdirSync(path.join(__dirname, '..', 'migrations')).filter((f) => f.endsWith('.sql')).length;
+
+    await t.test('1. Migration Runner Idempotency: 3 consecutive apply runs report all applied / 0 pending', async () => {
       for (let run = 1; run <= 3; run++) {
         const res = await runMigrationPipeline({ pool: db, apply: true, log: () => {} });
         assert.equal(res.dryRun, false, `Run ${run} should be in apply mode`);
         assert.deepEqual(res.appliedMigrations, [], `Run ${run} must apply 0 new migrations`);
       }
 
-      // Dry run inspection must confirm 25 applied, 0 pending
+      // Dry run inspection must confirm every shipped migration applied, 0 pending
       const dryRes = await runMigrationPipeline({ pool: db, apply: false, log: () => {} });
-      assert.equal(dryRes.totalMigrations, 25, 'Total migrations discovered must be 25');
-      assert.equal(dryRes.appliedCount, 25, 'Applied migrations must be 25');
+      assert.equal(dryRes.totalMigrations, MIGRATION_COUNT, `Total migrations discovered must be ${MIGRATION_COUNT}`);
+      assert.equal(dryRes.appliedCount, MIGRATION_COUNT, `Applied migrations must be ${MIGRATION_COUNT}`);
       assert.equal(dryRes.pendingCount, 0, 'Pending migrations must be 0');
     });
 

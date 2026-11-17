@@ -52,7 +52,9 @@ export default function UnpaidTokenQueue({ tokens, selectedId, onSelect, loading
     );
   }
 
-  const unpaid = tokens.filter(t => t.status === 'UNPAID');
+  const unpaid = tokens.filter(
+    (t) => !['SETTLED', 'CLOSED', 'VOID'].includes((t.status || '').toUpperCase())
+  );
 
   if (unpaid.length === 0) {
     return (

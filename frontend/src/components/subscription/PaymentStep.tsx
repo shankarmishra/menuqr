@@ -121,8 +121,8 @@ export default function PaymentStep({
       const customEvent = e as CustomEvent;
       const detail = customEvent.detail;
       console.log('[PaymentStep] Received menusqr:plan-updated event:', detail);
-      // Validate event belongs to this specific order if orderId is provided
-      if (detail?.orderId && detail.orderId !== orderId) {
+      // Validate event strictly belongs to this specific order
+      if (!detail?.orderId || detail.orderId !== orderId) {
         return;
       }
       handleComplete(detail?.planId, detail?.expiresAt);
@@ -190,7 +190,8 @@ export default function PaymentStep({
 
       if (verifyRes.ok) {
         const verifyData = await verifyRes.json();
-        if (verifyData.status === 'PAID' || verifyData.success) {
+        // Only a payment the server marked PAID counts; `success` alone can mean "still processing".
+        if (verifyData.status === 'PAID') {
           handleComplete(verifyData.planId, verifyData.expiresAt);
           return;
         }

@@ -1,46 +1,72 @@
 /**
  * GoogleReviewSlide.tsx
- * Slides up from the bottom after payment is confirmed.
- * Prompts the customer to leave a Google Review.
+ * Post-Settlement Interactive Google Review Nudge
  *
- * Returns null if no googleReviewUrl is provided.
+ * Features:
+ *  - Triggered 1.5s post-settlement to maximize review conversion
+ *  - Interactive 5-star rating selection with hover previews
+ *  - Adaptive reaction copy tailored to positive and constructive ratings
+ *  - Smart fallback to Google Maps search query URL if custom place link is missing
+ *  - Accessible dialog sheet with smooth slide-up animation and dismiss controls
  */
 
 import { useEffect, useState } from 'react';
 
 interface Props {
-  googleReviewUrl: string | null | undefined;
+  googleReviewUrl?: string | null;
   restaurantName: string;
+  restaurantCity?: string | null;
   onDismiss: () => void;
 }
 
-export default function GoogleReviewSlide({ googleReviewUrl, restaurantName, onDismiss }: Props) {
+export default function GoogleReviewSlide({
+  googleReviewUrl,
+  restaurantName,
+  restaurantCity,
+  onDismiss,
+}: Props) {
   const [visible, setVisible] = useState(false);
+  const [rating, setRating] = useState<number>(5);
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
 
-  // Animate in on mount
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 60); // slight delay for paint
+    const t = setTimeout(() => setVisible(true), 60);
     return () => clearTimeout(t);
   }, []);
 
-  // Don't render if no URL
-  if (!googleReviewUrl) return null;
+  // Fallback to Google Maps search review URL if custom review URL is unconfigured
+  const targetReviewUrl =
+    googleReviewUrl ||
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      restaurantName + (restaurantCity ? ' ' + restaurantCity : '')
+    )}`;
 
   function handleDismiss() {
     setVisible(false);
-    // Wait for slide-out animation to finish
     setTimeout(() => onDismiss(), 350);
   }
 
+  const activeStars = hoverRating !== null ? hoverRating : rating;
+
+  const reactionText = {
+    5: "Outstanding! We're thrilled you loved it! 🌟",
+    4: 'Great to hear! Thank you for dining with us! 😊',
+    3: 'Thank you for dining with us. We strive to improve! 🙏',
+    2: 'We are sorry your experience was not ideal. 😔',
+    1: 'We apologize. Please let our management know! ⚠️',
+  }[activeStars] || 'Rate your dining experience:';
+
   return (
-    <>
+    <div className="google-review-sheet">
       {/* Backdrop */}
       <div
         onClick={handleDismiss}
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(0,0,0,0.45)',
+          background: 'rgba(0, 0, 0, 0.65)',
+          backdropFilter: 'blur(3px)',
+          WebkitBackdropFilter: 'blur(3px)',
           zIndex: 9998,
           transition: 'opacity 0.35s ease',
           opacity: visible ? 1 : 0,
@@ -48,11 +74,11 @@ export default function GoogleReviewSlide({ googleReviewUrl, restaurantName, onD
         aria-hidden="true"
       />
 
-      {/* Slide-up sheet */}
+      {/* Slide-Up Bottom Sheet */}
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Leave a Google Review"
+        aria-label="Leave a Review"
         style={{
           position: 'fixed',
           bottom: 0,
@@ -65,117 +91,145 @@ export default function GoogleReviewSlide({ googleReviewUrl, restaurantName, onD
       >
         <div
           style={{
-            background: '#fff',
-            borderRadius: '20px 20px 0 0',
-            padding: '8px 0 0',
-            boxShadow: '0 -8px 40px rgba(0,0,0,0.18)',
-            maxWidth: 480,
+            background: '#ffffff',
+            borderRadius: '24px 24px 0 0',
+            padding: '12px 24px 28px',
+            boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.3)',
+            maxWidth: 460,
             margin: '0 auto',
+            position: 'relative',
           }}
         >
-          {/* Handle bar */}
+          {/* Close X Button */}
+          <button
+            type="button"
+            onClick={handleDismiss}
+            aria-label="Close"
+            style={{
+              position: 'absolute',
+              top: 14,
+              right: 16,
+              background: '#f3f4f6',
+              border: 'none',
+              borderRadius: '50%',
+              width: 28,
+              height: 28,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#6b7280',
+              cursor: 'pointer',
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
+            ✕
+          </button>
+
+          {/* Top Handle bar */}
           <div
             style={{
-              width: 40,
+              width: 44,
               height: 4,
               background: '#e5e7eb',
               borderRadius: 9999,
-              margin: '0 auto 20px',
+              margin: '0 auto 16px',
             }}
             aria-hidden="true"
           />
 
-          {/* Content */}
-          <div style={{ padding: '0 28px 32px', textAlign: 'center' }}>
-            {/* Stars */}
-            <div
-              style={{
-                fontSize: 32,
-                letterSpacing: 4,
-                marginBottom: 12,
-                lineHeight: 1,
-              }}
-              aria-hidden="true"
-            >
-              ⭐⭐⭐⭐⭐
-            </div>
-
-            <h2
-              style={{
-                fontSize: 20,
-                fontWeight: 700,
-                color: '#111827',
-                marginBottom: 8,
-                lineHeight: 1.3,
-              }}
-            >
-              Enjoying your meal?
+          <div style={{ textAlign: 'center' }}>
+            <h2 style={{ fontSize: 19, fontWeight: 800, color: '#111827', marginBottom: 4 }}>
+              Enjoyed dining at {restaurantName}?
             </h2>
-
-            <p
-              style={{
-                fontSize: 14,
-                color: '#6b7280',
-                marginBottom: 24,
-                lineHeight: 1.6,
-              }}
-            >
-              Help others discover{' '}
-              <strong style={{ color: '#374151' }}>{restaurantName}</strong> — it takes
-              just 10 seconds! 🙏
+            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+              {reactionText}
             </p>
 
-            {/* CTA Button */}
+            {/* Interactive 5-Star Rating */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 8,
+                marginBottom: 20,
+              }}
+              role="radiogroup"
+              aria-label="Star Rating"
+            >
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: 32,
+                    cursor: 'pointer',
+                    transform: activeStars >= star ? 'scale(1.15)' : 'scale(1)',
+                    transition: 'transform 0.15s ease',
+                    filter:
+                      activeStars >= star
+                        ? 'drop-shadow(0 2px 6px rgba(251, 191, 36, 0.5))'
+                        : 'grayscale(100%) opacity(40%)',
+                    padding: 4,
+                  }}
+                  aria-label={`${star} star`}
+                >
+                  ⭐
+                </button>
+              ))}
+            </div>
+
+            {/* Direct CTA Button */}
             <a
-              href={googleReviewUrl}
+              href={targetReviewUrl}
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleDismiss}
               style={{
-                display: 'block',
-                background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: 15,
-                padding: '14px 24px',
-                borderRadius: 12,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                width: '100%',
+                background: 'linear-gradient(135deg, #2563eb 0%, #16a34a 100%)',
+                color: '#ffffff',
+                fontWeight: 800,
+                fontSize: 14,
+                padding: '14px 20px',
+                borderRadius: 14,
                 textDecoration: 'none',
-                marginBottom: 12,
-                boxShadow: '0 4px 14px rgba(66,133,244,0.35)',
-                transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-              }}
-              onMouseDown={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(0.97)';
-              }}
-              onMouseUp={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1)';
+                boxShadow: '0 4px 16px rgba(37, 99, 235, 0.3)',
+                transition: 'transform 0.15s ease',
               }}
             >
-              🌟 Write a Review on Google
+              <span>🌟 Share Review on Google</span>
             </a>
 
-            {/* Dismiss */}
+            {/* Dismiss Option */}
             <button
               type="button"
               onClick={handleDismiss}
               style={{
+                marginTop: 12,
                 background: 'none',
                 border: 'none',
                 color: '#9ca3af',
-                fontSize: 13,
+                fontSize: 12,
+                fontWeight: 600,
                 cursor: 'pointer',
-                padding: '8px 16px',
-                borderRadius: 8,
-                transition: 'color 0.15s',
+                padding: '6px 12px',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#6b7280'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#9ca3af'; }}
             >
               Maybe Later
             </button>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

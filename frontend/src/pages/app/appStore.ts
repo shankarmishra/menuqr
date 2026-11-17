@@ -1317,6 +1317,39 @@ export function deleteDiningTable(id: string): Promise<{ success: boolean }> {
   });
 }
 
+/** A table with the permanent code printed inside its QR. */
+export interface CodedTable {
+  id: string;
+  label: string;
+  tableNumber: number;
+  code: string;
+  codeRotatedAt?: string | null;
+}
+
+/** Creates any missing tables in start..end and returns each with its code (existing codes are kept). */
+export function ensureTableCodes(start: number, end: number): Promise<{ tables: CodedTable[] }> {
+  return request<{ tables: CodedTable[] }>('/tables/ensure', {
+    method: 'POST',
+    body: JSON.stringify({ start, end }),
+  });
+}
+
+/** Gives one table a new code. That table's old sticker stops working, so it must be reprinted. */
+export function rotateTableCode(id: string): Promise<{ table: CodedTable }> {
+  return request<{ table: CodedTable }>(`/tables/${encodeURIComponent(id)}/rotate-code`, { method: 'POST' });
+}
+
+export function getTableSettings(): Promise<{ allowLegacyTableParam: boolean }> {
+  return request<{ allowLegacyTableParam: boolean }>('/tables/settings');
+}
+
+export function saveTableSettings(allowLegacyTableParam: boolean): Promise<{ allowLegacyTableParam: boolean }> {
+  return request<{ allowLegacyTableParam: boolean }>('/tables/settings', {
+    method: 'PATCH',
+    body: JSON.stringify({ allowLegacyTableParam }),
+  });
+}
+
 
 // ── Setup Progress API (Blueprint v4) ───────────────────────────────────────
 export interface SetupProgress {

@@ -244,6 +244,24 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return parseApiResponse<T>(response);
 }
 
+/**
+ * Diner-facing calls (/api/public/*). They never use the owner's session, so they send no cookies,
+ * Bearer token or CSRF header. A logged-in owner testing their own menu therefore cannot hit a CSRF error.
+ */
+async function publicRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl}/api${path}`, {
+      ...init,
+      credentials: 'omit',
+      headers: { 'Content-Type': 'application/json', ...init?.headers },
+    });
+  } catch (err: any) {
+    throw new Error(err?.message || 'We could not reach the MenusQR server. Check your connection.');
+  }
+  return parseApiResponse<T>(response);
+}
+
 function getLegacyClients(): ClientRecord[] {
   try {
     const stored = localStorage.getItem(storageKey);
@@ -430,7 +448,7 @@ export async function getClient(id: string): Promise<ClientRecord | undefined> {
 export async function getClientByMenuSlug(slug: string): Promise<PublicMenuRecord | undefined> {
   let raw: RawPublicMenuApiResponse;
   try {
-    raw = await request<RawPublicMenuApiResponse>(`/public/menus/${encodeURIComponent(slug)}`);
+    raw = await publicRequest<RawPublicMenuApiResponse>(`/public/menus/${encodeURIComponent(slug)}`);
   } catch (error) {
     if (error instanceof Error && error.message === 'SUBSCRIPTION_EXPIRED') {
       throw error;
@@ -446,7 +464,7 @@ export async function getClientByMenuSlug(slug: string): Promise<PublicMenuRecor
 }
 
 export async function getClientByQrId(qrId: string): Promise<{ menuSlug: string; client: PublicMenuRecord }> {
-  const raw = await request<RawPublicMenuApiResponse>(`/public/qr/${encodeURIComponent(qrId)}`);
+  const raw = await publicRequest<RawPublicMenuApiResponse>(`/public/qr/${encodeURIComponent(qrId)}`);
   if (!raw.menuSlug) throw new Error('This permanent menu link is unavailable.');
   return { menuSlug: raw.menuSlug, client: mapPublicMenu(raw) };
 }
@@ -512,6 +530,8 @@ export interface CustomerOrder {
   id: string;
   orderType?: 'DINE_IN' | 'DELIVERY';
   tableNumber?: string | null;
+  /** 'code' = table read from the sticker code; 'legacy' = old ?table=N link (staff should double-check). */
+  tableSource?: 'code' | 'legacy' | null;
   customerName?: string | null;
   customerPhone?: string | null;
   deliveryAddress?: string | null;
@@ -542,6 +562,9 @@ export interface CustomerOrder {
 
 export type CreateCustomerOrderPayload = {
   orderType?: 'DINE_IN' | 'DELIVERY' | 'TAKEAWAY';
+  /** Code printed inside the table QR. The server reads the table from it. */
+  tableCode?: string | null;
+  /** Only for old stickers printed with ?table=N; ignored when tableCode is sent. */
   tableNumber?: string | null;
   customerName: string;
   customerPhone: string;
@@ -558,7 +581,7 @@ export type CreateCustomerOrderPayload = {
 };
 
 export async function submitCustomerOrder(slug: string, order: CreateCustomerOrderPayload): Promise<CustomerOrder> {
-  return request<CustomerOrder>(`/public/menus/${encodeURIComponent(slug)}/orders`, {
+  return publicRequest<CustomerOrder>(`/public/menus/${encodeURIComponent(slug)}/orders`, {
     method: 'POST',
     body: JSON.stringify(order)
   });
@@ -576,7 +599,7 @@ export async function updateOrderStatus(id: string, status: CustomerOrderStatus,
 }
 
 export async function submitCustomerOrderByQr(qrId: string, order: CreateCustomerOrderPayload): Promise<CustomerOrder> {
-  return request<CustomerOrder>(`/public/qr/${encodeURIComponent(qrId)}/orders`, {
+  return publicRequest<CustomerOrder>(`/public/qr/${encodeURIComponent(qrId)}/orders`, {
     method: 'POST',
     body: JSON.stringify(order),
   });
@@ -584,12 +607,47 @@ export async function submitCustomerOrderByQr(qrId: string, order: CreateCustome
 
 export async function getCustomerOrderStatus(orderId: string, token?: string): Promise<CustomerOrder> {
   const query = token ? `?token=${encodeURIComponent(token)}` : '';
-  return request<CustomerOrder>(`/public/orders/${encodeURIComponent(orderId)}${query}`);
+  return publicRequest<CustomerOrder>(`/public/orders/${encodeURIComponent(orderId)}${query}`);
 }
 
-export async function getActiveTableToken(slug: string, table: string): Promise<{ tokenId: string; tokenNumber: number; tokenCode: string; billUrl: string; total: number } | null> {
+/** Which table does this QR code belong to? null when the code is not valid for this restaurant. */
+export async function getTableByCode(slug: string, tableCode: string): Promise<{ number: number; label: string } | null> {
   try {
-    const res = await request<{ success: boolean; activeToken: any }>(`/public/menu/${encodeURIComponent(slug)}/active-table-token?table=${encodeURIComponent(table)}`);
+    const res = await publicRequest<{ table?: { number: number; label: string } }>(
+      `/public/menus/${encodeURIComponent(slug)}/table?tc=${encodeURIComponent(tableCode)}`
+    );
+    return res.table ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * For a link without a table code (a general restaurant QR): may the diner give their table number
+ * themselves? True only while the restaurant's "old stickers" switch is on. False on any error.
+ */
+export async function getTableEntryMode(slug: string): Promise<boolean> {
+  try {
+    const res = await publicRequest<{ legacyTableEntry?: boolean }>(`/public/menus/${encodeURIComponent(slug)}/table`);
+    return res.legacyTableEntry === true;
+  } catch {
+    return false;
+  }
+}
+
+/** The open bill of the diner's table. Needs the table code (or, for old stickers, the number). */
+export async function getActiveTableToken(
+  slug: string,
+  table: { tableCode?: string | null; legacyTable?: string | null }
+): Promise<{ tokenId: string; tokenNumber: number; tokenCode: string; billUrl: string; total: number } | null> {
+  const query = table.tableCode
+    ? `tc=${encodeURIComponent(table.tableCode)}`
+    : table.legacyTable
+      ? `table=${encodeURIComponent(table.legacyTable)}`
+      : '';
+  if (!query) return null;
+  try {
+    const res = await publicRequest<{ success: boolean; activeToken: any }>(`/public/menu/${encodeURIComponent(slug)}/active-table-token?${query}`);
     return res.activeToken || null;
   } catch {
     return null;

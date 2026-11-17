@@ -1,3 +1,4 @@
+import OtpInput from '../../components/ui/OtpInput';
 import { useState, useEffect, type FormEvent } from 'react';
 import { Eye, EyeOff, KeyRound, Mail, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -413,18 +414,16 @@ export default function AdminLogin() {
 
             <form onSubmit={handleVerifyOtp} className="mt-6 space-y-5">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[#94a39d] mb-2" htmlFor="otp-input">
+                <p className="block text-xs font-semibold uppercase tracking-wider text-[#94a39d] mb-2 text-center" id="otp-input-label">
                   6-Digit Verification Code
-                </label>
-                <input
-                  id="otp-input"
-                  type="text"
-                  maxLength={6}
-                  autoFocus
+                </p>
+                <OtpInput
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                  className="w-full rounded-xl border border-[#e8783c]/40 bg-[#151d19] py-3.5 text-center text-2xl font-mono font-bold tracking-[0.4em] text-[#e8783c] outline-none transition focus:border-[#e8783c] focus:ring-4 focus:ring-[#e8783c]/20"
-                  placeholder="123456"
+                  onChange={setOtp}
+                  length={6}
+                  autoFocus
+                  disabled={isSubmitting}
+                  invalid={Boolean(error)}
                 />
               </div>
 

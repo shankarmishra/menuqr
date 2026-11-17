@@ -5,6 +5,10 @@ export type TableQrCard = {
   url: string;
   dataUrl: string;
   svgString?: string;
+  /** dining_tables id, for "new code" (rotate). */
+  tableId?: string;
+  /** The code printed inside this table's QR. */
+  code?: string;
 };
 
 /** Parses single table count; returns null unless it is a whole number from 1 to 200. */
@@ -29,16 +33,28 @@ export function clampTableRange(
   return { start, end, count };
 }
 
-/** Adds `?table=N` to the permanent QR link, preserving any existing query string. */
-export function buildTableQrUrl(baseUrl: string, table: number): string {
+/**
+ * Adds the table's code (`?tc=K7Q92M`) to the restaurant's one permanent QR link, keeping any
+ * existing query string. Every table sticker shares the same link; only this code differs, and the
+ * server, not the diner, turns it into a table number.
+ */
+export function buildTableQrUrl(baseUrl: string, tableCode: string): string {
+  const code = String(tableCode).trim().toUpperCase();
   try {
     const url = new URL(baseUrl);
-    url.searchParams.set('table', String(table));
+    url.searchParams.delete('table');
+    url.searchParams.set('tc', code);
     return url.toString();
   } catch {
     const separator = baseUrl.includes('?') ? '&' : '?';
-    return `${baseUrl}${separator}table=${table}`;
+    return `${baseUrl}${separator}tc=${encodeURIComponent(code)}`;
   }
+}
+
+/** Shows a code the way it is printed under the QR: K7Q9-2M. */
+export function formatTableCode(code: string): string {
+  const clean = String(code).trim().toUpperCase();
+  return clean.length > 4 ? `${clean.slice(0, 4)}-${clean.slice(4)}` : clean;
 }
 
 export function escapeHtml(value: string): string {

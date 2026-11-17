@@ -4,35 +4,23 @@
  *
  * Real-time cashier counter for token management & Floor Grid:
  *  - 2 Master Tabs: Active Floor (Table Grid) vs Settled History
- *  - SSE-driven live queue of UNPAID tokens
+ *  - SSE-driven live queue of active dining & billing tokens
  *  - Visual Table Matrix with color-coded status (Vacant, Dining, Bill Requested)
  *  - 1-Click CASH / UPI / CARD settlement with auto-vacate & auto-archive
+ *  - Close & Free Table lifecycle action
+ *  - Inline realistic ThermalBillCard receipt preview modal with 80mm print action
  *  - Settled Register with daily collection totals & hardware Thermal Receipts
  */
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import TokenSearchInput from '../../components/cashier/TokenSearchInput';
 import UnpaidTokenQueue, { type CashierToken } from '../../components/cashier/UnpaidTokenQueue';
-import PaymentActionPanel from '../../components/cashier/PaymentActionPanel';
+import PaymentActionPanel, { type TokenDetail } from '../../components/cashier/PaymentActionPanel';
 import FloorGrid from '../../components/cashier/FloorGrid';
 import SettledHistoryView, { type SettledTokenItem } from '../../components/cashier/SettledHistoryView';
-import { LayoutGrid, List, Receipt, UtensilsCrossed, Plus } from 'lucide-react';
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-interface TokenDetail extends CashierToken {
-  items: Array<{
-    name: string;
-    variant?: string | null;
-    quantity: number;
-    totalPrice: number;
-    isVeg: boolean;
-  }>;
-  subtotal: number;
-  gst: number;
-  discount: number;
-  restaurantName?: string;
-}
+import ThermalBillCard from '../../components/bill/ThermalBillCard';
+import type { PublicTokenData } from '../customer/BillPage';
+import { LayoutGrid, List, Receipt, UtensilsCrossed, Plus, Printer, X } from 'lucide-react';
 
 interface DiningTable {
   id: string;
@@ -41,21 +29,22 @@ interface DiningTable {
 }
 
 // ── Helper ────────────────────────────────────────────────────────────────────
-
 function buildTokenFromSsePayload(payload: Record<string, unknown>): CashierToken {
   return {
     id: String(payload.tokenId ?? payload.id ?? ''),
     tokenNumber: Number(payload.tokenNumber ?? 0),
     tableNumber: Number(payload.tableNumber ?? 0),
-    total: Number(payload.total ?? 0),
+    total: Number(
+      payload.total ??
+        (payload.totalPaise !== undefined ? Number(payload.totalPaise) / 100 : 0)
+    ),
     itemCount: Number(payload.itemCount ?? (payload.items as unknown[] | undefined)?.length ?? 0),
     createdAt: String(payload.createdAt ?? new Date().toISOString()),
-    status: (payload.status as CashierToken['status']) ?? 'UNPAID',
+    status: (payload.status as CashierToken['status']) ?? 'ISSUED',
   };
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
-
 export default function CashierPanel() {
   const [activeTab, setActiveTab] = useState<'FLOOR' | 'SETTLED'>('FLOOR');
   const [floorViewMode, setFloorViewMode] = useState<'GRID' | 'LIST'>('GRID');
@@ -63,15 +52,18 @@ export default function CashierPanel() {
   const [tokens, setTokens] = useState<CashierToken[]>([]);
   const [settledTokens, setSettledTokens] = useState<SettledTokenItem[]>([]);
   const [tables, setTables] = useState<DiningTable[]>([]);
-  
+
   const [loading, setLoading] = useState(true);
   const [settledLoading, setSettledLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const [selectedToken, setSelectedToken] = useState<CashierToken | null>(null);
   const [tokenDetail, setTokenDetail] = useState<TokenDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [sseStatus, setSseStatus] = useState<'connecting' | 'live' | 'error'>('connecting');
+
+  // Inline receipt preview modal state
+  const [previewToken, setPreviewToken] = useState<PublicTokenData | null>(null);
 
   // Modal for creating a new token
   const [showNewTokenModal, setShowNewTokenModal] = useState(false);
@@ -87,7 +79,7 @@ export default function CashierPanel() {
     try {
       const res = await fetch('/api/app/tables', { credentials: 'include' });
       if (res.ok) {
-        const data = await res.json() as DiningTable[];
+        const data = (await res.json()) as DiningTable[];
         if (Array.isArray(data)) setTables(data);
       }
     } catch {
@@ -99,17 +91,19 @@ export default function CashierPanel() {
     try {
       const res = await fetch('/api/app/tokens?status=UNPAID', { credentials: 'include' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json() as { tokens?: CashierToken[] } | CashierToken[];
+      const data = (await res.json()) as { tokens?: CashierToken[] } | CashierToken[];
       const list = Array.isArray(data) ? data : (data as { tokens?: CashierToken[] }).tokens ?? [];
-      setTokens(list.map((t) => ({
-        id: t.id,
-        tokenNumber: t.tokenNumber,
-        tableNumber: t.tableNumber,
-        total: t.total,
-        itemCount: t.itemCount ?? 0,
-        createdAt: t.createdAt,
-        status: t.status,
-      })));
+      setTokens(
+        list.map((t) => ({
+          id: t.id,
+          tokenNumber: t.tokenNumber,
+          tableNumber: t.tableNumber,
+          total: t.total,
+          itemCount: t.itemCount ?? 0,
+          createdAt: t.createdAt,
+          status: t.status,
+        }))
+      );
     } catch {
       // Non-critical — SSE will keep us updated
     } finally {
@@ -120,10 +114,16 @@ export default function CashierPanel() {
   const fetchSettledTokens = useCallback(async () => {
     setSettledLoading(true);
     try {
-      const res = await fetch('/api/app/tokens?status=SETTLED&date=all', { credentials: 'include' });
+      const res = await fetch('/api/app/tokens?status=SETTLED&date=all', {
+        credentials: 'include',
+      });
       if (res.ok) {
-        const data = await res.json() as { tokens?: SettledTokenItem[] } | SettledTokenItem[];
-        const list = Array.isArray(data) ? data : (data as { tokens?: SettledTokenItem[] }).tokens ?? [];
+        const data = (await res.json()) as
+          | { tokens?: SettledTokenItem[] }
+          | SettledTokenItem[];
+        const list = Array.isArray(data)
+          ? data
+          : (data as { tokens?: SettledTokenItem[] }).tokens ?? [];
         setSettledTokens(list);
       }
     } catch {
@@ -139,88 +139,7 @@ export default function CashierPanel() {
     void fetchSettledTokens();
   }, [fetchTables, fetchTokens, fetchSettledTokens]);
 
-  // ── 2. SSE — real-time token events ────────────────────────────────────────
-  useEffect(() => {
-    const sse = new EventSource('/api/app/orders/stream', { withCredentials: true });
-    sseRef.current = sse;
-
-    sse.onopen = () => setSseStatus('live');
-    sse.onerror = () => setSseStatus('error');
-
-    // New token created (waiter opened a bill)
-    sse.addEventListener('new_token', (e) => {
-      try {
-        const payload = JSON.parse(e.data) as Record<string, unknown>;
-        const t = buildTokenFromSsePayload(payload);
-        setTokens((prev) => {
-          if (prev.some((x) => x.id === t.id)) return prev;
-          return [t, ...prev];
-        });
-      } catch { /* ignore */ }
-    });
-
-    // Token settled (paid) — remove from queue & add to settled history
-    sse.addEventListener('token_settled', (e) => {
-      try {
-        const payload = JSON.parse(e.data) as Record<string, unknown>;
-        const tokenId = String(payload.tokenId ?? payload.id ?? '');
-        setTokens((prev) => prev.filter((t) => t.id !== tokenId));
-        setSelectedToken((prev) => (prev?.id === tokenId ? null : prev));
-        void fetchSettledTokens();
-      } catch { /* ignore */ }
-    });
-
-    // Token voided — remove from queue
-    sse.addEventListener('token_voided', (e) => {
-      try {
-        const payload = JSON.parse(e.data) as Record<string, unknown>;
-        const tokenId = String(payload.tokenId ?? payload.id ?? '');
-        setTokens((prev) => prev.filter((t) => t.id !== tokenId));
-        setSelectedToken((prev) => (prev?.id === tokenId ? null : prev));
-      } catch { /* ignore */ }
-    });
-
-    // Item added to token — update total & itemCount
-    sse.addEventListener('token_item_added', (e) => {
-      try {
-        const payload = JSON.parse(e.data) as Record<string, unknown>;
-        const tokenId = String(payload.tokenId ?? '');
-        const newTotal = Number(payload.total ?? 0);
-        const newItemCount = Number(payload.itemCount ?? 0);
-        setTokens((prev) =>
-          prev.map((t) =>
-            t.id === tokenId
-              ? { ...t, total: newTotal, itemCount: newItemCount }
-              : t
-          )
-        );
-        setSelectedToken((prev) => {
-          if (prev?.id === tokenId) {
-            void fetchTokenDetail(tokenId);
-          }
-          return prev;
-        });
-      } catch { /* ignore */ }
-    });
-
-    // Bill requested by customer
-    sse.addEventListener('bill_requested', (e) => {
-      try {
-        const payload = JSON.parse(e.data) as Record<string, unknown>;
-        const tokenId = String(payload.tokenId ?? '');
-        setTokens((prev) =>
-          prev.map((t) => (t.id === tokenId ? { ...t, status: 'BILL_REQUESTED' as const } : t))
-        );
-      } catch { /* ignore */ }
-    });
-
-    return () => {
-      sse.close();
-      sseRef.current = null;
-    };
-  }, [fetchSettledTokens]);
-
-  // ── 3. Fetch token detail when selection changes ────────────────────────────
+  // ── 2. Fetch token detail when selection changes ────────────────────────────
   const fetchTokenDetail = useCallback(async (tokenId: string) => {
     detailAbortRef.current?.abort();
     const ctrl = new AbortController();
@@ -235,7 +154,7 @@ export default function CashierPanel() {
         signal: ctrl.signal,
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json() as TokenDetail;
+      const data = (await res.json()) as TokenDetail;
       setTokenDetail(data);
     } catch (err) {
       if ((err as Error).name !== 'AbortError') {
@@ -246,12 +165,135 @@ export default function CashierPanel() {
     }
   }, []);
 
+  // ── 3. Staff SSE Connection — Real-Time Token Coordination ─────────────────
+  useEffect(() => {
+    const sse = new EventSource('/api/app/orders/stream', { withCredentials: true });
+    sseRef.current = sse;
+
+    sse.onopen = () => setSseStatus('live');
+    sse.onerror = () => setSseStatus('error');
+
+    // New token created (table opened)
+    sse.addEventListener('new_token', (e) => {
+      try {
+        const payload = JSON.parse(e.data) as Record<string, unknown>;
+        const t = buildTokenFromSsePayload(payload);
+        setTokens((prev) => {
+          if (prev.some((x) => x.id === t.id)) return prev;
+          return [t, ...prev];
+        });
+      } catch {}
+    });
+
+    // Token settled (paid) — remove from queue & refresh history
+    sse.addEventListener('token_settled', (e) => {
+      try {
+        const payload = JSON.parse(e.data) as Record<string, unknown>;
+        const tokenId = String(payload.tokenId ?? payload.id ?? '');
+        setTokens((prev) => prev.filter((t) => t.id !== tokenId));
+        setSelectedToken((prev) => (prev?.id === tokenId ? null : prev));
+        void fetchSettledTokens();
+      } catch {}
+    });
+
+    // Token closed (table vacated & closed)
+    sse.addEventListener('token_closed', (e) => {
+      try {
+        const payload = JSON.parse(e.data) as Record<string, unknown>;
+        const tokenId = String(payload.tokenId ?? payload.id ?? '');
+        setTokens((prev) => prev.filter((t) => t.id !== tokenId));
+        setSelectedToken((prev) => (prev?.id === tokenId ? null : prev));
+        void fetchSettledTokens();
+      } catch {}
+    });
+
+    // Token voided — remove from queue
+    sse.addEventListener('token_voided', (e) => {
+      try {
+        const payload = JSON.parse(e.data) as Record<string, unknown>;
+        const tokenId = String(payload.tokenId ?? payload.id ?? '');
+        setTokens((prev) => prev.filter((t) => t.id !== tokenId));
+        setSelectedToken((prev) => (prev?.id === tokenId ? null : prev));
+      } catch {}
+    });
+
+    // Item added to token — update total & itemCount
+    sse.addEventListener('token_item_added', (e) => {
+      try {
+        const payload = JSON.parse(e.data) as Record<string, unknown>;
+        const tokenId = String(payload.tokenId ?? '');
+        const newTotal = Number(
+          payload.total ??
+            (payload.totalPaise !== undefined ? Number(payload.totalPaise) / 100 : 0)
+        );
+        const newItemCount = Number(
+          payload.itemCount ?? (payload.items as unknown[] | undefined)?.length ?? 0
+        );
+        setTokens((prev) =>
+          prev.map((t) =>
+            t.id === tokenId ? { ...t, total: newTotal, itemCount: newItemCount } : t
+          )
+        );
+        setSelectedToken((prev) => {
+          if (prev?.id === tokenId) {
+            void fetchTokenDetail(tokenId);
+          }
+          return prev;
+        });
+      } catch {}
+    });
+
+    // Items updated on token
+    sse.addEventListener('token_items_updated', (e) => {
+      try {
+        const payload = JSON.parse(e.data) as Record<string, unknown>;
+        const tokenId = String(payload.tokenId ?? '');
+        const newTotal = Number(
+          payload.total ??
+            (payload.totalPaise !== undefined ? Number(payload.totalPaise) / 100 : 0)
+        );
+        const newItemCount = Number(
+          payload.itemCount ?? (payload.items as unknown[] | undefined)?.length ?? 0
+        );
+        setTokens((prev) =>
+          prev.map((t) =>
+            t.id === tokenId ? { ...t, total: newTotal, itemCount: newItemCount } : t
+          )
+        );
+        setSelectedToken((prev) => {
+          if (prev?.id === tokenId) {
+            void fetchTokenDetail(tokenId);
+          }
+          return prev;
+        });
+      } catch {}
+    });
+
+    // Bill requested by customer at table
+    sse.addEventListener('bill_requested', (e) => {
+      try {
+        const payload = JSON.parse(e.data) as Record<string, unknown>;
+        const tokenId = String(payload.tokenId ?? '');
+        setTokens((prev) =>
+          prev.map((t) =>
+            t.id === tokenId ? { ...t, status: 'BILL_REQUESTED' as const } : t
+          )
+        );
+      } catch {}
+    });
+
+    return () => {
+      sse.close();
+      sseRef.current = null;
+    };
+  }, [fetchSettledTokens, fetchTokenDetail]);
+
   function handleSelectToken(token: CashierToken) {
     setSelectedToken(token);
     void fetchTokenDetail(token.id);
   }
 
-  // ── 4. Post-settlement handler (Auto-Archive & Instant Table Vacate) ─────────
+  // ── 4. Post-settlement / Table Close handler ─────────────────────────────────
   function handleSettled(tokenId: string) {
     setTokens((prev) => prev.filter((t) => t.id !== tokenId));
     setSelectedToken(null);
@@ -259,7 +301,42 @@ export default function CashierPanel() {
     void fetchSettledTokens();
   }
 
-  // ── 5. Open Table Bill ──────────────────────────────────────────────────────
+  // ── 5. Receipt Preview Modal Trigger ────────────────────────────────────────
+  const handlePreviewReceipt = useCallback(
+    (token: CashierToken, detail: TokenDetail | null) => {
+      const publicData: PublicTokenData = {
+        tokenId: token.id,
+        tokenNumber: token.tokenNumber,
+        tokenCode: `#${String(token.tokenNumber).padStart(3, '0')}`,
+        tableNumber: token.tableNumber,
+        restaurantName: detail?.restaurantName || 'Restaurant',
+        restaurantGstin: detail?.restaurantGstin || null,
+        restaurantFssai: detail?.restaurantFssai || null,
+        items: (detail?.items || []).map((it, idx) => ({
+          id: String(idx),
+          name: it.name,
+          variant: it.variant,
+          quantity: it.quantity,
+          unitPrice: it.quantity > 0 ? it.totalPrice / it.quantity : it.totalPrice,
+          totalPrice: it.totalPrice,
+          isVeg: it.isVeg,
+        })),
+        subtotal: detail?.subtotal || token.total,
+        gst: detail?.gst || 0,
+        cgst: detail?.cgst,
+        sgst: detail?.sgst,
+        discount: detail?.discount || 0,
+        roundOff: detail?.roundOff,
+        total: token.total,
+        status: token.status as PublicTokenData['status'],
+        createdAt: token.createdAt,
+      };
+      setPreviewToken(publicData);
+    },
+    []
+  );
+
+  // ── 6. Open Table Bill ──────────────────────────────────────────────────────
   function openTableBillModal(tableNumber?: number) {
     if (tableNumber) setNewTableNum(String(tableNumber));
     setShowNewTokenModal(true);
@@ -280,7 +357,11 @@ export default function CashierPanel() {
         credentials: 'include',
         body: JSON.stringify({ tableNumber: tableNum }),
       });
-      const data = await res.json() as { error?: string; message?: string; token?: CashierToken };
+      const data = (await res.json()) as {
+        error?: string;
+        message?: string;
+        token?: CashierToken;
+      };
       if (!res.ok) {
         throw new Error(data.error || data.message || 'Failed to open table');
       }
@@ -297,7 +378,7 @@ export default function CashierPanel() {
           total: data.token.total || 0,
           itemCount: 0,
           createdAt: data.token.createdAt,
-          status: 'UNPAID',
+          status: 'ISSUED',
         };
         setSelectedToken(created);
         void fetchTokenDetail(created.id);
@@ -309,9 +390,13 @@ export default function CashierPanel() {
     }
   }
 
-  // ── Filtered tokens ─────────────────────────────────────────────────────────
+  // Filtered tokens based on search
   const filteredTokens = searchQuery
-    ? tokens.filter((t) => String(t.tokenNumber).includes(searchQuery) || String(t.tableNumber).includes(searchQuery))
+    ? tokens.filter(
+        (t) =>
+          String(t.tokenNumber).includes(searchQuery) ||
+          String(t.tableNumber).includes(searchQuery)
+      )
     : tokens;
 
   const unpaidCount = tokens.length;
@@ -340,7 +425,7 @@ export default function CashierPanel() {
             <button
               type="button"
               onClick={() => openTableBillModal()}
-              className="inline-flex items-center gap-1.5 bg-[#e8783c] hover:bg-[#d66a30] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-[#e8783c]/20"
+              className="inline-flex items-center gap-1.5 bg-[#e8783c] hover:bg-[#d66a30] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-[#e8783c]/20 cursor-pointer"
             >
               <Plus size={15} />
               <span>+ Open Table Bill</span>
@@ -353,7 +438,9 @@ export default function CashierPanel() {
                   sseStatus === 'live' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
                 }`}
               />
-              <span className="font-mono text-[11px]">{sseStatus === 'live' ? 'Live SSE' : 'Connecting'}</span>
+              <span className="font-mono text-[11px]">
+                {sseStatus === 'live' ? 'Live SSE' : 'Connecting'}
+              </span>
             </div>
           </div>
         </div>
@@ -363,7 +450,7 @@ export default function CashierPanel() {
           <button
             type="button"
             onClick={() => setActiveTab('FLOOR')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'FLOOR'
                 ? 'bg-white text-black shadow-md'
                 : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
@@ -381,7 +468,7 @@ export default function CashierPanel() {
           <button
             type="button"
             onClick={() => setActiveTab('SETTLED')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'SETTLED'
                 ? 'bg-white text-black shadow-md'
                 : 'bg-[#1d2723] text-[#849a90] hover:text-white border border-[#2a3832]'
@@ -411,7 +498,7 @@ export default function CashierPanel() {
                   <button
                     type="button"
                     onClick={() => setFloorViewMode('GRID')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                       floorViewMode === 'GRID'
                         ? 'bg-emerald-500 text-black shadow-sm'
                         : 'text-[#849a90] hover:text-white'
@@ -423,7 +510,7 @@ export default function CashierPanel() {
                   <button
                     type="button"
                     onClick={() => setFloorViewMode('LIST')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                       floorViewMode === 'LIST'
                         ? 'bg-[#e8783c] text-white shadow-sm'
                         : 'text-[#849a90] hover:text-white'
@@ -473,6 +560,7 @@ export default function CashierPanel() {
                     void fetchTokens();
                     void fetchTokenDetail(selectedToken.id);
                   }}
+                  onPreviewReceipt={handlePreviewReceipt}
                 />
               ) : (
                 <div className="rounded-2xl border border-dashed border-[#2a3832] bg-[#151c19]/50 p-8 text-center flex flex-col items-center justify-center min-h-[360px]">
@@ -534,19 +622,73 @@ export default function CashierPanel() {
                 <button
                   type="button"
                   onClick={() => setShowNewTokenModal(false)}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-[#1d2723] hover:bg-[#2a3832] border border-[#2a3832] text-xs font-semibold text-[#849a90] transition-colors"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-[#1d2723] hover:bg-[#2a3832] border border-[#2a3832] text-xs font-semibold text-[#849a90] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creatingToken}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-[#e8783c] hover:bg-[#d66a30] text-white text-xs font-bold transition-all disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-[#e8783c] hover:bg-[#d66a30] text-white text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {creatingToken ? 'Opening...' : 'Open Bill'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal: Inline Thermal Receipt Preview ── */}
+      {previewToken && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="relative max-w-sm w-full bg-[#151c19] border border-[#2a3832] rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center pb-2 border-b border-[#2a3832]">
+              <div className="flex items-center gap-2">
+                <span className="text-base font-bold text-white">Receipt Preview</span>
+                <span className="text-[10px] font-mono font-bold bg-[#1d2723] px-2 py-0.5 rounded text-[#849a90] border border-[#2a3832]">
+                  #{String(previewToken.tokenNumber).padStart(3, '0')}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewToken(null)}
+                className="text-[#849a90] hover:text-white text-lg font-bold p-1 rounded-lg hover:bg-white/10 cursor-pointer"
+                aria-label="Close Preview"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex justify-center">
+              <ThermalBillCard
+                token={previewToken}
+                isPaid={['SETTLED', 'PAID'].includes(
+                  (previewToken.status || '').toUpperCase()
+                )}
+                paidAt={previewToken.paidAt || null}
+                paymentMethod={previewToken.paymentMethod || null}
+                onPrint={() => window.print()}
+              />
+            </div>
+
+            <div className="flex gap-2 pt-2 border-t border-[#2a3832]">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 bg-[#e8783c] hover:bg-[#d66a30] text-white py-2.5 rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Printer size={14} />
+                <span>Print Receipt</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewToken(null)}
+                className="px-4 py-2.5 rounded-xl bg-[#1d2723] hover:bg-[#2a3832] border border-[#2a3832] text-xs font-semibold text-[#849a90] cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

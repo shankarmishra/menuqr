@@ -1,3 +1,4 @@
+import { useToast } from '../../components/feedback/ToastProvider';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Building2, Check, Clock3, CreditCard, MapPin, Save, UserRound, ImagePlus } from 'lucide-react';
@@ -42,6 +43,7 @@ function Field({ label, children, className = '' }: { label: string; children: R
 }
 
 export default function ClientForm() {
+  const showToast = useToast();
   const { clientId, step: stepSlug } = useParams();
   const navigate = useNavigate();
   const [existing, setExisting] = useState<ClientRecord>();
@@ -101,7 +103,7 @@ export default function ClientForm() {
       const image = await compressImage(file);
       update('heroImage', image);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Image upload failed.');
+      showToast('error', err instanceof Error ? err.message : 'Image upload failed.');
     }
   }
 

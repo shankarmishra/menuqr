@@ -35,7 +35,7 @@ import tokenRoutes from './routes/tokens.js';
 import { randomUUID } from 'node:crypto';
 
 import { parseCookie as parse } from 'cookie';
-import { verifyCsrfToken } from './csrf.js';
+import { verifyCsrfToken, needsCsrfCheck } from './csrf.js';
 
 const port = Number(process.env.PORT || process.env.API_PORT || 3001);
 const isAllowedOrigin = createCorsOriginChecker(process.env);
@@ -142,9 +142,8 @@ const server = createServer(async (request, response) => {
     }
   }
 
-  // CSRF Token Validation for Cookie-Authenticated State-Changing Requests
-  const isAuthRoute = url.pathname.startsWith('/api/auth/');
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method) && !url.pathname.startsWith('/api/webhooks/') && !isAuthRoute) {
+  // CSRF Token Validation for Cookie-Authenticated State-Changing Requests (rules in needsCsrfCheck).
+  if (needsCsrfCheck(request.method, url.pathname)) {
     const cookies = parse(request.headers.cookie || '');
     const sessionToken = cookies['menusqr_auth'] || cookies['menusqr_admin_session'];
     const csrfCookie = cookies['menusqr_csrf'];

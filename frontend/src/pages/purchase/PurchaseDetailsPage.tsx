@@ -1,3 +1,4 @@
+import { useToast } from '../../components/feedback/ToastProvider';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import SiteHeader from '../../components/marketing/SiteHeader';
@@ -55,6 +56,7 @@ function getSuggestedEmail(email: string): string | null {
 }
 
 export default function PurchaseDetailsPage() {
+  const showToast = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialPlan = searchParams.get('plan') || 'premium';
@@ -147,7 +149,7 @@ export default function PurchaseDetailsPage() {
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
+      showToast('error', 'Geolocation is not supported by your browser.');
       return;
     }
     setGettingLocation(true);
@@ -188,14 +190,14 @@ export default function PurchaseDetailsPage() {
           }
         } catch (error) {
           console.error("Error fetching address:", error);
-          alert('Could not fetch address automatically. Please enter it manually.');
+          showToast('error', 'Could not fetch address automatically. Please enter it manually.');
         } finally {
           setGettingLocation(false);
         }
       },
       (error) => {
         console.error("Geolocation error:", error);
-        alert('Could not access your location. Please allow location permissions or enter manually.');
+        showToast('error', 'Could not access your location. Please allow location permissions or enter manually.');
         setGettingLocation(false);
       },
       { timeout: 10000 }

@@ -123,8 +123,22 @@ export function broadcastTokenStatus(tokenId, token) {
   if (!tokenId || !token) return;
   broadcastTokenEvent(tokenId, 'token_status', {
     status: token.status,
-    token,
+    token: publicTokenView(token),
   });
+}
+
+// Fields a diner's phone never needs: contact details, payment reference and staff identities.
+const PRIVATE_TOKEN_FIELDS = [
+  'customerPhone', 'customer_phone', 'paymentReference', 'payment_reference',
+  'waiterId', 'waiter_id', 'settledById', 'settled_by_id',
+];
+
+/** Copy of a staff token object that is safe to send to the public bill page and its stream. */
+export function publicTokenView(token) {
+  if (!token || typeof token !== 'object') return token;
+  const copy = { ...token };
+  for (const key of PRIVATE_TOKEN_FIELDS) delete copy[key];
+  return copy;
 }
 
 /**

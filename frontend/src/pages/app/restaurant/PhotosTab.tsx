@@ -1,3 +1,4 @@
+import { useToast } from '../../../components/feedback/ToastProvider';
 import React, { useState } from 'react';
 import { Upload, Trash2, Image, ShieldCheck } from 'lucide-react';
 import { AppearsOnChips, type SurfaceTarget } from './AppearsOnChips';
@@ -26,6 +27,7 @@ export const PhotosTab: React.FC<PhotosTabProps> = ({
   activeSurface,
   planId = 'BASIC',
 }) => {
+  const showToast = useToast();
   const [photos, setPhotos] = useState<GalleryPhoto[]>(profile?.photos || []);
   const [uploading, setUploading] = useState(false);
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
@@ -38,7 +40,7 @@ export const PhotosTab: React.FC<PhotosTabProps> = ({
     if (!file) return;
 
     if (!rightsConfirmed && photos.length === 0) {
-      alert('Please confirm the photo usage rights confirmation checkbox before uploading.');
+      showToast('error', 'Please confirm the photo usage rights confirmation checkbox before uploading.');
       return;
     }
 
@@ -61,7 +63,7 @@ export const PhotosTab: React.FC<PhotosTabProps> = ({
       };
       reader.readAsDataURL(file);
     } catch (err: any) {
-      alert('Upload failed: ' + (err.message || 'Unknown error'));
+      showToast('error', 'Upload failed: ' + (err.message || 'Unknown error'));
       setUploading(false);
     }
   };

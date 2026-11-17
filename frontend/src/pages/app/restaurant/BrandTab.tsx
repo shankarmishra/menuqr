@@ -1,3 +1,4 @@
+import { useToast } from '../../../components/feedback/ToastProvider';
 import React, { useState } from 'react';
 import { Upload, Trash2, CheckCircle2, Sparkles } from 'lucide-react';
 import { AppearsOnChips, type SurfaceTarget } from './AppearsOnChips';
@@ -34,6 +35,7 @@ export const BrandTab: React.FC<BrandTabProps> = ({
   onHighlightSurface,
   activeSurface,
 }) => {
+  const showToast = useToast();
   const [uploading, setUploading] = useState(false);
   const [logoIncludesName, setLogoIncludesName] = useState(false);
   const [logoAnalysis, setLogoAnalysis] = useState<LogoAnalysis | null>(null);
@@ -63,18 +65,18 @@ export const BrandTab: React.FC<BrandTabProps> = ({
           const res = await uploadImage(base64, 'logos', 1200);
           onUpdateLogo(res.url);
         } catch (uploadErr: any) {
-          alert('Failed to upload logo: ' + (uploadErr?.message || 'Unknown error'));
+          showToast('error', 'Failed to upload logo: ' + (uploadErr?.message || 'Unknown error'));
         } finally {
           setUploading(false);
         }
       };
       reader.onerror = () => {
-        alert('Failed to read image file.');
+        showToast('error', 'Failed to read image file.');
         setUploading(false);
       };
       reader.readAsDataURL(targetBlob);
     } catch (err: any) {
-      alert('Failed to upload logo: ' + (err.message || 'Unknown error'));
+      showToast('error', 'Failed to upload logo: ' + (err.message || 'Unknown error'));
       setUploading(false);
     }
   };

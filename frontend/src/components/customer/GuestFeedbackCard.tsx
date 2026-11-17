@@ -1,5 +1,6 @@
+import GemRating from '../ui/GemRating';
 import { useState, useEffect } from 'react';
-import { Star, MessageSquareHeart, CheckCircle2, Send, Loader2, Sparkles } from 'lucide-react';
+import { MessageSquareHeart, CheckCircle2, Send, Loader2, Sparkles } from 'lucide-react';
 import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 
 interface GuestFeedbackCardProps {
@@ -24,7 +25,7 @@ export default function GuestFeedbackCard({
   className = '',
 }: GuestFeedbackCardProps) {
   const [rating, setRating] = useState<number>(0);
-  const [hoverRating, setHoverRating] = useState<number>(0);
+
   const [comment, setComment] = useState('');
   const [contact, setContact] = useState('');
   const [tableNumber, setTableNumber] = useState(initialTableNumber);
@@ -111,7 +112,7 @@ export default function GuestFeedbackCard({
     );
   }
 
-  const activeRating = hoverRating || rating;
+  const activeRating = rating;
 
   return (
     <section aria-label="Guest Feedback" className={`mx-auto my-10 max-w-md px-4 ${className}`}>
@@ -136,33 +137,14 @@ export default function GuestFeedbackCard({
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           {/* Interactive Stars */}
           <div className="flex flex-col items-center justify-center py-2">
-            <div className="flex items-center gap-2">
-              {[1, 2, 3, 4, 5].map((star) => {
-                const isLit = star <= activeRating;
-                return (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => {
-                      setRating(star);
-                      setErrorMessage(null);
-                    }}
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
-                    className="p-1 text-white/30 hover:scale-125 transition-all duration-150 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-lg"
-                  >
-                    <Star
-                      className={`h-7 w-7 transition-colors duration-200 ${
-                        isLit
-                          ? 'fill-amber-400 text-amber-400 filter drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)]'
-                          : 'fill-transparent text-white/30 hover:text-white/60'
-                      }`}
-                    />
-                  </button>
-                );
-              })}
-            </div>
+            <GemRating
+              value={rating}
+              label="Rate your experience"
+              onChange={(n) => {
+                setRating(n);
+                setErrorMessage(null);
+              }}
+            />
             <div className="h-5 mt-1.5 flex items-center justify-center text-xs font-medium text-amber-300">
               {activeRating > 0 ? (
                 <span className="animate-in fade-in zoom-in-95 duration-150">

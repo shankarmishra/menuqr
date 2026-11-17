@@ -10,6 +10,7 @@ import { broadcastOrderEvent } from '../orderStream.js';
 import { resolveMenuFeatures } from '../menuFeatures.js';
 import { getTrendingItemIds } from '../analytics.js';
 import { syncOrderToTableToken, getActiveTableToken } from '../tokenBridge.js';
+import { resolveDineInTable, resolveTableCode, normalizeTableCode, isLegacyTableAllowed } from '../tableCodes.js';
 import {
   assertOrderTypeAllowed,
   buildRestaurantBlock,
@@ -17,7 +18,7 @@ import {
   publicAccentFrom,
   resolvePublicPhone,
 } from '../publicMenuPayload.js';
-import { randomUUID } from 'node:crypto';
+import crypto, { randomUUID } from 'node:crypto';
 
 const contactRateLimits = new Map();
 const menuHitRateLimits = new Map();
@@ -28,6 +29,37 @@ const trackClickTenantLimits = new Map();
 const TRACK_CLICK_WINDOW_MS = 60 * 1000;
 const TRACK_CLICK_IP_PER_WINDOW = 30;
 const TRACK_CLICK_TENANT_PER_WINDOW = 600;
+// Table codes cannot be guessed (31^6), and a phone that keeps sending wrong ones is slowed down.
+const invalidTableCodeHits = new Map();
+const INVALID_TABLE_CODE_WINDOW_MS = 10 * 60 * 1000;
+const INVALID_TABLE_CODE_MAX = 8;
+
+function checkInvalidTableCodeLimit(ip) {
+  const entry = invalidTableCodeHits.get(ip);
+  if (!entry) return;
+  if (Date.now() - entry.first > INVALID_TABLE_CODE_WINDOW_MS) {
+    invalidTableCodeHits.delete(ip);
+    return;
+  }
+  if (entry.count >= INVALID_TABLE_CODE_MAX) {
+    throw apiError(429, 'Too many wrong table codes. Please ask the staff for help.');
+  }
+}
+
+function noteInvalidTableCode(ip) {
+  const now = Date.now();
+  const entry = invalidTableCodeHits.get(ip);
+  if (!entry || now - entry.first > INVALID_TABLE_CODE_WINDOW_MS) {
+    invalidTableCodeHits.set(ip, { count: 1, first: now });
+  } else {
+    entry.count += 1;
+  }
+  if (invalidTableCodeHits.size > 5000) {
+    for (const [key, value] of invalidTableCodeHits) {
+      if (now - value.first > INVALID_TABLE_CODE_WINDOW_MS) invalidTableCodeHits.delete(key);
+    }
+  }
+}
 const publicMenuCache = new Map();
 const PUBLIC_MENU_CACHE_TTL_MS = 60 * 1000;
 
@@ -535,8 +567,12 @@ export default async function publicRoutes(request, response, url) {
         ? input.items.map(i => `${i.id}:${i.quantity}:${i.variantId || i.variant || ''}`).sort().join('|')
         : '';
       const windowId = Math.floor(Date.now() / 15000); // 15-second time bucket
-      const customerIdentifier = String(input.customerPhone || input.tableNumber || input.customerName || 'guest').slice(0, 50);
-      idempotencyKey = `auto-idem-${client.id}-${customerIdentifier}-${Buffer.from(itemsFingerprint).toString('base64url').slice(0, 32)}-${windowId}`;
+      // The table code keeps two anonymous tables ordering the same dishes from sharing one key.
+      const customerIdentifier = String(
+        input.customerPhone || normalizeTableCode(input.tableCode) || input.tableNumber || input.customerName || 'guest'
+      ).slice(0, 50);
+      const hash = crypto.createHash('sha256').update(itemsFingerprint).digest('base64url');
+      idempotencyKey = `auto-idem-${client.id}-${customerIdentifier}-${hash}-${windowId}`;
     }
 
     if (idempotencyKey) {
@@ -611,15 +647,28 @@ export default async function publicRoutes(request, response, url) {
     }
 
     let tableNumber = null;
+    let tableSource = null;
     let deliveryAddress = null;
     let deliveryLandmark = null;
     let deliveryCity = null;
 
     if (orderType === 'DINE_IN') {
-      tableNumber = String(input.tableNumber || '').trim();
-      if (!tableNumber) {
-        throw apiError(400, 'Table number is required for dine-in orders.');
+      // The table comes from the code printed in the table QR, never from a number the diner typed.
+      // A bare ?table=N is accepted only while the restaurant still allows its old stickers.
+      checkInvalidTableCodeLimit(clientIp);
+      const resolved = await resolveDineInTable(client.id, {
+        tableCode: input.tableCode,
+        legacyTable: input.tableCode ? null : input.tableNumber,
+      });
+      if (resolved.error === 'INVALID_TABLE_CODE') {
+        noteInvalidTableCode(clientIp);
+        throw apiError(400, 'This table QR is not valid. Please ask the staff for help.');
       }
+      if (resolved.error) {
+        throw apiError(400, 'Please scan the QR code on your table to order for dine-in.');
+      }
+      tableNumber = String(resolved.tableNumber);
+      tableSource = resolved.source;
     } else if (orderType === 'TAKEAWAY') {
       // Takeaway does not require an address or table, but requires phone & name
       if (!customerPhone) {
@@ -817,9 +866,9 @@ export default async function publicRoutes(request, response, url) {
       `INSERT INTO customer_orders (
          id, tenant_id, order_type, table_number, customer_name, customer_phone,
          delivery_address, delivery_landmark, delivery_city, notes, items, total, status,
-         idempotency_key, tracking_token, session_id, round_number, parent_order_id
+         idempotency_key, tracking_token, session_id, round_number, parent_order_id, table_source
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'NEW', $13, $14, $15, $16, $17)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'NEW', $13, $14, $15, $16, $17, $18)
        ON CONFLICT (tenant_id, idempotency_key) WHERE idempotency_key IS NOT NULL
        DO NOTHING
        RETURNING 
@@ -838,28 +887,30 @@ export default async function publicRoutes(request, response, url) {
          session_id as "sessionId",
          round_number as "roundNumber",
          parent_order_id as "parentOrderId",
+         table_source as "tableSource",
          tracking_token as "trackingToken",
          estimated_time_minutes as "estimatedTimeMinutes",
          estimated_delivery_time as "estimatedDeliveryTime",
          created_at as time`,
       [
-        orderId, 
-        client.id, 
-        orderType, 
-        tableNumber, 
-        customerName, 
-        customerPhone, 
-        deliveryAddress, 
-        deliveryLandmark, 
-        deliveryCity, 
-        notes, 
-        JSON.stringify(validatedItems), 
+        orderId,
+        client.id,
+        orderType,
+        tableNumber,
+        customerName,
+        customerPhone,
+        deliveryAddress,
+        deliveryLandmark,
+        deliveryCity,
+        notes,
+        JSON.stringify(validatedItems),
         calculatedTotal,
         idempotencyKey,
         trackingToken,
         sessionId,
         roundNumber,
-        parentOrderId
+        parentOrderId,
+        tableSource
       ]
     );
     
@@ -929,7 +980,9 @@ export default async function publicRoutes(request, response, url) {
     orderToReturn.sessionTotal = Math.round(sessionTotal * 100) / 100;
 
     // Bridge: Auto-sync Dine-In orders to active table token for cashier counter & customer thermal bill
-    if (orderToReturn.orderType === 'DINE_IN' && orderToReturn.tableNumber) {
+    // Only a newly created order adds dishes; a concurrent retry with the same idempotency key
+    // (statusCode 200) already had its dishes added by the first request.
+    if (statusCode === 201 && orderToReturn.orderType === 'DINE_IN' && orderToReturn.tableNumber) {
       try {
         const tokenSync = await syncOrderToTableToken(client, orderToReturn);
         if (tokenSync) {
@@ -940,6 +993,18 @@ export default async function publicRoutes(request, response, url) {
         }
       } catch (tokenErr) {
         console.warn('[public.js] Failed to auto-sync order to table_token:', tokenErr.message);
+      }
+    } else if (orderToReturn.orderType === 'DINE_IN' && orderToReturn.tableNumber) {
+      try {
+        const active = await getActiveTableToken(client.id, orderToReturn.tableNumber);
+        if (active) {
+          orderToReturn.tokenId = active.tokenId;
+          orderToReturn.tokenNumber = active.tokenNumber;
+          orderToReturn.tokenCode = active.tokenCode;
+          orderToReturn.billUrl = active.billUrl;
+        }
+      } catch (tokenErr) {
+        console.warn('[public.js] Failed to look up table_token for a retried order:', tokenErr.message);
       }
     }
 
@@ -1099,10 +1164,20 @@ export default async function publicRoutes(request, response, url) {
     }
 
     const input = await readJson(request);
-    const rawTable = String(input.tableNumber || input.table || '').trim();
-    if (!rawTable) {
-      throw apiError(400, 'Table number is required for dine-in service request.');
+    const serviceIp = getClientIp(request);
+    checkInvalidTableCodeLimit(serviceIp);
+    const resolvedTable = await resolveDineInTable(client.id, {
+      tableCode: input.tableCode,
+      legacyTable: input.tableCode ? null : (input.tableNumber || input.table),
+    });
+    if (resolvedTable.error === 'INVALID_TABLE_CODE') {
+      noteInvalidTableCode(serviceIp);
+      throw apiError(400, 'This table QR is not valid. Please ask the staff for help.');
     }
+    if (resolvedTable.error) {
+      throw apiError(400, 'Please scan the QR code on your table to call the staff.');
+    }
+    const rawTable = String(resolvedTable.tableNumber);
 
     const requestType = String(input.requestType || 'WAITER').toUpperCase();
     if (!menuFeatures.callWaiter.types.includes(requestType)) {
@@ -1148,9 +1223,52 @@ export default async function publicRoutes(request, response, url) {
     const client = clientRes.rows[0];
     if (!client) throw apiError(404, 'Restaurant not found.');
 
-    const tableParam = url.searchParams.get('table') || url.searchParams.get('t') || '';
-    const activeToken = await getActiveTableToken(client.id, tableParam);
+    // The live bill of a table is shown only to someone holding that table's code (proof they are at
+    // the table). A bare ?table=N works only while the restaurant still allows its old stickers.
+    const lookupIp = getClientIp(request);
+    checkInvalidTableCodeLimit(lookupIp);
+    const resolvedTable = await resolveDineInTable(client.id, {
+      tableCode: url.searchParams.get('tc'),
+      legacyTable: url.searchParams.get('tc') ? null : (url.searchParams.get('table') || url.searchParams.get('t')),
+    });
+    if (resolvedTable.error === 'INVALID_TABLE_CODE') noteInvalidTableCode(lookupIp);
+    const activeToken = resolvedTable.error ? null : await getActiveTableToken(client.id, resolvedTable.tableNumber);
     sendJson(response, 200, { success: true, activeToken });
+    return true;
+  }
+
+  // Table check for the diner's menu: which table does this QR code belong to?
+  // GET /api/public/menus/:slug/table?tc=CODE  ->  { table: { number, label } }  or 404
+  const tableCheckMatch = url.pathname.match(/^\/api\/public\/menus\/([^/]+)\/table$/);
+  if (request.method === 'GET' && tableCheckMatch) {
+    const slug = decodeURIComponent(tableCheckMatch[1]);
+    const ip = getClientIp(request);
+    checkInvalidTableCodeLimit(ip);
+    const clientRes = await pool.query(
+      `SELECT c.id FROM clients c WHERE c.menu_slug = $1
+       UNION
+       SELECT h.tenant_id FROM menu_slug_history h WHERE h.slug = $1
+       LIMIT 1`,
+      [slug]
+    );
+    const tenantId = clientRes.rows[0]?.id;
+    if (!tenantId) throw apiError(404, 'Restaurant not found.');
+    // No code in the link (a general restaurant QR): say whether this restaurant still lets diners
+    // give their table number themselves (its "old stickers" switch). Not counted as a wrong code.
+    if (!url.searchParams.get('tc')) {
+      response.setHeader('Cache-Control', 'no-store');
+      sendJson(response, 200, { table: null, legacyTableEntry: await isLegacyTableAllowed(tenantId) });
+      return true;
+    }
+    const code = normalizeTableCode(url.searchParams.get('tc') || '');
+    const hit = code ? await resolveTableCode(tenantId, code) : null;
+    if (!hit) {
+      noteInvalidTableCode(ip);
+      sendJson(response, 404, { error: 'INVALID_TABLE_CODE', message: 'This table QR is not valid. Please ask the staff for help.' });
+      return true;
+    }
+    response.setHeader('Cache-Control', 'no-store');
+    sendJson(response, 200, { table: { number: hit.tableNumber, label: hit.label } });
     return true;
   }
 

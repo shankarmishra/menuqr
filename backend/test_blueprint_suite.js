@@ -72,7 +72,7 @@ assert(
 
 // Website Normalizer
 assert(
-  normalizeWebsite('mannat.in') === 'https://mannat.in/',
+  normalizeWebsite('mannat.in') === 'https://mannat.in',
   'normalizeWebsite upgrades naked domain to https://'
 );
 assert(

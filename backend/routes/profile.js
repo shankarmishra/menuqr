@@ -30,6 +30,7 @@ import { requireEntitlement } from '../authorization.js';
 import { activeOfferLimit, validateAnnouncementInput, validateOfferInput } from '../offers.js';
 import { sanitizeText } from '../validation.js';
 import { randomUUID } from 'node:crypto';
+import { ensureTables, rotateTableCode, isLegacyTableAllowed, backfillTableCodes } from '../tableCodes.js';
 
 const SETUP_STEPS = ['S0', 'S1', 'S2', 'S3', 'S4'];
 const TABLE_LABEL_MAX = 50;
@@ -479,6 +480,58 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
 
   // ── 7. Dining Tables: GET & POST & DELETE /api/app/tables ─────────────────
   if (url.pathname.startsWith('/api/app/tables')) {
+    // POST /api/app/tables/ensure { start, end } -> tables start..end, each with its permanent QR code.
+    if (request.method === 'POST' && url.pathname === '/api/app/tables/ensure') {
+      const input = await readJson(request);
+      const start = Number(input.start);
+      const end = Number(input.end);
+      if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end > 300 || start > end || end - start + 1 > TABLE_MAX) {
+        throw apiError(400, 'Choose a table range between 1 and 300, at most 200 tables at a time.');
+      }
+      const countRes = await pool.query('SELECT COUNT(*)::int AS n FROM dining_tables WHERE tenant_id = $1', [tenantId]);
+      const inRange = await pool.query(
+        'SELECT COUNT(*)::int AS n FROM dining_tables WHERE tenant_id = $1 AND table_number BETWEEN $2 AND $3',
+        [tenantId, start, end]
+      );
+      if (countRes.rows[0].n + (end - start + 1) - inRange.rows[0].n > TABLE_MAX + 100) {
+        throw apiError(400, `You can save up to ${TABLE_MAX + 100} tables.`);
+      }
+      const tables = await ensureTables(tenantId, start, end);
+      sendJson(response, 200, { tables });
+      return true;
+    }
+
+    // POST /api/app/tables/:id/rotate-code -> new code for one table (its old sticker stops working).
+    const rotateMatch = url.pathname.match(/^\/api\/app\/tables\/([^/]+)\/rotate-code$/);
+    if (request.method === 'POST' && rotateMatch) {
+      const table = await rotateTableCode(tenantId, decodeURIComponent(rotateMatch[1]));
+      if (!table) throw apiError(404, 'Table not found.');
+      sendJson(response, 200, { table });
+      return true;
+    }
+
+    // GET & PATCH /api/app/tables/settings -> whether old ?table=N stickers still work.
+    if (url.pathname === '/api/app/tables/settings') {
+      if (request.method === 'GET') {
+        sendJson(response, 200, { allowLegacyTableParam: await isLegacyTableAllowed(tenantId) });
+        return true;
+      }
+      if (request.method === 'PATCH') {
+        const input = await readJson(request);
+        if (typeof input.allowLegacyTableParam !== 'boolean') throw apiError(400, 'allowLegacyTableParam must be true or false.');
+        // A new row must keep what "no row" meant (dine-in plus delivery, see legacyOrderingSettings),
+        // so saving this one switch never turns delivery off by accident.
+        await pool.query(
+          `INSERT INTO ordering_settings (tenant_id, dine_in_enabled, takeaway_enabled, delivery_enabled, allow_legacy_table_param)
+           VALUES ($1, true, false, true, $2)
+           ON CONFLICT (tenant_id) DO UPDATE SET allow_legacy_table_param = EXCLUDED.allow_legacy_table_param, updated_at = NOW()`,
+          [tenantId, input.allowLegacyTableParam]
+        );
+        sendJson(response, 200, { allowLegacyTableParam: input.allowLegacyTableParam });
+        return true;
+      }
+    }
+
     if (request.method === 'GET') {
       const res = await pool.query(
         'SELECT * FROM dining_tables WHERE tenant_id = $1 ORDER BY sort_order ASC, label ASC',
@@ -515,6 +568,7 @@ export async function handleProfileRoutes(request, response, url, user, authoriz
           [randomUUID(), tenantId, labels[i], Array.isArray(input.tables) ? i : sortOrder]
         );
       }
+      await backfillTableCodes(tenantId);
       sendJson(response, 200, { success: true });
       return true;
     }

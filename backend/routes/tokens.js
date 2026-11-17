@@ -13,6 +13,7 @@ import {
   broadcastTokenItems,
   broadcastTokenEvent,
   closeTokenClients,
+  publicTokenView,
 } from '../tokenStream.js';
 import {
   broadcastNewToken,
@@ -216,7 +217,7 @@ export default async function tokenRoutes(request, response, url) {
       [tokenId]
     );
 
-    const initialToken = formatToken(tokenRow, itemsRes.rows, restaurant);
+    const initialToken = publicTokenView(formatToken(tokenRow, itemsRes.rows, restaurant));
     registerTokenClient(tokenId, response, request, { initialToken });
     return true;
   }
@@ -246,7 +247,8 @@ export default async function tokenRoutes(request, response, url) {
       [tokenId]
     );
 
-    const formattedToken = formatToken(tokenRow, itemsRes.rows, restaurant);
+    // The bill link is public, so contact details, payment reference and staff ids never leave the server.
+    const formattedToken = publicTokenView(formatToken(tokenRow, itemsRes.rows, restaurant));
 
     sendJson(response, 200, {
       success: true,
@@ -307,7 +309,7 @@ export default async function tokenRoutes(request, response, url) {
       broadcastTokenStatus(tokenId, updatedToken);
       broadcastBillRequested(tokenRow.tenant_id, updatedToken);
 
-      sendJson(response, 200, { success: true, token: updatedToken });
+      sendJson(response, 200, { success: true, token: publicTokenView(updatedToken) });
       return true;
     } catch (err) {
       await client.query('ROLLBACK').catch(() => {});

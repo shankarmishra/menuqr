@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { pool, connectDB } from '../db.js';
 import { randomUUID } from 'node:crypto';
 import publicRoutes, { clearAllPublicMenuCaches } from '../routes/public.js';
+import { ensureTables } from '../tableCodes.js';
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is required to run tests.');
@@ -57,6 +58,8 @@ test('Public Menu Ordering Entitlements & Half/Full Variants Test Suite', async 
   const premCatId = randomUUID();
   const premHalfFullItemId = randomUUID();
   const premVariantItemId = randomUUID();
+  // Dine-in orders carry the code printed in the table QR; the server decides the table number.
+  const premTableCodes = {};
 
   t.before(async () => {
     await connectDB(process.env.DATABASE_URL);
@@ -128,6 +131,7 @@ test('Public Menu Ordering Entitlements & Half/Full Variants Test Suite', async 
       "INSERT INTO menu_item_variants (id, menu_item_id, tenant_id, name, price, is_available) VALUES ($1, $2, $3, 'Jumbo Portion', 420, true)",
       [randomUUID(), premVariantItemId, premiumTenantId]
     );
+    for (const t of await ensureTables(premiumTenantId, 1, 12, pool)) premTableCodes[t.tableNumber] = t.code;
   });
 
   t.after(async () => {
@@ -197,7 +201,8 @@ test('Public Menu Ordering Entitlements & Half/Full Variants Test Suite', async 
 
   await t.test('Premium Plan accepts order and calculates server-authoritative Half/Full and Variant pricing', async () => {
     const orderPayload = {
-      tableNumber: 'Table 12',
+      tableCode: premTableCodes[12],
+      tableNumber: '99', // ignored: a valid code always wins over a typed number
       items: [
         // 2x Dal Makhani Full (server price 260 each = 520) - even if client sends forged price: 10
         { id: premHalfFullItemId, quantity: 2, variant: 'Full', price: 10 },
@@ -215,7 +220,8 @@ test('Public Menu Ordering Entitlements & Half/Full Variants Test Suite', async 
     assert.equal(res.statusCode, 201);
     const created = JSON.parse(res.body);
 
-    assert.equal(created.tableNumber, 'Table 12');
+    assert.equal(created.tableNumber, '12', 'table comes from the code, not from the typed number');
+    assert.equal(created.tableSource, 'code');
     // Expected total: 260 * 2 + 420 * 1 = 520 + 420 = 940
     assert.equal(created.total, 940, 'Server must calculate total from real DB prices, ignoring forged client prices');
 
@@ -227,7 +233,7 @@ test('Public Menu Ordering Entitlements & Half/Full Variants Test Suite', async 
 
   await t.test('Permanent QR order endpoint (/api/public/qr/:qrId/orders) also enforces server pricing', async () => {
     const orderPayload = {
-      tableNumber: 'T-QR',
+      tableCode: premTableCodes[3],
       items: [
         { id: premHalfFullItemId, quantity: 1, variant: 'Half' } // server price 150
       ]
@@ -243,5 +249,14 @@ test('Public Menu Ordering Entitlements & Half/Full Variants Test Suite', async 
     const created = JSON.parse(res.body);
 
     assert.equal(created.total, 150);
+    assert.equal(created.tableNumber, '3');
+  });
+
+  await t.test('Dine-in order with a wrong table code is refused', async () => {
+    const req = mockRequest('POST', { tableCode: 'ZZZZZZ', customerName: 'Wrong Table Guest', items: [{ id: premHalfFullItemId, quantity: 3, variant: 'Half' }] });
+    await assert.rejects(
+      () => publicRoutes(req, mockResponse(), new URL(`http://localhost/api/public/menus/${premiumSlug}/orders`)),
+      (err) => err.status === 400 && /table QR is not valid/i.test(err.message)
+    );
   });
 });

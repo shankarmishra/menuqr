@@ -1,381 +1,39 @@
 /* ============================================================
    ThermalBillCard.css
-   Realistic 80mm thermal paper receipt simulation
-   Features: zigzag torn edges, monospace dot-matrix font,
-   amber UNPAID pulsing, green PAID rubber stamp
+   Authentic 80mm Continuous Thermal POS Receipt Simulation
+   Features:
+   - True mathematical 20-tooth CSS clip-path torn zigzag edges
+   - Outer shadow wrapper preserving drop-shadow depth
+   - Monospace typography stack ('Courier Prime', 'Courier New', monospace)
+   - Strict 4-column tabular alignment: QTY | ITEM NAME | RATE | TOTAL
+   - Pulsing amber UNPAID container & interactive table bill request
+   - High-impact -12deg rotated green rubber stamp with stampDrop animation
+   - ESC/POS continuous 80mm roll printer styles (@media print)
    ============================================================ */
 
-/* ── Import Courier Prime for authentic dot-matrix look ── */
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+/* ── Google Fonts: Courier Prime ────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
 
-/* ── Root card ─────────────────────────────────────────── */
-.thermal-card {
-  width: 320px;
-  max-width: 100%;
-  background: #faf9f5;
-  font-family: 'Courier Prime', 'Courier New', Courier, monospace;
-  font-size: 12px;
-  color: #1a1a1a;
-  position: relative;
-  /* Drop shadow gives "paper on table" depth */
-  box-shadow: 0 4px 32px rgba(0,0,0,0.18), 0 1px 4px rgba(0,0,0,0.10);
-  /* Slight paper texture via grain */
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"),
-    linear-gradient(to bottom, #faf9f5, #f5f3ee);
-  background-size: 200px 200px, 100% 100%;
-}
-
-/* ── Zigzag torn top edge ──────────────────────────────── */
-.thermal-card::before {
-  content: '';
-  display: block;
-  width: 100%;
-  height: 14px;
-  background:
-    /* Zigzag cut pattern pointing DOWN into the card */
-    linear-gradient(135deg, #f0ede4 25%, transparent 25%) -8px 0,
-    linear-gradient(225deg, #f0ede4 25%, transparent 25%) -8px 0,
-    linear-gradient(315deg, #f0ede4 25%, transparent 25%),
-    linear-gradient(45deg,  #f0ede4 25%, transparent 25%);
-  background-size: 16px 14px;
-  background-color: #faf9f5;
-  position: relative;
-  z-index: 2;
-}
-
-/* ── Zigzag torn bottom edge ───────────────────────────── */
-.thermal-card::after {
-  content: '';
-  display: block;
-  width: 100%;
-  height: 14px;
-  background:
-    linear-gradient(315deg, #f0ede4 25%, transparent 25%) -8px 0,
-    linear-gradient(45deg,  #f0ede4 25%, transparent 25%) -8px 0,
-    linear-gradient(135deg, #f0ede4 25%, transparent 25%),
-    linear-gradient(225deg, #f0ede4 25%, transparent 25%);
-  background-size: 16px 14px;
-  background-color: #faf9f5;
-  position: relative;
-  z-index: 2;
-}
-
-/* ── Inner content wrapper ─────────────────────────────── */
-.thermal-inner {
-  padding: 4px 20px 8px;
-  position: relative;
-}
-
-/* ── Restaurant header ─────────────────────────────────── */
-.thermal-restaurant-name {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-align: center;
-  text-transform: uppercase;
-  line-height: 1.3;
-  margin-bottom: 2px;
-}
-
-.thermal-tagline {
-  font-size: 10px;
-  text-align: center;
-  color: #666;
-  margin-bottom: 1px;
-  letter-spacing: 0.04em;
-}
-
-.thermal-city-phone {
-  font-size: 10px;
-  text-align: center;
-  color: #666;
-  margin-bottom: 4px;
-}
-
-/* ── Dividers ──────────────────────────────────────────── */
-.thermal-divider {
-  border: none;
-  border-top: 1px dashed #aaa;
-  margin: 8px 0;
-}
-
-.thermal-divider-solid {
-  border: none;
-  border-top: 1px solid #888;
-  margin: 6px 0;
-}
-
-.thermal-divider-double {
-  border: none;
-  border-top: 3px double #888;
-  margin: 8px 0;
-}
-
-/* ── Token & Table meta row ────────────────────────────── */
-.thermal-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: #444;
-  margin-bottom: 4px;
-}
-
-.thermal-meta-label {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/* ── Datetime ──────────────────────────────────────────── */
-.thermal-datetime {
-  font-size: 10px;
-  color: #666;
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-/* ── Items list ────────────────────────────────────────── */
-.thermal-items-header {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #555;
-  margin-bottom: 4px;
-}
-
-.thermal-item-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 4px;
-  font-size: 11px;
-  line-height: 1.5;
-  align-items: baseline;
-}
-
-.thermal-item-name {
-  word-break: break-word;
-  color: #1a1a1a;
-}
-
-.thermal-item-name small {
-  display: block;
-  font-size: 9.5px;
-  color: #777;
-  margin-left: 8px;
-}
-
-.thermal-item-qty {
-  text-align: center;
-  color: #555;
-  min-width: 24px;
-}
-
-.thermal-item-price {
-  text-align: right;
-  min-width: 56px;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Veg / Non-veg indicator dot */
-.veg-dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  margin-right: 4px;
-  vertical-align: middle;
-  flex-shrink: 0;
-}
-.veg-dot.veg   { background: #16a34a; }
-.veg-dot.nonveg { background: #dc2626; }
-
-/* ── Totals section ────────────────────────────────────── */
-.thermal-totals {
-  margin-top: 4px;
-}
-
-.thermal-totals-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  padding: 1px 0;
-}
-
-.thermal-totals-row.subtotal { color: #555; }
-.thermal-totals-row.gst      { color: #666; font-size: 10.5px; }
-.thermal-totals-row.discount { color: #16a34a; }
-
-.thermal-total-final {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  margin-top: 4px;
-  padding-top: 4px;
-}
-
-/* ── UNPAID status strip ───────────────────────────────── */
-.thermal-status-unpaid {
-  background: #fef3c7;
-  border: 1.5px solid #f59e0b;
-  border-radius: 4px;
-  padding: 8px 12px;
-  text-align: center;
-  margin: 12px 0 8px;
-}
-
-.thermal-unpaid-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #92400e;
-  text-transform: uppercase;
-  animation: unpaidPulse 2s ease-in-out infinite;
-}
-
-@keyframes unpaidPulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.6; }
-}
-
-.thermal-unpaid-token {
-  font-size: 13px;
-  font-weight: 700;
-  color: #78350f;
-  margin-top: 4px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-/* ── Barcode (SVG-based) ───────────────────────────────── */
-.thermal-barcode-wrap {
-  display: flex;
-  justify-content: center;
-  margin: 8px 0 4px;
-}
-
-.thermal-barcode-wrap svg {
-  width: 180px;
-  height: 42px;
-}
-
-.thermal-barcode-number {
-  text-align: center;
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  color: #555;
-  margin-bottom: 4px;
-}
-
-/* ── PAID rubber stamp overlay ─────────────────────────── */
-.thermal-status-paid {
-  position: relative;
-  margin: 14px 0 8px;
-}
-
-.thermal-paid-stamp {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: 4px solid #16a34a;
-  border-radius: 8px;
-  padding: 10px 16px;
-  transform: rotate(-3.5deg);
-  background: transparent;
-  /* Faded/used rubber stamp feel */
-  opacity: 0.92;
-  /* Stamp enters with a "thud" */
-  animation: stampIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-@keyframes stampIn {
-  0%   { transform: rotate(-3.5deg) scale(1.5); opacity: 0; }
-  100% { transform: rotate(-3.5deg) scale(1);   opacity: 0.92; }
-}
-
-.thermal-paid-stamp-text {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #16a34a;
-  text-transform: uppercase;
-  text-align: center;
-  line-height: 1.2;
-}
-
-.thermal-paid-stamp-sub {
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: #15803d;
-  text-transform: uppercase;
-  text-align: center;
-  margin-top: 2px;
-}
-
-.thermal-paid-method {
-  font-size: 11px;
-  text-align: center;
-  color: #15803d;
-  margin-top: 8px;
-  font-weight: 700;
-}
-
-.thermal-paid-at {
-  font-size: 10px;
-  text-align: center;
-  color: #555;
-  margin-top: 2px;
-}
-
-/* ── Footer ────────────────────────────────────────────── */
-.thermal-footer {
-  text-align: center;
-  font-size: 10px;
-  color: #888;
-  margin-top: 6px;
-  line-height: 1.6;
-}
-
-/* ── Transition wrapper for status change ──────────────── */
-.thermal-status-transition {
-  transition: all 0.4s ease-in-out;
-}
-
-/* ============================================================
-   POS Thermal Printer Machine Chassis & Extrusion Animation
-   ============================================================ */
-
+/* ── POS Chassis Wrapper ────────────────────────────────── */
 .pos-printer-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
   margin: 0 auto;
 }
 
-/* ── Hardware Printer Head Chassis ── */
+/* ── Hardware Printer Head Chassis (Screen Only) ────────── */
 .pos-machine-head {
-  width: 334px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 380px;
   background: linear-gradient(180deg, #2a2c33 0%, #17181c 65%, #0f1013 100%);
   border-radius: 12px 12px 2px 2px;
   box-shadow: 
-    0 -4px 16px rgba(0,0,0,0.35),
-    inset 0 1px 1px rgba(255,255,255,0.15),
-    inset 0 -1px 2px rgba(0,0,0,0.8);
+    0 -4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.8);
   border: 1px solid #3f424b;
   border-bottom: none;
   padding: 8px 14px 4px;
@@ -480,20 +138,18 @@
   cursor: not-allowed;
 }
 
-/* ── Deep Paper Exit Slit ── */
 .pos-paper-slit {
   height: 6px;
   background: #000;
   border-radius: 3px;
   box-shadow: 
-    inset 0 3px 4px rgba(0,0,0,0.9),
-    0 1px 0 rgba(255,255,255,0.08);
+    inset 0 3px 4px rgba(0, 0, 0, 0.9),
+    0 1px 0 rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;
   margin-top: 2px;
 }
 
-/* Serrated cutter teeth simulation inside the slit */
 .pos-slit-teeth {
   position: absolute;
   top: 0;
@@ -517,50 +173,639 @@
   display: flex;
   justify-content: center;
   overflow: visible;
-  padding-top: 0px;
 }
 
-/* ── Realistic Extrusion Animation ── */
+/* ── Shadow Wrapper (Hosts elevation drop shadow around clipped polygon) ── */
+.thermal-shadow-wrapper {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05))
+          drop-shadow(0 14px 28px rgba(0, 0, 0, 0.18));
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ── 20-Tooth Torn Zigzag Clip-Path Paper Container ────────── */
+.thermal-card-clipped,
+.thermal-card {
+  width: 100%;
+  max-width: 380px;
+  background-color: #faf8f5;
+  font-family: 'Courier Prime', 'Courier New', Courier, SFMono-Regular, Monaco, 'Liberation Mono', monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #1a1a1a;
+  position: relative;
+  padding: 16px 18px 24px;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E"),
+    linear-gradient(to bottom, #faf8f5 0%, #f4f0e8 100%);
+  background-size: 160px 160px, 100% 100%;
+
+  /* Exact 20-Tooth repeating zigzag top and bottom tear cut */
+  clip-path: polygon(
+    /* ── Top Zigzag (Teeth pointing downward into the paper) ── */
+    0% 0px,
+    2.5% 6px,   5% 0px,
+    7.5% 6px,   10% 0px,
+    12.5% 6px,  15% 0px,
+    17.5% 6px,  20% 0px,
+    22.5% 6px,  25% 0px,
+    27.5% 6px,  30% 0px,
+    32.5% 6px,  35% 0px,
+    37.5% 6px,  40% 0px,
+    42.5% 6px,  45% 0px,
+    47.5% 6px,  50% 0px,
+    52.5% 6px,  55% 0px,
+    57.5% 6px,  60% 0px,
+    62.5% 6px,  65% 0px,
+    67.5% 6px,  70% 0px,
+    72.5% 6px,  75% 0px,
+    77.5% 6px,  80% 0px,
+    82.5% 6px,  85% 0px,
+    87.5% 6px,  90% 0px,
+    92.5% 6px,  95% 0px,
+    97.5% 6px,  100% 0px,
+
+    /* ── Right Edge ── */
+    100% calc(100% - 6px),
+
+    /* ── Bottom Zigzag (Teeth pointing downward, torn tear-off edge) ── */
+    97.5% 100%, 95% calc(100% - 6px),
+    92.5% 100%, 90% calc(100% - 6px),
+    87.5% 100%, 85% calc(100% - 6px),
+    82.5% 100%, 80% calc(100% - 6px),
+    77.5% 100%, 75% calc(100% - 6px),
+    72.5% 100%, 70% calc(100% - 6px),
+    67.5% 100%, 65% calc(100% - 6px),
+    62.5% 100%, 60% calc(100% - 6px),
+    57.5% 100%, 55% calc(100% - 6px),
+    52.5% 100%, 50% calc(100% - 6px),
+    47.5% 100%, 45% calc(100% - 6px),
+    42.5% 100%, 40% calc(100% - 6px),
+    37.5% 100%, 35% calc(100% - 6px),
+    32.5% 100%, 30% calc(100% - 6px),
+    27.5% 100%, 25% calc(100% - 6px),
+    22.5% 100%, 20% calc(100% - 6px),
+    17.5% 100%, 15% calc(100% - 6px),
+    12.5% 100%, 10% calc(100% - 6px),
+    7.5% 100%,  5% calc(100% - 6px),
+    2.5% 100%,  0% calc(100% - 6px)
+  );
+  -webkit-clip-path: polygon(
+    0% 0px,
+    2.5% 6px,   5% 0px,
+    7.5% 6px,   10% 0px,
+    12.5% 6px,  15% 0px,
+    17.5% 6px,  20% 0px,
+    22.5% 6px,  25% 0px,
+    27.5% 6px,  30% 0px,
+    32.5% 6px,  35% 0px,
+    37.5% 6px,  40% 0px,
+    42.5% 6px,  45% 0px,
+    47.5% 6px,  50% 0px,
+    52.5% 6px,  55% 0px,
+    57.5% 6px,  60% 0px,
+    62.5% 6px,  65% 0px,
+    67.5% 6px,  70% 0px,
+    72.5% 6px,  75% 0px,
+    77.5% 6px,  80% 0px,
+    82.5% 6px,  85% 0px,
+    87.5% 6px,  90% 0px,
+    92.5% 6px,  95% 0px,
+    97.5% 6px,  100% 0px,
+    100% calc(100% - 6px),
+    97.5% 100%, 95% calc(100% - 6px),
+    92.5% 100%, 90% calc(100% - 6px),
+    87.5% 100%, 85% calc(100% - 6px),
+    82.5% 100%, 80% calc(100% - 6px),
+    77.5% 100%, 75% calc(100% - 6px),
+    72.5% 100%, 70% calc(100% - 6px),
+    67.5% 100%, 65% calc(100% - 6px),
+    62.5% 100%, 60% calc(100% - 6px),
+    57.5% 100%, 55% calc(100% - 6px),
+    52.5% 100%, 50% calc(100% - 6px),
+    47.5% 100%, 45% calc(100% - 6px),
+    42.5% 100%, 40% calc(100% - 6px),
+    37.5% 100%, 35% calc(100% - 6px),
+    32.5% 100%, 30% calc(100% - 6px),
+    27.5% 100%, 25% calc(100% - 6px),
+    22.5% 100%, 20% calc(100% - 6px),
+    17.5% 100%, 15% calc(100% - 6px),
+    12.5% 100%, 10% calc(100% - 6px),
+    7.5% 100%,  5% calc(100% - 6px),
+    2.5% 100%,  0% calc(100% - 6px)
+  );
+}
+
+/* Realistic Extrusion Animation */
+.thermal-card-clipped.printing-feed,
 .thermal-card.printing-feed {
-  animation: printerExtrude 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: printerExtrude 2.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   transform-origin: top center;
 }
 
 @keyframes printerExtrude {
   0% {
     transform: translateY(-80%);
-    clip-path: inset(0 0 80% 0);
     opacity: 0.92;
-  }
-  15% {
-    transform: translateY(-60%);
-    clip-path: inset(0 0 60% 0);
-  }
-  35% {
-    transform: translateY(-38%);
-    clip-path: inset(0 0 38% 0);
-  }
-  60% {
-    transform: translateY(-18%);
-    clip-path: inset(0 0 18% 0);
-  }
-  80% {
-    transform: translateY(-4%);
-    clip-path: inset(0 0 4% 0);
-  }
-  94% {
-    transform: translateY(2px);
-    clip-path: inset(0 0 0 0);
   }
   100% {
     transform: translateY(0);
-    clip-path: inset(0 0 0 0);
     opacity: 1;
   }
 }
 
-/* Micro-vibrations of stepper motor during printing */
-.pos-paper-viewport.is-printing .thermal-card {
-  box-shadow: 0 8px 36px rgba(0,0,0,0.22), 0 2px 6px rgba(0,0,0,0.12);
+/* ── Inner content wrapper ─────────────────────────────── */
+.thermal-inner {
+  padding: 6px 4px 10px;
+  position: relative;
 }
 
+/* ── Restaurant Header ─────────────────────────────────── */
+.thermal-restaurant-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  line-height: 1.25;
+  margin-bottom: 2px;
+  color: #111;
+}
+
+.thermal-tagline {
+  font-size: 10px;
+  text-align: center;
+  color: #555;
+  margin-bottom: 2px;
+  letter-spacing: 0.04em;
+}
+
+.thermal-address {
+  font-size: 10px;
+  text-align: center;
+  color: #666;
+  margin-bottom: 1px;
+}
+
+.thermal-city-phone {
+  font-size: 10px;
+  text-align: center;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.thermal-statutory-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #444;
+  margin-top: 3px;
+  letter-spacing: 0.03em;
+}
+
+/* ── Dividers ──────────────────────────────────────────── */
+.thermal-divider {
+  border: none;
+  border-top: 1px dashed #777;
+  margin: 6px 0;
+}
+
+.thermal-divider-double {
+  border: none;
+  border-top: 3px double #555;
+  margin: 8px 0;
+}
+
+.thermal-divider-thick-dashed {
+  border: none;
+  border-top: 2px dashed #444;
+  margin: 8px 0;
+}
+
+/* ── Metadata section: Table, Token, Timestamp, Cashier ── */
+.thermal-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 2px;
+}
+
+.thermal-token-badge {
+  background: #111827;
+  color: #ffffff;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'Courier Prime', 'Courier New', monospace;
+  letter-spacing: 0.05em;
+}
+
+.thermal-meta-sub {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #666;
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+/* ── 4-Column Strict Tabular Item Grid: QTY | ITEM NAME | RATE | TOTAL ── */
+.thermal-items-header,
+.thermal-item-row {
+  display: grid;
+  grid-template-columns: 30px 1fr 58px 66px;
+  column-gap: 4px;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+
+.thermal-items-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #444;
+  text-transform: uppercase;
+  border-top: 1px dashed #777;
+  border-bottom: 1px dashed #777;
+  padding: 4px 0;
+  margin: 6px 0;
+}
+
+.thermal-col-qty {
+  text-align: left;
+  font-weight: 700;
+  color: #222;
+}
+
+.thermal-col-name {
+  text-align: left;
+  word-break: break-word;
+  padding-right: 4px;
+}
+
+.thermal-col-rate {
+  text-align: right;
+  color: #555;
+}
+
+.thermal-col-total {
+  text-align: right;
+  font-weight: 700;
+  color: #111;
+}
+
+/* Veg / Non-veg dot */
+.veg-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.veg-dot.veg    { background: #16a34a; }
+.veg-dot.nonveg { background: #dc2626; }
+
+/* ── Financial Summary Breakdown ───────────────────────── */
+.thermal-totals {
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.thermal-totals-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 1px 0;
+  color: #444;
+  font-variant-numeric: tabular-nums;
+}
+
+.thermal-totals-row.discount {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.thermal-totals-row.roundoff {
+  color: #666;
+  font-size: 10px;
+}
+
+.thermal-grand-total {
+  border-top: 2px dashed #111;
+  border-bottom: 2px dashed #111;
+  margin: 8px 0;
+  padding: 6px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-weight: 700;
+  font-size: 15px;
+  color: #000;
+}
+
+.thermal-grand-total-amount {
+  font-size: 18px;
+  font-family: 'Courier Prime', 'Courier New', monospace;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ── UNPAID Status: Pulsing Amber Warning Container ────── */
+.thermal-unpaid-badge-container {
+  background: #fef3c7;
+  border: 1.5px solid #d97706;
+  border-radius: 6px;
+  padding: 10px 12px;
+  text-align: center;
+  margin: 12px 0 8px;
+  animation: amberPulse 2.2s infinite ease-in-out;
+}
+
+@keyframes amberPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.45);
+    background-color: #fef3c7;
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(217, 119, 6, 0);
+    background-color: #fef9c3;
+  }
+}
+
+.thermal-unpaid-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #92400e;
+  text-transform: uppercase;
+}
+
+.thermal-unpaid-token {
+  font-size: 13px;
+  font-weight: 700;
+  color: #78350f;
+  margin-top: 4px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Barcode */
+.thermal-barcode-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 4px;
+}
+
+.thermal-barcode-wrap svg {
+  width: 180px;
+  height: 40px;
+}
+
+.thermal-barcode-number {
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+/* ── SETTLED / PAID Rubber Stamp: -12deg Rotated Snap ──── */
+.thermal-status-paid {
+  position: relative;
+  margin: 14px 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.thermal-rubber-stamp {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 4px double #15803d;
+  box-shadow: 0 0 0 2px #15803d, inset 0 0 0 1px #15803d;
+  border-radius: 6px;
+  padding: 8px 18px;
+  transform: rotate(-12deg);
+  background: rgba(240, 253, 244, 0.7);
+  backdrop-filter: blur(1px);
+  color: #15803d;
+  margin: 12px auto 8px;
+  animation: stampDrop 0.28s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  user-select: none;
+}
+
+@keyframes stampDrop {
+  0% {
+    opacity: 0;
+    transform: rotate(-12deg) scale(2.8) translateY(-30px);
+    filter: blur(4px);
+  }
+  65% {
+    opacity: 0.95;
+    transform: rotate(-12deg) scale(0.96) translateY(0);
+    filter: blur(0px);
+  }
+  85% {
+    transform: rotate(-12deg) scale(1.04);
+  }
+  100% {
+    opacity: 0.94;
+    transform: rotate(-12deg) scale(1);
+  }
+}
+
+.thermal-stamp-heading {
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.16em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  text-shadow: 0 0 1px rgba(21, 128, 61, 0.4);
+}
+
+.thermal-stamp-sub {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.thermal-stamp-date {
+  font-family: 'Courier Prime', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: #166534;
+  margin-top: 3px;
+  border-top: 1px dashed #15803d;
+  padding-top: 2px;
+  width: 100%;
+  text-align: center;
+}
+
+/* DECLINED stamp: same stamp, red ink */
+.thermal-rubber-stamp.declined {
+  border-color: #b91c1c;
+  box-shadow: 0 0 0 2px #b91c1c, inset 0 0 0 1px #b91c1c;
+  background: rgba(254, 242, 242, 0.75);
+  color: #b91c1c;
+}
+.thermal-rubber-stamp.declined .thermal-stamp-date {
+  color: #991b1b;
+  border-top-color: #b91c1c;
+}
+
+/* 58 mm paper */
+.pos-printer-wrapper.is-narrow .thermal-shadow-wrapper,
+.pos-printer-wrapper.is-narrow .thermal-card-clipped {
+  max-width: 280px;
+}
+
+/* People who ask for less motion get the printed paper with no movement. */
+@media (prefers-reduced-motion: reduce) {
+  .thermal-card-clipped.printing-feed,
+  .thermal-card.printing-feed,
+  .thermal-rubber-stamp,
+  .pos-led.printing .led-bulb,
+  .thermal-unpaid-badge-container {
+    animation: none !important;
+  }
+}
+
+.thermal-paid-method {
+  font-size: 11px;
+  text-align: center;
+  color: #15803d;
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+/* ── Confetti Fallback Particles ────────────────────────── */
+@keyframes confettiFall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti-particle-fallback {
+  pointer-events: none;
+}
+
+/* ── Thermal Receipt Footer ────────────────────────────── */
+.thermal-footer {
+  text-align: center;
+  font-size: 10px;
+  color: #777;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   ESC/POS Thermal 80mm Hardware Printer Styles (@media print)
+   ============================================================ */
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 2mm 3mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Hide screen chassis, buttons, audio feeds, review sheets */
+  .pos-machine-head,
+  .pos-feed-btn,
+  .thermal-unpaid-actions,
+  .thermal-print-action,
+  .google-review-sheet,
+  nav, footer, .toast, .no-print,
+  .print\:hidden,
+  button {
+    display: none !important;
+  }
+
+  .pos-paper-viewport {
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  /* Flatten card to 80mm roll */
+  .thermal-shadow-wrapper {
+    filter: none !important;
+    max-width: 72mm !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+  }
+
+  .thermal-card-clipped,
+  .thermal-card {
+    clip-path: none !important;
+    -webkit-clip-path: none !important;
+    background: #ffffff !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 72mm !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    color: #000000 !important;
+  }
+
+  /* Force solid monochrome black for thermal heads */
+  * {
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Barcode sharp rendering */
+  .thermal-barcode-wrap svg {
+    filter: contrast(300%) !important;
+    shape-rendering: crispEdges !important;
+  }
+
+  /* Physical rubber stamp on paper receipt */
+  .thermal-rubber-stamp {
+    border-color: #000000 !important;
+    box-shadow: 0 0 0 1px #000000 !important;
+    color: #000000 !important;
+    animation: none !important;
+    background: transparent !important;
+  }
+
+  .thermal-stamp-heading,
+  .thermal-stamp-sub,
+  .thermal-stamp-date {
+    color: #000000 !important;
+    text-shadow: none !important;
+  }
+}

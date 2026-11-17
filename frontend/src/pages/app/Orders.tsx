@@ -28,12 +28,15 @@ import {
   Moon
 } from 'lucide-react';
 import { useToast } from '../../components/feedback/ToastProvider';
+import KotReceipt from '../../components/bill/KotReceipt';
 import { getOrders, updateOrderStatus, updateOrderEstimatedTime, getProfile } from './appStore';
 
 export type CustomerOrder = {
   id: string;
   orderType: 'DINE_IN' | 'DELIVERY';
   tableNumber?: string | null;
+  /** 'legacy' = table came from an old ?table=N link, not a sticker code. */
+  tableSource?: 'code' | 'legacy' | null;
   customerName?: string | null;
   customerPhone?: string | null;
   deliveryAddress?: string | null;
@@ -846,6 +849,7 @@ export default function Orders() {
     }
   });
   const [rejectingOrder, setRejectingOrder] = useState<CustomerOrder | null>(null);
+  const [kotPreviewOrder, setKotPreviewOrder] = useState<CustomerOrder | null>(null);
   const [rejectReason, setRejectReason] = useState('Kitchen busy / High order volume');
   const [copiedId, setCopiedId] = useState('');
   const [orderTimes, setOrderTimes] = useState<Record<string, number>>({});
@@ -1562,6 +1566,14 @@ export default function Orders() {
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#e8783c]/15 border border-[#e8783c]/30 text-[#e8783c] font-black text-xs uppercase tracking-wider">
                   <UtensilsCrossed size={14} />
                   <span>Table {order.tableNumber || 'N/A'}</span>
+                  {order.tableSource === 'legacy' && (
+                    <span
+                      title="Came from an old ?table=N link that anyone can edit. Check the table before serving."
+                      className="ml-1 rounded px-1.5 py-0.5 text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30 normal-case tracking-normal"
+                    >
+                      Old sticker · check table
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -1600,6 +1612,15 @@ export default function Orders() {
             >
               <Printer size={13} />
               <span>KOT ({paperWidth})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setKotPreviewOrder(order)}
+              className="p-1.5 px-2 rounded-lg bg-[#1d2723] hover:bg-[#25322d] text-slate-300 hover:text-white transition-all text-[11px] font-bold border border-[#2a3832] cursor-pointer"
+              title="See the kitchen ticket before printing"
+              aria-label={`Preview KOT for order ${order.id.substring(0, 6)}`}
+            >
+              <Receipt size={13} />
             </button>
             <div className="text-right">
               <span className="text-[#849a90] text-xs font-mono font-bold">#{order.id.substring(0, 6)}</span>
@@ -2576,6 +2597,45 @@ export default function Orders() {
       {/* ==========================================
           Modals
           ========================================== */}
+
+      {/* KOT Preview Modal (same ticket as the printout, on the shared receipt printer) */}
+      {kotPreviewOrder && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Kitchen order ticket preview"
+          onClick={(e) => { if (e.target === e.currentTarget) setKotPreviewOrder(null); }}
+          onKeyDown={(e) => { if (e.key === 'Escape') setKotPreviewOrder(null); }}
+        >
+          <div className="bg-[#1a2320] border border-[#2a3832] rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-5 shadow-2xl">
+            <div className="flex justify-between items-center pb-3 border-b border-[#2a3832] mb-4">
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <Receipt size={18} className="text-[#e8783c]" />
+                <span>KOT #{kotPreviewOrder.id.substring(0, 6).toUpperCase()}</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setKotPreviewOrder(null)}
+                className="text-[#849a90] hover:text-white cursor-pointer"
+                aria-label="Close preview"
+                autoFocus
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <KotReceipt order={kotPreviewOrder} restaurantName={restaurantName} paperWidth={paperWidth} />
+            <button
+              type="button"
+              onClick={() => { printKOT(kotPreviewOrder); setKotPreviewOrder(null); }}
+              className="mt-4 w-full flex items-center justify-center gap-2 bg-[#e8783c] hover:bg-[#d66a30] text-white px-4 py-3 rounded-xl font-bold text-sm cursor-pointer"
+            >
+              <Printer size={16} />
+              <span>Print KOT ({paperWidth})</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Order Decline Modal */}
       {rejectingOrder && (

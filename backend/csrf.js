@@ -4,6 +4,18 @@ import { parseCookie as parse, stringifySetCookie as serialize } from 'cookie';
 const CSRF_SECRET = process.env.JWT_SECRET || 'menusqr-default-csrf-secret-key';
 const CSRF_COOKIE_NAME = 'menusqr_csrf';
 
+/**
+ * Whether a request must carry a CSRF token when the browser sends a session cookie.
+ * Webhooks are signed separately; /api/auth/* establishes the session; /api/public/* (diner
+ * orders, bill requests, feedback) never acts on the caller's session, so a stale owner or staff
+ * cookie in the same browser must not block a diner.
+ */
+export function needsCsrfCheck(method, pathname) {
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(String(method).toUpperCase())) return false;
+  const path = String(pathname || '');
+  return !(path.startsWith('/api/webhooks/') || path.startsWith('/api/auth/') || path.startsWith('/api/public/'));
+}
+
 export function generateCsrfToken(sessionId = '') {
   const nonce = randomBytes(16).toString('hex');
   const hmac = createHmac('sha256', CSRF_SECRET)

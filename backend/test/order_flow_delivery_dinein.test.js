@@ -4,6 +4,10 @@ import { pool, connectDB } from '../db.js';
 import { randomUUID } from 'node:crypto';
 import publicRoutes from '../routes/public.js';
 import appRoutes from '../routes/app.js';
+import { ensureTables } from '../tableCodes.js';
+
+// Dine-in orders carry the code printed in the table QR; the server decides the table number.
+const tableCodes = {};
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is required to run tests.');
@@ -78,6 +82,10 @@ test('Order Flow End-to-End: Dine-In & Delivery with Client Reception Panel', as
       "INSERT INTO menu_items (id, menu_id, tenant_id, category_id, name, description, price, is_available) VALUES ($1, $2, $3, $4, 'Farmhouse Pizza', 'Fresh veggies and mozzarella', 350, true)",
       [itemId, menuId, tenantId, catId]
     );
+    for (const n of [1, 4, 7, 99]) {
+      const [row] = await ensureTables(tenantId, n, n, pool);
+      tableCodes[n] = row.code;
+    }
   });
 
   t.after(async () => {
@@ -96,7 +104,7 @@ test('Order Flow End-to-End: Dine-In & Delivery with Client Reception Panel', as
   await t.test('1. Dine-In Order: requires Table Number, accepts Name, Phone, and notes', async () => {
     const req = mockRequest('POST', {
       orderType: 'DINE_IN',
-      tableNumber: 'Table 4',
+      tableCode: tableCodes[4],
       customerName: 'Aarav Sharma',
       customerPhone: '9876543210',
       notes: 'Please bring extra napkins',
@@ -109,7 +117,8 @@ test('Order Flow End-to-End: Dine-In & Delivery with Client Reception Panel', as
 
     const body = JSON.parse(res.body);
     assert.strictEqual(body.orderType, 'DINE_IN');
-    assert.strictEqual(body.tableNumber, 'Table 4');
+    assert.strictEqual(body.tableNumber, '4');
+    assert.strictEqual(body.tableSource, 'code');
     assert.strictEqual(body.customerName, 'Aarav Sharma');
     assert.strictEqual(body.customerPhone, '9876543210');
     assert.strictEqual(body.notes, 'Please bring extra napkins');
@@ -203,7 +212,7 @@ test('Order Flow End-to-End: Dine-In & Delivery with Client Reception Panel', as
     const dineIn = orders.find(o => o.id === dineInOrderId);
     assert(dineIn);
     assert.strictEqual(dineIn.orderType, 'DINE_IN');
-    assert.strictEqual(dineIn.tableNumber, 'Table 4');
+    assert.strictEqual(dineIn.tableNumber, '4');
     assert.strictEqual(dineIn.customerName, 'Aarav Sharma');
 
     const delivery = orders.find(o => o.id === deliveryOrderId);
@@ -250,7 +259,7 @@ test('Order Flow End-to-End: Dine-In & Delivery with Client Reception Panel', as
     const key = 'idem-unique-key-998811';
     const payload = {
       orderType: 'DINE_IN',
-      tableNumber: 'Table 99',
+      tableCode: tableCodes[99],
       customerName: 'Test Idempotency',
       customerPhone: '9876543210',
       idempotencyKey: key,
@@ -314,7 +323,7 @@ test('Order Flow End-to-End: Dine-In & Delivery with Client Reception Panel', as
   await t.test('10. Variant Validity Enforcement: unconfigured variant names are rejected', async () => {
     const payload = {
       orderType: 'DINE_IN',
-      tableNumber: 'Table 7',
+      tableCode: tableCodes[7],
       customerName: 'Aarav',
       customerPhone: '9876543210',
       items: [{ id: itemId, quantity: 1, variant: 'NonExistentGoldVariant' }]
@@ -382,7 +391,7 @@ test('Order Flow End-to-End: Dine-In & Delivery with Client Reception Panel', as
     // Public new order must be blocked with 403
     const newOrderReq = mockRequest('POST', {
       orderType: 'DINE_IN',
-      tableNumber: 'Table 1',
+      tableCode: tableCodes[1],
       customerName: 'Late Guest',
       customerPhone: '9876543210',
       items: [{ id: itemId, quantity: 1 }]

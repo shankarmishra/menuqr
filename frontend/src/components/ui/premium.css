@@ -1,0 +1,136 @@
+/* Premium controls (Phase 3). Colours follow the dark app shell; every motion stops under reduced motion. */
+
+/* ── Liquid segmented control ── */
+.mq-seg {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  padding: 4px;
+  border-radius: 12px;
+  background: #151c19;
+  border: 1px solid #2a3832;
+  isolation: isolate;
+}
+.mq-seg__blob {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  border-radius: 9px;
+  background: #e8783c;
+  box-shadow: 0 6px 18px -6px rgba(232, 120, 60, 0.7);
+  transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.38s ease;
+  z-index: -1;
+}
+.mq-seg__btn {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: #849a90;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.mq-seg__btn[aria-checked='true'] { color: #fff; }
+.mq-seg__btn:hover:not([aria-checked='true']) { color: #fff; }
+.mq-seg__btn:focus-visible { outline: 2px solid #f4b183; outline-offset: 2px; }
+
+/* ── Mercury switch ── */
+.mq-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 52px;
+  height: 28px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid #2a3832;
+  background: #1d2723;
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease;
+  flex-shrink: 0;
+}
+.mq-switch[aria-checked='true'] { background: #14532d; border-color: #22c55e; }
+.mq-switch:disabled { opacity: 0.5; cursor: not-allowed; }
+.mq-switch:focus-visible { outline: 2px solid #f4b183; outline-offset: 2px; }
+.mq-switch__drop {
+  position: absolute;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, #cbd5e1 55%, #94a3b8);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.2s ease;
+}
+.mq-switch:active:not(:disabled) .mq-switch__drop { width: 28px; }
+.mq-switch[aria-checked='true'] .mq-switch__drop {
+  transform: translateX(24px);
+  background: radial-gradient(circle at 35% 30%, #ecfdf5, #4ade80 55%, #16a34a);
+}
+.mq-switch[aria-checked='true']:active:not(:disabled) .mq-switch__drop { transform: translateX(18px); }
+
+/* ── Odometer number ── */
+.mq-odo { display: inline-flex; font-variant-numeric: tabular-nums; line-height: 1; }
+.mq-odo__col { display: inline-block; height: 1em; overflow: hidden; }
+.mq-odo__reel { display: flex; flex-direction: column; transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+.mq-odo__reel > span { height: 1em; }
+.mq-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* ── OTP input with hourglass ── */
+.mq-otp { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.mq-otp__cells { display: flex; gap: 8px; justify-content: center; }
+.mq-otp__cell {
+  width: 44px; height: 52px;
+  text-align: center;
+  font-size: 22px; font-weight: 800;
+  color: #fff;
+  background: #151c19;
+  border: 1.5px solid #2a3832;
+  border-radius: 10px;
+  caret-color: #e8783c;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.mq-otp__cell:focus { outline: none; border-color: #e8783c; transform: translateY(-2px); }
+.mq-otp__cell[data-filled='true'] { border-color: #4b6358; }
+.mq-otp[data-invalid='true'] .mq-otp__cell { border-color: #f43f5e; }
+.mq-otp__timer { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #849a90; }
+.mq-hourglass { width: 14px; height: 18px; }
+.mq-hourglass__sand-top, .mq-hourglass__sand-bottom { fill: #e8783c; transform-box: fill-box; }
+.mq-hourglass__sand-top { transform-origin: bottom center; }
+.mq-hourglass__sand-bottom { transform-origin: bottom center; }
+
+/* ── Gem rating ── */
+.mq-gems { display: inline-flex; gap: 6px; }
+.mq-gem {
+  width: 34px; height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.mq-gem:hover, .mq-gem:focus-visible { transform: scale(1.15) rotate(-6deg); }
+.mq-gem:focus-visible { outline: 2px solid #f4b183; outline-offset: 2px; border-radius: 6px; }
+.mq-gem svg { width: 100%; height: 100%; }
+.mq-gem__face { fill: #2a3832; stroke: #4b6358; transition: fill 0.25s ease; }
+.mq-gem[data-lit='true'] .mq-gem__face { fill: #f59e0b; stroke: #fde68a; }
+.mq-gem__shine { fill: rgba(255, 255, 255, 0.35); opacity: 0; transition: opacity 0.25s ease; }
+.mq-gem[data-lit='true'] .mq-gem__shine { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mq-seg__blob, .mq-switch, .mq-switch__drop, .mq-odo__reel, .mq-otp__cell, .mq-gem,
+  .mq-gem__face, .mq-gem__shine {
+    transition: none !important;
+  }
+}

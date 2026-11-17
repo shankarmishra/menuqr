@@ -1,20 +1,29 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle2, FileText, Download, Loader2, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
 import { getSubscriptionInvoices, downloadInvoicePdf, type SubscriptionInvoice } from '../../pages/app/appStore';
+import ReceiptPrint, { ReceiptStamp } from '../bill/ReceiptPrint';
 
 export interface SuccessPanelProps {
   orderSubtype: 'RENEWAL' | 'UPGRADE';
   planId: string;
   newExpiry?: string;
   orderId: string;
+  /** Amount of this order in paise, as the server priced it. */
+  amountPaise?: number;
   onClose: () => void;
 }
 
+/**
+ * Shown only after PaymentStep got a server-confirmed payment (verify status PAID, the server's
+ * plan-updated event for this order, or the subscription already extended). That is why the
+ * receipt may carry the APPROVED stamp.
+ */
 export default function SuccessPanel({
   orderSubtype,
   planId,
   newExpiry,
   orderId,
+  amountPaise,
   onClose,
 }: SuccessPanelProps) {
   const [invoices, setInvoices] = useState<SubscriptionInvoice[]>([]);
@@ -79,16 +88,49 @@ export default function SuccessPanel({
   };
 
   const isUpgrade = orderSubtype === 'UPGRADE';
+  const paidAt = new Date();
+  const paidAtText = `${paidAt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })} · ${paidAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}`;
+  const amountText = typeof amountPaise === 'number' && amountPaise > 0
+    ? `₹${(amountPaise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : null;
 
   return (
     <div className="space-y-6 text-center py-4">
-      {/* Animated Success Checkmark */}
-      <div className="relative inline-flex items-center justify-center">
-        <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping"></div>
-        <div className="relative p-4 rounded-full bg-emerald-500/15 border-2 border-emerald-500/40 text-emerald-400">
-          <CheckCircle2 size={48} />
+      {/* Payment receipt, printed */}
+      <ReceiptPrint ariaLabel="Subscription payment receipt" machineLabel="MENUSQR BILLING" printKey={orderId} showFeedButton={false}>
+        <div className="text-center mb-1">
+          <h1 className="thermal-restaurant-name">MenuSQR</h1>
+          <p className="thermal-tagline">Subscription payment receipt</p>
         </div>
-      </div>
+        <hr className="thermal-divider-double" />
+        <div className="thermal-meta-row">
+          <span>{isUpgrade ? 'PLAN UPGRADE' : 'PLAN RENEWAL'}</span>
+          <span className="thermal-token-badge">{planId.toUpperCase()}</span>
+        </div>
+        <div className="thermal-meta-sub">
+          <span>{paidAtText}</span>
+          <span>Valid till {formatDate(newExpiry)}</span>
+        </div>
+        <hr className="thermal-divider" />
+        <div className="thermal-totals">
+          <div className="thermal-totals-row">
+            <span>Order</span>
+            <span style={{ maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis' }}>{orderId}</span>
+          </div>
+        </div>
+        {amountText && (
+          <div className="thermal-grand-total">
+            <span>AMOUNT PAID</span>
+            <span className="thermal-grand-total-amount">{amountText}</span>
+          </div>
+        )}
+        <ReceiptStamp kind="approved" title="APPROVED" sub="PAYMENT VERIFIED" date={paidAtText} />
+        <hr className="thermal-divider" />
+        <div className="thermal-footer">
+          <p>GST tax invoice: download below</p>
+          <p>menusqr.in</p>
+        </div>
+      </ReceiptPrint>
 
       {/* Header Title */}
       <div>

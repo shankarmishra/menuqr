@@ -5,6 +5,7 @@ import RenewalPanel from './RenewalPanel';
 import UpgradePanel from './UpgradePanel';
 import PaymentStep from './PaymentStep';
 import SuccessPanel from './SuccessPanel';
+import SegmentedControl from '../ui/SegmentedControl';
 import {
   type RenewalInitiateResponse,
   type UpgradeInitiateResponse,
@@ -193,30 +194,15 @@ export default function CheckoutDrawer({
             {/* Action Tabs (only visible during 'panel' step and if not already Premium) */}
             {step === 'panel' && !isPremium && (
               <div className="px-6 pt-4 shrink-0">
-                <div className="flex rounded-xl bg-[#1d2723] p-1 border border-[#2a3832]">
-                  <button
-                    onClick={() => setAction('renew')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      action === 'renew'
-                        ? 'bg-[#e8783c] text-white shadow-sm'
-                        : 'text-[#849a90] hover:text-white'
-                    }`}
-                  >
-                    <CreditCard size={14} />
-                    <span>Renew Plan</span>
-                  </button>
-                  <button
-                    onClick={() => setAction('upgrade')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      action === 'upgrade'
-                        ? 'bg-[#e8783c] text-white shadow-sm'
-                        : 'text-[#849a90] hover:text-white'
-                    }`}
-                  >
-                    <Sparkles size={14} className={action === 'upgrade' ? 'text-amber-200' : 'text-amber-400'} />
-                    <span>Upgrade Tier</span>
-                  </button>
-                </div>
+                <SegmentedControl
+                  ariaLabel="Renew or upgrade"
+                  value={action}
+                  onChange={setAction}
+                  options={[
+                    { value: 'renew', label: 'Renew Plan', icon: <CreditCard size={14} /> },
+                    { value: 'upgrade', label: 'Upgrade Tier', icon: <Sparkles size={14} className={action === 'upgrade' ? 'text-amber-200' : 'text-amber-400'} /> },
+                  ]}
+                />
               </div>
             )}
 
@@ -260,6 +246,7 @@ export default function CheckoutDrawer({
                   planId={activeOrder?.targetPlan || currentPlanId}
                   newExpiry={activeOrder?.newExpiry || expiresAt}
                   orderId={activeOrder?.orderId || 'MQR_ORDER'}
+                  amountPaise={activeOrder?.amountPaise}
                   onClose={handleDrawerClose}
                 />
               )}

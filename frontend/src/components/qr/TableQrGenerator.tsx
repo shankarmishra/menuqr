@@ -1,13 +1,16 @@
-import { useState } from 'react';
-import { Printer, Table2, Download, ExternalLink, Scissors, Eye, Sparkles, X, FileText, Check } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Printer, Table2, Download, ExternalLink, Scissors, Eye, Sparkles, X, FileText, Check, RefreshCw, ShieldCheck } from 'lucide-react';
 import { useToast } from '../feedback/ToastProvider';
+import MercurySwitch from '../ui/MercurySwitch';
 import {
   buildTableQrUrl,
   buildTablePrintHtml,
   clampTableRange,
+  formatTableCode,
   type TableQrCard,
   type TableQrFormat,
 } from '../../utils/tableQr';
+import { ensureTableCodes, getTableSettings, rotateTableCode, saveTableSettings } from '../../pages/app/appStore';
 import {
   generateBrandedQrDataUrl,
   generateBrandedQrSvg,
@@ -32,8 +35,40 @@ export default function TableQrGenerator({ baseUrl, restaurantName }: Props) {
   const [printFormat, setPrintFormat] = useState<TableQrFormat>('tent');
   const [showGuides, setShowGuides] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [rotatingId, setRotatingId] = useState<string | null>(null);
+  // Old stickers printed with ?table=N: still accepted? (owner switch; off = only coded stickers work)
+  const [allowLegacy, setAllowLegacy] = useState<boolean | null>(null);
 
-  // Generate batch QR codes for the table range with Error Correction 'H' and Branded Medallions
+  useEffect(() => {
+    let current = true;
+    getTableSettings()
+      .then((s) => { if (current) setAllowLegacy(s.allowLegacyTableParam); })
+      .catch(() => { if (current) setAllowLegacy(null); });
+    return () => { current = false; };
+  }, []);
+
+  async function toggleLegacy() {
+    if (allowLegacy === null) return;
+    const next = !allowLegacy;
+    try {
+      const saved = await saveTableSettings(next);
+      setAllowLegacy(saved.allowLegacyTableParam);
+      showToast('success', next ? 'Old table stickers (?table=N) will keep working.' : 'Only the new coded table stickers work now.');
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Could not save the setting.');
+    }
+  }
+
+  async function buildCard(table: number, code: string, tableId?: string): Promise<TableQrCard> {
+    const url = buildTableQrUrl(baseUrl, code);
+    // High-res branded PNG and vector SVG, error correction 'H', table badge
+    const dataUrl = await generateBrandedQrDataUrl({ text: url, size: 1400, restaurantName, tableNumber: table, includeMedallion: true });
+    const svgString = await generateBrandedQrSvg({ text: url, restaurantName, tableNumber: table, includeMedallion: true });
+    return { table, url, dataUrl, svgString, tableId, code };
+  }
+
+  // Every table gets the same design and the same restaurant link; only the code inside differs.
+  // Codes come from the server and are permanent, so reprinting gives the same QR as before.
   async function generateBatch(customStart?: string, customEnd?: string) {
     const s = customStart ?? startTable;
     const e = customEnd ?? endTable;
@@ -45,39 +80,36 @@ export default function TableQrGenerator({ baseUrl, restaurantName }: Props) {
 
     setBusy(true);
     try {
-      const cards: TableQrCard[] = [];
       const cleanLabel = label.trim() || 'Table';
-
-      for (let table = range.start; table <= range.end; table += 1) {
-        const url = buildTableQrUrl(baseUrl, table);
-
-        // High-res branded PNG with errorCorrectionLevel 'H' and table badge
-        const dataUrl = await generateBrandedQrDataUrl({
-          text: url,
-          size: 1400,
-          restaurantName,
-          tableNumber: table,
-          includeMedallion: true,
-        });
-
-        // High-res vector SVG with errorCorrectionLevel 'H' and table badge
-        const svgString = await generateBrandedQrSvg({
-          text: url,
-          restaurantName,
-          tableNumber: table,
-          includeMedallion: true,
-        });
-
-        cards.push({ table, url, dataUrl, svgString });
+      const { tables } = await ensureTableCodes(range.start, range.end);
+      const cards: TableQrCard[] = [];
+      for (const t of tables) {
+        cards.push(await buildCard(t.tableNumber, t.code, t.id));
       }
 
       setGeneratedCards(cards);
-      showToast('success', `Generated ${cards.length} branded ${cleanLabel.toLowerCase()} QR codes (Tables ${range.start} to ${range.end}).`);
+      showToast('success', `Generated ${cards.length} ${cleanLabel.toLowerCase()} QR codes (Tables ${range.start} to ${range.end}), each with its own table code.`);
     } catch (err) {
       console.error(err);
-      showToast('error', 'Could not generate the table QR codes.');
+      showToast('error', err instanceof Error ? err.message : 'Could not generate the table QR codes.');
     } finally {
       setBusy(false);
+    }
+  }
+
+  // New code for one table, e.g. when someone photographed its sticker. Its old sticker stops working.
+  async function handleRotate(card: TableQrCard) {
+    if (!card.tableId) return;
+    setRotatingId(card.tableId);
+    try {
+      const { table } = await rotateTableCode(card.tableId);
+      const fresh = await buildCard(table.tableNumber, table.code, table.id);
+      setGeneratedCards((cards) => cards.map((c) => (c.tableId === card.tableId ? fresh : c)));
+      showToast('success', `${label} ${card.table} has a new code. Print and replace its sticker; the old one no longer works.`);
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Could not change the table code.');
+    } finally {
+      setRotatingId(null);
     }
   }
 
@@ -165,10 +197,36 @@ export default function TableQrGenerator({ baseUrl, restaurantName }: Props) {
 
       <div className="p-4 sm:p-6 space-y-5">
         <p className="text-xs text-[#849a90] leading-relaxed">
-          Generate individual table QR codes in batches (e.g., Tables 1 to 20). Every QR automatically appends{' '}
-          <code className="text-sky-300 bg-sky-950/40 px-1 py-0.5 rounded text-[11px]">?table=N</code> so customer orders route
-          directly to the correct table number. Download individual tables or open the print studio for table tents, stickers, and acrylic inserts.
+          Every table sticker looks the same and opens your one permanent menu link. Hidden inside each QR is that table's own
+          code (<code className="text-sky-300 bg-sky-950/40 px-1 py-0.5 rounded text-[11px]">?tc=…</code>), so guests never type a
+          table number and an order always lands on the right table's bill. Codes never change on their own: menu edits and renewals
+          keep every printed sticker working.
         </p>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-[#2a3832] bg-[#151c19] p-3">
+          <div className="flex items-start gap-2 text-xs text-[#849a90]">
+            <ShieldCheck size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+            <span>
+              <strong className="text-white">Old stickers (?table=N)</strong>{' '}
+              {allowLegacy === null
+                ? 'setting is loading…'
+                : allowLegacy
+                  ? 'still work. Anyone can edit that number in the link, so switch this off once the new stickers are on every table.'
+                  : 'are switched off. Only coded stickers can order at a table.'}
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className={`text-xs font-bold ${allowLegacy ? 'text-amber-300' : 'text-emerald-300'}`} aria-hidden="true">
+              {allowLegacy ? 'Old stickers: ON' : 'Old stickers: OFF'}
+            </span>
+            <MercurySwitch
+              checked={allowLegacy === true}
+              disabled={allowLegacy === null}
+              onChange={() => void toggleLegacy()}
+              label="Accept old table stickers (?table=N)"
+            />
+          </div>
+        </div>
 
         {/* Range Controls */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -305,6 +363,11 @@ export default function TableQrGenerator({ baseUrl, restaurantName }: Props) {
                   <p className="text-[10px] text-[#849a90] truncate max-w-[180px]">
                     {restaurantName}
                   </p>
+                  {card.code && (
+                    <p className="text-[10px] text-[#849a90]">
+                      Table code <span className="font-mono font-bold text-white tracking-wider">{formatTableCode(card.code)}</span>
+                    </p>
+                  )}
 
                   {/* Individual Download Actions */}
                   <div className="grid grid-cols-2 gap-1.5 w-full pt-1">
@@ -327,6 +390,18 @@ export default function TableQrGenerator({ baseUrl, restaurantName }: Props) {
                       SVG
                     </button>
                   </div>
+                  {card.tableId && (
+                    <button
+                      type="button"
+                      onClick={() => void handleRotate(card)}
+                      disabled={rotatingId === card.tableId}
+                      title={`Give ${label} ${card.table} a new code. Its current sticker stops working.`}
+                      className="flex w-full items-center justify-center gap-1 text-[10px] font-bold text-amber-300 border border-amber-500/25 hover:bg-amber-500/10 py-1.5 rounded-lg disabled:opacity-50 cursor-pointer"
+                    >
+                      <RefreshCw size={11} className={rotatingId === card.tableId ? 'animate-spin motion-reduce:animate-none' : ''} />
+                      New code
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

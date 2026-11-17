@@ -1,44 +1,67 @@
 /**
  * BillPage.tsx
- * Customer-facing live thermal bill page — NO AUTH required.
- * URL: /bill/:tokenId
+ * Customer-Facing Live Thermal Bill Page — Zero Authentication Required
+ * Route: /bill/:tokenId
  *
- * States:
- *  LOADING  → fetching token from /api/public/tokens/:tokenId
- *  UNPAID   → shows thermal bill + amber flashing badge + SSE listening
- *  PAID     → shows thermal bill + green rubber stamp (SSE push, zero reload)
- *  REVIEW   → after 1.5s on PAID: Google Review nudge slides up
- *  NOT_FOUND → token not found or malformed ID
+ * Real-Time Dual-SSE Architecture:
+ *  - Strict client-side UUID format validation with graceful 404 screen
+ *  - REST hydration via GET /api/public/tokens/:tokenId
+ *  - Scoped customer SSE stream connection to /api/public/tokens/:tokenId/stream
+ *  - Handles 'token_status', 'token_settled', and 'token_items_updated' events
+ *  - Silent reconnect re-hydration to heal transient network drops
+ *  - Triggers celebratory confetti upon cashier settlement
+ *  - Triggers interactive GoogleReviewSlide 1.5s post-settlement
+ *  - Action button: Print / Save Receipt (window.print())
  */
 
-import { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import ThermalBillCard from '../../components/bill/ThermalBillCard';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import ThermalBillCard, { triggerCelebrationConfetti } from '../../components/bill/ThermalBillCard';
 import GoogleReviewSlide from '../../components/bill/GoogleReviewSlide';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export interface PublicTokenItem {
+  id?: string;
+  name: string;
+  dishName?: string;
+  variant?: string | null;
+  quantity: number;
+  unitPrice: number;       // rupees
+  unitPricePaise?: number; // paise
+  totalPrice: number;      // rupees
+  totalPricePaise?: number;// paise
+  isVeg: boolean;
+  notes?: string | null;
+}
 
 export interface PublicTokenData {
   tokenId: string;
   tokenNumber: number;
+  tokenCode: string;
   tableNumber: number;
+  tableName?: string | null;
+  covers?: number;
   restaurantName: string;
   restaurantCity?: string | null;
   restaurantPhone?: string | null;
+  restaurantAddress?: string | null;
   restaurantTagline?: string | null;
-  items: Array<{
-    name: string;
-    variant?: string | null;
-    quantity: number;
-    unitPrice: number;   // in rupees (float)
-    totalPrice: number;  // in rupees (float)
-    isVeg: boolean;
-  }>;
-  subtotal: number;  // rupees
-  gst: number;       // rupees
-  discount: number;  // rupees
-  total: number;     // rupees
-  status: 'UNPAID' | 'PAID' | 'VOID';
+  restaurantGstin?: string | null;
+  restaurantFssai?: string | null;
+  cashierName?: string | null;
+  items: PublicTokenItem[];
+  subtotal: number;
+  gst: number;
+  cgst?: number;
+  sgst?: number;
+  discount: number;
+  roundOff?: number;
+  total: number;
+  status: 'ISSUED' | 'ORDERING' | 'DINING' | 'BILL_REQUESTED' | 'UNPAID' | 'SETTLED' | 'PAID' | 'CLOSED' | 'VOID';
   paymentMethod?: string | null;
   paidAt?: string | null;
+  settledAt?: string | null;
   googleReviewUrl?: string | null;
   createdAt: string;
 }
@@ -48,70 +71,246 @@ export default function BillPage() {
   const [token, setToken] = useState<PublicTokenData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isPaid, setIsPaid] = useState(false);
   const [paidAt, setPaidAt] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [showReview, setShowReview] = useState(false);
+
   const sseRef = useRef<EventSource | null>(null);
   const reviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── 1. Fetch initial token state ─────────────────────────────────────────
+  // Settlement transition handler
+  const handleSettledTransition = useCallback(
+    (settledTimestamp?: string | null, method?: string | null, reviewUrl?: string | null) => {
+      setIsPaid(true);
+      if (settledTimestamp) setPaidAt(settledTimestamp);
+      if (method) setPaymentMethod(method);
+      if (reviewUrl) {
+        setToken((prev) => (prev ? { ...prev, googleReviewUrl: reviewUrl } : prev));
+      }
+
+      // Trigger celebration confetti
+      void triggerCelebrationConfetti();
+
+      // Trigger Google Review slide-up after exactly 1.5 seconds
+      if (reviewTimerRef.current) clearTimeout(reviewTimerRef.current);
+      reviewTimerRef.current = setTimeout(() => setShowReview(true), 1500);
+    },
+    []
+  );
+
+  // ── 1. Hydration API ────────────────────────────────────────────────────────
+  const hydrateToken = useCallback(async () => {
+    if (!tokenId || !UUID_REGEX.test(tokenId)) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/public/tokens/${encodeURIComponent(tokenId)}`);
+      if (res.status === 404 || res.status === 400) {
+        setNotFound(true);
+        return;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const json = await res.json();
+      const rawToken = json.token || json;
+      const restaurant = json.restaurant || {};
+
+      const normalized: PublicTokenData = {
+        tokenId: rawToken.id || rawToken.tokenId || tokenId,
+        tokenNumber: Number(rawToken.tokenNumber || 0),
+        tokenCode:
+          rawToken.tokenCode || `#${String(rawToken.tokenNumber || 0).padStart(3, '0')}`,
+        tableNumber: Number(rawToken.tableNumber || 0),
+        tableName: rawToken.tableName || null,
+        covers: rawToken.covers ? Number(rawToken.covers) : undefined,
+        restaurantName:
+          restaurant.businessName ||
+          restaurant.name ||
+          rawToken.restaurantName ||
+          json.restaurantName ||
+          'Restaurant',
+        restaurantCity: restaurant.city || rawToken.restaurantCity || null,
+        restaurantPhone: restaurant.phone || rawToken.restaurantPhone || null,
+        restaurantAddress: restaurant.address || rawToken.restaurantAddress || null,
+        restaurantTagline: restaurant.tagline || rawToken.restaurantTagline || null,
+        restaurantGstin: restaurant.gstin || rawToken.restaurantGstin || null,
+        restaurantFssai: restaurant.fssai || rawToken.restaurantFssai || null,
+        cashierName: rawToken.cashierName || null,
+        items: (rawToken.items || json.items || []).map((it: any) => ({
+          id: it.id,
+          name: it.dishName || it.itemName || it.name || 'Dish',
+          dishName: it.dishName || it.name,
+          variant: it.variant || null,
+          quantity: Number(it.quantity || 1),
+          unitPrice: Number(
+            it.price ?? (it.unitPricePaise !== undefined ? it.unitPricePaise / 100 : 0)
+          ),
+          totalPrice: Number(
+            it.total ?? (it.totalPricePaise !== undefined ? it.totalPricePaise / 100 : 0)
+          ),
+          isVeg: it.isVeg !== false,
+          notes: it.notes || null,
+        })),
+        subtotal: Number(
+          rawToken.subtotal ??
+            (rawToken.subtotalPaise !== undefined ? rawToken.subtotalPaise / 100 : 0)
+        ),
+        gst: Number(
+          rawToken.tax ??
+            rawToken.gst ??
+            (rawToken.taxPaise !== undefined ? rawToken.taxPaise / 100 : 0)
+        ),
+        cgst:
+          rawToken.cgst !== undefined
+            ? Number(rawToken.cgst)
+            : rawToken.cgstPaise !== undefined
+            ? Number(rawToken.cgstPaise / 100)
+            : undefined,
+        sgst:
+          rawToken.sgst !== undefined
+            ? Number(rawToken.sgst)
+            : rawToken.sgstPaise !== undefined
+            ? Number(rawToken.sgstPaise / 100)
+            : undefined,
+        discount: Number(
+          rawToken.discount ??
+            (rawToken.discountPaise !== undefined ? rawToken.discountPaise / 100 : 0)
+        ),
+        total: Number(
+          rawToken.total ??
+            (rawToken.totalPaise !== undefined ? rawToken.totalPaise / 100 : 0)
+        ),
+        status: (rawToken.status || 'UNPAID').toUpperCase() as PublicTokenData['status'],
+        paymentMethod: rawToken.paymentMethod || null,
+        paidAt: rawToken.paidAt || rawToken.settledAt || null,
+        settledAt: rawToken.settledAt || null,
+        googleReviewUrl:
+          restaurant.googleReviewUrl ||
+          json.googleReviewUrl ||
+          rawToken.googleReviewUrl ||
+          null,
+        createdAt: rawToken.createdAt || new Date().toISOString(),
+      };
+
+      setToken(normalized);
+
+      if (['SETTLED', 'PAID'].includes(normalized.status)) {
+        setIsPaid(true);
+        setPaidAt(normalized.paidAt ?? null);
+        setPaymentMethod(normalized.paymentMethod ?? null);
+        if (reviewTimerRef.current) clearTimeout(reviewTimerRef.current);
+        reviewTimerRef.current = setTimeout(() => setShowReview(true), 1500);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to load bill');
+    } finally {
+      setLoading(false);
+    }
+  }, [tokenId]);
+
   useEffect(() => {
-    if (!tokenId) { setNotFound(true); setLoading(false); return; }
-
-    fetch(`/api/public/tokens/${encodeURIComponent(tokenId)}`)
-      .then(async (res) => {
-        if (res.status === 404 || res.status === 400) { setNotFound(true); return; }
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data: PublicTokenData = await res.json();
-        setToken(data);
-        if (data.status === 'PAID') {
-          setIsPaid(true);
-          setPaidAt(data.paidAt ?? null);
-          setPaymentMethod(data.paymentMethod ?? null);
-          // Already paid when page loaded — show review after delay
-          reviewTimerRef.current = setTimeout(() => setShowReview(true), 1500);
-        }
-      })
-      .catch(() => setNotFound(true))
-      .finally(() => setLoading(false));
-
+    void hydrateToken();
     return () => {
       if (reviewTimerRef.current) clearTimeout(reviewTimerRef.current);
     };
-  }, [tokenId]);
+  }, [hydrateToken]);
 
-  // ── 2. Open SSE stream for live PAID push ────────────────────────────────
+  // ── 2. Live Scoped Customer SSE Stream ──────────────────────────────────────
   useEffect(() => {
-    if (!tokenId || notFound) return;
+    if (!tokenId || notFound || !UUID_REGEX.test(tokenId)) return;
 
     const sse = new EventSource(`/api/public/tokens/${encodeURIComponent(tokenId)}/stream`);
     sseRef.current = sse;
 
+    // Status updated (e.g. BILL_REQUESTED, SETTLED)
     sse.addEventListener('token_status', (e) => {
       try {
         const data = JSON.parse(e.data);
-        if (data.status === 'PAID') {
-          setIsPaid(true);
-          setPaidAt(data.paidAt ?? null);
-          setPaymentMethod(data.paymentMethod ?? null);
-          // Trigger confetti burst
-          triggerConfetti();
-          // Show Google Review after 1.5s
-          reviewTimerRef.current = setTimeout(() => setShowReview(true), 1500);
+        const status = (data.status || data.token?.status || '').toUpperCase();
+        if (['SETTLED', 'PAID'].includes(status)) {
+          handleSettledTransition(
+            data.token?.settledAt || data.settledAt,
+            data.token?.paymentMethod || data.paymentMethod,
+            data.token?.googleReviewUrl || data.googleReviewUrl
+          );
         }
-      } catch { /* ignore parse errors */ }
+        if (data.token) {
+          const t = data.token;
+          setToken((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  status,
+                  subtotal: t.subtotal ?? (t.subtotalPaise ? t.subtotalPaise / 100 : prev.subtotal),
+                  gst: t.tax ?? (t.taxPaise ? t.taxPaise / 100 : prev.gst),
+                  total: t.total ?? (t.totalPaise ? t.totalPaise / 100 : prev.total),
+                }
+              : prev
+          );
+        } else {
+          setToken((prev) => (prev ? { ...prev, status } : prev));
+        }
+      } catch {}
     });
 
-    sse.addEventListener('token_items', (e) => {
+    // Explicit settlement event
+    sse.addEventListener('token_settled', (e) => {
       try {
         const data = JSON.parse(e.data);
-        setToken((prev) => prev ? { ...prev, items: data.items, subtotal: data.subtotal, gst: data.gst, total: data.total } : prev);
-      } catch { /* ignore */ }
+        handleSettledTransition(data.settledAt, data.paymentMethod, data.googleReviewUrl);
+      } catch {}
     });
 
+    // Incremental line items appended by waiter / kitchen
+    sse.addEventListener('token_items_updated', (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        setToken((prev) => {
+          if (!prev) return prev;
+          const updatedItems: PublicTokenItem[] = (data.items || []).map((it: any) => ({
+            id: it.id,
+            name: it.dishName || it.itemName || it.name || 'Dish',
+            dishName: it.dishName || it.name,
+            variant: it.variant || null,
+            quantity: Number(it.quantity || 1),
+            unitPrice: Number(
+              it.price ?? (it.unitPricePaise !== undefined ? it.unitPricePaise / 100 : 0)
+            ),
+            totalPrice: Number(
+              it.total ?? (it.totalPricePaise !== undefined ? it.totalPricePaise / 100 : 0)
+            ),
+            isVeg: it.isVeg !== false,
+            notes: it.notes || null,
+          }));
+
+          return {
+            ...prev,
+            items: updatedItems,
+            subtotal: Number(
+              data.subtotal ??
+                (data.subtotalPaise !== undefined ? data.subtotalPaise / 100 : prev.subtotal)
+            ),
+            gst: Number(
+              data.tax ??
+                (data.taxPaise !== undefined ? data.taxPaise / 100 : prev.gst)
+            ),
+            total: Number(
+              data.total ??
+                (data.totalPaise !== undefined ? data.totalPaise / 100 : prev.total)
+            ),
+          };
+        });
+      } catch {}
+    });
+
+    // Reconnection handling: heal state by re-fetching
     sse.addEventListener('error', () => {
-      // Browser auto-reconnects on EventSource error — no action needed
+      void hydrateToken();
     });
 
     return () => {
@@ -119,89 +318,75 @@ export default function BillPage() {
       sseRef.current = null;
       if (reviewTimerRef.current) clearTimeout(reviewTimerRef.current);
     };
-  }, [tokenId, notFound]);
+  }, [tokenId, notFound, handleSettledTransition, hydrateToken]);
 
-  // ── 3. Confetti effect ───────────────────────────────────────────────────
-  function triggerConfetti() {
-    const colors = ['#22c55e', '#16a34a', '#bbf7d0', '#fbbf24', '#f59e0b'];
-    const count = 80;
-    const container = document.body;
-
-    for (let i = 0; i < count; i++) {
-      const el = document.createElement('div');
-      el.style.cssText = `
-        position: fixed;
-        top: -10px;
-        left: ${Math.random() * 100}vw;
-        width: ${4 + Math.random() * 6}px;
-        height: ${8 + Math.random() * 8}px;
-        background: ${colors[Math.floor(Math.random() * colors.length)]};
-        border-radius: 2px;
-        transform: rotate(${Math.random() * 360}deg);
-        animation: confettiFall ${1.5 + Math.random() * 2}s ease-in forwards;
-        z-index: 9999;
-        pointer-events: none;
-      `;
-      container.appendChild(el);
-      setTimeout(() => el.remove(), 4000);
-    }
-  }
-
-  // ── 4. Render states ─────────────────────────────────────────────────────
+  // Loading Screen
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#151c19] flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-gray-700 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm font-mono">Loading your bill…</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (notFound || !token) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <div className="text-center max-w-xs">
-          <div className="text-5xl mb-4">🧾</div>
-          <h2 className="text-lg font-bold text-gray-800 mb-2">Bill Not Found</h2>
-          <p className="text-sm text-gray-500">
-            This bill link may be expired or invalid. Please ask the restaurant staff for assistance.
+          <div className="h-9 w-9 animate-spin rounded-full border-2 border-white/20 border-t-[#e8783c] mx-auto mb-3" />
+          <p className="text-[#aab7b2] text-xs font-mono tracking-wider uppercase">
+            Loading live receipt…
           </p>
         </div>
       </div>
     );
   }
 
-  return (
-    <>
-      {/* Global confetti keyframe */}
-      <style>{`
-        @keyframes confettiFall {
-          0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
-      `}</style>
+  // Graceful 404 Screen for invalid or non-existent token IDs
+  if (notFound || !token) {
+    return (
+      <div className="min-h-screen bg-[#151c19] flex items-center justify-center p-4">
+        <div className="max-w-xs text-center rounded-2xl border border-white/10 bg-[#1d2723] p-7 shadow-2xl">
+          <div className="text-4xl mb-3">🧾</div>
+          <h2 className="text-base font-bold text-white mb-2">Bill Not Found or Expired</h2>
+          <p className="text-xs text-[#aab7b2] leading-relaxed mb-5">
+            {error || 'This digital bill session may have already closed or the link is invalid. Please check with your server.'}
+          </p>
+          <Link
+            to="/"
+            className="inline-block w-full rounded-xl bg-[#e8783c] py-2.5 text-xs font-bold text-white transition hover:bg-[#d6672b]"
+          >
+            Go to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
-      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-start py-8 px-4">
-        <ThermalBillCard
-          token={token}
-          isPaid={isPaid}
-          paidAt={paidAt}
-          paymentMethod={paymentMethod}
-        />
-        <p className="mt-6 text-xs text-gray-400 text-center">
-          Powered by <span className="font-semibold">MenuSQR</span> · menusqr.in
+  return (
+    <div className="min-h-screen bg-[#121715] flex flex-col items-center justify-start py-8 px-4 print:bg-white print:p-0">
+      <ThermalBillCard
+        token={token}
+        isPaid={isPaid}
+        paidAt={paidAt}
+        paymentMethod={paymentMethod}
+      />
+
+      {/* Screen-Only Action Buttons */}
+      <div className="mt-5 flex flex-col items-center gap-2 print:hidden no-print">
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white border border-white/10 transition active:scale-95 cursor-pointer shadow-sm"
+        >
+          <span>🖨️ Print / Save Receipt</span>
+        </button>
+        <p className="text-[11px] text-[#53615a]">
+          Powered by <span className="font-semibold text-[#8b9c95]">MenuSQR</span> · Live Table Sync
         </p>
       </div>
 
+      {/* Post-Settlement Google Review Slide */}
       {showReview && (
         <GoogleReviewSlide
           googleReviewUrl={token.googleReviewUrl}
           restaurantName={token.restaurantName}
+          restaurantCity={token.restaurantCity}
           onDismiss={() => setShowReview(false)}
         />
       )}
-    </>
+    </div>
   );
 }

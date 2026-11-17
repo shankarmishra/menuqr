@@ -1,3 +1,4 @@
+import { useToast } from '../../components/feedback/ToastProvider';
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -63,6 +64,7 @@ const TAB_ALIASES: Record<string, TabKey> = {
 };
 
 export default function RestaurantPage() {
+  const showToast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabKey>('identity');
   const [profile, setProfile] = useState<CanonicalProfileData | null>(null);
@@ -143,7 +145,7 @@ export default function RestaurantPage() {
       setTimeout(() => setSaveSuccess(false), 3500);
       loadData();
     } catch (err: any) {
-      alert('Failed to save profile: ' + (err.message || 'Unknown error'));
+      showToast('error', 'Failed to save profile: ' + (err.message || 'Unknown error'));
     } finally {
       setSaving(false);
     }

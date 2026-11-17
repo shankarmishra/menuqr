@@ -139,6 +139,17 @@ export function createOwnerPool(tables, users = []) {
       else t('dining_tables').push({ id, tenant_id, label, sort_order, is_active: true });
       return { rows: [], rowCount: 1 };
     }],
+    // table codes (backend/tableCodes.js backfillTableCodes)
+    ['FROM dining_tables WHERE tenant_id = $1 AND (qr_code IS NULL OR table_number IS NULL)', (_s, p) => t('dining_tables').filter((r) => r.tenant_id === p[0] && (!r.qr_code || !r.table_number))],
+    [/^UPDATE dining_tables\s+SET table_number = COALESCE/, (_s, p) => {
+      const [id, tenantId, tableNumber, code] = p;
+      const row = t('dining_tables').find((r) => r.id === id && r.tenant_id === tenantId);
+      if (row) {
+        if (row.table_number == null) row.table_number = tableNumber;
+        if (!row.qr_code) row.qr_code = code;
+      }
+      return { rows: [], rowCount: row ? 1 : 0 };
+    }],
 
     // setup progress
     ['FROM setup_progress WHERE tenant_id = $1', (_s, p) => t('setup_progress').filter((r) => r.tenant_id === p[0]).map(setupView)],

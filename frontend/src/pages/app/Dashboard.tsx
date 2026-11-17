@@ -1,3 +1,4 @@
+import { useToast } from '../../components/feedback/ToastProvider';
 import { useEffect, useState } from 'react';
 import { getProfile, getSubscription, getMenu, getOrders, getStickerRequests, getCanonicalProfile, respondToPhonePrivacyReview } from './appStore';
 import { ShieldCheck, Eye, EyeOff } from 'lucide-react';
@@ -8,6 +9,7 @@ import ScannableQRCode from '../../components/marketing/ScannableQRCode';
 
 
 export default function Dashboard() {
+  const showToast = useToast();
   const [profile, setProfile] = useState<AppProfile | null>(null);
   const [sub, setSub] = useState<AppSubscriptionData & { contentChangesUsed?: number, contentChangesRemaining?: number, contentChangesLimit?: number } | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
@@ -120,7 +122,7 @@ export default function Dashboard() {
       await respondToPhonePrivacyReview(action);
       setPhonePrivacyPending(false);
     } catch (err: any) {
-      alert('Error updating privacy preference: ' + err.message);
+      showToast('error', 'Error updating privacy preference: ' + err.message);
     }
   };
 

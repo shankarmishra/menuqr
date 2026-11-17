@@ -5,13 +5,14 @@
  * Features:
  *  - 1-Click settlement (Cash / UPI / Card)
  *  - Inline "+ Add Dish" form to append items to open session
- *  - "View Live Bill" and "Copy Bill Link" quick buttons
+ *  - "Receipt Preview" and "Copy Bill Link" quick buttons
+ *  - "Close & Free Table" action calling POST /api/app/tokens/:id/close with confirmation
  */
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import type { CashierToken } from './UnpaidTokenQueue';
 
-interface TokenDetail extends CashierToken {
+export interface TokenDetail extends CashierToken {
   items: Array<{
     name: string;
     variant?: string | null;
@@ -21,8 +22,13 @@ interface TokenDetail extends CashierToken {
   }>;
   subtotal: number;
   gst: number;
+  cgst?: number;
+  sgst?: number;
   discount: number;
+  roundOff?: number;
   restaurantName?: string;
+  restaurantGstin?: string | null;
+  restaurantFssai?: string | null;
 }
 
 interface Props {
@@ -31,18 +37,27 @@ interface Props {
   detailLoading: boolean;
   onSettled: (tokenId: string, method: string) => void;
   onItemAdded?: () => void;
+  onPreviewReceipt?: (token: CashierToken, detail: TokenDetail | null) => void;
 }
 
 type PayMethod = 'CASH' | 'UPI' | 'CARD';
 
 const METHOD_CONFIG: Record<PayMethod, { label: string; icon: string; color: string; bg: string }> = {
-  CASH: { label: 'Cash',  icon: '💵', color: '#065f46', bg: '#d1fae5' },
-  UPI:  { label: 'UPI',   icon: '📱', color: '#1e3a8a', bg: '#dbeafe' },
-  CARD: { label: 'Card',  icon: '💳', color: '#4c1d95', bg: '#ede9fe' },
+  CASH: { label: 'Cash', icon: '💵', color: '#065f46', bg: '#d1fae5' },
+  UPI:  { label: 'UPI',  icon: '📱', color: '#1e3a8a', bg: '#dbeafe' },
+  CARD: { label: 'Card', icon: '💳', color: '#4c1d95', bg: '#ede9fe' },
 };
 
-export default function PaymentActionPanel({ token, detail, detailLoading, onSettled, onItemAdded }: Props) {
+export default function PaymentActionPanel({
+  token,
+  detail,
+  detailLoading,
+  onSettled,
+  onItemAdded,
+  onPreviewReceipt,
+}: Props) {
   const [settling, setSettling] = useState<PayMethod | null>(null);
+  const [closing, setClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -54,12 +69,13 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
   const [isVeg, setIsVeg] = useState(true);
   const [addingItem, setAddingItem] = useState(false);
 
-  const billUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/bill/${token.id}`
-    : `/bill/${token.id}`;
+  const billUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/bill/${token.id}`
+      : `/bill/${token.id}`;
 
   async function handleSettle(method: PayMethod) {
-    if (settling) return;
+    if (settling || closing) return;
     setSettling(method);
     setError(null);
 
@@ -67,19 +83,100 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
       const res = await fetch(`/api/app/tokens/${encodeURIComponent(token.id)}/settle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ method }),
+        body: JSON.stringify({ method, paymentMethod: method }),
         credentials: 'include',
       });
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error((body as { message?: string; error?: string }).error || (body as { message?: string }).message || `HTTP ${res.status}`);
+        throw new Error(
+          (body as { message?: string; error?: string }).error ||
+            (body as { message?: string }).message ||
+            `HTTP ${res.status}`
+        );
       }
 
       onSettled(token.id, method);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Settlement failed. Try again.');
       setSettling(null);
+    }
+  }
+
+  async function handleCloseTable() {
+    if (closing || settling) return;
+
+    const isAlreadySettled = ['SETTLED', 'PAID', 'VOID'].includes(
+      (token.status || '').toUpperCase()
+    );
+
+    if (!isAlreadySettled) {
+      const confirmSettleAndClose = window.confirm(
+        `Table ${token.tableNumber} bill (₹${token.total.toFixed(2)}) is not settled yet.\n\nSettle with CASH and free Table ${token.tableNumber}?`
+      );
+      if (!confirmSettleAndClose) return;
+
+      setClosing(true);
+      setError(null);
+      try {
+        // Step 1: settle via CASH
+        const settleRes = await fetch(`/api/app/tokens/${encodeURIComponent(token.id)}/settle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ method: 'CASH', paymentMethod: 'CASH' }),
+          credentials: 'include',
+        });
+        if (!settleRes.ok) {
+          const body = await settleRes.json().catch(() => ({}));
+          throw new Error(
+            (body as any).error || (body as any).message || `Settlement failed: ${settleRes.status}`
+          );
+        }
+
+        // Step 2: close table session
+        const closeRes = await fetch(`/api/app/tokens/${encodeURIComponent(token.id)}/close`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (!closeRes.ok) {
+          const body = await closeRes.json().catch(() => ({}));
+          throw new Error(
+            (body as any).error || (body as any).message || `Close failed: ${closeRes.status}`
+          );
+        }
+
+        onSettled(token.id, 'CLOSED');
+      } catch (err: any) {
+        setError(err.message || 'Failed to close table.');
+      } finally {
+        setClosing(false);
+      }
+      return;
+    }
+
+    // Already settled: direct confirmation to free table
+    if (!window.confirm(`Free Table ${token.tableNumber} and complete dining session?`)) return;
+
+    setClosing(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/app/tokens/${encodeURIComponent(token.id)}/close`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(
+          (body as any).error || (body as any).message || `Close failed: ${res.status}`
+        );
+      }
+      onSettled(token.id, 'CLOSED');
+    } catch (err: any) {
+      setError(err.message || 'Failed to close table.');
+    } finally {
+      setClosing(false);
     }
   }
 
@@ -135,54 +232,101 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
   }
 
   return (
-    <div style={{
-      background: '#151c19',
-      border: '1.5px solid rgba(255,255,255,0.08)',
-      borderRadius: 14,
-      overflow: 'hidden',
-    }}>
+    <div
+      style={{
+        background: '#151c19',
+        border: '1.5px solid rgba(255,255,255,0.08)',
+        borderRadius: 14,
+        overflow: 'hidden',
+      }}
+    >
       {/* ── Header ─────────────────────────────────────────────────── */}
-      <div style={{
-        background: 'linear-gradient(90deg, rgba(232,120,60,0.12), transparent)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        padding: '16px 20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
+      <div
+        style={{
+          background: 'linear-gradient(90deg, rgba(232,120,60,0.12), transparent)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          padding: '16px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         <div>
-          <p style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>
-            Settling
+          <p
+            style={{
+              fontSize: 12,
+              color: '#6b7280',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.07em',
+              marginBottom: 2,
+            }}
+          >
+            Settling Table
           </p>
-          <p style={{ fontSize: 18, fontWeight: 700, color: '#fcfaf8', fontFamily: 'Courier Prime, Courier New, monospace' }}>
+          <p
+            style={{
+              fontSize: 18,
+              fontWeight: 700,
+              color: '#fcfaf8',
+              fontFamily: 'Courier Prime, Courier New, monospace',
+            }}
+          >
             Token #{String(token.tokenNumber).padStart(3, '0')} · Table {token.tableNumber}
           </p>
         </div>
-        <div style={{
-          background: '#e8783c',
-          color: '#fff',
-          borderRadius: 8,
-          padding: '6px 14px',
-          fontFamily: 'Courier Prime, Courier New, monospace',
-          fontWeight: 700,
-          fontSize: 20,
-        }}>
+        <div
+          style={{
+            background: '#e8783c',
+            color: '#fff',
+            borderRadius: 8,
+            padding: '6px 14px',
+            fontFamily: 'Courier Prime, Courier New, monospace',
+            fontWeight: 700,
+            fontSize: 20,
+          }}
+        >
           ₹{token.total.toFixed(2)}
         </div>
       </div>
 
-      {/* ── Customer Bill Link & Quick Actions Bar ─────────────────── */}
-      <div style={{
-        padding: '10px 20px',
-        background: 'rgba(255,255,255,0.02)',
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: 8,
-      }}>
-        <div style={{ display: 'flex', gap: 8 }}>
+      {/* ── Quick Actions Bar ───────────────────────────────────────── */}
+      <div
+        style={{
+          padding: '10px 16px',
+          background: 'rgba(255,255,255,0.02)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 6,
+        }}
+      >
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {/* Inline Receipt Preview */}
+          {onPreviewReceipt && (
+            <button
+              type="button"
+              onClick={() => onPreviewReceipt(token, detail)}
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                padding: '5px 10px',
+                borderRadius: 6,
+                background: 'rgba(59,130,246,0.15)',
+                color: '#60a5fa',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              🧾 Preview Receipt
+            </button>
+          )}
+
           <a
             href={billUrl}
             target="_blank"
@@ -200,7 +344,7 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
               gap: 4,
             }}
           >
-            ↗ Open Thermal Bill
+            ↗ Open Tab
           </a>
 
           <button
@@ -220,7 +364,7 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
               gap: 4,
             }}
           >
-            {copied ? '✓ Link Copied' : '📋 Copy Bill Link'}
+            {copied ? '✓ Link Copied' : '📋 Copy Link'}
           </button>
         </div>
 
@@ -244,23 +388,26 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
 
       {/* ── Add Item Inline Form ───────────────────────────────────── */}
       {showAddItem && (
-        <form onSubmit={(e) => void handleAddItem(e)} style={{
-          padding: '12px 20px',
-          background: 'rgba(0,0,0,0.25)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-          display: 'grid',
-          gridTemplateColumns: '2fr 1fr 1fr auto auto',
-          gap: 8,
-          alignItems: 'center',
-        }}>
+        <form
+          onSubmit={(e) => void handleAddItem(e)}
+          style={{
+            padding: '12px 16px',
+            background: 'rgba(0,0,0,0.25)',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            display: 'grid',
+            gridTemplateColumns: '2fr 1fr 1fr auto auto',
+            gap: 6,
+            alignItems: 'center',
+          }}
+        >
           <input
             type="text"
             required
-            placeholder="Dish name (e.g. Dal Makhani)"
+            placeholder="Dish name"
             value={dishName}
             onChange={(e) => setDishName(e.target.value)}
             style={{
-              padding: '6px 10px',
+              padding: '6px 8px',
               background: '#1d2723',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 6,
@@ -273,11 +420,11 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
             step="0.01"
             min="0"
             required
-            placeholder="Price (₹)"
+            placeholder="Price"
             value={dishPrice}
             onChange={(e) => setDishPrice(e.target.value)}
             style={{
-              padding: '6px 10px',
+              padding: '6px 8px',
               background: '#1d2723',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 6,
@@ -294,7 +441,7 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
             value={dishQty}
             onChange={(e) => setDishQty(e.target.value)}
             style={{
-              padding: '6px 10px',
+              padding: '6px 8px',
               background: '#1d2723',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 6,
@@ -316,7 +463,7 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
               cursor: 'pointer',
             }}
           >
-            {isVeg ? 'Veg' : 'Non-Veg'}
+            {isVeg ? 'Veg' : 'Non'}
           </button>
           <button
             type="submit"
@@ -332,7 +479,7 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
               cursor: addingItem ? 'not-allowed' : 'pointer',
             }}
           >
-            {addingItem ? 'Adding…' : 'Add'}
+            {addingItem ? '…' : 'Add'}
           </button>
         </form>
       )}
@@ -350,21 +497,28 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
             </p>
           ) : (
             detail.items.map((item, idx) => (
-              <div key={idx} style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: 12,
-                color: '#aab7b2',
-                padding: '3px 0',
-                fontFamily: 'Courier Prime, Courier New, monospace',
-              }}>
+              <div
+                key={idx}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: 12,
+                  color: '#aab7b2',
+                  padding: '3px 0',
+                  fontFamily: 'Courier Prime, Courier New, monospace',
+                }}
+              >
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{
-                    width: 6, height: 6, borderRadius: '50%',
-                    background: item.isVeg ? '#16a34a' : '#dc2626',
-                    flexShrink: 0,
-                    display: 'inline-block',
-                  }} />
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: item.isVeg ? '#16a34a' : '#dc2626',
+                      flexShrink: 0,
+                      display: 'inline-block',
+                    }}
+                  />
                   {item.quantity}× {item.name}
                   {item.variant ? <span style={{ color: '#4b5563' }}> ({item.variant})</span> : null}
                 </span>
@@ -372,85 +526,133 @@ export default function PaymentActionPanel({ token, detail, detailLoading, onSet
               </div>
             ))
           )}
-          <div style={{
-            display: 'flex', justifyContent: 'space-between',
-            fontSize: 11, color: '#6b7280', paddingTop: 6, marginTop: 6,
-            borderTop: '1px dashed rgba(255,255,255,0.07)',
-          }}>
-            <span>GST</span><span>₹{detail.gst.toFixed(2)}</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: 11,
+              color: '#6b7280',
+              paddingTop: 6,
+              marginTop: 6,
+              borderTop: '1px dashed rgba(255,255,255,0.07)',
+            }}
+          >
+            <span>GST (5%)</span>
+            <span>₹{detail.gst.toFixed(2)}</span>
           </div>
         </div>
       ) : null}
 
-      {/* ── Payment method buttons ────────────────────────────────── */}
+      {/* ── Settlement Buttons ─────────────────────────────────────── */}
       <div style={{ padding: '16px 20px' }}>
-        <p style={{
-          fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-          letterSpacing: '0.08em', color: '#6b7280', marginBottom: 12,
-        }}>
-          Accept Payment Via
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: '#6b7280',
+            marginBottom: 10,
+          }}
+        >
+          Accept Settlement Via
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
-          {(Object.entries(METHOD_CONFIG) as [PayMethod, (typeof METHOD_CONFIG)[PayMethod]][]).map(([method, cfg]) => {
-            const isActive = settling === method;
-            return (
-              <button
-                key={method}
-                type="button"
-                disabled={!!settling}
-                onClick={() => void handleSettle(method)}
-                aria-busy={isActive}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '14px 8px',
-                  background: isActive ? cfg.bg : '#1d2723',
-                  border: `2px solid ${isActive ? cfg.color : 'rgba(255,255,255,0.08)'}`,
-                  borderRadius: 10,
-                  cursor: settling ? 'not-allowed' : 'pointer',
-                  opacity: settling && !isActive ? 0.45 : 1,
-                  transition: 'all 0.15s ease',
-                  gap: 6,
-                }}
-              >
-                <span style={{ fontSize: 22 }}>{cfg.icon}</span>
-                <span style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: isActive ? cfg.color : '#aab7b2',
-                  letterSpacing: '0.05em',
-                }}>
-                  {isActive ? '…' : cfg.label}
-                </span>
-              </button>
-            );
-          })}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14 }}>
+          {(Object.entries(METHOD_CONFIG) as [PayMethod, (typeof METHOD_CONFIG)[PayMethod]][]).map(
+            ([method, cfg]) => {
+              const isActive = settling === method;
+              return (
+                <button
+                  key={method}
+                  type="button"
+                  disabled={!!settling || closing}
+                  onClick={() => void handleSettle(method)}
+                  aria-busy={isActive}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '14px 8px',
+                    background: isActive ? cfg.bg : '#1d2723',
+                    border: `2px solid ${isActive ? cfg.color : 'rgba(255,255,255,0.08)'}`,
+                    borderRadius: 10,
+                    cursor: settling || closing ? 'not-allowed' : 'pointer',
+                    opacity: settling && !isActive ? 0.45 : 1,
+                    transition: 'all 0.15s ease',
+                    gap: 6,
+                  }}
+                >
+                  <span style={{ fontSize: 22 }}>{cfg.icon}</span>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: isActive ? cfg.color : '#aab7b2',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    {isActive ? '…' : cfg.label}
+                  </span>
+                </button>
+              );
+            }
+          )}
         </div>
 
-        {/* Error */}
-        {error && (
-          <div style={{
-            background: 'rgba(239,68,68,0.1)',
-            border: '1px solid rgba(239,68,68,0.3)',
-            borderRadius: 8,
+        {/* Close & Free Table Action Button */}
+        <button
+          type="button"
+          disabled={closing || !!settling}
+          onClick={() => void handleCloseTable()}
+          style={{
+            width: '100%',
             padding: '10px 14px',
-            fontSize: 12,
-            color: '#fca5a5',
-            marginBottom: 12,
+            background: '#1d2723',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            borderRadius: 10,
+            color: '#f87171',
+            fontSize: 11,
+            fontWeight: 700,
+            cursor: closing || settling ? 'not-allowed' : 'pointer',
             display: 'flex',
-            gap: 8,
-            alignItems: 'flex-start',
-          }}>
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            transition: 'all 0.15s ease',
+            marginBottom: 8,
+          }}
+        >
+          <span>🚪</span>
+          <span>
+            {closing ? 'Closing Table…' : `Close & Free Table ${token.tableNumber}`}
+          </span>
+        </button>
+
+        {/* Error Notification */}
+        {error && (
+          <div
+            style={{
+              background: 'rgba(239,68,68,0.1)',
+              border: '1px solid rgba(239,68,68,0.3)',
+              borderRadius: 8,
+              padding: '10px 14px',
+              fontSize: 12,
+              color: '#fca5a5',
+              marginBottom: 10,
+              display: 'flex',
+              gap: 8,
+              alignItems: 'flex-start',
+            }}
+          >
             <span>⚠️</span>
             <span>{error}</span>
           </div>
         )}
 
         <p style={{ fontSize: 10, color: '#4b5563', textAlign: 'center', lineHeight: 1.5 }}>
-          Customer&apos;s phone will update instantly via live push · No page reload needed
+          Real-time table synchronization · Customer phone updates instantly
         </p>
       </div>
     </div>

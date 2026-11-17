@@ -332,10 +332,10 @@ describe('M4 Adversarial: Drawer State Machine Trapping & Escape Handlers', () =
       'PaymentStep must set verifying true and reset in finally block'
     );
 
-    // Must filter SSE plan_updated by orderId
+    // Must filter SSE plan_updated strictly by orderId
     assert.ok(
-      content.includes('detail?.orderId && detail.orderId !== orderId'),
-      'PaymentStep must ignore SSE plan_updated events for other orders'
+      content.includes('!detail?.orderId || detail.orderId !== orderId'),
+      'PaymentStep must strictly drop SSE plan_updated events without matching orderId'
     );
   });
 

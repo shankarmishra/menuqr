@@ -6,7 +6,10 @@ import { AssetCard } from '../../design-studio/components/AssetCard';
 import { AssetDetailModal } from '../../design-studio/components/AssetDetailModal';
 import { RevisionModal } from '../../design-studio/components/RevisionModal';
 import { AnimationPlayground } from '../../design-studio/components/AnimationPlayground';
-import { Sparkles } from 'lucide-react';
+import { ConceptComparator } from '../../design-studio/components/ConceptComparator';
+import { BenchmarkSingleShowcase } from '../../design-studio/components/BenchmarkSingleShowcase';
+import { PosPilotComparator } from '../../design-studio/components/PosPilotComparator';
+import { Sparkles, Palette } from 'lucide-react';
 
 export default function DesignStudio() {
   const {
@@ -20,7 +23,7 @@ export default function DesignStudio() {
 
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'gallery' | 'playground' | 'provenance'>('gallery');
+  const [activeTab, setActiveTab] = useState<'pos-pilot' | 'benchmark' | 'concepts' | 'gallery' | 'playground' | 'provenance'>('pos-pilot');
   const [inspectingAsset, setInspectingAsset] = useState<DesignAssetSpec | null>(null);
   const [revisionModal, setRevisionModal] = useState<{
     asset: DesignAssetSpec;
@@ -86,24 +89,60 @@ export default function DesignStudio() {
         
         {/* Navigation Tabs */}
         <div className="mb-8 flex items-center justify-between border-b border-[#23352C] pb-4">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('pos-pilot')}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                activeTab === 'pos-pilot'
+                  ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/25 font-black'
+                  : 'text-[#8C9B94] hover:text-white bg-[#141F1A] border border-[#23352C]'
+              }`}
+            >
+              <Sparkles size={14} />
+              <span>Phase 5: POS Pilot (3 Concepts)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('benchmark')}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                activeTab === 'benchmark'
+                  ? 'bg-[#10B981] text-black shadow-lg shadow-[#10B981]/20 font-black'
+                  : 'text-[#8C9B94] hover:text-white bg-[#141F1A] border border-[#23352C]'
+              }`}
+            >
+              <Sparkles size={14} />
+              <span>Benchmark Asset #1 (POS Terminal)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('concepts')}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                activeTab === 'concepts'
+                  ? 'bg-[#E8783C] text-white shadow-lg shadow-[#E8783C]/20'
+                  : 'text-[#8C9B94] hover:text-white bg-[#141F1A] border border-[#23352C]'
+              }`}
+            >
+              <Palette size={14} />
+              <span>AI Creative Factory (3 Directions)</span>
+            </button>
             <button
               type="button"
               onClick={() => setActiveTab('gallery')}
               className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
                 activeTab === 'gallery'
-                  ? 'bg-[#1C2C23] text-white shadow'
+                  ? 'bg-[#1C2C23] text-white shadow border border-[#2F473B]'
                   : 'text-[#8C9B94] hover:text-white'
               }`}
             >
-              Illustration & Asset Gallery ({filteredAssets.length})
+              Illustration Gallery ({filteredAssets.length})
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('playground')}
               className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
                 activeTab === 'playground'
-                  ? 'bg-[#1C2C23] text-white shadow'
+                  ? 'bg-[#1C2C23] text-white shadow border border-[#2F473B]'
                   : 'text-[#8C9B94] hover:text-white'
               }`}
             >
@@ -114,11 +153,11 @@ export default function DesignStudio() {
               onClick={() => setActiveTab('provenance')}
               className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
                 activeTab === 'provenance'
-                  ? 'bg-[#1C2C23] text-white shadow'
+                  ? 'bg-[#1C2C23] text-white shadow border border-[#2F473B]'
                   : 'text-[#8C9B94] hover:text-white'
               }`}
             >
-              Provenance & Compliance Matrix
+              Tool & Provenance Matrix
             </button>
           </div>
 
@@ -127,6 +166,20 @@ export default function DesignStudio() {
             <span>Vite HMR Live</span>
           </div>
         </div>
+
+        {/* ── VIEW -1: BENCHMARK SINGLE SHOWCASE (POS TERMINAL) ── */}
+        {activeTab === 'pos-pilot' && (
+          <PosPilotComparator />
+        )}
+
+        {activeTab === 'benchmark' && (
+          <BenchmarkSingleShowcase />
+        )}
+
+        {/* ── VIEW 0: AI CREATIVE FACTORY & 3 CONCEPTS COMPARATOR ── */}
+        {activeTab === 'concepts' && (
+          <ConceptComparator />
+        )}
 
         {/* ── VIEW 1: ASSET GALLERY ── */}
         {activeTab === 'gallery' && (

@@ -1,3 +1,4 @@
+import OdometerNumber from '../ui/OdometerNumber';
 import { useState, useEffect } from 'react';
 import { Sparkles, ArrowRight, Loader2, AlertCircle, Check, ShieldCheck } from 'lucide-react';
 import {
@@ -240,7 +241,8 @@ export default function UpgradePanel({
             <div className="flex items-center justify-between pt-2.5 border-t border-[#2a3832] text-sm">
               <span className="font-bold text-white">Net Payable Now</span>
               <span className="text-base font-black text-emerald-400">
-                {formatPaise(preview.totalPaise)}
+                {/* Rolls to the new amount when the target tier changes */}
+                <OdometerNumber value={(preview.totalPaise || 0) / 100} prefix="₹" fractionDigits={2} />
               </span>
             </div>
           </div>

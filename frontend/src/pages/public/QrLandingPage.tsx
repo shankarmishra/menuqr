@@ -7,7 +7,9 @@ export default function QrLandingPage() {
   const { qrId = '' } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  // Table-wise QR codes append ?table=N; carry it through the redirect so orders know the table.
+  // Table stickers carry ?tc=<code> (old ones ?table=N); carry it through the redirect so the
+  // menu knows the table without the diner typing anything.
+  const tableCode = (searchParams.get('tc') || '').trim().slice(0, 16);
   const table = (searchParams.get('table') || '').trim().slice(0, 20);
   const [error, setError] = useState('');
 
@@ -15,7 +17,10 @@ export default function QrLandingPage() {
     let current = true;
     void getClientByQrId(qrId).then(({ menuSlug, client }) => {
       if (!current) return;
-      navigate(`/menu/${encodeURIComponent(menuSlug)}?qr=${encodeURIComponent(qrId)}${table ? `&table=${encodeURIComponent(table)}` : ''}`, {
+      const tableQuery = tableCode
+        ? `&tc=${encodeURIComponent(tableCode)}`
+        : table ? `&table=${encodeURIComponent(table)}` : '';
+      navigate(`/menu/${encodeURIComponent(menuSlug)}?qr=${encodeURIComponent(qrId)}${tableQuery}`, {
         replace: true,
         state: { publicMenu: client },
       });
@@ -26,7 +31,7 @@ export default function QrLandingPage() {
         : 'We could not open this menu right now. Please try scanning again.');
     });
     return () => { current = false; };
-  }, [navigate, qrId, table]);
+  }, [navigate, qrId, table, tableCode]);
 
   return (
     <main className="grid min-h-dvh place-items-center bg-[#f7f5ee] px-5 text-[#18231f]">

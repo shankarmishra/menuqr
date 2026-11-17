@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { DESIGN_MANIFEST } from './manifest';
 import type { DesignAssetSpec, AssetStatus, RevisionHistoryItem } from './manifest';
 
-const STORAGE_KEY = 'menuqr_design_studio_manifest_v2';
+const STORAGE_KEY = 'menuqr_design_studio_manifest_v4';
 
 export function getInitialAssets(): DesignAssetSpec[] {
   if (typeof window === 'undefined') return DESIGN_MANIFEST;

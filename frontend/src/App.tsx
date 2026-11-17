@@ -270,7 +270,8 @@ function PublicAppRoutes() {
   const menuMatch = useMatch('/menu/:slug');
   const qrMatch = useMatch('/qr/:qrId');
   const menuSlug = menuMatch?.params.slug;
-  const isCustomerMenuRoute = Boolean(menuSlug || qrMatch);
+  const billMatch = useMatch('/bill/:tokenId');
+  const isCustomerMenuRoute = Boolean(menuSlug || qrMatch || billMatch);
   const routeKey = menuSlug ? `menu:${menuSlug}` : 'app';
   const [menuName, setMenuName] = useState<{ slug: string; name: string }>();
   const [loadedRoute, setLoadedRoute] = useState(routeKey);
