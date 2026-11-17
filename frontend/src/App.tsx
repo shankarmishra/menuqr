@@ -137,7 +137,6 @@ const OnboardingWizard = lazyWithRetry(() => import('./pages/public/OnboardingWi
 const PurchaseDetailsPage = lazyWithRetry(() => import('./pages/purchase/PurchaseDetailsPage'));
 const PurchaseReviewPage = lazyWithRetry(() => import('./pages/purchase/PurchaseReviewPage'));
 const PurchaseSuccessPage = lazyWithRetry(() => import('./pages/purchase/PurchaseSuccessPage'));
-const TemplateShowcasePage = lazyWithRetry(() => import('./pages/public/TemplateShowcasePage'));
 const TemplateOnePreviewPage = lazyWithRetry(() => import('./pages/public/TemplateOnePreviewPage'));
 const MenuPage = lazyWithRetry(() => import('./pages/customer/MenuPage'));
 const DesignStudio = lazyWithRetry(() => import('./pages/internal/DesignStudio'));
@@ -361,8 +360,8 @@ function PublicAppRoutes() {
         <Route path="/qr/:qrId" element={<QrLandingPage />} />
         <Route path="/bill/:tokenId" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><BillPage /></Suspense></ChunkErrorBoundary>} />
         <Route path="/menu/:slug" element={<ChunkErrorBoundary><Suspense fallback={null}><MenuPage key={menuSlug} /></Suspense></ChunkErrorBoundary>} />
-        <Route path="/template-showcase" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><TemplateShowcasePage /></Suspense></ChunkErrorBoundary>} />
-        <Route path="/showcase" element={<Navigate to="/template-showcase" replace />} />
+        <Route path="/template-showcase" element={<Navigate to="/templates" replace />} />
+        <Route path="/showcase" element={<Navigate to="/templates" replace />} />
         <Route path="/demo/template-1" element={<ChunkErrorBoundary><Suspense fallback={<PageFallback />}><TemplateOnePreviewPage /></Suspense></ChunkErrorBoundary>} />
         <Route path="/preview/template-1" element={<Navigate to="/demo/template-1" replace />} />
         <Route path="/template-1" element={<Navigate to="/demo/template-1" replace />} />
