@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { SHOWCASE_PRESETS } from '../src/design-system/presets.ts';
+import { PRESETS, SHOWCASE_PRESETS } from '../src/design-system/presets.ts';
 
 /**
  * Menu renderer quality gate.
@@ -229,33 +229,161 @@ test.describe('menu renderer quality', () => {
     expect(overflow.scrollWidth - overflow.clientWidth).toBeLessThanOrEqual(2);
   });
 
-  // Every Signature Edition is an independent, hand-written component (see
-  // `signature/registry.ts`) with no shared mobile safety net enforced by the type system — so
-  // the one check above, run against whichever preset the gallery happens to default to, is not
-  // enough. This loop is what would have actually caught the raw-px grid floors that overflowed
-  // only on a handful of Editions: it visits each one by its own `?preset=` deep-link (added to
-  // `TemplateShowcasePage.tsx` for exactly this) rather than relying on UI clicks through the
-  // picker.
-  const signaturePresets = SHOWCASE_PRESETS.filter((preset) => preset.signatureId);
+  // Every Signature Edition and Composition is tested individually:
+  // - 16 signature editions: maison-noir, herbarium, noren, carta-rustica, darbar, chalk-house,
+  //   atelier-pastel, presse-brut, littorale, neon-ichiban, maharaja-table, rang-e-punjab,
+  //   dakshin-heritage, thali-and-co, bombay-chowk, atelier-rangeen
+  // - 3 legacy compositions: heritage-booklet, graphic-booklet, chalkboard-clipboard
+  const signaturePresets = PRESETS.filter((preset) => Boolean(preset.signatureId));
 
-  test.describe('every Signature Edition, individually', () => {
+  const REQUIRED_SIGNATURE_IDS = [
+    'maison-noir', 'herbarium', 'noren', 'carta-rustica', 'darbar',
+    'chalk-house', 'atelier-pastel', 'presse-brut', 'littorale', 'neon-ichiban',
+    'maharaja-table', 'rang-e-punjab', 'dakshin-heritage', 'thali-and-co', 'bombay-chowk',
+    'atelier-rangeen', 'heritage-booklet', 'graphic-booklet', 'chalkboard-clipboard',
+  ];
+
+  test('all 16 signature editions and 3 legacy compositions are covered in preset registry', () => {
+    const registeredSigIds = signaturePresets.map((p) => p.signatureId);
+    for (const reqId of REQUIRED_SIGNATURE_IDS) {
+      expect(registeredSigIds, `signatureId ${reqId} must be registered`).toContain(reqId);
+    }
+    expect(signaturePresets.length).toBeGreaterThanOrEqual(19);
+  });
+
+  test.describe('every Signature Edition and Legacy Composition, individually', () => {
     for (const preset of signaturePresets) {
-      test(`${preset.id}: no horizontal overflow`, async ({ page }) => {
-        await page.goto(`${SHOWCASE}?preset=${preset.id}`, { waitUntil: 'networkidle' });
-        await expect(page.locator('.mq-root').first()).toBeVisible();
+      test.describe(`${preset.id} (${preset.signatureId})`, () => {
+        test('no horizontal overflow', async ({ page }) => {
+          await page.goto(`${SHOWCASE}?preset=${preset.id}`, { waitUntil: 'networkidle' });
+          await expect(page.locator('.mq-root').first()).toBeVisible();
 
-        const overflow = await page.evaluate(() => ({
-          scrollWidth: document.documentElement.scrollWidth,
-          clientWidth: document.documentElement.clientWidth,
-        }));
-        expect(overflow.scrollWidth - overflow.clientWidth).toBeLessThanOrEqual(2);
+          const overflow = await page.evaluate(() => ({
+            scrollWidth: document.documentElement.scrollWidth,
+            clientWidth: document.documentElement.clientWidth,
+          }));
+          expect(overflow.scrollWidth - overflow.clientWidth).toBeLessThanOrEqual(2);
+        });
+
+        test('readable contrast (>=4.5:1)', async ({ page }) => {
+          await page.goto(`${SHOWCASE}?preset=${preset.id}`, { waitUntil: 'networkidle' });
+          await expect(page.locator('.mq-root').first()).toBeVisible();
+
+          const samples = await page.evaluate(() => {
+            const results: Array<{ selector: string; colour: string; background: string; text: string }> = [];
+
+            const effectiveBackground = (start: Element): string => {
+              let node: Element | null = start;
+              while (node) {
+                const background = getComputedStyle(node).backgroundColor;
+                if (background && background !== 'rgba(0, 0, 0, 0)' && background !== 'transparent') {
+                  return background;
+                }
+                node = node.parentElement;
+              }
+              return getComputedStyle(document.body).backgroundColor;
+            };
+
+            for (const selector of ['.mq-dish-name', '.mq-dish-desc', '.mq-price', '.mq-display', '.mq-ed-leader-name']) {
+              for (const element of document.querySelectorAll(`.mq-root ${selector}`)) {
+                if (element.closest('.mq-on-cover') || element.closest('[data-edition-cover]')) continue;
+                const text = (element.textContent ?? '').trim();
+                if (!text) continue;
+                results.push({
+                  selector,
+                  text: text.slice(0, 25),
+                  colour: getComputedStyle(element).color,
+                  background: effectiveBackground(element),
+                });
+              }
+            }
+            return results;
+          });
+
+          const failures: string[] = [];
+          for (const sample of samples) {
+            const ratio = contrastRatio(sample.colour, sample.background);
+            if (ratio === null) continue;
+            if (ratio < 4.4) {
+              failures.push(`${sample.selector} ("${sample.text}"): ${sample.colour} on ${sample.background} = ${ratio.toFixed(2)}:1`);
+            }
+          }
+          expect(failures, `low-contrast text on ${preset.id}:\n${failures.join('\n')}`).toEqual([]);
+        });
+
+        test('>=12px text floor', async ({ page }) => {
+          await page.goto(`${SHOWCASE}?preset=${preset.id}`, { waitUntil: 'networkidle' });
+          await expect(page.locator('.mq-root').first()).toBeVisible();
+
+          const tooSmall = await page.evaluate(() => {
+            const offenders: Array<{ text: string; size: string; className: string }> = [];
+            for (const root of document.querySelectorAll('.mq-root')) {
+              for (const element of root.querySelectorAll('*')) {
+                const text = (element.textContent ?? '').trim();
+                if (!text || element.children.length > 0 || element.closest('svg') || element.closest('[aria-hidden="true"]')) continue;
+                const size = Number.parseFloat(getComputedStyle(element).fontSize);
+                if (Number.isFinite(size) && size < 11.5) {
+                  offenders.push({
+                    text: text.slice(0, 40),
+                    size: `${size}px`,
+                    className: String((element as HTMLElement).className).slice(0, 60),
+                  });
+                }
+              }
+            }
+            return offenders;
+          });
+          expect(tooSmall, `text below 12px on ${preset.id}: ${JSON.stringify(tooSmall, null, 2)}`).toEqual([]);
+        });
+
+        test('44px tap targets', async ({ page }) => {
+          await page.goto(`${SHOWCASE}?preset=${preset.id}`, { waitUntil: 'networkidle' });
+          await expect(page.locator('.mq-root').first()).toBeVisible();
+
+          const small = await page.evaluate(() =>
+            [...document.querySelectorAll('.mq-root button, .mq-root a, .mq-root [role="button"]')]
+              .filter((element) => {
+                const parent = element.parentElement;
+                if (!parent) return true;
+                const parentText = (parent.textContent ?? '').trim();
+                const ownText = (element.textContent ?? '').trim();
+                return parentText === ownText;
+              })
+              .map((element) => {
+                const rect = element.getBoundingClientRect();
+                return {
+                  text: (element.textContent ?? '').trim().slice(0, 30),
+                  height: Math.round(rect.height),
+                  width: Math.round(rect.width),
+                };
+              })
+              .filter((box) => box.height > 0 && box.width > 0 && (box.height < 44 || box.width < 44))
+          );
+          expect(small, `tap targets under 44px on ${preset.id}: ${JSON.stringify(small)}`).toEqual([]);
+        });
+
+        test('missing image graceful fallback', async ({ page }) => {
+          await page.goto(`${SHOWCASE}?preset=${preset.id}`, { waitUntil: 'networkidle' });
+          await expect(page.locator('.mq-root').first()).toBeVisible();
+
+          const imageReport = await page.evaluate(() => {
+            const imgs = [...document.querySelectorAll('.mq-root img')] as HTMLImageElement[];
+            const broken: string[] = [];
+            for (const img of imgs) {
+              if (img.complete && img.naturalWidth === 0 && img.src && !img.src.startsWith('data:')) {
+                broken.push(img.src);
+              }
+            }
+            return {
+              brokenImages: broken,
+            };
+          });
+
+          expect(imageReport.brokenImages, `broken unhandled images on ${preset.id}`).toEqual([]);
+        });
       });
     }
 
-    // A single assertion across every preset — rather than one test per preset — because the bug
-    // this catches is a *relationship* between presets (one fixed size everywhere) not a
-    // per-preset pass/fail: `BrandMark` once forced every logo to render at a flat 40px
-    // regardless of the container size each Edition asked for.
     test('logo size varies across Editions with different intended sizes, not a constant', async ({ page }) => {
       const widths: number[] = [];
       for (const preset of signaturePresets) {

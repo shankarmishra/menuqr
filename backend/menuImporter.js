@@ -219,7 +219,7 @@ export function validateAndPreviewImport(rawRows, columnMap, existingItemNames =
   };
 }
 
-export async function executeImportTransaction(client, tenantId, menuId, parsedCategories, mode = 'add', filename = 'uploaded_menu.xlsx') {
+export async function executeImportTransaction(client, tenantId, menuId, parsedCategories, mode = 'add', filename = 'uploaded_menu.xlsx', limit = Infinity) {
   let categoriesCreated = 0;
   let itemsCreated = 0;
   let itemsUpdated = 0;
@@ -234,6 +234,12 @@ export async function executeImportTransaction(client, tenantId, menuId, parsedC
       [menuId, tenantId]
     );
   }
+
+  const countRes = await queryPortable(client,
+    'SELECT count(*)::int AS count FROM menu_items WHERE tenant_id = ?',
+    [tenantId]
+  );
+  let currentTenantCount = mode === 'replace' ? 0 : Number(countRes.rows[0]?.count || 0);
 
   // 1. Fetch existing categories and items for this tenant
   const existingCatRes = await queryPortable(client,
@@ -299,6 +305,9 @@ export async function executeImportTransaction(client, tenantId, menuId, parsedC
         await queryPortable(client, 'DELETE FROM menu_item_variants WHERE menu_item_id = ? AND tenant_id = ?', [itemId, tenantId]);
         await queryPortable(client, 'DELETE FROM menu_item_addon_groups WHERE menu_item_id = ? AND tenant_id = ?', [itemId, tenantId]);
       } else {
+        if (currentTenantCount + itemsCreated >= limit) {
+          throw apiError(403, `Item limit of ${limit} reached for your plan. Bulk import exceeds allowed items.`);
+        }
         itemId = randomUUID();
         const nextSort = await queryPortable(client,
           'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM menu_items WHERE category_id = ? AND tenant_id = ?',

@@ -1,8 +1,8 @@
 # MenusQR Vertical Social Ad Scripts (Instagram Reels & YouTube Shorts)
 
-**Format:** 9:16 Vertical Video (1080 × 1920 px)  
-**Targeting:** B2B Hospitality, Restaurant Owners, Dhaba Owners, Café Founders, Food & Beverage Operators in India  
-**Objectives:** High Hook Rate (>35% 3s hold), High CTR (>2.8%), Direct Signups for 14-Day Free Trial at `menusqr.in`  
+**Format:** 9:16 Vertical Video (1080 × 1920 px)
+**Targeting:** B2B Hospitality, Restaurant Owners, Dhaba Owners, Café Founders, Food & Beverage Operators in India
+**Objectives:** High Hook Rate (>35% 3s hold), High CTR (>2.8%), Direct Signups for 14-Day Free Trial at `menusqr.in`
 
 ---
 
@@ -61,23 +61,23 @@
 
 ### Caption Option 1 (Agitation & Relief)
 > **Headline:** Paper menu par pen se price kaatna band karein 🚫
-> 
-> Har baar dairy ya sabzi ke daam badle toh kya naya menu print karwayenge? 
-> 
+>
+> Har baar dairy ya sabzi ke daam badle toh kya naya menu print karwayenge?
+>
 > MenusQR ke saath:
-> ✅ 24K Gold Luxury QR Standees  
-> ✅ Customer camera se instant scan karein (Bina koi app download kiye)  
-> ✅ Half & Full portion options + Veg/Non-Veg tags  
-> ✅ Phone se 1 second mein price update aur out-of-stock toggle  
-> ✅ Zero reprint kharcha!  
-> 
-> 🎁 Shuru karein apna 14-Day Free Trial aaj hi (No credit card required).  
+> ✅ 24K Gold Luxury QR Standees
+> ✅ Customer camera se instant scan karein (Bina koi app download kiye)
+> ✅ Half & Full portion options + Veg/Non-Veg tags
+> ✅ Phone se 1 second mein price update aur out-of-stock toggle
+> ✅ Zero reprint kharcha!
+>
+> 🎁 Shuru karein apna 14-Day Free Trial aaj hi (No credit card required).
 > 👉 Tap Link ya visit karein: **menusqr.in**
 
 ### Caption Option 2 (Direct ROI & Aesthetics)
 > **Headline:** 15+ Luxury Restaurant Themes for ₹199/month ✨
-> 
+>
 > Apne café ya restaurant ko dijiye ek 5-star digital identity! Excel sheet upload karein aur 10 second mein aapka live digital menu ready.
-> 
-> Plans start at just ₹199/month. 
+>
+> Plans start at just ₹199/month.
 > 🚀 Try all Premium features free for 14 days at **menusqr.in**!

@@ -113,6 +113,94 @@ test('themeValidator: security boundary', async (t) => {
     assert.ok(result.errors.length >= 5, `expected several errors, got ${JSON.stringify(result.errors)}`);
   });
 
+  await t.test('rejects CSS injection and <style> tags in any field or unexpected key', () => {
+    const withStyleTag = {
+      ...VALID_PARTIAL_THEME,
+      announcement: '<style>body { display: none !important; }</style>',
+    };
+    const resStyle = validateTheme(withStyleTag);
+    assert.equal(resStyle.ok, false);
+    assert.ok(resStyle.errors.some((e) => e.includes('<style>') || e.includes('CSS injection')));
+
+    const withCssInjectionKey = {
+      ...VALID_PARTIAL_THEME,
+      customCss: 'body { display: none !important; }',
+    };
+    const resKey = validateTheme(withCssInjectionKey);
+    assert.equal(resKey.ok, false);
+    assert.ok(resKey.errors.some((e) => e.includes('customCss') || e.includes('unrecognized key')));
+
+    const withMaliciousHex = {
+      ...VALID_PARTIAL_THEME,
+      brand: {
+        ...VALID_PARTIAL_THEME.brand,
+        seedColor: '#d4af37; background: red;',
+      },
+    };
+    const resHex = validateTheme(withMaliciousHex);
+    assert.equal(resHex.ok, false);
+    assert.ok(resHex.errors.some((e) => e.includes('seedColor')));
+  });
+
+  await t.test('rejects malicious URL protocols (javascript:, vbscript:, data:)', () => {
+    const jsLogo = {
+      ...VALID_PARTIAL_THEME,
+      brand: {
+        ...VALID_PARTIAL_THEME.brand,
+        logoUrl: 'javascript:alert(1)',
+      },
+    };
+    const resJsLogo = validateTheme(jsLogo);
+    assert.equal(resJsLogo.ok, false);
+    assert.ok(resJsLogo.errors.some((e) => e.includes('brand.logoUrl')));
+
+    const vbCover = {
+      ...VALID_PARTIAL_THEME,
+      cover: {
+        ...VALID_PARTIAL_THEME.cover,
+        imageUrl: 'vbscript:msgbox(1)',
+      },
+    };
+    const resVbCover = validateTheme(vbCover);
+    assert.equal(resVbCover.ok, false);
+    assert.ok(resVbCover.errors.some((e) => e.includes('cover.imageUrl')));
+
+    const dataCover = {
+      ...VALID_PARTIAL_THEME,
+      cover: {
+        ...VALID_PARTIAL_THEME.cover,
+        imageUrl: 'data:text/html;base64,PHNjcmlwdD4=',
+      },
+    };
+    const resDataCover = validateTheme(dataCover);
+    assert.equal(resDataCover.ok, false);
+    assert.ok(resDataCover.errors.some((e) => e.includes('cover.imageUrl')));
+  });
+
+  await t.test('rejects out-of-bounds focal coordinates (<0 or >1)', () => {
+    const highFocal = {
+      ...VALID_PARTIAL_THEME,
+      cover: {
+        ...VALID_PARTIAL_THEME.cover,
+        focal: { x: 1.5, y: 0.5 },
+      },
+    };
+    const resHigh = validateTheme(highFocal);
+    assert.equal(resHigh.ok, false);
+    assert.ok(resHigh.errors.some((e) => e.includes('focal.x')));
+
+    const lowFocal = {
+      ...VALID_PARTIAL_THEME,
+      cover: {
+        ...VALID_PARTIAL_THEME.cover,
+        focal: { x: 0.5, y: -0.2 },
+      },
+    };
+    const resLow = validateTheme(lowFocal);
+    assert.equal(resLow.ok, false);
+    assert.ok(resLow.errors.some((e) => e.includes('focal.y')));
+  });
+
   await t.test('isValidHex agrees with the client-side colour engine on a representative set', () => {
     for (const value of ['#fff', '#FFFFFF', 'D4AF37', 'bad-input', '', 'red', '#12345', '#aabbccdd']) {
       assert.equal(

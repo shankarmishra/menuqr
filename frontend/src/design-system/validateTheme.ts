@@ -29,6 +29,7 @@ import {
   type MenuTheme,
   type SignatureCompositionId,
 } from './theme.types.ts';
+import { validateThemeSchema } from './validateThemeSchema.ts';
 
 const MODES = ['light', 'dark'] as const;
 const DENSITIES = ['compact', 'balanced', 'spacious'] as const;
@@ -38,6 +39,18 @@ const SHADOWS = ['none', 'subtle', 'elevated', 'glass'] as const;
 export const MAX_ANNOUNCEMENT_LENGTH = 120;
 export const MAX_URL_LENGTH = 2048;
 export const MAX_PRESET_ID_LENGTH = 64;
+
+export function containsCssInjectionOrStyle(val: unknown): boolean {
+  if (typeof val !== 'string') return false;
+  return (
+    /<\s*\/?\s*style[\s>]/i.test(val) ||
+    /expression\s*\(/i.test(val) ||
+    /javascript\s*:/i.test(val) ||
+    /vbscript\s*:/i.test(val) ||
+    /behavior\s*:/i.test(val) ||
+    /url\s*\(\s*['"]?\s*data\s*:\s*text\/html/i.test(val)
+  );
+}
 
 function pick<T extends string>(value: unknown, allowed: readonly T[], fallback: T): T {
   return typeof value === 'string' && (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
@@ -91,6 +104,9 @@ function pickUnitInterval(value: unknown, fallback: number): number {
  */
 function pickText(value: unknown, maxLength: number): string | null {
   if (typeof value !== 'string') return null;
+
+  // Reject <style> tags and CSS injection outright
+  if (containsCssInjectionOrStyle(value)) return null;
 
   let cleaned = '';
   for (const char of value) {
@@ -151,10 +167,20 @@ export const FALLBACK_THEME: MenuTheme = {
  * Coerce arbitrary input into a valid `MenuTheme`.
  *
  * Always returns a usable theme: a partially corrupt record yields a menu with defaults in the
- * damaged fields rather than a blank page. Use `validateTheme` when you need to know whether the
- * input was actually well formed.
+ * damaged fields rather than a blank page. Incoming payloads run through strict schema validation;
+ * if invalid, warnings are logged and safe fallbacks applied without crashing.
  */
 export function coerceTheme(input: unknown, base: MenuTheme = FALLBACK_THEME): MenuTheme {
+  const schemaValidation = validateThemeSchema(input);
+  if (!schemaValidation.ok) {
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn(
+        '[validateTheme] Theme payload failed strict schema validation, applying safe fallbacks:',
+        schemaValidation.errors
+      );
+    }
+  }
+
   const raw = (input ?? {}) as Partial<MenuTheme> & Record<string, unknown>;
   const brand = (raw.brand ?? {}) as Record<string, unknown>;
   const slots = (raw.slots ?? {}) as Record<string, unknown>;
@@ -202,6 +228,28 @@ export type ThemeValidationResult =
   | { ok: true; theme: MenuTheme }
   | { ok: false; theme: MenuTheme; errors: string[] };
 
+const ALLOWED_THEME_KEYS = new Set([
+  'version',
+  'layoutVersion',
+  'presetId',
+  'mode',
+  'brand',
+  'slots',
+  'signatureId',
+  'typePair',
+  'texture',
+  'density',
+  'radius',
+  'shadow',
+  'cover',
+  'announcement',
+]);
+
+const ALLOWED_BRAND_KEYS = new Set(['seedColor', 'logoUrl', 'logoShape']);
+const ALLOWED_SLOTS_KEYS = new Set(['cover', 'nav', 'dishCard', 'section', 'footer']);
+const ALLOWED_COVER_KEYS = new Set(['imageUrl', 'focal', 'overlayStrength', 'showCoverPage']);
+const ALLOWED_FOCAL_KEYS = new Set(['x', 'y']);
+
 /**
  * Strict check used by the Design Studio save path and the preset lint.
  *
@@ -218,6 +266,12 @@ export function validateTheme(input: unknown): ThemeValidationResult {
   const raw = input as Record<string, unknown>;
   const coerced = coerceTheme(raw);
 
+  for (const key of Object.keys(raw)) {
+    if (!ALLOWED_THEME_KEYS.has(key)) {
+      errors.push(`unrecognized key: ${key}`);
+    }
+  }
+
   if (raw.version !== THEME_VERSION) {
     errors.push(`version must be ${THEME_VERSION}, received ${JSON.stringify(raw.version)}`);
   }
@@ -226,17 +280,95 @@ export function validateTheme(input: unknown): ThemeValidationResult {
     errors.push(`layoutVersion must be 1 or 2, received ${JSON.stringify(raw.layoutVersion)}`);
   }
 
-  const brand = (raw.brand ?? {}) as Record<string, unknown>;
-  if (!isValidHex(String(brand.seedColor ?? ''))) {
-    errors.push(`brand.seedColor must be a hex colour, received ${JSON.stringify(brand.seedColor)}`);
-  }
-  if (brand.logoUrl != null && sanitizeImageUrl(brand.logoUrl) === null) {
-    errors.push('brand.logoUrl must be a same-origin path or an http(s) URL');
+  if (raw.presetId != null) {
+    if (typeof raw.presetId !== 'string' || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(raw.presetId.trim())) {
+      errors.push(`presetId must be a lowercase alphanumeric slug, received ${JSON.stringify(raw.presetId)}`);
+    }
   }
 
-  const cover = (raw.cover ?? {}) as Record<string, unknown>;
-  if (cover.imageUrl != null && sanitizeImageUrl(cover.imageUrl) === null) {
-    errors.push('cover.imageUrl must be a same-origin path or an http(s) URL');
+  if (!raw.brand || typeof raw.brand !== 'object' || Array.isArray(raw.brand)) {
+    errors.push('brand must be an object');
+  } else {
+    const brand = raw.brand as Record<string, unknown>;
+    for (const key of Object.keys(brand)) {
+      if (!ALLOWED_BRAND_KEYS.has(key)) {
+        errors.push(`unrecognized key in brand: ${key}`);
+      }
+    }
+    if (!isValidHex(String(brand.seedColor ?? '')) || containsCssInjectionOrStyle(String(brand.seedColor ?? ''))) {
+      errors.push(`brand.seedColor must be a hex colour, received ${JSON.stringify(brand.seedColor)}`);
+    }
+    if (brand.logoUrl != null && (typeof brand.logoUrl !== 'string' || sanitizeImageUrl(brand.logoUrl) === null)) {
+      errors.push('brand.logoUrl must be a same-origin path or an http(s) URL');
+    }
+    if (brand.logoShape != null && !(LOGO_SHAPES as readonly string[]).includes(String(brand.logoShape))) {
+      errors.push(`brand.logoShape must be one of [${LOGO_SHAPES.join(', ')}], received ${JSON.stringify(brand.logoShape)}`);
+    }
+  }
+
+  if (!raw.slots || typeof raw.slots !== 'object' || Array.isArray(raw.slots)) {
+    errors.push('slots must be an object');
+  } else {
+    const slots = raw.slots as Record<string, unknown>;
+    for (const key of Object.keys(slots)) {
+      if (!ALLOWED_SLOTS_KEYS.has(key)) {
+        errors.push(`unrecognized key in slots: ${key}`);
+      }
+    }
+    const slotChecks: Array<[string, unknown, readonly string[]]> = [
+      ['slots.cover', slots.cover, COVER_SLOTS],
+      ['slots.nav', slots.nav, NAV_SLOTS],
+      ['slots.dishCard', slots.dishCard, DISH_CARD_SLOTS],
+      ['slots.section', slots.section, SECTION_SLOTS],
+      ['slots.footer', slots.footer, FOOTER_SLOTS],
+    ];
+    for (const [field, value, allowed] of slotChecks) {
+      if (value != null && !allowed.includes(String(value))) {
+        errors.push(`${field} must be one of [${allowed.join(', ')}], received ${JSON.stringify(value)}`);
+      }
+    }
+  }
+
+  if (!raw.cover || typeof raw.cover !== 'object' || Array.isArray(raw.cover)) {
+    errors.push('cover must be an object');
+  } else {
+    const cover = raw.cover as Record<string, unknown>;
+    for (const key of Object.keys(cover)) {
+      if (!ALLOWED_COVER_KEYS.has(key)) {
+        errors.push(`unrecognized key in cover: ${key}`);
+      }
+    }
+    if (cover.imageUrl != null && (typeof cover.imageUrl !== 'string' || sanitizeImageUrl(cover.imageUrl) === null)) {
+      errors.push('cover.imageUrl must be a same-origin path or an http(s) URL');
+    }
+    if (!cover.focal || typeof cover.focal !== 'object' || Array.isArray(cover.focal)) {
+      errors.push('cover.focal must be an object');
+    } else {
+      const focal = cover.focal as Record<string, unknown>;
+      for (const key of Object.keys(focal)) {
+        if (!ALLOWED_FOCAL_KEYS.has(key)) {
+          errors.push(`unrecognized key in cover.focal: ${key}`);
+        }
+      }
+      if (typeof focal.x !== 'number' || !Number.isFinite(focal.x) || focal.x < 0 || focal.x > 1) {
+        errors.push(`cover.focal.x must be a number between 0 and 1, received ${JSON.stringify(focal.x)}`);
+      }
+      if (typeof focal.y !== 'number' || !Number.isFinite(focal.y) || focal.y < 0 || focal.y > 1) {
+        errors.push(`cover.focal.y must be a number between 0 and 1, received ${JSON.stringify(focal.y)}`);
+      }
+    }
+    if (
+      cover.overlayStrength != null &&
+      (typeof cover.overlayStrength !== 'number' ||
+        !Number.isFinite(cover.overlayStrength) ||
+        cover.overlayStrength < 0 ||
+        cover.overlayStrength > 1)
+    ) {
+      errors.push(`cover.overlayStrength must be a number between 0 and 1, received ${JSON.stringify(cover.overlayStrength)}`);
+    }
+    if (cover.showCoverPage != null && typeof cover.showCoverPage !== 'boolean') {
+      errors.push(`cover.showCoverPage must be a boolean, received ${JSON.stringify(cover.showCoverPage)}`);
+    }
   }
 
   if (
@@ -255,16 +387,29 @@ export function validateTheme(input: unknown): ThemeValidationResult {
     ['density', raw.density, DENSITIES],
     ['radius', raw.radius, RADII],
     ['shadow', raw.shadow, SHADOWS],
-    ['slots.cover', (raw.slots as Record<string, unknown>)?.cover, COVER_SLOTS],
-    ['slots.nav', (raw.slots as Record<string, unknown>)?.nav, NAV_SLOTS],
-    ['slots.dishCard', (raw.slots as Record<string, unknown>)?.dishCard, DISH_CARD_SLOTS],
-    ['slots.section', (raw.slots as Record<string, unknown>)?.section, SECTION_SLOTS],
-    ['slots.footer', (raw.slots as Record<string, unknown>)?.footer, FOOTER_SLOTS],
   ];
 
   for (const [field, value, allowed] of enumChecks) {
-    if (!allowed.includes(String(value))) {
+    if (value != null && !allowed.includes(String(value))) {
       errors.push(`${field} must be one of [${allowed.join(', ')}], received ${JSON.stringify(value)}`);
+    }
+  }
+
+  if (raw.announcement != null) {
+    if (typeof raw.announcement !== 'string') {
+      errors.push('announcement must be a string or null');
+    } else if (raw.announcement.length > MAX_ANNOUNCEMENT_LENGTH) {
+      errors.push(`announcement must be at most ${MAX_ANNOUNCEMENT_LENGTH} characters`);
+    } else if (containsCssInjectionOrStyle(raw.announcement)) {
+      errors.push('announcement must not contain <style> tags or CSS injection strings');
+    } else {
+      for (let i = 0; i < raw.announcement.length; i += 1) {
+        const code = raw.announcement.charCodeAt(i);
+        if (code < 0x20 || (code >= 0x7f && code <= 0x9f)) {
+          errors.push('announcement must not contain control characters');
+          break;
+        }
+      }
     }
   }
 

@@ -34,7 +34,7 @@ const SafeUrlSchema = z
     { message: 'Must be a valid same-origin path or http(s) URL' }
   );
 
-/** Strips control codes and validates announcement text. */
+/** Strips control codes and validates announcement text. Rejects <style> tags and CSS injection. */
 const SafeTextSchema = z
   .string()
   .max(120)
@@ -44,7 +44,13 @@ const SafeTextSchema = z
       if (code < 0x20 || (code >= 0x7f && code <= 0x9f)) return false;
     }
     return true;
-  }, { message: 'Must not contain control characters' });
+  }, { message: 'Must not contain control characters' })
+  .refine((val) => !/<\s*\/?\s*style[\s>]/i.test(val), {
+    message: 'Must not contain <style> tags',
+  })
+  .refine((val) => !/expression\s*\(|behavior\s*:|javascript\s*:/i.test(val), {
+    message: 'Must not contain CSS injection',
+  });
 
 export const ThemeBrandSchema = z
   .object({
@@ -83,19 +89,19 @@ export const ThemeCoverSchema = z
 export const ThemeConfigurationSchema = z
   .object({
     version: z.literal(THEME_VERSION),
-    layoutVersion: z.union([z.literal(1), z.literal(2)]),
+    layoutVersion: z.union([z.literal(1), z.literal(2)]).optional(),
     presetId: z.string().regex(PRESET_ID_REGEX, 'Preset ID must be a lowercase alphanumeric slug'),
     mode: z.enum(['light', 'dark']),
     brand: ThemeBrandSchema,
     slots: ThemeSlotsSchema,
-    signatureId: z.enum(SIGNATURE_COMPOSITION_IDS as unknown as [string, ...string[]]).nullable(),
+    signatureId: z.enum(SIGNATURE_COMPOSITION_IDS as unknown as [string, ...string[]]).nullable().optional(),
     typePair: z.enum(FONT_PAIRING_IDS as unknown as [string, ...string[]]),
     texture: z.enum(TEXTURE_IDS as unknown as [string, ...string[]]),
     density: z.enum(['compact', 'balanced', 'spacious']),
     radius: z.enum(['none', 'sm', 'md', 'lg', 'xl', 'full']),
     shadow: z.enum(['none', 'subtle', 'elevated', 'glass']),
     cover: ThemeCoverSchema,
-    announcement: SafeTextSchema.nullable(),
+    announcement: SafeTextSchema.nullable().optional(),
   })
   .strict();
 

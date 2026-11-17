@@ -19,14 +19,14 @@ export default function PricingSection() {
           <Link to="/purchase/details?plan=basic" className="block group bg-white border border-gray-200 rounded-3xl p-8 hover:shadow-xl transition-all">
             <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-[#e8783c] transition-colors">Basic</h3>
             <div className="text-lg font-semibold text-gray-600 mb-6">₹199/MO <span className="text-sm font-normal text-gray-500">(₹1,999/YR)</span></div>
-            <p className="text-sm text-gray-500 font-medium">Digital menu with 1 included edit.</p>
+            <p className="text-sm text-gray-500 font-medium">Up to 50 items, 20 edits included.</p>
           </Link>
 
           {/* Intermediate */}
           <Link to="/purchase/details?plan=intermediate" className="block group bg-white border border-gray-200 rounded-3xl p-8 hover:shadow-xl transition-all">
             <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-[#e8783c] transition-colors">Intermediate</h3>
             <div className="text-lg font-semibold text-gray-600 mb-6">₹299/MO <span className="text-sm font-normal text-gray-500">(₹3,199/YR)</span></div>
-            <p className="text-sm text-gray-500 font-medium">Multiple templates and unlimited edits.</p>
+            <p className="text-sm text-gray-500 font-medium">Up to 150 items, 100 edits included.</p>
           </Link>
 
           {/* Premium */}
@@ -36,7 +36,7 @@ export default function PricingSection() {
             </div>
             <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-[#e8783c] transition-colors">Premium</h3>
             <div className="text-lg font-semibold text-gray-400 mb-6">₹899/MO <span className="text-sm font-normal text-gray-300">(₹6,799/YR)</span></div>
-            <p className="text-sm text-gray-300 font-medium">Full interactive menu with table ordering &bull; 150 monthly orders included.</p>
+            <p className="text-sm text-gray-300 font-medium">Unlimited items & edits, 150 monthly orders included.</p>
           </Link>
         </div>
       </div>

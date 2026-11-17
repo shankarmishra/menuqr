@@ -248,11 +248,14 @@ export default function MenuPage() {
   // Mirrors MenuTemplateRenderer's own theme resolution, so the page background behind the menu
   // never disagrees with the menu it is wrapping — including for presets the old static template
   // list never knew about (every new composable preset and all 3 Signature compositions).
-  const pagePalette = useMemo(() => {
+  const sanitizedTheme = useMemo(() => {
     const base = themeFromPresetId(client?.templateId);
-    const theme = client?.theme ? coerceTheme(client.theme, base) : base;
-    return resolveTheme(theme).palette;
+    return client?.theme ? coerceTheme(client.theme, base) : base;
   }, [client?.templateId, client?.theme]);
+
+  const pagePalette = useMemo(() => {
+    return resolveTheme(sanitizedTheme).palette;
+  }, [sanitizedTheme]);
 
   // Strict plan gating: Customer ordering is exclusive to highest plan (Premium)
   const isPremium = Boolean(client?.orderingEnabled ?? (client?.plan?.toUpperCase() === 'PREMIUM'));
@@ -1233,7 +1236,7 @@ export default function MenuPage() {
           }}
           categories={categoriesForRenderer}
           items={itemsForRenderer}
-          theme={client.theme}
+          theme={sanitizedTheme}
           compact={false}
           onAddToCart={isPremium ? addToCart : undefined}
           onRemoveFromCart={isPremium ? removeFromCart : undefined}

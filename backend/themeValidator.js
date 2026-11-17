@@ -49,6 +49,18 @@ export const MAX_ANNOUNCEMENT_LENGTH = 120;
 export const MAX_URL_LENGTH = 2048;
 export const MAX_PRESET_ID_LENGTH = 64;
 
+export function containsCssInjectionOrStyle(val) {
+  if (typeof val !== 'string') return false;
+  return (
+    /<\s*\/?\s*style[\s>]/i.test(val) ||
+    /expression\s*\(/i.test(val) ||
+    /javascript\s*:/i.test(val) ||
+    /vbscript\s*:/i.test(val) ||
+    /behavior\s*:/i.test(val) ||
+    /url\s*\(\s*['"]?\s*data\s*:\s*text\/html/i.test(val)
+  );
+}
+
 const HEX_PATTERN = /^#?([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 
 export function isValidHex(value) {
@@ -108,6 +120,9 @@ function pickUnitInterval(value, fallback) {
  */
 function pickText(value, maxLength) {
   if (typeof value !== 'string') return null;
+
+  // Reject <style> tags and CSS injection outright
+  if (containsCssInjectionOrStyle(value)) return null;
 
   let cleaned = '';
   for (const char of value) {
@@ -205,6 +220,28 @@ export function coerceTheme(input, base = FALLBACK_THEME) {
   };
 }
 
+const ALLOWED_THEME_KEYS = new Set([
+  'version',
+  'layoutVersion',
+  'presetId',
+  'mode',
+  'brand',
+  'slots',
+  'signatureId',
+  'typePair',
+  'texture',
+  'density',
+  'radius',
+  'shadow',
+  'cover',
+  'announcement',
+]);
+
+const ALLOWED_BRAND_KEYS = new Set(['seedColor', 'logoUrl', 'logoShape']);
+const ALLOWED_SLOTS_KEYS = new Set(['cover', 'nav', 'dishCard', 'section', 'footer']);
+const ALLOWED_COVER_KEYS = new Set(['imageUrl', 'focal', 'overlayStrength', 'showCoverPage']);
+const ALLOWED_FOCAL_KEYS = new Set(['x', 'y']);
+
 /**
  * Strict check used by the Design Studio publish endpoint.
  *
@@ -221,6 +258,12 @@ export function validateTheme(input) {
 
   const coerced = coerceTheme(input);
 
+  for (const key of Object.keys(input)) {
+    if (!ALLOWED_THEME_KEYS.has(key)) {
+      errors.push(`unrecognized key: ${key}`);
+    }
+  }
+
   if (input.version !== THEME_VERSION) {
     errors.push(`version must be ${THEME_VERSION}, received ${JSON.stringify(input.version)}`);
   }
@@ -229,26 +272,108 @@ export function validateTheme(input) {
     errors.push(`layoutVersion must be 1 or 2, received ${JSON.stringify(input.layoutVersion)}`);
   }
 
-  const brand = input.brand && typeof input.brand === 'object' ? input.brand : {};
-  if (!isValidHex(String(brand.seedColor ?? ''))) {
-    errors.push(`brand.seedColor must be a hex colour, received ${JSON.stringify(brand.seedColor)}`);
-  }
-  if (brand.logoUrl != null && sanitizeImageUrl(brand.logoUrl) === null) {
-    errors.push('brand.logoUrl must be a same-origin path or an http(s) URL');
+  if (input.presetId != null) {
+    if (typeof input.presetId !== 'string' || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(input.presetId.trim())) {
+      errors.push(`presetId must be a lowercase alphanumeric slug, received ${JSON.stringify(input.presetId)}`);
+    }
   }
 
-  const cover = input.cover && typeof input.cover === 'object' ? input.cover : {};
-  if (cover.imageUrl != null && sanitizeImageUrl(cover.imageUrl) === null) {
-    errors.push('cover.imageUrl must be a same-origin path or an http(s) URL');
+  if (!input.brand || typeof input.brand !== 'object' || Array.isArray(input.brand)) {
+    errors.push('brand must be an object');
+  } else {
+    for (const key of Object.keys(input.brand)) {
+      if (!ALLOWED_BRAND_KEYS.has(key)) {
+        errors.push(`unrecognized key in brand: ${key}`);
+      }
+    }
+    const brand = input.brand;
+    if (!isValidHex(String(brand.seedColor ?? '')) || containsCssInjectionOrStyle(String(brand.seedColor ?? ''))) {
+      errors.push(`brand.seedColor must be a hex colour, received ${JSON.stringify(brand.seedColor)}`);
+    }
+    if (brand.logoUrl != null && (typeof brand.logoUrl !== 'string' || sanitizeImageUrl(brand.logoUrl) === null)) {
+      errors.push('brand.logoUrl must be a same-origin path or an http(s) URL');
+    }
+    if (brand.logoShape != null && !LOGO_SHAPES.includes(brand.logoShape)) {
+      errors.push(`brand.logoShape must be one of [${LOGO_SHAPES.join(', ')}], received ${JSON.stringify(brand.logoShape)}`);
+    }
   }
 
-  if (input.signatureId != null && !SIGNATURE_COMPOSITION_IDS.includes(String(input.signatureId))) {
+  if (!input.slots || typeof input.slots !== 'object' || Array.isArray(input.slots)) {
+    errors.push('slots must be an object');
+  } else {
+    for (const key of Object.keys(input.slots)) {
+      if (!ALLOWED_SLOTS_KEYS.has(key)) {
+        errors.push(`unrecognized key in slots: ${key}`);
+      }
+    }
+    const slots = input.slots;
+    const enumChecks = [
+      ['slots.cover', slots.cover, COVER_SLOTS],
+      ['slots.nav', slots.nav, NAV_SLOTS],
+      ['slots.dishCard', slots.dishCard, DISH_CARD_SLOTS],
+      ['slots.section', slots.section, SECTION_SLOTS],
+      ['slots.footer', slots.footer, FOOTER_SLOTS],
+    ];
+    for (const [field, value, allowed] of enumChecks) {
+      if (value != null && !allowed.includes(value)) {
+        errors.push(`${field} must be one of [${allowed.join(', ')}], received ${JSON.stringify(value)}`);
+      }
+    }
+  }
+
+  if (!input.cover || typeof input.cover !== 'object' || Array.isArray(input.cover)) {
+    errors.push('cover must be an object');
+  } else {
+    for (const key of Object.keys(input.cover)) {
+      if (!ALLOWED_COVER_KEYS.has(key)) {
+        errors.push(`unrecognized key in cover: ${key}`);
+      }
+    }
+    const cover = input.cover;
+    if (cover.imageUrl != null && (typeof cover.imageUrl !== 'string' || sanitizeImageUrl(cover.imageUrl) === null)) {
+      errors.push('cover.imageUrl must be a same-origin path or an http(s) URL');
+    }
+    if (!cover.focal || typeof cover.focal !== 'object' || Array.isArray(cover.focal)) {
+      errors.push('cover.focal must be an object');
+    } else {
+      for (const key of Object.keys(cover.focal)) {
+        if (!ALLOWED_FOCAL_KEYS.has(key)) {
+          errors.push(`unrecognized key in cover.focal: ${key}`);
+        }
+      }
+      const focal = cover.focal;
+      if (typeof focal.x !== 'number' || !Number.isFinite(focal.x) || focal.x < 0 || focal.x > 1) {
+        errors.push(`cover.focal.x must be a number between 0 and 1, received ${JSON.stringify(focal.x)}`);
+      }
+      if (typeof focal.y !== 'number' || !Number.isFinite(focal.y) || focal.y < 0 || focal.y > 1) {
+        errors.push(`cover.focal.y must be a number between 0 and 1, received ${JSON.stringify(focal.y)}`);
+      }
+    }
+    if (
+      cover.overlayStrength != null &&
+      (typeof cover.overlayStrength !== 'number' ||
+        !Number.isFinite(cover.overlayStrength) ||
+        cover.overlayStrength < 0 ||
+        cover.overlayStrength > 1)
+    ) {
+      errors.push(
+        `cover.overlayStrength must be a number between 0 and 1, received ${JSON.stringify(cover.overlayStrength)}`
+      );
+    }
+    if (cover.showCoverPage != null && typeof cover.showCoverPage !== 'boolean') {
+      errors.push(`cover.showCoverPage must be a boolean, received ${JSON.stringify(cover.showCoverPage)}`);
+    }
+  }
+
+  if (
+    input.signatureId != null &&
+    !SIGNATURE_COMPOSITION_IDS.includes(String(input.signatureId))
+  ) {
     errors.push(
       `signatureId must be null or one of [${SIGNATURE_COMPOSITION_IDS.join(', ')}], received ${JSON.stringify(input.signatureId)}`
     );
   }
 
-  const slots = input.slots && typeof input.slots === 'object' ? input.slots : {};
   const enumChecks = [
     ['mode', input.mode, MODES],
     ['typePair', input.typePair, FONT_PAIRING_IDS],
@@ -256,16 +381,29 @@ export function validateTheme(input) {
     ['density', input.density, DENSITIES],
     ['radius', input.radius, RADII],
     ['shadow', input.shadow, SHADOWS],
-    ['slots.cover', slots.cover, COVER_SLOTS],
-    ['slots.nav', slots.nav, NAV_SLOTS],
-    ['slots.dishCard', slots.dishCard, DISH_CARD_SLOTS],
-    ['slots.section', slots.section, SECTION_SLOTS],
-    ['slots.footer', slots.footer, FOOTER_SLOTS],
   ];
 
   for (const [field, value, allowed] of enumChecks) {
-    if (!allowed.includes(value)) {
+    if (value != null && !allowed.includes(value)) {
       errors.push(`${field} must be one of [${allowed.join(', ')}], received ${JSON.stringify(value)}`);
+    }
+  }
+
+  if (input.announcement != null) {
+    if (typeof input.announcement !== 'string') {
+      errors.push('announcement must be a string or null');
+    } else if (input.announcement.length > MAX_ANNOUNCEMENT_LENGTH) {
+      errors.push(`announcement must be at most ${MAX_ANNOUNCEMENT_LENGTH} characters`);
+    } else if (containsCssInjectionOrStyle(input.announcement)) {
+      errors.push('announcement must not contain <style> tags or CSS injection strings');
+    } else {
+      for (let i = 0; i < input.announcement.length; i += 1) {
+        const code = input.announcement.charCodeAt(i);
+        if (code < 0x20 || (code >= 0x7f && code <= 0x9f)) {
+          errors.push('announcement must not contain control characters');
+          break;
+        }
+      }
     }
   }
 

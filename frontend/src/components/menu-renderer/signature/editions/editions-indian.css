@@ -64,6 +64,98 @@
   container-name: maharaja;
 }
 
+/* --- Variant A: Darbar (Royal Ivory & Antique Gold) --- */
+.mq-ed-maharaja.is-darbar {
+  --royal-emerald-base: #fbf8f0;
+  --royal-parchment-pure: #1a1a1a;
+  --royal-parchment-surface: #ecdcc0;
+  --royal-ivory-dim: #ecdcc0;
+  --royal-gold-foil: linear-gradient(135deg, #8a6405 0%, #d4a359 25%, #b8860b 50%, #f5d77f 75%, #8a6405 100%);
+  --royal-gold-solid: #b8860b;
+  background-color: #fbf8f0;
+  color: #1a1a1a;
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-veil {
+  background: radial-gradient(
+    ellipse at 50% 36%,
+    rgba(251, 248, 240, 0.72) 0%,
+    rgba(236, 220, 192, 0.88) 65%,
+    #ecdcc0 100%
+  );
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-arch-frame {
+  border: 1px solid rgba(184, 134, 11, 0.65);
+  box-shadow:
+    inset 0 0 30px rgba(184, 134, 11, 0.1),
+    0 0 20px rgba(184, 134, 11, 0.15);
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-title,
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-dish-name,
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-course-title,
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-foot-name {
+  color: #1a1a1a;
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-tagline,
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-dish-desc,
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-course-desc,
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-foot-sub {
+  color: #4a453e;
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-dish-price {
+  color: #8a6405;
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-dish-rule {
+  background-image: radial-gradient(circle at center, rgba(184, 134, 11, 0.8) 1.2px, transparent 1.5px);
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-shahi-lore,
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-plaque {
+  background: #ecdcc0;
+  border-color: #b8860b;
+  color: #1a1a1a;
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-lore-title,
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-plaque-title,
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-col-title {
+  color: #8a6405;
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-lore-body,
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-plaque-prose,
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-col-desc {
+  color: #1a1a1a;
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-heritage-badge {
+  color: #8a6405;
+  border-color: rgba(184, 134, 11, 0.45);
+  background: rgba(236, 220, 192, 0.65);
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-foot {
+  border-top-color: rgba(184, 134, 11, 0.35);
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-brigade-item {
+  background: rgba(236, 220, 192, 0.45);
+  border-color: rgba(184, 134, 11, 0.35);
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-brigade-title {
+  color: #8a6405;
+}
+
+.mq-ed-maharaja.is-darbar .mq-ed-maharaja-brigade-role {
+  color: #4a453e;
+}
+
 /* --- Cover Page --- */
 .mq-ed-maharaja-cover {
   container-type: inline-size;

@@ -574,6 +574,38 @@
   color: #fff9ed;
 }
 
+/* Variant A (Darbar / Royal Ivory & Antique Gold) */
+.mq-ed-maharaja.is-darbar .mq-layout-v2 .mq-card-maharaja,
+.is-darbar .mq-card-maharaja {
+  background: #ECDCC0;
+  border: 1px solid rgba(184, 134, 11, 0.45);
+  border-left: 4px solid #B8860B;
+  box-shadow: 0 4px 16px rgba(184, 134, 11, 0.12);
+  color: #1A1A1A;
+}
+
+.mq-ed-maharaja.is-darbar .mq-layout-v2 .mq-card-maharaja .mq-unified-dish-name,
+.is-darbar .mq-card-maharaja .mq-unified-dish-name {
+  color: #1A1A1A;
+}
+
+.mq-ed-maharaja.is-darbar .mq-layout-v2 .mq-card-maharaja .mq-unified-dish-desc,
+.is-darbar .mq-card-maharaja .mq-unified-dish-desc {
+  color: #4A453E;
+}
+
+.mq-ed-maharaja.is-darbar .mq-layout-v2 .mq-card-maharaja .mq-unified-price,
+.is-darbar .mq-card-maharaja .mq-unified-price {
+  color: #8A6405;
+}
+
+.mq-ed-maharaja.is-darbar .mq-layout-v2 .mq-card-maharaja .mq-unified-add-btn,
+.is-darbar .mq-card-maharaja .mq-unified-add-btn {
+  background: linear-gradient(135deg, #B8860B 0%, #8A6405 100%);
+  color: #FFFFFF;
+  border: 1px solid #B8860B;
+}
+
 .mq-layout-v2 .mq-card-maharaja .mq-unified-dish-name {
   font-family: var(--mq-font-display, serif);
   font-weight: 700;

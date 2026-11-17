@@ -5,6 +5,15 @@ export function getPlanContentLimit(planId) {
   return Infinity;
 }
 
+export function getPlanItemLimit(planId) {
+  if (!planId) return 0;
+  const p = String(planId).toUpperCase();
+  if (p === 'BASIC') return 50;
+  if (p === 'INTERMEDIATE') return 150;
+  if (p === 'PREMIUM') return Number.POSITIVE_INFINITY;
+  return 0;
+}
+
 import { pool, queryPortable } from './db.js';
 import { apiError } from './utils.js';
 import { invalidatePublicMenuCache } from './routes/public.js';

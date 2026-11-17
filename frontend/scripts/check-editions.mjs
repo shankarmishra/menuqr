@@ -27,11 +27,17 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EDITIONS_DIR = join(__dirname, '..', 'src', 'components', 'menu-renderer', 'signature', 'editions');
 const SIGNATURE_DIR = join(__dirname, '..', 'src', 'components', 'menu-renderer', 'signature');
+const ATELIER_DIR = join(__dirname, '..', 'src', 'components', 'menu-renderer', 'atelier');
 
 const CSS_FILES = ['editions.css', 'editions-b.css', 'editions-indian.css'];
 
 /** Registered Edition/composition files that render real dish items (own rows, not just data pass-through). */
-const EDITION_TSX_FILES = readdirSync(EDITIONS_DIR).filter((f) => f.endsWith('Edition.tsx'));
+const EDITION_FILES = [
+  ...readdirSync(EDITIONS_DIR)
+    .filter((f) => f.endsWith('Edition.tsx'))
+    .map((f) => ({ name: f, path: join(EDITIONS_DIR, f), rel: `editions/${f}` })),
+  { name: 'AtelierRangeen.tsx', path: join(ATELIER_DIR, 'AtelierRangeen.tsx'), rel: 'atelier/AtelierRangeen.tsx' },
+];
 
 let findings = [];
 
@@ -109,13 +115,19 @@ const EXEMPT = new Set([]);
 
 const FIELD_MANIFEST = ['trending', 'isBestseller', 'tags'];
 
-for (const file of EDITION_TSX_FILES) {
+for (const { name: file, path: filePath, rel } of EDITION_FILES) {
   if (EXEMPT.has(file)) continue;
-  const content = readFileSync(join(EDITIONS_DIR, file), 'utf8');
+  const content = readFileSync(filePath, 'utf8');
 
   // `Leader` and `PhotoDish` (shared.tsx) both render `<DishFlags>` internally, so a file that
   // delegates to either one gets full field coverage without calling `DishFlags` itself.
-  const usesDishFlags = content.includes('DishFlags') || content.includes('<Leader') || content.includes('<PhotoDish');
+  // Similarly, AtelierRangeen delegates item rows to `B6ListRow` and `UnifiedDishCard` which wire `<DishFlags>`.
+  const usesDishFlags =
+    content.includes('DishFlags') ||
+    content.includes('<Leader') ||
+    content.includes('<PhotoDish') ||
+    content.includes('<B6ListRow') ||
+    content.includes('<UnifiedDishCard');
   if (usesDishFlags) continue;
 
   const rendersItems = /\.items\.map\(|\bitem\.name\b/.test(content);
@@ -125,11 +137,11 @@ for (const file of EDITION_TSX_FILES) {
   const missing = FIELD_MANIFEST.filter((f) => !present.includes(f));
   if (missing.length > 0 && present.length > 0) {
     findings.push(
-      `[FIELD-COVERAGE] editions/${file} — references ${present.join(', ')} but not ${missing.join(', ')}; a dish tagged with a missing field renders with no visible indicator on this template. Wire in <DishFlags item={item} /> or add the missing checks explicitly.`
+      `[FIELD-COVERAGE] ${rel} — references ${present.join(', ')} but not ${missing.join(', ')}; a dish tagged with a missing field renders with no visible indicator on this template. Wire in <DishFlags item={item} /> or add the missing checks explicitly.`
     );
   } else if (present.length === 0) {
     findings.push(
-      `[FIELD-COVERAGE] editions/${file} — renders dish items but references none of ${FIELD_MANIFEST.join(', ')} and does not use <DishFlags>; allergen/Jain/eggless/spice/trending/bestseller data tagged by the owner will never be visible on this template.`
+      `[FIELD-COVERAGE] ${rel} — renders dish items but references none of ${FIELD_MANIFEST.join(', ')} and does not use <DishFlags>; allergen/Jain/eggless/spice/trending/bestseller data tagged by the owner will never be visible on this template.`
     );
   }
 }
@@ -143,5 +155,5 @@ if (findings.length > 0) {
   for (const f of findings) console.error(' - ' + f);
   process.exit(1);
 } else {
-  console.log(`check-editions: clean (${EDITION_TSX_FILES.length} Edition files, ${CSS_FILES.length} CSS files scanned)`);
+  console.log(`check-editions: clean (${EDITION_FILES.length} Edition files, ${CSS_FILES.length} CSS files scanned)`);
 }

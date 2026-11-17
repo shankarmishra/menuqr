@@ -24,7 +24,7 @@ export default function PricingPage() {
       description: 'Perfect for small cafes and food stalls starting their digital journey.',
       features: [
         'Permanent Table QR Code',
-        'Up to 50 Menu Items',
+        'Up to 50 items, 20 edits included',
         'Basic Design Template',
         'Universal Menu Search',
         'Dietary Tags (Veg/Non-Veg)',
@@ -43,7 +43,7 @@ export default function PricingPage() {
       description: 'Ideal for growing restaurants needing more flexibility and style.',
       features: [
         'Permanent Table QR Code',
-        'Up to 150 Menu Items',
+        'Up to 150 items, 100 edits included',
         'Premium Design Templates',
         'Half/Full & Portion Variant Pricing',
         'Universal Menu Search',
@@ -63,10 +63,9 @@ export default function PricingPage() {
       description: 'Everything you need to run a world-class digital menu for your restaurant.',
       features: [
         'Permanent Table QR Code',
-        'Unlimited Menu Edits & Categories',
+        'Unlimited items & edits, 150 monthly orders included',
         'All 15 Premium Design Templates',
         'Direct Table QR Ordering System',
-        '150 online orders / month included',
         'Need more orders? +50 orders for ₹99',
         'Half/Full & Portion Variant Pricing',
         'Universal Menu Search',

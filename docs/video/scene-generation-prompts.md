@@ -1,7 +1,7 @@
 # MenusQR AI Video Generation Kit — Scene Generation Prompts
 
-**Target Platforms:** Kling AI, Runway Gen-3 Alpha, Luma Dream Machine, Midjourney v6.1 / Flux.1 Schnell  
-**Master Style:** Cinematic photorealism, Indian restaurant documentary / luxury hospitality commercial, warm amber bistro ambient lighting, shallow depth of field (35mm / 50mm f/1.8), rich color grading, zero CGI artifacts.  
+**Target Platforms:** Kling AI, Runway Gen-3 Alpha, Luma Dream Machine, Midjourney v6.1 / Flux.1 Schnell
+**Master Style:** Cinematic photorealism, Indian restaurant documentary / luxury hospitality commercial, warm amber bistro ambient lighting, shallow depth of field (35mm / 50mm f/1.8), rich color grading, zero CGI artifacts.
 
 ---
 

@@ -13,6 +13,7 @@ import PlanComparisonSection from '../../components/marketing/PlanComparisonSect
 import HowItWorksSection from '../../components/marketing/HowItWorksSection';
 import CustomerExperienceSection from '../../components/marketing/CustomerExperienceSection';
 import CharacterCarouselSection from '../../components/marketing/CharacterCarouselSection';
+import IllustrativeProfilesSection from '../../components/marketing/IllustrativeProfilesSection';
 import FaqSection, { faqs } from '../../components/marketing/FaqSection';
 import FinalCtaSection from '../../components/marketing/FinalCtaSection';
 import { Helmet } from 'react-helmet-async';
@@ -46,6 +47,7 @@ export default function PublicHomePage() {
         <SameMenuDifferentPersonality />
         <RoyalHeritageMenuSection />
         <CharacterCarouselSection />
+        <IllustrativeProfilesSection />
         <DashboardDemoSection />
         <PremiumOrderingSection />
         <PlanComparisonSection />

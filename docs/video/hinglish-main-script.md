@@ -1,8 +1,8 @@
 # MenusQR Official 30-Second Commercial — Master Hinglish Voiceover Script
 
-**Duration:** Exactly 30.0 Seconds  
-**Language:** Natural Colloquial Hinglish (North & West Indian Business Conversational)  
-**Voice Profile:** Male, 28–38 years old, warm, confident, entrepreneurial, relatable, clear diction (No fake western accent, crisp Hindi cadence).  
+**Duration:** Exactly 30.0 Seconds
+**Language:** Natural Colloquial Hinglish (North & West Indian Business Conversational)
+**Voice Profile:** Male, 28–38 years old, warm, confident, entrepreneurial, relatable, clear diction (No fake western accent, crisp Hindi cadence).
 **Word Count:** 72 Words (~2.4 words/second — optimal for high-retention broadcast commercials).
 
 ---

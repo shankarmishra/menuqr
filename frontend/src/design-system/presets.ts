@@ -489,11 +489,11 @@ export const PRESETS: readonly Preset[] = [
     id: 'edition-darbar',
     label: 'Darbar',
     description:
-      'Indian royal. A cusped jali arch and paisley filigree over a deep cover, with each course opening under its own arch.',
+      'Indian royal (Variant A: Royal Ivory & Antique Gold). Cusped jali arches, warm parchment, charcoal calligraphy, and antique gold foil accents.',
     audience: 'Mughlai and Awadhi fine dining, banquet halls, heritage thali houses',
     category: 'heritage',
-    seedColor: '#d4af37',
-    mode: 'dark',
+    seedColor: '#B8860B',
+    mode: 'light',
     slots: { cover: 'heritage-arch', nav: 'underline-tabs', dishCard: 'michelin-leader', section: 'arch-title', footer: 'contact-block' },
     signatureId: 'darbar',
     typePair: 'royal-serif',
@@ -501,7 +501,7 @@ export const PRESETS: readonly Preset[] = [
     density: 'spacious',
     radius: 'none',
     shadow: 'elevated',
-    cover: { imageUrl: '/assets/themes/variations/royal-darbar-facing.jpg', overlayStrength: 0.5 },
+    cover: { imageUrl: '/assets/themes/variations/royal-darbar-facing.jpg', overlayStrength: 0.15 },
   },
   {
     id: 'edition-chalk-house',

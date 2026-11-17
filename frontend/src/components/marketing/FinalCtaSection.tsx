@@ -60,7 +60,7 @@ export default function FinalCtaSection() {
           </motion.h2>
 
           <motion.p variants={fadeUp} className="text-lg sm:text-xl text-emerald-100/70 mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed font-normal">
-            Join thousands of restaurants saving on printing costs and updating their menus in real-time.
+            Join restaurant owners across India saving on printing costs and updating their menus in real-time.
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">

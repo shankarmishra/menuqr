@@ -6,7 +6,7 @@ import { validateSchedule } from '../schedule.js';
 import { enforceTenant } from '../auth.js';
 import { apiError, sendJson, readJson } from '../utils.js';
 import { randomUUID } from 'node:crypto';
-import { resolveTenantAuthorization, requireEntitlement, withContentChange, getContentUsage } from '../authorization.js';
+import { resolveTenantAuthorization, requireEntitlement, withContentChange, getContentUsage, getPlanItemLimit } from '../authorization.js';
 import { detectColumnMappings, validateAndPreviewImport, executeImportTransaction } from '../menuImporter.js';
 import { mirrorExternalImages } from '../externalImageMirror.js';
 import { resolveDishImage } from '../culinaryImageService.js';
@@ -2004,7 +2004,14 @@ export default async function appRoutes(request, response, url) {
     return true;
   }
 
-  if (request.method === 'POST' && url.pathname === '/api/app/items') {
+  if (request.method === 'GET' && (url.pathname === '/api/app/menu/dishes' || url.pathname === '/api/app/items')) {
+    requireEntitlement(authorization, 'digital_menu');
+    const itemsRes = await pool.query('SELECT * FROM menu_items WHERE tenant_id = $1 ORDER BY sort_order', [user.tenantId]);
+    sendJson(response, 200, { dishes: itemsRes.rows, items: itemsRes.rows });
+    return true;
+  }
+
+  if (request.method === 'POST' && (url.pathname === '/api/app/items' || url.pathname === '/api/app/menu/dishes')) {
     requireBasicContentAccess(authorization);
     if (authorization.planId !== 'BASIC') requireEntitlement(authorization, 'add_item', 'Adding menu items requires an Intermediate or Premium plan.');
     const input = await readJson(request);
@@ -2013,9 +2020,33 @@ export default async function appRoutes(request, response, url) {
     const numericPrice = Number(price);
     if (!name || !Number.isFinite(numericPrice) || numericPrice < 0) throw apiError(400, 'Check the menu item name and price.');
     const result = await withContentChange(authorization, async (client) => {
+      // Concurrency safety: tenant-scoped locking and item limit enforcement
+      await queryPortable(client, 'SELECT id FROM clients WHERE id = ? FOR UPDATE', [user.tenantId]);
+      const countRes = await queryPortable(client, 'SELECT count(*)::int AS count FROM menu_items WHERE tenant_id = ?', [user.tenantId]);
+      const currentCount = Number(countRes.rows[0]?.count || 0);
+      const limit = getPlanItemLimit(authorization.planId);
+      if (currentCount >= limit) {
+        throw apiError(403, `Item limit of ${limit} reached for your plan. Please upgrade to add more items.`);
+      }
+
       if (!menuId) {
-        const menuResult = await queryPortable(client, 'SELECT id FROM menus WHERE tenant_id = ? LIMIT 1', [user.tenantId]);
+        let menuResult = await queryPortable(client, 'SELECT id FROM menus WHERE tenant_id = ? LIMIT 1', [user.tenantId]);
+        if (!menuResult.rows[0]) {
+          const newMenuId = randomUUID();
+          await queryPortable(client, 'INSERT INTO menus (id, tenant_id, name) VALUES (?, ?, ?)', [newMenuId, user.tenantId, 'Main Menu']);
+          menuResult = { rows: [{ id: newMenuId }] };
+        }
         menuId = menuResult.rows[0]?.id;
+      }
+      if (!categoryId) {
+        let catRes = await queryPortable(client, 'SELECT id FROM menu_categories WHERE menu_id = ? AND tenant_id = ? LIMIT 1', [menuId, user.tenantId]);
+        if (!catRes.rows[0]) {
+          const catId = randomUUID();
+          const catName = inputText(input.category, 100) || 'Main';
+          await queryPortable(client, 'INSERT INTO menu_categories (id, menu_id, tenant_id, name, sort_order) VALUES (?, ?, ?, ?, 1)', [catId, menuId, user.tenantId, catName]);
+          catRes = { rows: [{ id: catId }] };
+        }
+        categoryId = catRes.rows[0]?.id;
       }
       const ownedCategory = await queryPortable(client,
         'SELECT c.id FROM menu_categories c JOIN menus m ON m.id = c.menu_id AND m.tenant_id = c.tenant_id WHERE c.id = ? AND c.menu_id = ? AND c.tenant_id = ?',
@@ -2082,14 +2113,22 @@ export default async function appRoutes(request, response, url) {
     return true;
   }
 
-  if (request.method === 'POST' && url.pathname === '/api/app/items/duplicate') {
+  if (request.method === 'POST' && (url.pathname === '/api/app/items/duplicate' || url.pathname === '/api/app/menu/dishes/duplicate')) {
     requireBasicContentAccess(authorization);
     if (authorization.planId !== 'BASIC') requireEntitlement(authorization, 'add_item', 'Duplicating menu items requires an Intermediate or Premium plan.');
     const input = await readJson(request);
-    const itemId = input.itemId;
+    const itemId = input.itemId || input.dishId;
     if (!itemId) throw apiError(400, 'Specify the item to duplicate.');
 
     const result = await withContentChange(authorization, async (client) => {
+      await queryPortable(client, 'SELECT id FROM clients WHERE id = ? FOR UPDATE', [user.tenantId]);
+      const countRes = await queryPortable(client, 'SELECT count(*)::int AS count FROM menu_items WHERE tenant_id = ?', [user.tenantId]);
+      const currentCount = Number(countRes.rows[0]?.count || 0);
+      const limit = getPlanItemLimit(authorization.planId);
+      if (currentCount >= limit) {
+        throw apiError(403, `Item limit of ${limit} reached for your plan. Please upgrade to add more items.`);
+      }
+
       const orig = await queryPortable(client, 'SELECT * FROM menu_items WHERE id = ? AND tenant_id = ?', [itemId, user.tenantId]);
       if (!orig.rows[0]) throw apiError(404, 'Item not found.');
       const itemData = orig.rows[0];
@@ -2182,7 +2221,7 @@ export default async function appRoutes(request, response, url) {
 
   // Operational toggle (not a content edit): deliberately skips `withContentChange` so marking a
   // dish sold out never consumes a Basic plan's edit allowance.
-  const soldOutMatch = url.pathname.match(/^\/api\/app\/items\/([^/]+)\/sold-out$/);
+  const soldOutMatch = url.pathname.match(/^\/api\/app\/(?:items|menu\/dishes)\/([^/]+)\/sold-out$/);
   if (request.method === 'POST' && soldOutMatch) {
     requireEntitlement(authorization, 'digital_menu');
     const input = await readJson(request);
@@ -2284,11 +2323,16 @@ export default async function appRoutes(request, response, url) {
     return true;
   }
 
-  if (request.method === 'POST' && url.pathname === '/api/app/menu/import/execute') {
+  if (request.method === 'POST' && (url.pathname === '/api/app/menu/import/execute' || url.pathname === '/api/app/menu/bulk-import')) {
     requireBasicContentAccess(authorization);
     if (authorization.planId !== 'BASIC') requireEntitlement(authorization, 'menu_management', 'Menu import requires an Intermediate or Premium plan.');
     const input = await readJson(request);
-    const { categories, mode, filename } = input;
+    let { categories, mode, filename } = input;
+    if (!categories && Array.isArray(input.dishes)) {
+      categories = [{ name: 'Main', items: input.dishes }];
+    } else if (!categories && Array.isArray(input.items)) {
+      categories = [{ name: 'Main', items: input.items }];
+    }
     if (!Array.isArray(categories) || categories.length === 0) {
       throw apiError(400, 'No menu categories or items provided for import.');
     }
@@ -2311,7 +2355,9 @@ export default async function appRoutes(request, response, url) {
     let stats;
     try {
       await client.query('BEGIN');
-      stats = await executeImportTransaction(client, user.tenantId, menuId, categories, importMode, filename || 'uploaded_menu.xlsx');
+      await queryPortable(client, 'SELECT id FROM clients WHERE id = ? FOR UPDATE', [user.tenantId]);
+      const limit = getPlanItemLimit(authorization.planId);
+      stats = await executeImportTransaction(client, user.tenantId, menuId, categories, importMode, filename || 'uploaded_menu.xlsx', limit);
       await client.query('COMMIT');
     } catch (error) {
       await client.query('ROLLBACK');
@@ -2351,7 +2397,7 @@ export default async function appRoutes(request, response, url) {
     return true;
   }
 
-  const itemMatch = url.pathname.match(/^\/api\/app\/items\/([^/]+)(?:\/(.+))?$/);
+  const itemMatch = url.pathname.match(/^\/api\/app\/(?:items|menu\/dishes)\/([^/]+)(?:\/(.+))?$/);
   if (itemMatch && request.method !== 'POST') {
     requireBasicContentAccess(authorization);
     const itemId = itemMatch[1];

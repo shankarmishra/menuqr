@@ -1,6 +1,6 @@
 # MenusQR Pilot Measurement Protocol & Audit Template
 
-**Standard Field Instrumentation Sheet for Restaurant Pilot Programs**  
+**Standard Field Instrumentation Sheet for Restaurant Pilot Programs**
 *Document Ref: MQR-PILOT-LOG-V2*
 
 ---
@@ -114,17 +114,17 @@ At the end of the 30-day pilot period, complete this verified financial comparis
 ## 6. Qualitative Staff & Customer Feedback Checklist
 
 ### Owner / Manager Interview
-* **Menu Agility:** "How quickly were you able to update seasonal dishes or market price changes?"  
-  *Rating (1–5):* [ ] 1 &nbsp; [ ] 2 &nbsp; [ ] 3 &nbsp; [ ] 4 &nbsp; [ ] 5  
+* **Menu Agility:** "How quickly were you able to update seasonal dishes or market price changes?"
+  *Rating (1–5):* [ ] 1 &nbsp; [ ] 2 &nbsp; [ ] 3 &nbsp; [ ] 4 &nbsp; [ ] 5
   *Notes:* _________________________________________________________________________
-* **Aesthetic Presentation:** "Did the selected signature theme align with your restaurant's interior brand?"  
-  *Rating (1–5):* [ ] 1 &nbsp; [ ] 2 &nbsp; [ ] 3 &nbsp; [ ] 4 &nbsp; [ ] 5  
+* **Aesthetic Presentation:** "Did the selected signature theme align with your restaurant's interior brand?"
+  *Rating (1–5):* [ ] 1 &nbsp; [ ] 2 &nbsp; [ ] 3 &nbsp; [ ] 4 &nbsp; [ ] 5
   *Notes:* _________________________________________________________________________
 
 ### Service Staff Interview
-* **Customer Friction:** "Did guests experience any difficulty scanning the QR code or browsing without an app?"  
+* **Customer Friction:** "Did guests experience any difficulty scanning the QR code or browsing without an app?"
   *Observations:* __________________________________________________________________
-* **Clarity of Portions:** "Did the Half/Full portion buttons reduce order confusion at the table?"  
+* **Clarity of Portions:** "Did the Half/Full portion buttons reduce order confusion at the table?"
   *Observations:* __________________________________________________________________
 
 ---
@@ -133,5 +133,5 @@ At the end of the 30-day pilot period, complete this verified financial comparis
 
 We confirm that the metrics recorded above represent genuine operational observations from the pilot deployment of MenusQR.
 
-* **Restaurateur Signature:** __________________________________ &nbsp;&nbsp;&nbsp;&nbsp; **Date:** _______________  
+* **Restaurateur Signature:** __________________________________ &nbsp;&nbsp;&nbsp;&nbsp; **Date:** _______________
 * **MenusQR Field Representative:** _________________________ &nbsp;&nbsp;&nbsp;&nbsp; **Date:** _______________

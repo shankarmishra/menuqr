@@ -1,9 +1,9 @@
 # MenusQR Flagship Marketing Film — Master Storyboard
 
-**Format:** 30-Second High-Conversion Commercial  
-**Aspect Ratios:** 9:16 Vertical (Primary — Instagram Reels, YouTube Shorts) & 16:9 Landscape (Website Hero, YouTube Ads)  
-**Target Audience:** Indian Restaurant Owners, Dhaba Operators, Café Founders, Foodpreneurs  
-**Tone:** Energetic, Relatable, Premium, Authoritative Hinglish  
+**Format:** 30-Second High-Conversion Commercial
+**Aspect Ratios:** 9:16 Vertical (Primary — Instagram Reels, YouTube Shorts) & 16:9 Landscape (Website Hero, YouTube Ads)
+**Target Audience:** Indian Restaurant Owners, Dhaba Operators, Café Founders, Foodpreneurs
+**Tone:** Energetic, Relatable, Premium, Authoritative Hinglish
 
 ---
 

@@ -402,17 +402,24 @@ export const MaharajaTableEdition: React.FC<EditionProps> = ({
   const signatures = useFeatured(categories, 2);
   const sections = liveCategories(visible);
 
-  const heroImage = tokens.cover.imageUrl || '/assets/themes/maharaja-table-hero.webp';
+  const isDarbar = (tokens as any).signatureId === 'darbar' || tokens.presetId === 'edition-darbar';
+  const heroImage = tokens.cover.imageUrl || (isDarbar ? '/assets/themes/variations/royal-darbar-facing.jpg' : '/assets/themes/maharaja-table-hero.webp');
   const stampText = (restaurant.cuisine || [restaurant.city, restaurant.state].filter(Boolean).join(', ')).trim();
 
+  const rootClass = [
+    'mq-ed mq-ed-maharaja',
+    isDarbar ? 'is-darbar is-royal-ivory' : 'is-obsidian-emerald',
+    compact ? 'is-compact' : '',
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={compact ? 'mq-ed mq-ed-maharaja is-compact' : 'mq-ed mq-ed-maharaja'}>
+    <div className={rootClass}>
       <JaaliPatternDefs />
 
       {/* =========================================================================
           COVER : Imperial Mughal Palace Darbar Gateway
           ========================================================================= */}
-      <header className="mq-ed-maharaja-cover" data-edition-cover="maharaja-table">
+      <header className="mq-ed-maharaja-cover" data-edition-cover={isDarbar ? 'darbar' : 'maharaja-table'}>
         {heroImage && (
           <div className="mq-ed-cover-media" aria-hidden="true">
             <SmartImage

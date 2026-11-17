@@ -1,6 +1,6 @@
 # MenusQR Case Study Framework & Establishment Archetypes
 
-**Standard Operating Procedure for Customer Evidence, Pilot Documentation & Impact Studies**  
+**Standard Operating Procedure for Customer Evidence, Pilot Documentation & Impact Studies**
 *Version 2.0 — Grounded in Real Indian Restaurant Operations*
 
 ---
@@ -9,7 +9,7 @@
 
 To protect brand credibility and trust with food service operators, every MenusQR case study must adhere to these non-negotiable principles:
 1. **Zero Fabricated Statistics:** Never invent vanity metrics (e.g., "boosted revenue by 342% in 48 hours" or "saved 9.4 hours per shift"). Use only verifiable pilot logs, table turnover timing, print invoice receipts, or clearly labelled illustrative projections.
-2. **Clear Distinction Between Live Pilots & Illustrative Profiles:** 
+2. **Clear Distinction Between Live Pilots & Illustrative Profiles:**
    - A *Live Pilot* requires written consent, verifiable tenant records, and signed measurement logs.
    - An *Illustrative Archetype* represents a synthesized operational model based on real menu audits, designed to demonstrate workflow fit without misleading buyers.
 3. **Transparent Plan Alignment:** Always map the establishment's workflow directly to MenusQR's actual server-enforced tiers:
